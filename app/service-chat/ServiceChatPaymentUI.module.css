@@ -1,0 +1,315 @@
+/* =========================================================
+   CUSTOMER SERVICE CHAT PAYMENT CARD
+========================================================= */
+
+.notice {
+  flex: 0 0 auto;
+
+  margin:
+    10px
+    16px
+    0;
+
+  padding:
+    10px
+    13px;
+
+  border-radius: 5px;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.notice[data-tone="success"] {
+  color: #486041;
+
+  border:
+    1px solid rgba(75, 106, 66, 0.18);
+
+  background: #e7ede3;
+}
+
+.notice[data-tone="neutral"] {
+  color: #697266;
+
+  border:
+    1px solid rgba(88, 94, 82, 0.15);
+
+  background: #ece9e0;
+}
+
+/* =========================================================
+   REQUEST
+========================================================= */
+
+.request {
+  width: min(560px, 86%);
+
+  align-self: flex-start;
+
+  display: grid;
+
+  gap: 0;
+
+  padding:
+    17px
+    18px;
+
+  border:
+    1px solid rgba(55, 71, 50, 0.16);
+
+  border-radius: 9px;
+
+  color: #293327;
+
+  background:
+    linear-gradient(
+      145deg,
+      #faf7ef,
+      #eeeade
+    );
+
+  box-shadow:
+    0 10px 26px
+    rgba(30, 41, 28, 0.055);
+}
+
+.request[data-status="paid"] {
+  border-color:
+    rgba(78, 107, 69, 0.25);
+
+  background:
+    linear-gradient(
+      145deg,
+      #f2f6ef,
+      #e4eadf
+    );
+}
+
+.request[data-status="cancelled"],
+.request[data-status="expired"] {
+  opacity: 0.7;
+}
+
+.requestTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 18px;
+}
+
+.requestTop > div {
+  display: grid;
+
+  gap: 5px;
+}
+
+.requestEyebrow {
+  color: #707b6c;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.15em;
+}
+
+.requestTitle {
+  color: #2b3629;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 19px;
+  font-weight: 400;
+
+  line-height: 1.25;
+}
+
+.requestStatus {
+  flex: 0 0 auto;
+
+  padding:
+    6px
+    9px;
+
+  border:
+    1px solid rgba(67, 85, 61, 0.16);
+
+  border-radius: 999px;
+
+  color: #596653;
+
+  background:
+    rgba(83, 103, 76, 0.08);
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  letter-spacing: 0.1em;
+
+  text-transform: uppercase;
+}
+
+.requestDescription {
+  margin:
+    11px
+    0
+    0;
+
+  color: #687365;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 13px;
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   PAYMENT ROW
+========================================================= */
+
+.paymentLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  margin-top: 14px;
+
+  padding-top: 13px;
+
+  border-top:
+    1px solid rgba(43, 56, 40, 0.11);
+}
+
+.requestAmount {
+  color: #293327;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 31px;
+  font-weight: 400;
+
+  letter-spacing: -0.03em;
+}
+
+.button {
+  min-height: 41px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    0
+    15px;
+
+  border:
+    1px solid #485942;
+
+  border-radius: 5px;
+
+  color: #f5f0e6;
+
+  background: #485942;
+
+  cursor: pointer;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 12px;
+}
+
+.button:hover:not(:disabled) {
+  background: #576851;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.55;
+}
+
+.paidLabel {
+  color: #4d6647;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+.requestFooter {
+  margin-top: 10px;
+}
+
+.requestFooter span {
+  color: #798274;
+
+  font-size: 10px;
+}
+
+.safeNote {
+  display: block;
+
+  margin-top: 7px;
+
+  color: #838b80;
+
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+@media (max-width: 650px) {
+  .request {
+    width: 100%;
+  }
+
+  .requestTop,
+  .paymentLine {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+  .button {
+    width: 100%;
+  }
+}

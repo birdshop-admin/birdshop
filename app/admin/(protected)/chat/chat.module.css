@@ -1,0 +1,1337 @@
+/* =========================================================
+   BIRDSHOP ADMIN CHAT
+   PREMIUM COMPACT DESKTOP LAYOUT
+========================================================= */
+
+.page {
+  height: 100vh;
+  min-height: 0;
+
+  display: grid;
+  grid-template-columns:
+    var(--admin-sidebar-width, 264px)
+    minmax(0, 1fr);
+
+  overflow: hidden;
+
+  color: #f2eee4;
+
+  background:
+    radial-gradient(
+      circle at 86% 3%,
+      rgba(108, 133, 94, 0.13),
+      transparent 30%
+    ),
+    #0b160e;
+}
+
+/* =========================================================
+   MAIN CONTENT
+========================================================= */
+
+.content {
+  height: 100vh;
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+  grid-template-rows:
+    auto
+    auto
+    auto
+    minmax(0, 1fr);
+
+  overflow: hidden;
+
+  padding:
+    28px
+    34px
+    30px;
+}
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 28px;
+
+  padding-bottom: 18px;
+
+  border-bottom:
+    1px solid
+    rgba(242, 238, 228, 0.12);
+}
+
+.header > div > span {
+  color:
+    rgba(242, 238, 228, 0.54);
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.18em;
+}
+
+.header h1 {
+  margin:
+    8px
+    0
+    6px;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.header p {
+  max-width: 720px;
+
+  margin: 0;
+
+  color:
+    rgba(242, 238, 228, 0.72);
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   NOTICES
+========================================================= */
+
+.notice,
+.error {
+  margin-top: 12px;
+
+  padding:
+    10px
+    13px;
+
+  border-radius: 5px;
+
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.notice {
+  color: #dce6d6;
+
+  border:
+    1px solid
+    rgba(124, 155, 111, 0.28);
+
+  background:
+    rgba(86, 112, 75, 0.18);
+}
+
+.error {
+  color: #f0d9d1;
+
+  border:
+    1px solid
+    rgba(167, 99, 78, 0.28);
+
+  background:
+    rgba(120, 70, 57, 0.18);
+}
+
+/* =========================================================
+   TABS
+========================================================= */
+
+.tabs {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding:
+    14px
+    0;
+}
+
+.tabs a {
+  min-height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding:
+    0
+    15px;
+
+  border:
+    1px solid
+    rgba(242, 238, 228, 0.14);
+
+  border-radius: 5px;
+
+  color:
+    rgba(242, 238, 228, 0.76);
+
+  background:
+    rgba(255, 255, 255, 0.015);
+
+  text-decoration: none;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 13px;
+
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.tabs a:hover {
+  color: #f2eee4;
+
+  border-color:
+    rgba(242, 238, 228, 0.24);
+
+  background:
+    rgba(255, 255, 255, 0.045);
+
+  transform:
+    translateY(-1px);
+}
+
+.tabs a span {
+  min-width: 23px;
+  height: 23px;
+
+  display: grid;
+  place-items: center;
+
+  padding:
+    0
+    6px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255, 255, 255, 0.08);
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.tabs .activeTab {
+  color: #283226;
+
+  border-color: #f2eee4;
+
+  background: #f2eee4;
+}
+
+.tabs .activeTab span {
+  color: #f2eee4;
+  background: #4d5e47;
+}
+
+/* =========================================================
+   WORKSPACE
+========================================================= */
+
+.workspace {
+  min-height: 0;
+
+  display: grid;
+  grid-template-columns:
+    305px
+    minmax(0, 1fr);
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(242, 238, 228, 0.13);
+
+  border-radius: 9px;
+
+  background: #101d13;
+
+  box-shadow:
+    0 18px 40px
+    rgba(0, 0, 0, 0.12);
+}
+
+/* =========================================================
+   INBOX
+========================================================= */
+
+.inbox {
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+  grid-template-rows:
+    auto
+    minmax(0, 1fr);
+
+  overflow: hidden;
+
+  border-right:
+    1px solid
+    rgba(242, 238, 228, 0.12);
+
+  background: #101d13;
+}
+
+.inboxHeading {
+  display: grid;
+
+  gap: 5px;
+
+  padding:
+    17px
+    18px;
+
+  border-bottom:
+    1px solid
+    rgba(242, 238, 228, 0.09);
+}
+
+.inboxHeading span {
+  color:
+    rgba(242, 238, 228, 0.5);
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.16em;
+}
+
+.inboxHeading strong {
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.conversationList {
+  min-height: 0;
+
+  overflow-y: auto;
+
+  overscroll-behavior: contain;
+
+  scrollbar-width: thin;
+}
+
+.conversationItem {
+  position: relative;
+
+  display: grid;
+
+  gap: 5px;
+
+  padding:
+    16px
+    17px;
+
+  border-bottom:
+    1px solid
+    rgba(242, 238, 228, 0.075);
+
+  color:
+    rgba(242, 238, 228, 0.84);
+
+  text-decoration: none;
+
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.conversationItem:hover {
+  background:
+    rgba(255, 255, 255, 0.045);
+}
+
+.activeConversation {
+  color: #273125;
+
+  background: #f0ece1;
+}
+
+.conversationItem > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+}
+
+.conversationItem > div > span {
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.12em;
+}
+
+.conversationItem > div > small {
+  padding:
+    4px
+    7px;
+
+  border-radius: 999px;
+
+  color: #f2eee4;
+  background: #52664a;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.conversationItem strong {
+  overflow: hidden;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 16px;
+  font-weight: 400;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.conversationItem p,
+.conversationItem time {
+  margin: 0;
+
+  font-size: 11px;
+  line-height: 1.35;
+
+  opacity: 0.68;
+}
+
+/* =========================================================
+   EMPTY STATES
+========================================================= */
+
+.emptyInbox,
+.emptyChat {
+  display: grid;
+  place-items: center;
+
+  min-height: 0;
+
+  padding: 34px;
+
+  color:
+    rgba(242, 238, 228, 0.56);
+
+  text-align: center;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 14px;
+}
+
+/* =========================================================
+   ACTIVE CHAT
+========================================================= */
+
+.chat {
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+
+  grid-template-rows:
+    auto
+    auto
+    auto
+    minmax(0, 1fr)
+    auto
+    auto;
+
+  overflow: hidden;
+
+  color: #273125;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f4f0e7,
+      #f0ece2
+    );
+}
+
+/* =========================================================
+   CHAT HEADER
+========================================================= */
+
+.chatHeader {
+  min-height: 80px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 22px;
+
+  padding:
+    14px
+    21px;
+
+  border-bottom:
+    1px solid
+    rgba(39, 49, 37, 0.11);
+}
+
+.chatHeader > div:first-child > span {
+  color: #707b6c;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.14em;
+}
+
+.chatHeader h2 {
+  margin:
+    5px
+    0
+    2px;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.chatHeader p {
+  margin: 0;
+
+  color: #737d70;
+
+  font-size: 12px;
+}
+
+.orderFacts {
+  display: flex;
+
+  gap: 25px;
+}
+
+.orderFacts > div {
+  display: grid;
+
+  gap: 4px;
+}
+
+.orderFacts span,
+.customerBar span {
+  color: #747e70;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  letter-spacing: 0.14em;
+}
+
+.orderFacts strong {
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* =========================================================
+   CUSTOMER BAR
+========================================================= */
+
+.customerBar {
+  min-height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  padding:
+    9px
+    21px;
+
+  border-bottom:
+    1px solid
+    rgba(39, 49, 37, 0.09);
+
+  background: #e9e5da;
+}
+
+.customerBar > div {
+  display: flex;
+  align-items: center;
+
+  gap: 13px;
+}
+
+.customerBar strong {
+  font-size: 12px;
+}
+
+.customerBar small {
+  font-size: 11px;
+
+  color: #707a6d;
+}
+
+.customerBar a,
+.chatFooter a {
+  color: #485743;
+
+  font-size: 11px;
+
+  text-decoration: none;
+}
+
+.customerBar a:hover,
+.chatFooter a:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   PAYMENT BAR
+========================================================= */
+
+.paymentBar {
+  min-height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  padding:
+    9px
+    21px;
+
+  border-bottom:
+    1px solid
+    rgba(39, 49, 37, 0.09);
+
+  background: #f7f3ea;
+}
+
+.paymentBarInfo {
+  display: flex;
+  align-items: center;
+
+  gap: 16px;
+}
+
+.paymentBarInfo > span {
+  color: #75806f;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.14em;
+}
+
+.paymentBarInfo strong {
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.paymentBar > span {
+  color: #53634e;
+
+  font-size: 11px;
+}
+
+.paymentBar button {
+  min-height: 34px;
+
+  padding:
+    0
+    12px;
+
+  border:
+    1px solid
+    rgba(61, 76, 56, 0.2);
+
+  border-radius: 4px;
+
+  color: #f4efe5;
+  background: #4c5d46;
+
+  cursor: pointer;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 11px;
+}
+
+.paymentDrawer {
+  max-height: 280px;
+
+  overflow-y: auto;
+
+  padding:
+    15px
+    21px;
+
+  border-bottom:
+    1px solid
+    rgba(39, 49, 37, 0.09);
+
+  background: #ece8de;
+}
+
+/* =========================================================
+   MESSAGES
+========================================================= */
+
+.messages {
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 11px;
+
+  overflow-y: auto;
+
+  overscroll-behavior: contain;
+
+  padding:
+    20px
+    23px;
+
+  scroll-behavior: auto;
+
+  scrollbar-width: thin;
+}
+
+.customerMessage,
+.adminMessage,
+.systemMessage {
+  width: fit-content;
+
+  max-width:
+    min(
+      680px,
+      78%
+    );
+
+  padding:
+    12px
+    14px;
+
+  border-radius: 8px;
+}
+
+.customerMessage {
+  align-self: flex-start;
+
+  border:
+    1px solid
+    rgba(39, 49, 37, 0.13);
+
+  background: #e7e3d8;
+}
+
+.adminMessage {
+  align-self: flex-end;
+
+  color: #f3eee5;
+
+  background:
+    linear-gradient(
+      145deg,
+      #52644c,
+      #46583f
+    );
+}
+
+.systemMessage {
+  align-self: center;
+
+  max-width: 72%;
+
+  padding:
+    7px
+    11px;
+
+  color: #747d70;
+
+  background: transparent;
+
+  text-align: center;
+}
+
+.customerMessage > div,
+.adminMessage > div,
+.systemMessage > div {
+  display: flex;
+  justify-content: space-between;
+
+  gap: 18px;
+}
+
+.customerMessage strong,
+.adminMessage strong,
+.systemMessage strong {
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.customerMessage span,
+.adminMessage span,
+.systemMessage span {
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+
+  opacity: 0.68;
+}
+
+.customerMessage p,
+.adminMessage p,
+.systemMessage p {
+  margin:
+    7px
+    0
+    0;
+
+  white-space: pre-wrap;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   COMPOSER
+========================================================= */
+
+.composer {
+  padding:
+    11px
+    14px;
+
+  border-top:
+    1px solid
+    rgba(39, 49, 37, 0.11);
+
+  background: #ece7dc;
+}
+
+.composer textarea {
+  width: 100%;
+
+  resize: none;
+
+  min-height: 58px;
+  max-height: 115px;
+
+  padding:
+    11px
+    12px;
+
+  border:
+    1px solid
+    rgba(39, 49, 37, 0.17);
+
+  border-radius: 6px;
+
+  outline: none;
+
+  color: #2d372b;
+  background: #fbf8f0;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.composer textarea:focus {
+  border-color: #607258;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(86, 108, 77, 0.08);
+}
+
+.composer > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  margin-top: 8px;
+}
+
+.composer span {
+  color: #737d70;
+
+  font-size: 10px;
+}
+
+.composer button,
+.chatFooter button,
+.dangerButton,
+.restoreButton {
+  min-height: 36px;
+
+  padding:
+    0
+    13px;
+
+  border-radius: 4px;
+
+  cursor: pointer;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 11px;
+}
+
+.composer button,
+.chatFooter button,
+.restoreButton {
+  border:
+    1px solid
+    #4b5b45;
+
+  color: #f3eee5;
+  background: #4b5b45;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.chatFooter {
+  min-height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding:
+    7px
+    14px;
+
+  border-top:
+    1px solid
+    rgba(39, 49, 37, 0.11);
+
+  background: #e7e2d7;
+}
+
+.footerActions {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+.dangerButton {
+  border:
+    1px solid
+    rgba(131, 73, 57, 0.27);
+
+  color: #795347;
+  background: #f1e4de;
+}
+
+.dangerButton:hover {
+  background: #ead8d0;
+}
+
+.closed {
+  padding: 12px;
+
+  border-top:
+    1px solid
+    rgba(39, 49, 37, 0.11);
+
+  color: #737d70;
+  background: #e9e5da;
+
+  text-align: center;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 12px;
+}
+
+/* =========================================================
+   CLOSED / DELETED VIEW
+========================================================= */
+
+.compactArea {
+  min-height: 0;
+
+  overflow-y: auto;
+
+  padding: 18px;
+
+  color: #283226;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f3efe6,
+      #eeeae0
+    );
+}
+
+.compactCard {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 24px;
+
+  padding:
+    17px
+    19px;
+
+  border:
+    1px solid
+    rgba(39, 49, 37, 0.13);
+
+  border-radius: 7px;
+
+  background: #faf7ef;
+
+  box-shadow:
+    0 8px 24px
+    rgba(32, 42, 30, 0.035);
+}
+
+.compactCard + .compactCard {
+  margin-top: 11px;
+}
+
+.compactCard > div:first-child {
+  display: grid;
+
+  gap: 6px;
+}
+
+.compactCard span {
+  color: #737d70;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.13em;
+}
+
+.compactCard strong {
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.compactCard p {
+  margin: 0;
+
+  color: #6c7669;
+
+  font-size: 12px;
+}
+
+.compactActions {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+.compactActions a,
+.compactActions button {
+  min-height: 37px;
+
+  display: inline-flex;
+  align-items: center;
+
+  padding:
+    0
+    12px;
+
+  border:
+    1px solid
+    rgba(49, 62, 45, 0.17);
+
+  border-radius: 4px;
+
+  color: #455240;
+  background: #efebe2;
+
+  cursor: pointer;
+
+  text-decoration: none;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 11px;
+}
+
+.compactActions a:hover,
+.compactActions button:hover {
+  background: #e7e2d8;
+}
+
+.compactActions .dangerButton {
+  color: #795347;
+
+  border-color:
+    rgba(131, 73, 57, 0.25);
+
+  background: #f1e4de;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1150px) {
+  .workspace {
+    grid-template-columns:
+      260px
+      minmax(0, 1fr);
+  }
+
+  .orderFacts {
+    gap: 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .page {
+    height: auto;
+    min-height: 100vh;
+
+    grid-template-columns: 1fr;
+
+    overflow: visible;
+  }
+
+  .content {
+    height: auto;
+    min-height: 100vh;
+
+    overflow: visible;
+
+    padding:
+      25px
+      18px
+      44px;
+  }
+
+  .workspace {
+    min-height: 760px;
+
+    grid-template-columns: 1fr;
+  }
+
+  .inbox {
+    max-height: 240px;
+
+    border-right: 0;
+
+    border-bottom:
+      1px solid
+      rgba(242, 238, 228, 0.12);
+  }
+
+  .chatHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .customerBar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 620px) {
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .header h1 {
+    font-size: 36px;
+  }
+
+  .tabs {
+    overflow-x: auto;
+  }
+
+  .orderFacts {
+    width: 100%;
+
+    justify-content: space-between;
+  }
+
+  .customerBar > div {
+    align-items: flex-start;
+    flex-direction: column;
+
+    gap: 4px;
+  }
+
+  .paymentBar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .composer > div,
+  .chatFooter,
+  .compactActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .compactCard {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .composer button,
+  .chatFooter button,
+  .compactActions a,
+  .compactActions button {
+    width: 100%;
+
+    justify-content: center;
+  }
+}

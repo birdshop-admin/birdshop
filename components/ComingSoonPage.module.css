@@ -1,0 +1,335 @@
+.hero {
+  position: relative;
+
+  min-height:
+    calc(
+      100vh
+      - var(--header-height)
+      - 220px
+    );
+
+  overflow: hidden;
+
+  display: grid;
+  grid-template-columns:
+    1fr
+    0.7fr;
+
+  align-items: center;
+
+  padding:
+    90px
+    72px;
+
+  color: #f0ece2;
+
+  background-image:
+    url("/landscape1.png");
+
+  background-size: cover;
+  background-position: center;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(5, 11, 7, 0.96),
+      rgba(8, 15, 9, 0.89) 48%,
+      rgba(234, 231, 219, 0.64)
+    );
+}
+
+.glow {
+  position: absolute;
+
+  top: 50%;
+  right: 8%;
+
+  width: 470px;
+  height: 470px;
+
+  transform:
+    translateY(-50%);
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(
+        108,
+        123,
+        92,
+        0.18
+      ),
+      transparent 70%
+    );
+
+  filter:
+    blur(20px);
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+
+  max-width: 720px;
+}
+
+.eyebrow {
+  margin:
+    0
+    0
+    18px;
+
+  color:
+    rgba(
+      240,
+      236,
+      226,
+      0.64
+    );
+
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 0.31em;
+}
+
+.content h1 {
+  margin: 0;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size:
+    clamp(
+      58px,
+      6vw,
+      92px
+    );
+
+  font-weight: 400;
+  line-height: 0.94;
+
+  letter-spacing: -0.055em;
+}
+
+.description {
+  max-width: 580px;
+
+  margin:
+    27px
+    0
+    30px;
+
+  color:
+    rgba(
+      240,
+      236,
+      226,
+      0.8
+    );
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+
+  gap: 12px;
+
+  flex-wrap: wrap;
+}
+
+.actions a {
+  min-height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    0
+    22px;
+
+  border-radius: 5px;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 15px;
+}
+
+.primary {
+  min-width: 190px;
+
+  gap: 24px;
+
+  color: #f0ece2;
+
+  background:
+    #4a5941;
+
+  border:
+    1px solid
+    rgba(
+      224,
+      230,
+      212,
+      0.25
+    );
+}
+
+.primary span {
+  margin-left: auto;
+
+  font-size: 20px;
+}
+
+.secondary {
+  min-width: 180px;
+
+  border:
+    1px solid
+    rgba(
+      240,
+      236,
+      226,
+      0.3
+    );
+
+  background:
+    rgba(
+      5,
+      11,
+      7,
+      0.3
+    );
+}
+
+.status {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  margin-top: 38px;
+}
+
+.status span {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background:
+    #7c8d6d;
+
+  box-shadow:
+    0
+    0
+    15px
+    rgba(
+      124,
+      141,
+      109,
+      0.6
+    );
+}
+
+.status p {
+  margin: 0;
+
+  color:
+    rgba(
+      240,
+      236,
+      226,
+      0.52
+    );
+
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 0.24em;
+}
+
+.monogram {
+  position: relative;
+  z-index: 2;
+
+  justify-self: center;
+
+  color:
+    rgba(
+      22,
+      31,
+      20,
+      0.78
+    );
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size:
+    clamp(
+      120px,
+      14vw,
+      220px
+    );
+
+  line-height: 1;
+
+  letter-spacing: -0.09em;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+
+    padding:
+      70px
+      45px;
+  }
+
+  .monogram {
+    margin-top: 60px;
+  }
+}
+
+@media (max-width: 700px) {
+  .hero {
+    padding:
+      55px
+      22px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions a {
+    width: 100%;
+  }
+
+  .monogram {
+    font-size: 120px;
+  }
+}

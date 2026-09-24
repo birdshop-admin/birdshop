@@ -1,0 +1,688 @@
+/* =========================================================
+   BIRDSHOP
+   SERVICE CATALOG PACKAGE CONTROLS
+
+   Palette:
+   Starter  = soft sage
+   Standard = BirdShop olive
+   Premium  = deep forest
+   Custom   = muted forest-grey
+
+   Everything stays inside the main BirdShop palette.
+========================================================= */
+
+.controls {
+  position: relative;
+  z-index: 5;
+
+  margin-top: 20px;
+  padding-top: 17px;
+
+  border-top:
+    1px solid
+    rgba(45, 56, 41, 0.11);
+}
+
+/* =========================================================
+   SECTION HEADER
+========================================================= */
+
+.heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  margin-bottom: 11px;
+}
+
+.heading > span {
+  color: #63705c;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  letter-spacing: 0.19em;
+}
+
+.heading small {
+  color: #7d8579;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+/* =========================================================
+   SHARED TIER VARIABLES
+========================================================= */
+
+.starter {
+  --tier-accent: #6e7f66;
+  --tier-accent-dark: #596b52;
+
+  --tier-border: #9eae97;
+
+  --tier-surface: #e8ece4;
+  --tier-surface-light: #f0f2ed;
+
+  --tier-text: #4e6048;
+}
+
+.standard {
+  --tier-accent: #506348;
+  --tier-accent-dark: #40543a;
+
+  --tier-border: #809278;
+
+  --tier-surface: #e1e6dd;
+  --tier-surface-light: #ebeee8;
+
+  --tier-text: #3d5038;
+}
+
+.premium {
+  --tier-accent: #314c38;
+  --tier-accent-dark: #253f2d;
+
+  --tier-border: #748a77;
+
+  --tier-surface: #dce5dd;
+  --tier-surface-light: #e8ede8;
+
+  --tier-text: #273f2e;
+}
+
+.custom {
+  --tier-accent: #59675a;
+  --tier-accent-dark: #465447;
+
+  --tier-border: #8f9b90;
+
+  --tier-surface: #e4e8e3;
+  --tier-surface-light: #eef0ed;
+
+  --tier-text: #455245;
+}
+
+/* =========================================================
+   PLAN SELECTORS
+
+   auto-fit fixes Custom Request:
+   1 plan  = full width
+   2 plans = 50 / 50
+   3 plans = thirds
+========================================================= */
+
+.tiers {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(
+        105px,
+        1fr
+      )
+    );
+
+  gap: 7px;
+}
+
+/* =========================================================
+   TIER BUTTON
+========================================================= */
+
+.tierButton {
+  position: relative;
+
+  min-width: 0;
+  min-height: 43px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  padding:
+    0
+    10px;
+
+  border:
+    1px solid
+    var(--tier-border);
+
+  border-radius: 5px;
+
+  color:
+    var(--tier-text);
+
+  background:
+    linear-gradient(
+      180deg,
+      var(--tier-surface-light),
+      var(--tier-surface)
+    );
+
+  cursor: pointer;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+
+  box-shadow:
+    inset
+    0
+    1px
+    0
+    rgba(
+      255,
+      255,
+      255,
+      0.45
+    );
+
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease,
+    color 150ms ease;
+}
+
+.tierButton:hover {
+  transform:
+    translateY(-1px);
+
+  border-color:
+    var(--tier-accent);
+
+  box-shadow:
+    0
+    5px
+    13px
+    rgba(
+      25,
+      34,
+      24,
+      0.06
+    );
+}
+
+/* =========================================================
+   SELECTED TIER
+========================================================= */
+
+.tierButton.active {
+  color: #f2eee4;
+
+  border-color:
+    var(--tier-accent-dark);
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--tier-accent),
+      var(--tier-accent-dark)
+    );
+
+  box-shadow:
+    0
+    6px
+    15px
+    rgba(
+      23,
+      33,
+      23,
+      0.11
+    ),
+    inset
+    0
+    1px
+    0
+    rgba(
+      255,
+      255,
+      255,
+      0.12
+    );
+}
+
+.tierButton svg {
+  width: 12px;
+  height: 12px;
+
+  flex: 0 0 auto;
+}
+
+/* =========================================================
+   LIVE PRICE PREVIEW
+========================================================= */
+
+.pricePreview {
+  position: relative;
+
+  min-height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-top: 9px;
+
+  padding:
+    12px
+    15px
+    12px
+    17px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    var(--tier-border);
+
+  border-radius: 6px;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--tier-surface-light),
+      #f7f4eb 74%
+    );
+
+  box-shadow:
+    inset
+    0
+    1px
+    0
+    rgba(
+      255,
+      255,
+      255,
+      0.5
+    );
+
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+/* accent strip */
+
+.pricePreview::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+  left: 0;
+
+  width: 4px;
+
+  background:
+    var(--tier-accent);
+}
+
+.pricePreview > div {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.pricePreview span {
+  color:
+    var(--tier-accent-dark);
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  letter-spacing: 0.14em;
+
+  text-transform: uppercase;
+}
+
+.pricePreview small {
+  overflow: hidden;
+
+  color: #647063;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 11px;
+  line-height: 1.35;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pricePreview strong {
+  flex: 0 0 auto;
+
+  color:
+    var(--tier-text);
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 21px;
+  font-weight: 400;
+
+  letter-spacing: -0.02em;
+}
+
+/* =========================================================
+   ACTION ROW
+========================================================= */
+
+.actions {
+  display: grid;
+
+  grid-template-columns:
+    minmax(
+      0,
+      1fr
+    )
+    118px;
+
+  gap: 10px;
+
+  margin-top: 10px;
+}
+
+/* =========================================================
+   VIEW PLAN — PRIMARY
+========================================================= */
+
+.viewPlans {
+  min-height: 49px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding:
+    0
+    15px;
+
+  border:
+    1px solid
+    rgba(
+      52,
+      68,
+      46,
+      0.22
+    );
+
+  border-radius: 5px;
+
+  color: #f2eee4;
+
+  background:
+    linear-gradient(
+      90deg,
+      #4d5d44,
+      #415139
+    );
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 13px;
+
+  box-shadow:
+    inset
+    0
+    1px
+    0
+    rgba(
+      255,
+      255,
+      255,
+      0.08
+    );
+
+  transition:
+    transform 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.viewPlans:hover {
+  transform:
+    translateY(-1px);
+
+  background:
+    linear-gradient(
+      90deg,
+      #586a4e,
+      #495b41
+    );
+
+  box-shadow:
+    0
+    7px
+    16px
+    rgba(
+      27,
+      36,
+      25,
+      0.09
+    );
+}
+
+.viewPlans svg {
+  width: 16px;
+  height: 16px;
+
+  margin-left: auto;
+}
+
+/* =========================================================
+   GET STARTED — SECONDARY
+========================================================= */
+
+.getStarted {
+  min-height: 49px;
+
+  display: grid;
+  place-items: center;
+
+  padding:
+    0
+    11px;
+
+  border:
+    1px solid
+    rgba(
+      54,
+      66,
+      50,
+      0.18
+    );
+
+  border-radius: 5px;
+
+  color: #424d40;
+
+  background:
+    rgba(
+      248,
+      245,
+      237,
+      0.68
+    );
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 12px;
+
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.getStarted:hover {
+  transform:
+    translateY(-1px);
+
+  border-color:
+    rgba(
+      74,
+      89,
+      66,
+      0.34
+    );
+
+  background:
+    rgba(
+      227,
+      233,
+      223,
+      0.7
+    );
+}
+
+/* =========================================================
+   CUSTOM SERVICE
+
+   Keeps the one-plan version from feeling empty.
+========================================================= */
+
+.tiers:has(.tierButton:only-child)
+.tierButton {
+  justify-content: flex-start;
+
+  padding-left: 15px;
+}
+
+.tiers:has(.tierButton:only-child)
+.tierButton::after {
+  content:
+    "PERSONALIZED QUOTE";
+
+  margin-left: auto;
+
+  color:
+    currentColor;
+
+  opacity: 0.62;
+
+  font-size: 9px;
+  letter-spacing: 0.12em;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+  .controls {
+    margin-top: 18px;
+
+    padding-top: 16px;
+  }
+
+  .heading {
+    align-items: flex-start;
+    flex-direction: column;
+
+    gap: 5px;
+  }
+
+  .heading > span {
+    font-size: 9px;
+  }
+
+  .heading small {
+    font-size: 10px;
+  }
+
+  .tiers {
+    grid-template-columns: 1fr;
+  }
+
+  .tierButton {
+    min-height: 44px;
+
+    justify-content: space-between;
+
+    padding:
+      0
+      13px;
+
+    font-size: 10px;
+  }
+
+  .pricePreview {
+    min-height: 74px;
+
+    padding:
+      13px
+      14px
+      13px
+      17px;
+  }
+
+  .pricePreview small {
+    max-width: 190px;
+  }
+
+  .pricePreview strong {
+    font-size: 20px;
+  }
+
+  .actions {
+    grid-template-columns: 1fr;
+  }
+
+  .viewPlans,
+  .getStarted {
+    min-height: 49px;
+  }
+
+  .tiers:has(.tierButton:only-child)
+  .tierButton {
+    justify-content: space-between;
+  }
+}

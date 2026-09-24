@@ -1,0 +1,1029 @@
+/* =========================================================
+   BIRDSHOP SERVICE CHAT
+   CONTAINED PREMIUM CHAT LAYOUT
+========================================================= */
+
+.page {
+  height: calc(100vh - 78px);
+  min-height: 650px;
+
+  overflow: hidden;
+
+  padding:
+    30px
+    36px
+    32px;
+
+  color: #20291f;
+
+  background:
+    linear-gradient(
+      rgba(246, 242, 233, 0.98),
+      rgba(241, 237, 226, 0.99)
+    );
+}
+
+.eyebrow {
+  color: #64705f;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.17em;
+}
+
+/* =========================================================
+   ACCESS SCREEN
+========================================================= */
+
+.accessCard {
+  width: min(
+    680px,
+    100%
+  );
+
+  margin:
+    42px
+    auto;
+
+  padding: 44px;
+
+  border:
+    1px solid
+    rgba(43, 56, 40, 0.16);
+
+  border-radius: 9px;
+
+  background: #f8f4eb;
+
+  box-shadow:
+    0 25px 65px
+    rgba(24, 34, 23, 0.08);
+}
+
+.accessCard h1 {
+  margin:
+    14px
+    0
+    16px;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size:
+    clamp(
+      42px,
+      5vw,
+      62px
+    );
+
+  font-weight: 400;
+
+  line-height: 0.98;
+
+  letter-spacing: -0.04em;
+}
+
+.accessCard > p {
+  margin: 0;
+
+  color: #657060;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.accessCard > small {
+  display: block;
+
+  margin-top: 19px;
+
+  color: #798276;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.accessForm {
+  display: grid;
+
+  gap: 17px;
+
+  margin-top: 33px;
+}
+
+.accessForm label {
+  display: grid;
+
+  gap: 8px;
+}
+
+.accessForm label > span {
+  color: #687362;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.14em;
+}
+
+.accessForm input,
+.composer textarea {
+  width: 100%;
+
+  border:
+    1px solid
+    rgba(43, 56, 40, 0.17);
+
+  border-radius: 6px;
+
+  outline: none;
+
+  color: #283226;
+
+  background: #fffdf7;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+}
+
+.accessForm input {
+  min-height: 54px;
+
+  padding:
+    0
+    15px;
+
+  font-size: 15px;
+}
+
+.accessForm input:focus,
+.composer textarea:focus {
+  border-color: #66785e;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(89, 109, 81, 0.08);
+}
+
+.accessForm button,
+.accessCard > button,
+.composer button {
+  min-height: 46px;
+
+  border:
+    1px solid
+    #465840;
+
+  border-radius: 5px;
+
+  color: #f5f0e6;
+
+  background: #465840;
+
+  cursor: pointer;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 14px;
+}
+
+.accessForm button:disabled,
+.composer button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.55;
+}
+
+.error {
+  padding:
+    12px
+    14px;
+
+  border:
+    1px solid
+    rgba(135, 77, 60, 0.22);
+
+  border-radius: 5px;
+
+  color: #774c40;
+
+  background: #f4e7e1;
+
+  font-size: 13px;
+}
+
+.loading {
+  width: min(
+    680px,
+    100%
+  );
+
+  margin:
+    80px
+    auto;
+
+  padding: 52px;
+
+  border:
+    1px solid
+    rgba(43, 56, 40, 0.14);
+
+  border-radius: 8px;
+
+  background: #f7f3ea;
+
+  text-align: center;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 16px;
+}
+
+/* =========================================================
+   WORKSPACE
+========================================================= */
+
+.workspace {
+  width: min(
+    1480px,
+    100%
+  );
+
+  height: 100%;
+  min-height: 0;
+
+  display: grid;
+
+  grid-template-columns:
+    330px
+    minmax(0, 1fr);
+
+  gap: 18px;
+
+  margin:
+    0
+    auto;
+}
+
+/* =========================================================
+   GREEN ORDER SUMMARY
+========================================================= */
+
+.summary {
+  align-self: start;
+
+  min-width: 0;
+
+  padding:
+    28px
+    27px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(243, 238, 229, 0.14);
+
+  border-radius: 12px;
+
+  color: #f4efe6;
+
+  background:
+    radial-gradient(
+      circle at 80% 9%,
+      rgba(135, 164, 118, 0.18),
+      transparent 32%
+    ),
+    linear-gradient(
+      155deg,
+      #0f1e13,
+      #1a2c1e
+    );
+
+  box-shadow:
+    0 18px 42px
+    rgba(10, 19, 11, 0.16);
+}
+
+.summary .eyebrow {
+  color:
+    rgba(
+      244,
+      239,
+      230,
+      0.7
+    );
+}
+
+.summary h1 {
+  margin:
+    13px
+    0
+    7px;
+
+  color: #f5f0e7;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 34px;
+  font-weight: 400;
+
+  line-height: 1;
+
+  letter-spacing: -0.025em;
+
+  overflow-wrap: anywhere;
+}
+
+.packageName {
+  margin: 0;
+
+  color:
+    rgba(
+      244,
+      239,
+      230,
+      0.72
+    );
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 16px;
+}
+
+.summaryFacts {
+  display: grid;
+
+  margin-top: 27px;
+
+  border-top:
+    1px solid
+    rgba(
+      244,
+      239,
+      230,
+      0.14
+    );
+}
+
+.summaryFacts > div {
+  min-height: 61px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  border-bottom:
+    1px solid
+    rgba(
+      244,
+      239,
+      230,
+      0.14
+    );
+}
+
+.summaryFacts span,
+.futurePayment span {
+  color:
+    rgba(
+      244,
+      239,
+      230,
+      0.64
+    );
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.15em;
+}
+
+.summaryFacts strong {
+  max-width: 55%;
+
+  color: #f5f0e7;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 14px;
+  font-weight: 400;
+
+  text-align: right;
+}
+
+/* =========================================================
+   PAYMENT SUMMARY INSIDE GREEN CARD
+========================================================= */
+
+.futurePayment {
+  margin-top: 20px;
+
+  padding:
+    15px
+    16px;
+
+  border:
+    1px solid
+    rgba(
+      244,
+      239,
+      230,
+      0.13
+    );
+
+  border-radius: 7px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.055
+    );
+}
+
+.futurePayment p {
+  margin:
+    8px
+    0
+    0;
+
+  color:
+    rgba(
+      244,
+      239,
+      230,
+      0.74
+    );
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.futurePayment strong {
+  display: block;
+
+  margin-top: 7px;
+
+  color: #f6f0e6;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 24px;
+  font-weight: 400;
+}
+
+/* =========================================================
+   CHAT PANEL
+========================================================= */
+
+.chat {
+  min-width: 0;
+  min-height: 0;
+
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(43, 56, 40, 0.15);
+
+  border-radius: 12px;
+
+  background: #f7f3ea;
+
+  box-shadow:
+    0 16px 38px
+    rgba(31, 40, 29, 0.055);
+}
+
+/* =========================================================
+   CHAT HEADER
+========================================================= */
+
+.chatHeader {
+  flex: 0 0 auto;
+
+  min-height: 76px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 22px;
+
+  padding:
+    0
+    24px;
+
+  border-bottom:
+    1px solid
+    rgba(43, 56, 40, 0.12);
+
+  background:
+    rgba(
+      250,
+      247,
+      239,
+      0.9
+    );
+}
+
+.chatHeader > div {
+  display: grid;
+
+  gap: 5px;
+}
+
+.chatHeader > div span {
+  color: #73806d;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.15em;
+}
+
+.chatHeader strong {
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.online {
+  padding:
+    8px
+    11px;
+
+  border:
+    1px solid
+    rgba(68, 88, 61, 0.17);
+
+  border-radius: 999px;
+
+  color: #52634c;
+
+  background: #e6ece2;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.12em;
+}
+
+/* =========================================================
+   MESSAGE AREA
+
+   This is what scrolls now.
+========================================================= */
+
+.messages {
+  flex: 1 1 auto;
+
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 11px;
+
+  overflow-y: auto;
+
+  padding:
+    21px
+    23px;
+
+  scroll-behavior: smooth;
+
+  overscroll-behavior: contain;
+
+  scrollbar-width: thin;
+}
+
+.messages::-webkit-scrollbar {
+  width: 9px;
+}
+
+.messages::-webkit-scrollbar-track {
+  background:
+    rgba(
+      43,
+      56,
+      40,
+      0.025
+    );
+}
+
+.messages::-webkit-scrollbar-thumb {
+  border:
+    2px solid
+    transparent;
+
+  border-radius: 999px;
+
+  background:
+    rgba(
+      66,
+      82,
+      60,
+      0.22
+    );
+
+  background-clip:
+    padding-box;
+}
+
+/* =========================================================
+   MESSAGE BUBBLES
+========================================================= */
+
+.customerMessage,
+.adminMessage,
+.systemMessage {
+  width: fit-content;
+
+  max-width:
+    min(
+      700px,
+      78%
+    );
+
+  padding:
+    11px
+    14px;
+
+  border-radius: 9px;
+}
+
+.customerMessage {
+  align-self: flex-end;
+
+  color: #f5f0e6;
+
+  border:
+    1px solid
+    rgba(
+      64,
+      82,
+      58,
+      0.1
+    );
+
+  background:
+    linear-gradient(
+      145deg,
+      #53674d,
+      #465b40
+    );
+}
+
+.adminMessage {
+  align-self: flex-start;
+
+  color: #283226;
+
+  border:
+    1px solid
+    rgba(43, 56, 40, 0.13);
+
+  background: #ebe7dc;
+}
+
+.systemMessage {
+  align-self: center;
+
+  max-width: 72%;
+
+  padding:
+    7px
+    10px;
+
+  color: #6e776a;
+
+  background: transparent;
+
+  text-align: center;
+}
+
+.customerMessage > div,
+.adminMessage > div,
+.systemMessage > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+}
+
+.customerMessage strong,
+.adminMessage strong,
+.systemMessage strong {
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.customerMessage span,
+.adminMessage span,
+.systemMessage span {
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+
+  opacity: 0.68;
+}
+
+.customerMessage p,
+.adminMessage p,
+.systemMessage p {
+  margin:
+    7px
+    0
+    0;
+
+  white-space: pre-wrap;
+
+  overflow-wrap: anywhere;
+
+  word-break: break-word;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.empty {
+  margin: auto;
+
+  color: #778173;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 14px;
+}
+
+/* =========================================================
+   COMPOSER
+
+   Always stays at bottom of chat panel.
+========================================================= */
+
+.composer {
+  flex:
+    0
+    0
+    auto;
+
+  padding:
+    12px
+    14px;
+
+  border-top:
+    1px solid
+    rgba(43, 56, 40, 0.12);
+
+  background: #eee9df;
+}
+
+.composer textarea {
+  resize: none;
+
+  min-height: 58px;
+  max-height: 110px;
+
+  padding:
+    11px
+    13px;
+
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.composer > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-top: 8px;
+}
+
+.composer > div > span {
+  color: #7b8477;
+
+  font-size: 10px;
+}
+
+.composer button {
+  min-width: 140px;
+
+  padding:
+    0
+    17px;
+}
+
+.errorText {
+  color: #854f43 !important;
+}
+
+.closed {
+  flex: 0 0 auto;
+
+  padding: 17px;
+
+  border-top:
+    1px solid
+    rgba(43, 56, 40, 0.13);
+
+  color: #737c70;
+
+  background: #eee9df;
+
+  text-align: center;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 13px;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1000px) {
+  .page {
+    height: auto;
+
+    min-height:
+      calc(
+        100vh -
+        78px
+      );
+
+    overflow: visible;
+
+    padding:
+      30px
+      20px
+      60px;
+  }
+
+  .workspace {
+    height: auto;
+
+    grid-template-columns:
+      1fr;
+  }
+
+  .summary {
+    width: 100%;
+
+    align-self: stretch;
+  }
+
+  .chat {
+    min-height: 720px;
+  }
+}
+
+@media (max-width: 620px) {
+  .accessCard {
+    padding:
+      30px
+      22px;
+  }
+
+  .summary {
+    padding:
+      23px
+      21px;
+  }
+
+  .summary h1 {
+    font-size: 30px;
+  }
+
+  .chatHeader {
+    min-height: auto;
+
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    padding:
+      18px
+      20px;
+  }
+
+  .messages {
+    padding:
+      17px
+      16px;
+  }
+
+  .customerMessage,
+  .adminMessage,
+  .systemMessage {
+    max-width: 92%;
+  }
+
+  .customerMessage p,
+  .adminMessage p,
+  .systemMessage p {
+    font-size: 14px;
+  }
+
+  .composer > div {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+  .composer button {
+    width: 100%;
+  }
+}

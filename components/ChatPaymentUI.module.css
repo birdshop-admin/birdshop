@@ -1,0 +1,585 @@
+/* =========================================================
+   BIRDSHOP CHAT PAYMENT UI
+   SHARED ADMIN PAYMENT COMPONENTS
+========================================================= */
+
+.panel {
+  padding: 18px 22px;
+
+  border-bottom: 1px solid rgba(39, 49, 37, 0.12);
+
+  background:
+    linear-gradient(
+      135deg,
+      #ece9df,
+      #f4f0e7
+    );
+}
+
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 26px;
+}
+
+.panelHeader > div {
+  display: grid;
+
+  gap: 5px;
+}
+
+.panelEyebrow,
+.requestEyebrow,
+.fieldLabel {
+  color: #707b6c;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.15em;
+
+  text-transform: uppercase;
+}
+
+.panelTitle {
+  color: #2c372a;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.panelCopy {
+  max-width: 480px;
+
+  margin: 0;
+
+  color: #727c6e;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 11px;
+  line-height: 1.5;
+
+  text-align: right;
+}
+
+/* =========================================================
+   CREATE PAYMENT FORM
+========================================================= */
+
+.form {
+  display: grid;
+
+  gap: 12px;
+
+  margin-top: 16px;
+
+  padding: 14px;
+
+  border:
+    1px solid rgba(46, 58, 42, 0.13);
+
+  border-radius: 6px;
+
+  background:
+    rgba(255, 253, 247, 0.62);
+}
+
+.fields {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    180px;
+
+  gap: 12px;
+}
+
+.field {
+  display: grid;
+
+  gap: 7px;
+}
+
+.input,
+.textarea {
+  width: 100%;
+
+  border:
+    1px solid rgba(43, 56, 40, 0.17);
+
+  border-radius: 5px;
+
+  outline: none;
+
+  color: #283226;
+
+  background: #fffdf8;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 13px;
+}
+
+.input {
+  min-height: 43px;
+
+  padding:
+    0
+    12px;
+}
+
+.textarea {
+  resize: vertical;
+
+  min-height: 65px;
+
+  padding:
+    11px
+    12px;
+
+  line-height: 1.45;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: #65775e;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(88, 108, 80, 0.08);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
+.actions > span {
+  color: #778173;
+
+  font-size: 9px;
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.button,
+.secondaryButton {
+  min-height: 42px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    0
+    15px;
+
+  border-radius: 4px;
+
+  cursor: pointer;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 12px;
+
+  transition:
+    transform 150ms ease,
+    background 150ms ease,
+    border-color 150ms ease;
+}
+
+.button {
+  border:
+    1px solid #485942;
+
+  color: #f5f0e6;
+
+  background: #485942;
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  background: #576851;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.55;
+}
+
+.secondaryButton {
+  border:
+    1px solid rgba(100, 79, 66, 0.23);
+
+  color: #745c50;
+
+  background: #f4ebe5;
+}
+
+.secondaryButton:hover {
+  background: #eaded7;
+}
+
+/* =========================================================
+   PAYMENT REQUEST CARD
+========================================================= */
+
+.request {
+  width: min(620px, 92%);
+
+  align-self: flex-start;
+
+  margin: 5px 0;
+
+  padding: 18px;
+
+  border:
+    1px solid rgba(55, 71, 50, 0.16);
+
+  border-radius: 8px;
+
+  color: #293327;
+
+  background:
+    linear-gradient(
+      145deg,
+      #f8f5ed,
+      #ece8dc
+    );
+
+  box-shadow:
+    0 13px 32px
+    rgba(30, 41, 28, 0.07);
+}
+
+.request[data-status="paid"] {
+  border-color:
+    rgba(78, 107, 69, 0.25);
+
+  background:
+    linear-gradient(
+      145deg,
+      #f2f5ef,
+      #e4eadf
+    );
+}
+
+.request[data-status="cancelled"],
+.request[data-status="expired"] {
+  opacity: 0.72;
+}
+
+.requestTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 18px;
+}
+
+.requestTop > div {
+  display: grid;
+
+  gap: 5px;
+}
+
+.requestTitle {
+  color: #2b3629;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 17px;
+  font-weight: 400;
+}
+
+.requestStatus {
+  flex: 0 0 auto;
+
+  padding:
+    6px
+    8px;
+
+  border:
+    1px solid rgba(67, 85, 61, 0.16);
+
+  border-radius: 999px;
+
+  color: #596653;
+
+  background:
+    rgba(83, 103, 76, 0.08);
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 7px;
+  font-weight: 800;
+
+  letter-spacing: 0.11em;
+
+  text-transform: uppercase;
+}
+
+.requestDescription {
+  margin:
+    13px
+    0
+    0;
+
+  color: #687365;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.requestAmount {
+  display: block;
+
+  margin-top: 17px;
+
+  color: #293327;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 35px;
+  font-weight: 400;
+
+  letter-spacing: -0.035em;
+}
+
+.requestFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-top: 17px;
+
+  padding-top: 13px;
+
+  border-top:
+    1px solid rgba(43, 56, 40, 0.12);
+}
+
+.requestFooter > span {
+  color: #798274;
+
+  font-size: 9px;
+}
+
+.requestFooter > strong {
+  color: #53664d;
+
+  font-size: 9px;
+
+  letter-spacing: 0.09em;
+}
+
+.safeNote {
+  display: block;
+
+  margin-top: 10px;
+
+  color: #838b80;
+
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.paidLabel {
+  color: #4d6647;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   PAID STATE
+========================================================= */
+
+.paidState {
+  display: flex;
+  align-items: center;
+
+  gap: 13px;
+
+  margin-top: 15px;
+
+  padding:
+    13px
+    15px;
+
+  border:
+    1px solid rgba(74, 105, 66, 0.17);
+
+  border-radius: 6px;
+
+  background: #e6ece2;
+}
+
+.paidState > span {
+  width: 31px;
+  height: 31px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: #f5f1e8;
+
+  background: #53684c;
+
+  font-size: 15px;
+}
+
+.paidState > div {
+  display: grid;
+
+  gap: 3px;
+}
+
+.paidState strong {
+  color: #33422f;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.paidState p {
+  margin: 0;
+
+  color: #6c7867;
+
+  font-size: 10px;
+}
+
+/* =========================================================
+   RETURN NOTICE
+========================================================= */
+
+.notice {
+  margin:
+    14px
+    18px
+    0;
+
+  padding:
+    11px
+    13px;
+
+  border-radius: 5px;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.notice[data-tone="success"] {
+  border:
+    1px solid rgba(75, 106, 66, 0.18);
+
+  color: #486041;
+
+  background: #e7ede3;
+}
+
+.notice[data-tone="neutral"] {
+  border:
+    1px solid rgba(88, 94, 82, 0.15);
+
+  color: #697266;
+
+  background: #ece9e0;
+}
+
+@media (max-width: 700px) {
+  .panelHeader,
+  .requestTop,
+  .requestFooter,
+  .actions {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .panelCopy {
+    max-width: none;
+
+    text-align: left;
+  }
+
+  .fields {
+    grid-template-columns: 1fr;
+  }
+
+  .request {
+    width: 100%;
+  }
+
+  .button,
+  .secondaryButton {
+    width: 100%;
+  }
+}

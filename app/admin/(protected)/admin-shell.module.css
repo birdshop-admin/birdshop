@@ -1,0 +1,40 @@
+.shell {
+  --admin-sidebar-width: 264px;
+
+  --admin-bg: #0b130d;
+  --admin-bg-elevated: #111d13;
+  --admin-bg-soft: #162318;
+
+  --admin-panel: #f2eee4;
+  --admin-panel-soft: #e9e4d8;
+  --admin-panel-bright: #faf7ef;
+
+  --admin-ink: #253024;
+  --admin-ink-soft: #5f695b;
+  --admin-ink-muted: #7a8276;
+
+  --admin-text: #f2eee4;
+  --admin-text-soft: rgba(242, 238, 228, 0.72);
+  --admin-text-muted: rgba(242, 238, 228, 0.54);
+
+  --admin-line-dark: rgba(242, 238, 228, 0.13);
+  --admin-line-light: rgba(42, 54, 39, 0.13);
+
+  --admin-accent: #4f6047;
+  --admin-accent-hover: #607158;
+  --admin-accent-soft: #dfe6da;
+
+  --admin-success: #4f6949;
+  --admin-warning: #7a6745;
+  --admin-danger: #815148;
+
+  min-height: 100vh;
+  color: var(--admin-text);
+  background: var(--admin-bg);
+}
+
+@media (max-width: 820px) {
+  .shell {
+    --admin-sidebar-width: 1fr;
+  }
+}

@@ -11,10 +11,6 @@ import {
 } from "resend";
 
 import {
-  createAdminClient,
-} from "@/lib/supabase/admin";
-
-import {
   conversationCreatedAdminEmail,
   conversationCreatedCustomerEmail,
   type ConversationType,
@@ -27,24 +23,15 @@ export const runtime =
    TYPES
 ========================================================= */
 
-type SupabaseWebhookPayload = {
-  type?: string;
+type ConversationRecord = {
+  id:
+    string;
 
-  table?: string;
+  public_token:
+    string;
 
-  schema?: string;
-
-  record?: {
-    id?: string;
-  } | null;
-};
-
-type Conversation = {
-  id: string;
-
-  public_token: string;
-
-  reference: string;
+  reference:
+    string;
 
   conversation_type:
     ConversationType;
@@ -94,13 +81,32 @@ type Conversation = {
     | null;
 };
 
+type SupabaseWebhookPayload = {
+  type?:
+    string;
+
+  table?:
+    string;
+
+  schema?:
+    string;
+
+  record?:
+    ConversationRecord | null;
+
+  old_record?:
+    unknown;
+};
+
 /* =========================================================
    HELPERS
 ========================================================= */
 
 function safeSecretEqual(
-  left: string,
-  right: string
+  left:
+    string,
+  right:
+    string
 ) {
   const leftBuffer =
     Buffer.from(
@@ -126,7 +132,8 @@ function safeSecretEqual(
 }
 
 function normalizeSiteUrl(
-  value: string
+  value:
+    string
 ) {
   return value
     .trim()
@@ -152,7 +159,8 @@ function isEmail(
 }
 
 function normalizeConversationType(
-  value: string
+  value:
+    string
 ):
   ConversationType {
 
@@ -173,7 +181,8 @@ function normalizeConversationType(
 ========================================================= */
 
 export async function POST(
-  request: Request
+  request:
+    Request
 ) {
   /* =======================================================
      ENVIRONMENT
@@ -207,7 +216,7 @@ export async function POST(
     !siteUrlRaw
   ) {
     console.error(
-      "BirdShop conversation webhook is missing environment variables."
+      "BirdShop conversation webhook is missing required environment variables."
     );
 
     return NextResponse.json(
@@ -257,7 +266,7 @@ export async function POST(
   }
 
   /* =======================================================
-     BODY
+     READ WEBHOOK
   ======================================================= */
 
   let payload:
@@ -265,7 +274,10 @@ export async function POST(
 
   try {
     payload =
-      await request.json();
+      (
+        await request.json()
+      ) as
+        SupabaseWebhookPayload;
   } catch {
     return NextResponse.json(
       {
@@ -283,7 +295,7 @@ export async function POST(
   }
 
   /* =======================================================
-     ONLY NEW CONVERSATIONS
+     ONLY INSERTS FROM SERVICE_CONVERSATIONS
   ======================================================= */
 
   if (
@@ -303,21 +315,59 @@ export async function POST(
     });
   }
 
-  const conversationId =
-    String(
-      payload.record
-        ?.id ??
-      ""
-    ).trim();
+  /* =======================================================
+     USE THE INSERTED ROW DIRECTLY
 
-  if (!conversationId) {
+     Supabase Database Webhooks already include the new
+     table row in payload.record.
+
+     No second Supabase API request is needed.
+  ======================================================= */
+
+  const conversation =
+    payload.record;
+
+  if (
+    !conversation ||
+    !conversation.id ||
+    !conversation.reference ||
+    !conversation.public_token
+  ) {
+    console.error(
+      "BirdShop webhook received an incomplete conversation record.",
+      {
+        hasRecord:
+          Boolean(
+            conversation
+          ),
+
+        hasId:
+          Boolean(
+            conversation
+              ?.id
+          ),
+
+        hasReference:
+          Boolean(
+            conversation
+              ?.reference
+          ),
+
+        hasToken:
+          Boolean(
+            conversation
+              ?.public_token
+          ),
+      }
+    );
+
     return NextResponse.json(
       {
         ok:
           false,
 
         error:
-          "Conversation ID missing.",
+          "Conversation record is incomplete.",
       },
       {
         status:
@@ -325,91 +375,6 @@ export async function POST(
       }
     );
   }
-
-  /* =======================================================
-     LOAD CONVERSATION
-  ======================================================= */
-
-  const supabase =
-    createAdminClient();
-
-  const {
-    data,
-    error,
-  } =
-    await supabase
-      .from(
-        "service_conversations"
-      )
-      .select(
-        `
-        id,
-        public_token,
-        reference,
-        conversation_type,
-        customer_name,
-        customer_email,
-        customer_contact,
-        subject,
-        request_message,
-        service_name,
-        package_name,
-        product_name,
-        product_platform,
-        product_region,
-        deleted_at
-        `
-      )
-      .eq(
-        "id",
-        conversationId
-      )
-      .maybeSingle();
-
-  if (error) {
-    console.error(
-      "Unable to load BirdShop conversation.",
-      {
-        conversationId,
-        error:
-          error.message,
-      }
-    );
-
-    return NextResponse.json(
-      {
-        ok:
-          false,
-
-        error:
-          "Unable to load conversation.",
-      },
-      {
-        status:
-          500,
-      }
-    );
-  }
-
-  if (!data) {
-    return NextResponse.json(
-      {
-        ok:
-          false,
-
-        error:
-          "Conversation not found.",
-      },
-      {
-        status:
-          404,
-      }
-    );
-  }
-
-  const conversation =
-    data as unknown as
-      Conversation;
 
   if (
     conversation.deleted_at
@@ -432,7 +397,7 @@ export async function POST(
       siteUrlRaw
     );
 
-  const type =
+  const conversationType =
     normalizeConversationType(
       conversation.conversation_type
     );
@@ -447,21 +412,20 @@ export async function POST(
 
   const adminUrl =
     `${siteUrl}/admin/chat?view=active&type=${encodeURIComponent(
-      type
+      conversationType
     )}&conversation=${encodeURIComponent(
       conversation.id
     )}`;
 
   /* =======================================================
-     TEMPLATE DATA
+     EMAIL DATA
   ======================================================= */
 
   const emailData = {
     reference:
       conversation.reference,
 
-    conversationType:
-      type,
+    conversationType,
 
     customerName:
       conversation.customer_name,
@@ -510,6 +474,10 @@ export async function POST(
       adminUrl,
     });
 
+  /* =======================================================
+     RESEND
+  ======================================================= */
+
   const resend =
     new Resend(
       resendKey
@@ -539,10 +507,9 @@ export async function POST(
           from:
             emailFrom,
 
-          to:
-            [
-              conversation.customer_email!,
-            ],
+          to: [
+            conversation.customer_email!,
+          ],
 
           subject:
             customerTemplate.subject,
@@ -565,7 +532,8 @@ export async function POST(
       console.error(
         "BirdShop customer email failed.",
         {
-          conversationId,
+          conversationId:
+            conversation.id,
 
           error:
             customerError.message,
@@ -612,10 +580,9 @@ export async function POST(
         from:
           emailFrom,
 
-        to:
-          [
-            adminEmail,
-          ],
+        to: [
+          adminEmail,
+        ],
 
         subject:
           adminTemplate.subject,
@@ -638,7 +605,8 @@ export async function POST(
     console.error(
       "BirdShop admin email failed.",
       {
-        conversationId,
+        conversationId:
+          conversation.id,
 
         error:
           adminSendError.message,

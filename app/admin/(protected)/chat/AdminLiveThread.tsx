@@ -61,7 +61,9 @@ export type AdminLivePaymentRequest = {
 
   conversation_id: string;
 
-  order_id: string;
+  order_id:
+  | string
+  | null;
 
   amount:
     | number

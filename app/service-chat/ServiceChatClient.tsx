@@ -20,17 +20,17 @@ import {
   unlockChatSound,
 } from "@/lib/chat-sound";
 
-import {
-  saveServiceChatToken,
-  SERVICE_CHAT_LIVE_EVENT,
-} from "@/lib/service-chat-session";
-
 import paymentStyles from "./ServiceChatPaymentUI.module.css";
 import styles from "./service-chat.module.css";
 
 /* =========================================================
    TYPES
 ========================================================= */
+
+type ConversationType =
+  | "service"
+  | "product"
+  | "general";
 
 type ChatMessage = {
   id: string;
@@ -93,6 +93,30 @@ type ChatData = {
 
   reference: string;
 
+  conversation_type:
+    ConversationType;
+
+  workflow_status:
+    string;
+
+  conversation_status:
+    string;
+
+  subject:
+    | string
+    | null;
+
+  customer_name:
+    string;
+
+  customer_email:
+    | string
+    | null;
+
+  customer_contact:
+    | string
+    | null;
+
   service_name:
     | string
     | null;
@@ -101,20 +125,36 @@ type ChatData = {
     | string
     | null;
 
+  product_name:
+    | string
+    | null;
+
+  product_platform:
+    | string
+    | null;
+
+  product_region:
+    | string
+    | null;
+
+  order_id:
+    | string
+    | null;
+
+  order_reference:
+    | string
+    | null;
+
   total:
     | number
     | string;
 
-  payment_status: string;
+  payment_status:
+    string;
 
   service_status:
     | string
     | null;
-
-  customer_name: string;
-
-  conversation_status:
-    string;
 
   messages:
     ChatMessage[];
@@ -138,7 +178,8 @@ function money(
   ).toLocaleString(
     "en-US",
     {
-      style: "currency",
+      style:
+        "currency",
 
       currency:
         currency.toUpperCase(),
@@ -150,6 +191,7 @@ function statusLabel(
   value:
     | string
     | null
+    | undefined
 ) {
   return (
     value ??
@@ -174,11 +216,14 @@ function formatMessageTime(
   return new Intl.DateTimeFormat(
     "en-US",
     {
-      month: "short",
+      month:
+        "short",
 
-      day: "numeric",
+      day:
+        "numeric",
 
-      hour: "numeric",
+      hour:
+        "numeric",
 
       minute:
         "2-digit",
@@ -202,6 +247,88 @@ function paymentRequestIdFromMessage(
     "string"
     ? value
     : null;
+}
+
+function conversationTypeLabel(
+  type:
+    ConversationType
+) {
+  switch (
+    type
+  ) {
+    case "product":
+      return "PRODUCT SUPPORT";
+
+    case "general":
+      return "GENERAL SUPPORT";
+
+    default:
+      return "SERVICE";
+  }
+}
+
+function conversationTitle(
+  chat:
+    ChatData
+) {
+  switch (
+    chat.conversation_type
+  ) {
+    case "product":
+      return (
+        chat.product_name ??
+        chat.subject ??
+        "Product Support"
+      );
+
+    case "general":
+      return (
+        chat.subject ??
+        "General Support"
+      );
+
+    default:
+      return (
+        chat.service_name ??
+        chat.subject ??
+        "Custom Service Request"
+      );
+  }
+}
+
+function conversationSubtitle(
+  chat:
+    ChatData
+) {
+  switch (
+    chat.conversation_type
+  ) {
+    case "product": {
+      const details =
+        [
+          chat.product_platform,
+          chat.product_region,
+        ].filter(
+          Boolean
+        );
+
+      return (
+        details.join(
+          " · "
+        ) ||
+        "Product Help"
+      );
+    }
+
+    case "general":
+      return "BirdShop Support";
+
+    default:
+      return (
+        chat.package_name ??
+        "Custom Quote"
+      );
+  }
 }
 
 /* =========================================================
@@ -228,37 +355,48 @@ export default function ServiceChatClient() {
   const [
     reference,
     setReference,
-  ] = useState("");
+  ] =
+    useState("");
 
   const [
     contact,
     setContact,
-  ] = useState("");
+  ] =
+    useState("");
 
   const [
     chat,
     setChat,
   ] =
-    useState<ChatData | null>(
+    useState<
+      ChatData | null
+    >(
       null
     );
 
   const [
     message,
     setMessage,
-  ] = useState("");
+  ] =
+    useState("");
 
   const [
     loading,
     setLoading,
-  ] = useState(
-    Boolean(token)
-  );
+  ] =
+    useState(
+      Boolean(
+        token
+      )
+    );
 
   const [
     submitting,
     setSubmitting,
-  ] = useState(false);
+  ] =
+    useState(
+      false
+    );
 
   const [
     checkoutId,
@@ -266,41 +404,43 @@ export default function ServiceChatClient() {
   ] =
     useState<
       string | null
-    >(null);
+    >(
+      null
+    );
 
   const [
     error,
     setError,
-  ] = useState("");
+  ] =
+    useState("");
 
   /* =======================================================
      REFS
   ======================================================= */
 
   const messagesRef =
-    useRef<HTMLDivElement | null>(
+    useRef<
+      HTMLDivElement | null
+    >(
       null
     );
 
   const lastMessageIdRef =
     useRef<
       string | null
-    >(null);
-
-  /*
-   * Whether the chat should continue following new
-   * messages.
-   */
+    >(
+      null
+    );
 
   const shouldFollowRef =
-    useRef(true);
-
-  /*
-   * Prevents first render from using smooth animation.
-   */
+    useRef(
+      true
+    );
 
   const initializedScrollRef =
-    useRef(false);
+    useRef(
+      false
+    );
 
   /* =======================================================
      SOUND
@@ -316,7 +456,8 @@ export default function ServiceChatClient() {
       "pointerdown",
       unlock,
       {
-        once: true,
+        once:
+          true,
       }
     );
 
@@ -324,7 +465,8 @@ export default function ServiceChatClient() {
       "keydown",
       unlock,
       {
-        once: true,
+        once:
+          true,
       }
     );
 
@@ -342,7 +484,7 @@ export default function ServiceChatClient() {
   }, []);
 
   /* =======================================================
-     RESET WHEN OPENING A DIFFERENT CHAT
+     RESET CHAT
   ======================================================= */
 
   useEffect(() => {
@@ -359,39 +501,24 @@ export default function ServiceChatClient() {
   ]);
 
   /* =======================================================
-     REMEMBER PRIVATE SERVICE CHAT
-
-     This lets the global public-site notifier stay attached
-     to this customer's private conversation while they
-     browse the rest of BirdShop in the same tab.
-  ======================================================= */
-
-  useEffect(() => {
-    if (!token) {
-      return;
-    }
-
-    saveServiceChatToken(
-      token
-    );
-  }, [
-    token,
-  ]);
-
-  /* =======================================================
-     LOAD CHAT
+     LOAD
   ======================================================= */
 
   const loadChat =
     useCallback(
       async (
-        quiet = false
+        quiet =
+          false
       ) => {
-        if (!token) {
+        if (
+          !token
+        ) {
           return;
         }
 
-        if (!quiet) {
+        if (
+          !quiet
+        ) {
           setLoading(
             true
           );
@@ -410,19 +537,21 @@ export default function ServiceChatClient() {
             );
 
           const result =
-            await response.json();
+            await response
+              .json();
 
           if (
             !response.ok
           ) {
             throw new Error(
               result.error ??
-                "Unable to load chat."
+                "Unable to load conversation."
             );
           }
 
           const next =
-            result as ChatData;
+            result as
+              ChatData;
 
           const latest =
             next.messages.length >
@@ -432,12 +561,6 @@ export default function ServiceChatClient() {
                     1
                 ]
               : null;
-
-          /*
-           * Sound only for new incoming BirdShop/system
-           * messages. Never chime just because the page
-           * initially opened.
-           */
 
           if (
             latest &&
@@ -454,7 +577,9 @@ export default function ServiceChatClient() {
             playChatChime();
           }
 
-          if (latest) {
+          if (
+            latest
+          ) {
             lastMessageIdRef.current =
               latest.id;
           }
@@ -463,7 +588,9 @@ export default function ServiceChatClient() {
             next
           );
 
-          setError("");
+          setError(
+            ""
+          );
         } catch (
           problem
         ) {
@@ -471,10 +598,12 @@ export default function ServiceChatClient() {
             problem instanceof
               Error
               ? problem.message
-              : "Unable to load chat."
+              : "Unable to load conversation."
           );
         } finally {
-          if (!quiet) {
+          if (
+            !quiet
+          ) {
             setLoading(
               false
             );
@@ -487,54 +616,20 @@ export default function ServiceChatClient() {
     );
 
   /* =======================================================
-     INSTANT ADMIN -> CUSTOMER UPDATE
-
-     PublicServiceChatNotifier receives the Realtime
-     Broadcast and fires SERVICE_CHAT_LIVE_EVENT while the
-     customer is looking at this page.
-
-     We immediately fetch the protected conversation instead
-     of waiting for the 3-second safety poll.
+     POLLING
   ======================================================= */
 
   useEffect(() => {
-    if (!token) {
-      return;
-    }
-
-    function handleLiveUpdate() {
-      void loadChat(
-        true
+    if (
+      !token
+    ) {
+      setChat(
+        null
       );
-    }
 
-    window.addEventListener(
-      SERVICE_CHAT_LIVE_EVENT,
-      handleLiveUpdate
-    );
-
-    return () => {
-      window.removeEventListener(
-        SERVICE_CHAT_LIVE_EVENT,
-        handleLiveUpdate
+      setLoading(
+        false
       );
-    };
-  }, [
-    token,
-    loadChat,
-  ]);
-
-  /* =======================================================
-     POLLING FALLBACK
-
-     This is now only a backup if Realtime is interrupted.
-  ======================================================= */
-
-  useEffect(() => {
-    if (!token) {
-      setChat(null);
-
-      setLoading(false);
 
       return;
     }
@@ -569,7 +664,9 @@ export default function ServiceChatClient() {
     const element =
       messagesRef.current;
 
-    if (!element) {
+    if (
+      !element
+    ) {
       return;
     }
 
@@ -578,13 +675,6 @@ export default function ServiceChatClient() {
       element.scrollTop -
       element.clientHeight;
 
-    /*
-     * If the customer is within 100px of the bottom,
-     * keep following.
-     *
-     * If they deliberately scroll higher, stop.
-     */
-
     shouldFollowRef.current =
       distanceFromBottom <=
       100;
@@ -592,21 +682,14 @@ export default function ServiceChatClient() {
 
   /* =======================================================
      AUTO SCROLL
-
-     useLayoutEffect is deliberate here.
-
-     It runs after React places the new messages into the
-     DOM, but before the browser paints the frame.
-
-     This prevents the page from loading at the top and then
-     jumping incorrectly.
   ======================================================= */
 
   const latestMessageId =
     chat?.messages[
       chat.messages.length -
         1
-    ]?.id ?? "";
+    ]?.id ??
+    "";
 
   useLayoutEffect(() => {
     const element =
@@ -618,14 +701,6 @@ export default function ServiceChatClient() {
     ) {
       return;
     }
-
-    /*
-     * Payment cards can change the final content height
-     * slightly after React commits.
-     *
-     * Two animation frames gives the browser enough time
-     * to finish calculating the full message area.
-     */
 
     const firstFrame =
       window.requestAnimationFrame(
@@ -653,11 +728,6 @@ export default function ServiceChatClient() {
                       "smooth",
                   });
                 } else {
-                  /*
-                   * Initial opening should land at the
-                   * bottom instantly.
-                   */
-
                   current.scrollTop =
                     current.scrollHeight;
 
@@ -685,7 +755,7 @@ export default function ServiceChatClient() {
   ]);
 
   /* =======================================================
-     OPEN CHAT
+     RECOVER / OPEN CHAT
   ======================================================= */
 
   async function handleOpenChat(
@@ -694,9 +764,13 @@ export default function ServiceChatClient() {
   ) {
     event.preventDefault();
 
-    setSubmitting(true);
+    setSubmitting(
+      true
+    );
 
-    setError("");
+    setError(
+      ""
+    );
 
     try {
       const response =
@@ -720,12 +794,15 @@ export default function ServiceChatClient() {
         );
 
       const result =
-        await response.json();
+        await response
+          .json();
 
-      if (!response.ok) {
+      if (
+        !response.ok
+      ) {
         throw new Error(
           result.error ??
-            "Unable to open chat."
+            "Unable to open conversation."
         );
       }
 
@@ -741,10 +818,12 @@ export default function ServiceChatClient() {
         problem instanceof
           Error
           ? problem.message
-          : "Unable to open chat."
+          : "Unable to open conversation."
       );
     } finally {
-      setSubmitting(false);
+      setSubmitting(
+        false
+      );
     }
   }
 
@@ -768,17 +847,16 @@ export default function ServiceChatClient() {
       return;
     }
 
-    /*
-     * Sending a message means the customer wants to return
-     * to the newest portion of the conversation.
-     */
-
     shouldFollowRef.current =
       true;
 
-    setSubmitting(true);
+    setSubmitting(
+      true
+    );
 
-    setError("");
+    setError(
+      ""
+    );
 
     try {
       const response =
@@ -804,9 +882,12 @@ export default function ServiceChatClient() {
         );
 
       const result =
-        await response.json();
+        await response
+          .json();
 
-      if (!response.ok) {
+      if (
+        !response.ok
+      ) {
         throw new Error(
           result.error ??
             "Unable to send message."
@@ -814,7 +895,8 @@ export default function ServiceChatClient() {
       }
 
       const next =
-        result as ChatData;
+        result as
+          ChatData;
 
       const latest =
         next.messages.length >
@@ -825,14 +907,20 @@ export default function ServiceChatClient() {
             ]
           : null;
 
-      if (latest) {
+      if (
+        latest
+      ) {
         lastMessageIdRef.current =
           latest.id;
       }
 
-      setChat(next);
+      setChat(
+        next
+      );
 
-      setMessage("");
+      setMessage(
+        ""
+      );
     } catch (
       problem
     ) {
@@ -843,7 +931,9 @@ export default function ServiceChatClient() {
           : "Unable to send message."
       );
     } finally {
-      setSubmitting(false);
+      setSubmitting(
+        false
+      );
     }
   }
 
@@ -892,7 +982,9 @@ export default function ServiceChatClient() {
   ) {
     if (
       !token ||
-      checkoutId
+      checkoutId ||
+      chat?.conversation_type !==
+        "service"
     ) {
       return;
     }
@@ -901,7 +993,9 @@ export default function ServiceChatClient() {
       paymentRequestId
     );
 
-    setError("");
+    setError(
+      ""
+    );
 
     try {
       const response =
@@ -926,7 +1020,8 @@ export default function ServiceChatClient() {
         );
 
       const result =
-        await response.json();
+        await response
+          .json();
 
       if (
         !response.ok ||
@@ -951,15 +1046,19 @@ export default function ServiceChatClient() {
           : "Unable to open secure checkout."
       );
 
-      setCheckoutId(null);
+      setCheckoutId(
+        null
+      );
     }
   }
 
   /* =======================================================
-     ACCESS
+     ACCESS / RECOVERY
   ======================================================= */
 
-  if (!token) {
+  if (
+    !token
+  ) {
     return (
       <section
         className={
@@ -976,15 +1075,17 @@ export default function ServiceChatClient() {
               styles.eyebrow
             }
           >
-            BIRDSHOP / SERVICE CHAT
+            BIRDSHOP / PRIVATE CHAT
           </span>
 
           <h1>
-            Continue your service here.
+            Return to your conversation.
           </h1>
 
           <p>
-            Enter the service reference and the exact contact information used when the request was submitted.
+            Enter your BirdShop reference and the exact email
+            or contact information used when the conversation
+            was created.
           </p>
 
           <form
@@ -997,7 +1098,7 @@ export default function ServiceChatClient() {
           >
             <label>
               <span>
-                SERVICE REFERENCE
+                BIRDSHOP REFERENCE
               </span>
 
               <input
@@ -1034,7 +1135,7 @@ export default function ServiceChatClient() {
                       .value
                   )
                 }
-                placeholder="The contact used on your request"
+                placeholder="The email or contact used on your request"
                 required
               />
             </label>
@@ -1059,12 +1160,13 @@ export default function ServiceChatClient() {
             >
               {submitting
                 ? "Opening..."
-                : "Open Service Chat"}
+                : "Open Private Chat"}
             </button>
           </form>
 
           <small>
-            Once service checkout is fully connected, BirdShop can bring customers directly into their private service conversation.
+            This recovery page works for service requests,
+            product support, and general BirdShop support.
           </small>
         </div>
       </section>
@@ -1100,7 +1202,9 @@ export default function ServiceChatClient() {
      ERROR
   ======================================================= */
 
-  if (!chat) {
+  if (
+    !chat
+  ) {
     return (
       <section
         className={
@@ -1117,7 +1221,7 @@ export default function ServiceChatClient() {
               styles.eyebrow
             }
           >
-            SERVICE CHAT
+            PRIVATE CHAT
           </span>
 
           <h1>
@@ -1126,7 +1230,7 @@ export default function ServiceChatClient() {
 
           <p>
             {error ||
-              "The service conversation could not be opened."}
+              "The BirdShop conversation could not be opened."}
           </p>
 
           <button
@@ -1137,7 +1241,7 @@ export default function ServiceChatClient() {
               )
             }
           >
-            Return to Service Chat
+            Return to Private Chat
           </button>
         </div>
       </section>
@@ -1145,8 +1249,12 @@ export default function ServiceChatClient() {
   }
 
   /* =======================================================
-     PAYMENTS
+     PAYMENT STATE
   ======================================================= */
+
+  const isService =
+    chat.conversation_type ===
+    "service";
 
   const paymentMap =
     new Map(
@@ -1179,8 +1287,18 @@ export default function ServiceChatClient() {
         ]
       : null;
 
+  const title =
+    conversationTitle(
+      chat
+    );
+
+  const subtitle =
+    conversationSubtitle(
+      chat
+    );
+
   /* =======================================================
-     MAIN CHAT
+     MAIN
   ======================================================= */
 
   return (
@@ -1195,7 +1313,7 @@ export default function ServiceChatClient() {
         }
       >
         {/* ===============================================
-            GREEN ORDER CARD
+            CONVERSATION SUMMARY
         =============================================== */}
 
         <aside
@@ -1214,8 +1332,9 @@ export default function ServiceChatClient() {
           </span>
 
           <h1>
-            {chat.service_name ??
-              "BirdShop Service"}
+            {
+              title
+            }
           </h1>
 
           <p
@@ -1223,8 +1342,9 @@ export default function ServiceChatClient() {
               styles.packageName
             }
           >
-            {chat.package_name ??
-              "Custom Service"}
+            {
+              subtitle
+            }
           </p>
 
           <div
@@ -1234,81 +1354,104 @@ export default function ServiceChatClient() {
           >
             <div>
               <span>
-                TOTAL
+                TYPE
               </span>
 
               <strong>
-                {money(
-                  chat.total
+                {conversationTypeLabel(
+                  chat.conversation_type
                 )}
               </strong>
             </div>
 
             <div>
+              <span>
+                STATUS
+              </span>
+
+              <strong>
+                {statusLabel(
+                  chat.workflow_status
+                )}
+              </strong>
+            </div>
+
+            {isService && (
+              <div>
+                <span>
+                  ORDER
+                </span>
+
+                <strong>
+                  {chat.order_id
+                    ? "Created"
+                    : "Not Created"}
+                </strong>
+              </div>
+            )}
+          </div>
+
+          {/* =============================================
+              SERVICE PAYMENT SUMMARY
+          ============================================= */}
+
+          {isService ? (
+            <div
+              className={
+                styles.futurePayment
+              }
+            >
               <span>
                 PAYMENT
               </span>
 
-              <strong>
-                {statusLabel(
-                  chat.payment_status
-                )}
-              </strong>
-            </div>
+              {chat.payment_status ===
+              "paid" ? (
+                <p>
+                  ✓ Payment received for this service.
+                </p>
+              ) : pendingPayment ? (
+                <>
+                  <p>
+                    A payment request is ready.
+                  </p>
 
-            <div>
+                  <strong>
+                    {money(
+                      pendingPayment.amount,
+                      pendingPayment.currency
+                    )}
+                  </strong>
+                </>
+              ) : latestPayment ? (
+                <p>
+                  Latest request:{" "}
+                  {statusLabel(
+                    latestPayment.status
+                  )}
+                </p>
+              ) : (
+                <p>
+                  No payment request has been sent yet.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div
+              className={
+                styles.futurePayment
+              }
+            >
               <span>
-                SERVICE STATUS
+                SUPPORT
               </span>
 
-              <strong>
-                {statusLabel(
-                  chat.service_status
-                )}
-              </strong>
+              <p>
+                This conversation does not require a service
+                payment request.
+              </p>
             </div>
-          </div>
-
-          <div
-            className={
-              styles.futurePayment
-            }
-          >
-            <span>
-              PAYMENT
-            </span>
-
-            {chat.payment_status ===
-            "paid" ? (
-              <p>
-                ✓ Payment received for this service.
-              </p>
-            ) : pendingPayment ? (
-              <>
-                <p>
-                  A payment request is ready.
-                </p>
-
-                <strong>
-                  {money(
-                    pendingPayment.amount,
-                    pendingPayment.currency
-                  )}
-                </strong>
-              </>
-            ) : latestPayment ? (
-              <p>
-                Latest request:{" "}
-                {statusLabel(
-                  latestPayment.status
-                )}
-              </p>
-            ) : (
-              <p>
-                No payment request has been sent yet.
-              </p>
-            )}
-          </div>
+          )}
         </aside>
 
         {/* ===============================================
@@ -1327,7 +1470,11 @@ export default function ServiceChatClient() {
           >
             <div>
               <span>
-                PRIVATE SERVICE CHAT
+                {conversationTypeLabel(
+                  chat.conversation_type
+                )}
+                {" · "}
+                PRIVATE CHAT
               </span>
 
               <strong>
@@ -1344,32 +1491,40 @@ export default function ServiceChatClient() {
             </span>
           </header>
 
-          {paymentResult ===
-            "success" && (
-            <div
-              className={
-                paymentStyles.notice
-              }
-              data-tone="success"
-            >
-              Payment submitted successfully. BirdShop is verifying it now.
-            </div>
-          )}
+          {/* =============================================
+              PAYMENT RETURN MESSAGES
+          ============================================= */}
 
-          {paymentResult ===
-            "cancelled" && (
-            <div
-              className={
-                paymentStyles.notice
-              }
-              data-tone="neutral"
-            >
-              Checkout was cancelled. Your service and conversation remain available.
-            </div>
-          )}
+          {isService &&
+            paymentResult ===
+              "success" && (
+              <div
+                className={
+                  paymentStyles.notice
+                }
+                data-tone="success"
+              >
+                Payment submitted successfully. BirdShop is
+                verifying it now.
+              </div>
+            )}
+
+          {isService &&
+            paymentResult ===
+              "cancelled" && (
+              <div
+                className={
+                  paymentStyles.notice
+                }
+                data-tone="neutral"
+              >
+                Checkout was cancelled. Your conversation
+                remains available.
+              </div>
+            )}
 
           {/* =============================================
-              INTERNAL SCROLL AREA
+              MESSAGES
           ============================================= */}
 
           <div
@@ -1398,12 +1553,16 @@ export default function ServiceChatClient() {
                   item
                 ) => {
                   /* =====================================
-                     PAYMENT
+                     PAYMENT REQUEST MESSAGE
+
+                     Only service conversations can display
+                     an actionable payment request.
                   ===================================== */
 
                   if (
+                    isService &&
                     item.message_type ===
-                    "payment_request"
+                      "payment_request"
                   ) {
                     const requestId =
                       paymentRequestIdFromMessage(
@@ -1417,7 +1576,9 @@ export default function ServiceChatClient() {
                           )
                         : null;
 
-                    if (request) {
+                    if (
+                      request
+                    ) {
                       const canPay =
                         request.status ===
                           "pending" &&
@@ -1558,7 +1719,9 @@ export default function ServiceChatClient() {
                               paymentStyles.safeNote
                             }
                           >
-                            BirdShop never asks you to enter card information directly into chat.
+                            BirdShop never asks you to enter
+                            card information directly into
+                            chat.
                           </small>
                         </article>
                       );
@@ -1566,7 +1729,7 @@ export default function ServiceChatClient() {
                   }
 
                   /* =====================================
-                     NORMAL CHAT
+                     NORMAL MESSAGE
                   ===================================== */
 
                   return (
@@ -1587,10 +1750,12 @@ export default function ServiceChatClient() {
                       <div>
                         <strong>
                           {item.sender_label ||
-                            (item.sender_type ===
-                            "admin"
-                              ? "BirdShop"
-                              : "Customer")}
+                            (
+                              item.sender_type ===
+                              "admin"
+                                ? "BirdShop"
+                                : "Customer"
+                            )}
                         </strong>
 
                         <span>
@@ -1645,7 +1810,9 @@ export default function ServiceChatClient() {
                 maxLength={
                   4000
                 }
-                rows={2}
+                rows={
+                  2
+                }
               />
 
               <div>
@@ -1684,7 +1851,7 @@ export default function ServiceChatClient() {
                 styles.closed
               }
             >
-              This service conversation has been closed.
+              This BirdShop conversation has been closed.
             </div>
           )}
         </section>

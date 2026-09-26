@@ -1,4 +1,8 @@
 import {
+  timingSafeEqual,
+} from "node:crypto";
+
+import {
   NextResponse,
 } from "next/server";
 
@@ -11,13 +15,10 @@ import {
 } from "@/lib/supabase/admin";
 
 import {
-  serviceCreatedAdminEmail,
-  serviceCreatedCustomerEmail,
+  conversationCreatedAdminEmail,
+  conversationCreatedCustomerEmail,
+  type ConversationType,
 } from "@/lib/email/service-created";
-
-/* =========================================================
-   RUNTIME
-========================================================= */
 
 export const runtime =
   "nodejs";
@@ -26,88 +27,134 @@ export const runtime =
    TYPES
 ========================================================= */
 
-type ServiceConversationRecord = {
-  id: string;
-
-  order_id: string;
-
-  public_token: string;
-
-  status:
+type SupabaseWebhookPayload = {
+  type?:
     string;
 
-  created_at:
+  table?:
     string;
+
+  schema?:
+    string;
+
+  record?: {
+    id?:
+      string;
+  } | null;
 };
 
-type DatabaseWebhookPayload = {
-  type:
-    | "INSERT"
-    | "UPDATE"
-    | "DELETE";
-
-  table:
+type Conversation = {
+  id:
     string;
 
-  schema:
+  public_token:
     string;
-
-  record:
-    ServiceConversationRecord | null;
-
-  old_record:
-    ServiceConversationRecord | null;
-};
-
-type ServiceOrder = {
-  id: string;
 
   reference:
     string;
 
+  conversation_type:
+    ConversationType;
+
   customer_name:
-    string;
+    | string
+    | null;
 
   customer_email:
-    string | null;
+    | string
+    | null;
 
   customer_contact:
-    string | null;
+    | string
+    | null;
 
-  order_type:
-    string;
+  subject:
+    | string
+    | null;
+
+  request_message:
+    | string
+    | null;
 
   service_name:
-    string | null;
+    | string
+    | null;
 
   package_name:
-    string | null;
+    | string
+    | null;
 
-  total:
-    number | string | null;
+  product_name:
+    | string
+    | null;
 
-  payment_status:
-    string;
+  product_platform:
+    | string
+    | null;
 
-  service_status:
-    string | null;
+  product_region:
+    | string
+    | null;
 
-  service_request_message:
-    string | null;
-
-  created_at:
-    string;
+  deleted_at:
+    | string
+    | null;
 };
 
 /* =========================================================
    HELPERS
 ========================================================= */
 
+function safeSecretEqual(
+  left:
+    string,
+  right:
+    string
+) {
+  const leftBuffer =
+    Buffer.from(
+      left
+    );
+
+  const rightBuffer =
+    Buffer.from(
+      right
+    );
+
+  if (
+    leftBuffer.length !==
+    rightBuffer.length
+  ) {
+    return false;
+  }
+
+  return timingSafeEqual(
+    leftBuffer,
+    rightBuffer
+  );
+}
+
+function normalizeSiteUrl(
+  value:
+    string
+) {
+  return value
+    .trim()
+    .replace(
+      /\/+$/,
+      ""
+    );
+}
+
 function isEmail(
   value:
-    string | null
+    | string
+    | null
+    | undefined
 ) {
-  if (!value) {
+  if (
+    !value
+  ) {
     return false;
   }
 
@@ -116,409 +163,74 @@ function isEmail(
   );
 }
 
-function getRequiredEnv(
-  key: string
-) {
-  const value =
-    process.env[
-      key
-    ]?.trim();
+function normalizeConversationType(
+  value:
+    string
+):
+  ConversationType {
 
-  if (!value) {
-    throw new Error(
-      `${key} is not configured.`
-    );
+  if (
+    value ===
+      "product" ||
+    value ===
+      "general"
+  ) {
+    return value;
   }
 
-  return value;
+  return "service";
 }
 
 /* =========================================================
-   SERVICE CREATED WEBHOOK
+   POST
 ========================================================= */
 
 export async function POST(
-  request: Request
+  request:
+    Request
 ) {
-  try {
-    /* =====================================================
-       VERIFY WEBHOOK SECRET
-    ===================================================== */
+  /* =======================================================
+     ENVIRONMENT
+  ======================================================= */
 
-    const expectedSecret =
-      getRequiredEnv(
-        "BIRDSHOP_WEBHOOK_SECRET"
-      );
+  const webhookSecret =
+    process.env
+      .BIRDSHOP_WEBHOOK_SECRET;
 
-    const receivedSecret =
-      request.headers.get(
-        "x-birdshop-webhook-secret"
-      );
+  const resendKey =
+    process.env
+      .RESEND_API_KEY;
 
-    if (
-      !receivedSecret ||
-      receivedSecret !==
-        expectedSecret
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Unauthorized webhook.",
-        },
-        {
-          status:
-            401,
-        }
-      );
-    }
+  const emailFrom =
+    process.env
+      .BIRDSHOP_EMAIL_FROM;
 
-    /* =====================================================
-       PAYLOAD
-    ===================================================== */
+  const adminEmail =
+    process.env
+      .BIRDSHOP_ADMIN_EMAIL;
 
-    const payload =
-      await request.json() as DatabaseWebhookPayload;
+  const siteUrlRaw =
+    process.env
+      .BIRDSHOP_SITE_URL;
 
-    if (
-      payload.type !==
-        "INSERT" ||
-      payload.schema !==
-        "public" ||
-      payload.table !==
-        "service_conversations" ||
-      !payload.record
-    ) {
-      return NextResponse.json({
-        ok:
-          true,
-
-        ignored:
-          true,
-      });
-    }
-
-    const conversation =
-      payload.record;
-
-    /* =====================================================
-       CONFIG
-    ===================================================== */
-
-    const resendApiKey =
-      getRequiredEnv(
-        "RESEND_API_KEY"
-      );
-
-    const fromEmail =
-      getRequiredEnv(
-        "BIRDSHOP_EMAIL_FROM"
-      );
-
-    const adminEmail =
-      getRequiredEnv(
-        "BIRDSHOP_ADMIN_EMAIL"
-      );
-
-    const siteUrl =
-      getRequiredEnv(
-        "BIRDSHOP_SITE_URL"
-      ).replace(
-        /\/+$/,
-        ""
-      );
-
-    const resend =
-      new Resend(
-        resendApiKey
-      );
-
-    const supabase =
-      createAdminClient();
-
-    /* =====================================================
-       LOAD SERVICE ORDER
-
-       We intentionally load this from the database instead
-       of trusting customer/browser supplied webhook data.
-    ===================================================== */
-
-    const {
-      data:
-        orderData,
-
-      error:
-        orderError,
-    } =
-      await supabase
-        .from(
-          "orders"
-        )
-        .select(
-          `
-            id,
-            reference,
-            customer_name,
-            customer_email,
-            customer_contact,
-            order_type,
-            service_name,
-            package_name,
-            total,
-            payment_status,
-            service_status,
-            service_request_message,
-            created_at
-          `
-        )
-        .eq(
-          "id",
-          conversation.order_id
-        )
-        .eq(
-          "order_type",
-          "service"
-        )
-        .single();
-
-    if (
-      orderError ||
-      !orderData
-    ) {
-      console.error(
-        "Unable to load service order:",
-        orderError
-      );
-
-      return NextResponse.json(
-        {
-          error:
-            "Service order could not be loaded.",
-        },
-        {
-          status:
-            500,
-        }
-      );
-    }
-
-    const order =
-      orderData as unknown as ServiceOrder;
-
-    /* =====================================================
-       URLS
-    ===================================================== */
-
-    const customerChatUrl =
-      `${siteUrl}/service-chat?token=${encodeURIComponent(
-        conversation.public_token
-      )}`;
-
-    const adminChatUrl =
-      `${siteUrl}/admin/chat?conversation=${encodeURIComponent(
-        conversation.id
-      )}`;
-
-    /* =====================================================
-       SHARED EMAIL DATA
-    ===================================================== */
-
-    const emailData = {
-      reference:
-        order.reference,
-
-      customerName:
-        order.customer_name,
-
-      serviceName:
-        order.service_name,
-
-      packageName:
-        order.package_name,
-
-      total:
-        order.total,
-
-      requestMessage:
-        order.service_request_message,
-
-      chatUrl:
-        customerChatUrl,
-    };
-
-    /* =====================================================
-       CUSTOMER EMAIL
-
-       If the service request only used Discord and did not
-       contain an email address, we simply skip this email.
-    ===================================================== */
-
-    let customerEmailSent =
-      false;
-
-    let customerEmailId:
-      | string
-      | null =
-      null;
-
-    const customerEmail =
-      order.customer_email
-        ?.trim() ??
-      "";
-
-    if (
-      isEmail(
-        customerEmail
-      )
-    ) {
-      const {
-        data,
-        error,
-      } =
-        await resend
-          .emails
-          .send(
-            {
-              from:
-                fromEmail,
-
-              to:
-                customerEmail,
-
-              subject:
-                `Service request ${order.reference} received — BirdShop`,
-
-              html:
-                serviceCreatedCustomerEmail(
-                  emailData
-                ),
-            },
-            {
-              idempotencyKey:
-                `service-created-customer/${conversation.id}`,
-            }
-          );
-
-      if (
-        error
-      ) {
-        console.error(
-          "Customer email failed:",
-          error
-        );
-      } else {
-        customerEmailSent =
-          true;
-
-        customerEmailId =
-          data?.id ??
-          null;
-      }
-    }
-
-    /* =====================================================
-       ADMIN EMAIL
-    ===================================================== */
-
-    const {
-      data:
-        adminEmailData,
-
-      error:
-        adminEmailError,
-    } =
-      await resend
-        .emails
-        .send(
-          {
-            from:
-              fromEmail,
-
-            to:
-              adminEmail,
-
-            subject:
-              `New BirdShop service request — ${order.reference}`,
-
-            html:
-              serviceCreatedAdminEmail(
-                {
-                  ...emailData,
-
-                  adminUrl:
-                    adminChatUrl,
-
-                  customerContact:
-                    order.customer_contact,
-
-                  customerEmail:
-                    order.customer_email,
-                }
-              ),
-          },
-          {
-            idempotencyKey:
-              `service-created-admin/${conversation.id}`,
-          }
-        );
-
-    if (
-      adminEmailError
-    ) {
-      console.error(
-        "Admin email failed:",
-        adminEmailError
-      );
-    }
-
-    /* =====================================================
-       RESPONSE
-    ===================================================== */
-
-    return NextResponse.json({
-      ok:
-        true,
-
-      reference:
-        order.reference,
-
-      customerEmail: {
-        attempted:
-          isEmail(
-            customerEmail
-          ),
-
-        sent:
-          customerEmailSent,
-
-        id:
-          customerEmailId,
-      },
-
-      adminEmail: {
-        sent:
-          !adminEmailError,
-
-        id:
-          adminEmailData
-            ?.id ??
-          null,
-      },
-    });
-  } catch (
-    problem
+  if (
+    !webhookSecret ||
+    !resendKey ||
+    !emailFrom ||
+    !adminEmail ||
+    !siteUrlRaw
   ) {
     console.error(
-      "BirdShop service email webhook:",
-      problem
+      "BirdShop conversation webhook is missing required environment configuration."
     );
 
     return NextResponse.json(
       {
+        ok:
+          false,
+
         error:
-          problem instanceof
-            Error
-            ? problem.message
-            : "Unable to process BirdShop service email.",
+          "Webhook configuration is incomplete.",
       },
       {
         status:
@@ -526,4 +238,435 @@ export async function POST(
       }
     );
   }
+
+  /* =======================================================
+     AUTHENTICATE WEBHOOK
+  ======================================================= */
+
+  const suppliedSecret =
+    request.headers.get(
+      "x-birdshop-webhook-secret"
+    );
+
+  if (
+    !suppliedSecret ||
+    !safeSecretEqual(
+      suppliedSecret,
+      webhookSecret
+    )
+  ) {
+    return NextResponse.json(
+      {
+        ok:
+          false,
+      },
+      {
+        status:
+          401,
+      }
+    );
+  }
+
+  /* =======================================================
+     BODY
+  ======================================================= */
+
+  let payload:
+    SupabaseWebhookPayload;
+
+  try {
+    payload =
+      (
+        await request.json()
+      ) as
+        SupabaseWebhookPayload;
+  } catch {
+    return NextResponse.json(
+      {
+        ok:
+          false,
+
+        error:
+          "Invalid webhook body.",
+      },
+      {
+        status:
+          400,
+      }
+    );
+  }
+
+  /* =======================================================
+     ONLY CONVERSATION INSERTS
+  ======================================================= */
+
+  if (
+    payload.type !==
+      "INSERT" ||
+    payload.schema !==
+      "public" ||
+    payload.table !==
+      "service_conversations"
+  ) {
+    return NextResponse.json({
+      ok:
+        true,
+
+      ignored:
+        true,
+    });
+  }
+
+  const conversationId =
+    String(
+      payload.record
+        ?.id ??
+      ""
+    ).trim();
+
+  if (
+    !conversationId
+  ) {
+    return NextResponse.json(
+      {
+        ok:
+          false,
+
+        error:
+          "Conversation ID missing.",
+      },
+      {
+        status:
+          400,
+      }
+    );
+  }
+
+  /* =======================================================
+     LOAD CONVERSATION
+  ======================================================= */
+
+  const supabase =
+    createAdminClient();
+
+  const {
+    data,
+    error:
+      conversationError,
+  } =
+    await supabase
+      .from(
+        "service_conversations"
+      )
+      .select(
+        `
+        id,
+        public_token,
+        reference,
+        conversation_type,
+        customer_name,
+        customer_email,
+        customer_contact,
+        subject,
+        request_message,
+        service_name,
+        package_name,
+        product_name,
+        product_platform,
+        product_region,
+        deleted_at
+        `
+      )
+      .eq(
+        "id",
+        conversationId
+      )
+      .maybeSingle();
+
+  if (
+    conversationError
+  ) {
+    console.error(
+      "Unable to load BirdShop conversation for email.",
+      {
+        conversationId,
+
+        error:
+          conversationError.message,
+      }
+    );
+
+    return NextResponse.json(
+      {
+        ok:
+          false,
+
+        error:
+          "Unable to load conversation.",
+      },
+      {
+        status:
+          500,
+      }
+    );
+  }
+
+  if (
+    !data
+  ) {
+    return NextResponse.json(
+      {
+        ok:
+          false,
+
+        error:
+          "Conversation not found.",
+      },
+      {
+        status:
+          404,
+      }
+    );
+  }
+
+  const conversation =
+    data as unknown as
+      Conversation;
+
+  if (
+    conversation.deleted_at
+  ) {
+    return NextResponse.json({
+      ok:
+        true,
+
+      ignored:
+        true,
+    });
+  }
+
+  /* =======================================================
+     URLS
+  ======================================================= */
+
+  const siteUrl =
+    normalizeSiteUrl(
+      siteUrlRaw
+    );
+
+  const chatUrl =
+    `${siteUrl}/service-chat?token=${encodeURIComponent(
+      conversation.public_token
+    )}`;
+
+  const recoveryUrl =
+    `${siteUrl}/service-chat`;
+
+  const type =
+    normalizeConversationType(
+      conversation.conversation_type
+    );
+
+  const adminUrl =
+    `${siteUrl}/admin/chat?view=active&type=${encodeURIComponent(
+      type
+    )}&conversation=${encodeURIComponent(
+      conversation.id
+    )}`;
+
+  /* =======================================================
+     EMAIL DATA
+  ======================================================= */
+
+  const emailData = {
+    reference:
+      conversation.reference,
+
+    conversationType:
+      type,
+
+    customerName:
+      conversation.customer_name,
+
+    customerEmail:
+      conversation.customer_email,
+
+    customerContact:
+      conversation.customer_contact,
+
+    subject:
+      conversation.subject,
+
+    requestMessage:
+      conversation.request_message,
+
+    serviceName:
+      conversation.service_name,
+
+    packageName:
+      conversation.package_name,
+
+    productName:
+      conversation.product_name,
+
+    productPlatform:
+      conversation.product_platform,
+
+    productRegion:
+      conversation.product_region,
+
+    chatUrl,
+
+    recoveryUrl,
+  };
+
+  const customerTemplate =
+    conversationCreatedCustomerEmail(
+      emailData
+    );
+
+  const adminTemplate =
+    conversationCreatedAdminEmail({
+      ...emailData,
+
+      adminUrl,
+    });
+
+  /* =======================================================
+     SEND
+
+     Idempotency prevents duplicate successful sends if
+     Supabase retries the webhook after a partial failure.
+  ======================================================= */
+
+  const resend =
+    new Resend(
+      resendKey
+    );
+
+  const jobs:
+    Promise<unknown>[] =
+    [];
+
+  const customerCanReceive =
+    isEmail(
+      conversation.customer_email
+    );
+
+  if (
+    customerCanReceive
+  ) {
+    jobs.push(
+      resend.emails.send(
+        {
+          from:
+            emailFrom,
+
+          to:
+            conversation.customer_email!,
+
+          subject:
+            customerTemplate.subject,
+
+          html:
+            customerTemplate.html,
+
+          text:
+            customerTemplate.text,
+        },
+        {
+          idempotencyKey:
+            `birdshop-conversation-customer-${conversation.id}`,
+        }
+      )
+    );
+  }
+
+  jobs.push(
+    resend.emails.send(
+      {
+        from:
+          emailFrom,
+
+        to:
+          adminEmail,
+
+        subject:
+          adminTemplate.subject,
+
+        html:
+          adminTemplate.html,
+
+        text:
+          adminTemplate.text,
+      },
+      {
+        idempotencyKey:
+          `birdshop-conversation-admin-${conversation.id}`,
+      }
+    )
+  );
+
+  const results =
+    await Promise.allSettled(
+      jobs
+    );
+
+  const failed =
+    results.filter(
+      (
+        result
+      ) =>
+        result.status ===
+        "rejected"
+    );
+
+  if (
+    failed.length >
+    0
+  ) {
+    console.error(
+      "One or more BirdShop conversation emails failed.",
+      {
+        conversationId,
+
+        customerAttempted:
+          customerCanReceive,
+
+        failureCount:
+          failed.length,
+      }
+    );
+
+    /*
+     * Return a failure so Supabase may retry.
+     *
+     * Resend idempotency prevents already-successful email
+     * sends from becoming duplicates on retry.
+     */
+    return NextResponse.json(
+      {
+        ok:
+          false,
+
+        error:
+          "One or more emails failed.",
+      },
+      {
+        status:
+          500,
+      }
+    );
+  }
+
+  return NextResponse.json({
+    ok:
+      true,
+
+    customerEmailSent:
+      customerCanReceive,
+
+    adminEmailSent:
+      true,
+  });
 }

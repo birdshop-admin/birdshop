@@ -6,7 +6,6 @@ import {
   createClient,
 } from "@/lib/supabase/server";
 
-import AdminSessionGuard from "@/components/AdminSessionGuard";
 import AdminGlobalChatNotifier from "@/components/AdminGlobalChatNotifier";
 
 import styles from "./admin-shell.module.css";
@@ -22,6 +21,10 @@ export default async function ProtectedAdminLayout({
 }>) {
   const supabase =
     await createClient();
+
+  /* =======================================================
+     AUTHENTICATED USER
+  ======================================================= */
 
   const {
     data:
@@ -46,6 +49,10 @@ export default async function ProtectedAdminLayout({
       "/admin/login"
     );
   }
+
+  /* =======================================================
+     ADMIN AUTHORIZATION
+  ======================================================= */
 
   const {
     data:
@@ -76,27 +83,34 @@ export default async function ProtectedAdminLayout({
     );
   }
 
+  /* =======================================================
+     PROTECTED ADMIN
+  ======================================================= */
+
   return (
     <div
       className={
         styles.shell
       }
     >
-      <AdminSessionGuard>
-        {/* ===============================================
-            GLOBAL ADMIN CHAT NOTIFICATIONS
+      {/* ===============================================
+          GLOBAL ADMIN CHAT NOTIFICATIONS
 
-            This stays mounted while moving between:
-            Overview / Products / Inventory / Orders /
-            Chat / Support / Reviews.
-        =============================================== */}
+          Remains mounted while navigating between:
+          Overview
+          Products
+          Inventory
+          Orders
+          Chat
+          Legacy Support
+          Reviews
+      =============================================== */}
 
-        <AdminGlobalChatNotifier />
+      <AdminGlobalChatNotifier />
 
-        {
-          children
-        }
-      </AdminSessionGuard>
+      {
+        children
+      }
     </div>
   );
 }

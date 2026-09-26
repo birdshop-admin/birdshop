@@ -1,35 +1,25 @@
-import Link from "next/link";
-
 import AdminSidebar from "@/components/AdminSidebar";
 
 import {
   createClient,
 } from "@/lib/supabase/server";
 
-import {
-  assignRequestAdmin,
-  permanentlyDeleteRequest,
-  restoreRequest,
-  setRequestStatus,
-  softDeleteRequest,
-} from "./actions";
-
 import styles from "../admin-queue.module.css";
-import tabStyles from "./SupportTabs.module.css";
 
 export const dynamic =
   "force-dynamic";
 
-type View =
-  | "active"
-  | "completed"
-  | "deleted";
+/* =========================================================
+   TYPES
+========================================================= */
 
 type SupportRequest = {
   id: string;
+
   reference: string;
 
   topic:
+    | "service"
     | "product"
     | "general";
 
@@ -46,13 +36,27 @@ type SupportRequest = {
   contact_handle:
     string;
 
-  message: string;
+  message:
+    string;
 
   general_subject:
     | string
     | null;
 
   order_reference:
+    | string
+    | null;
+
+  service_name:
+    | string
+    | null;
+
+  package_name:
+    | string
+    | null;
+
+  package_price:
+    | number
     | string
     | null;
 
@@ -68,7 +72,8 @@ type SupportRequest = {
     | string
     | null;
 
-  source: string;
+  source:
+    string;
 
   assigned_to:
     | string
@@ -78,21 +83,17 @@ type SupportRequest = {
     | string
     | null;
 
-  deleted_at:
-    | string
-    | null;
-
-  created_at: string;
+  created_at:
+    string;
 };
 
-type PageProps = {
-  searchParams: Promise<{
-    view?: string;
-  }>;
-};
+/* =========================================================
+   HELPERS
+========================================================= */
 
 function formatDate(
-  value: string
+  value:
+    string
 ) {
   return new Intl.DateTimeFormat(
     "en-US",
@@ -104,7 +105,9 @@ function formatDate(
         "short",
     }
   ).format(
-    new Date(value)
+    new Date(
+      value
+    )
   );
 }
 
@@ -112,26 +115,59 @@ function topicLabel(
   topic:
     SupportRequest["topic"]
 ) {
-  return topic ===
+  if (
+    topic ===
+    "service"
+  ) {
+    return "Service Request";
+  }
+
+  if (
+    topic ===
     "product"
-    ? "Product Help"
-    : "General Support";
+  ) {
+    return "Product Help";
+  }
+
+  return "General Support";
 }
 
-export default async function AdminRequestsPage({
-  searchParams,
-}: PageProps) {
-  const params =
-    await searchParams;
+function requestTitle(
+  request:
+    SupportRequest
+) {
+  if (
+    request.topic ===
+    "service"
+  ) {
+    return `${request.service_name ?? "Service"}${
+      request.package_name
+        ? ` · ${request.package_name}`
+        : ""
+    }`;
+  }
 
-  const view: View =
-    params.view ===
-      "completed" ||
-    params.view ===
-      "deleted"
-      ? params.view
-      : "active";
+  if (
+    request.topic ===
+    "product"
+  ) {
+    return (
+      request.product_name ??
+      "Product Support"
+    );
+  }
 
+  return (
+    request.general_subject ??
+    "General Support"
+  );
+}
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+export default async function AdminRequestsPage() {
   const supabase =
     await createClient();
 
@@ -144,13 +180,6 @@ export default async function AdminRequestsPage({
         "support_requests"
       )
       .select("*")
-      .in(
-        "topic",
-        [
-          "product",
-          "general",
-        ]
-      )
       .order(
         "created_at",
         {
@@ -159,9 +188,11 @@ export default async function AdminRequestsPage({
         }
       );
 
-  if (error) {
+  if (
+    error
+  ) {
     throw new Error(
-      `Unable to load support requests: ${error.message}`
+      `Unable to load legacy support requests: ${error.message}`
     );
   }
 
@@ -169,46 +200,43 @@ export default async function AdminRequestsPage({
     (
       data ??
       []
-    ) as unknown as SupportRequest[];
+    ) as unknown as
+      SupportRequest[];
 
-  const active =
+  /* =======================================================
+     ARCHIVE COUNTS
+  ======================================================= */
+
+  const serviceCount =
     requests.filter(
-      (request) =>
-        !request.deleted_at &&
-        (
-          request.status ===
-            "open" ||
-          request.status ===
-            "in_progress"
-        )
-    );
+      (
+        request
+      ) =>
+        request.topic ===
+        "service"
+    ).length;
 
-  const completed =
+  const productCount =
     requests.filter(
-      (request) =>
-        !request.deleted_at &&
-        (
-          request.status ===
-            "resolved" ||
-          request.status ===
-            "closed"
-        )
-    );
+      (
+        request
+      ) =>
+        request.topic ===
+        "product"
+    ).length;
 
-  const deleted =
+  const generalCount =
     requests.filter(
-      (request) =>
-        Boolean(
-          request.deleted_at
-        )
-    );
+      (
+        request
+      ) =>
+        request.topic ===
+        "general"
+    ).length;
 
-  const visibleRequests =
-    view === "completed"
-      ? completed
-      : view === "deleted"
-        ? deleted
-        : active;
+  /* =======================================================
+     UI
+  ======================================================= */
 
   return (
     <main
@@ -223,6 +251,10 @@ export default async function AdminRequestsPage({
           styles.content
         }
       >
+        {/* =================================================
+            HEADER
+        ================================================= */}
+
         <header
           className={
             styles.header
@@ -230,15 +262,18 @@ export default async function AdminRequestsPage({
         >
           <div>
             <span>
-              BIRDSHOP / SUPPORT
+              BIRDSHOP / LEGACY
             </span>
 
             <h1>
-              Support
+              Legacy Support
             </h1>
 
             <p>
-              Product Help and General Support are separated into active conversations, completed tickets, and deleted records.
+              Historical support requests from the previous
+              BirdShop request system. New Service, Product,
+              and General Support conversations are now
+              managed in Admin Chat.
             </p>
           </div>
         </header>
@@ -254,54 +289,6 @@ export default async function AdminRequestsPage({
         >
           <article>
             <span>
-              ACTIVE
-            </span>
-
-            <strong>
-              {
-                active.length
-              }
-            </strong>
-
-            <small>
-              NEEDS ATTENTION
-            </small>
-          </article>
-
-          <article>
-            <span>
-              COMPLETED
-            </span>
-
-            <strong>
-              {
-                completed.length
-              }
-            </strong>
-
-            <small>
-              RESOLVED / CLOSED
-            </small>
-          </article>
-
-          <article>
-            <span>
-              DELETED
-            </span>
-
-            <strong>
-              {
-                deleted.length
-              }
-            </strong>
-
-            <small>
-              TRASH
-            </small>
-          </article>
-
-          <article>
-            <span>
               TOTAL
             </span>
 
@@ -312,74 +299,62 @@ export default async function AdminRequestsPage({
             </strong>
 
             <small>
-              ALL SUPPORT RECORDS
+              LEGACY RECORDS
+            </small>
+          </article>
+
+          <article>
+            <span>
+              SERVICE
+            </span>
+
+            <strong>
+              {
+                serviceCount
+              }
+            </strong>
+
+            <small>
+              OLD REQUESTS
+            </small>
+          </article>
+
+          <article>
+            <span>
+              PRODUCT
+            </span>
+
+            <strong>
+              {
+                productCount
+              }
+            </strong>
+
+            <small>
+              OLD SUPPORT
+            </small>
+          </article>
+
+          <article>
+            <span>
+              GENERAL
+            </span>
+
+            <strong>
+              {
+                generalCount
+              }
+            </strong>
+
+            <small>
+              OLD SUPPORT
             </small>
           </article>
         </section>
 
         {/* =================================================
-            TABS
+            EXPLANATION
         ================================================= */}
-
-        <nav
-          className={
-            tabStyles.tabs
-          }
-        >
-          <Link
-            href="/admin/requests?view=active"
-            className={
-              view ===
-              "active"
-                ? tabStyles.active
-                : ""
-            }
-          >
-            Active
-
-            <span>
-              {
-                active.length
-              }
-            </span>
-          </Link>
-
-          <Link
-            href="/admin/requests?view=completed"
-            className={
-              view ===
-              "completed"
-                ? tabStyles.active
-                : ""
-            }
-          >
-            Completed
-
-            <span>
-              {
-                completed.length
-              }
-            </span>
-          </Link>
-
-          <Link
-            href="/admin/requests?view=deleted"
-            className={
-              view ===
-              "deleted"
-                ? tabStyles.active
-                : ""
-            }
-          >
-            Deleted
-
-            <span>
-              {
-                deleted.length
-              }
-            </span>
-          </Link>
-        </nav>
 
         <div
           className={
@@ -388,503 +363,324 @@ export default async function AdminRequestsPage({
         >
           <div>
             <span>
-              {view ===
-              "active"
-                ? "SUPPORT INBOX"
-                : view ===
-                    "completed"
-                  ? "FINISHED SUPPORT"
-                  : "TRASH"}
+              READ ONLY ARCHIVE
             </span>
 
             <h2>
-              {view ===
-              "active"
-                ? "Customer help."
-                : view ===
-                    "completed"
-                  ? "Completed tickets."
-                  : "Deleted tickets."}
+              Previous support records.
             </h2>
           </div>
 
           <p>
-            {view ===
-            "active"
-              ? "Product questions and general help requiring staff attention appear here."
-              : view ===
-                  "completed"
-                ? "Resolved and closed requests stay here instead of cluttering the active support inbox."
-                : "Restore a request or permanently remove it from BirdShop."}
+            These records are preserved for history only.
+            Do not continue active support work here.
+            New conversations belong in Admin Chat.
           </p>
         </div>
 
-        {visibleRequests.length ===
+        {/* =================================================
+            EMPTY
+        ================================================= */}
+
+        {requests.length ===
         0 ? (
           <div
             className={
               styles.empty
             }
           >
-            {view ===
-            "active"
-              ? "No active Product Help or General Support requests."
-              : view ===
-                  "completed"
-                ? "No completed support requests."
-                : "Deleted is empty."}
+            No legacy support records.
           </div>
         ) : (
+          /* ===============================================
+             ARCHIVE LIST
+          =============================================== */
+
           <div
             className={
               styles.list
             }
           >
-            {visibleRequests.map(
-              (request) => {
-                const selection =
-                  request.topic ===
-                  "product"
-                    ? request.product_name ??
-                      "Product Help"
-                    : request.general_subject ??
-                      "General Support";
+            {requests.map(
+              (
+                request
+              ) => (
+                <article
+                  key={
+                    request.id
+                  }
+                  className={
+                    styles.card
+                  }
+                >
+                  {/* =====================================
+                      TOP
+                  ===================================== */}
 
-                const activeWork =
-                  view ===
-                    "active";
-
-                return (
-                  <article
-                    key={
-                      request.id
-                    }
+                  <div
                     className={
-                      styles.card
+                      styles.cardTop
                     }
                   >
-                    <div
-                      className={
-                        styles.cardTop
-                      }
-                    >
-                      <div>
-                        <span>
-                          {
-                            request.reference
-                          }{" "}
-                          ·{" "}
-                          {topicLabel(
-                            request.topic
-                          )}
-                        </span>
-
-                        <h3>
-                          {
-                            selection
-                          }
-                        </h3>
-
-                        <p>
-                          {request.display_name ||
-                            "Unnamed customer"}{" "}
-                          ·{" "}
-                          {formatDate(
-                            request.created_at
-                          )}
-                        </p>
-                      </div>
-
-                      <div
-                        className={
-                          styles.status
-                        }
-                        data-status={
-                          request.status
-                        }
-                      >
-                        {request.status.replaceAll(
-                          "_",
-                          " "
+                    <div>
+                      <span>
+                        {
+                          request.reference
+                        }{" "}
+                        ·{" "}
+                        {topicLabel(
+                          request.topic
                         )}
-                      </div>
+                      </span>
+
+                      <h3>
+                        {requestTitle(
+                          request
+                        )}
+                      </h3>
+
+                      <p>
+                        {request.display_name ||
+                          "Unnamed customer"}{" "}
+                        ·{" "}
+                        {formatDate(
+                          request.created_at
+                        )}
+                      </p>
                     </div>
 
                     <div
                       className={
-                        styles.body
+                        styles.status
+                      }
+                      data-status={
+                        request.status
                       }
                     >
-                      <p
-                        className={
-                          styles.message
-                        }
-                      >
-                        {
-                          request.message
-                        }
-                      </p>
+                      {request.status.replaceAll(
+                        "_",
+                        " "
+                      )}
+                    </div>
+                  </div>
 
-                      <div
-                        className={
-                          styles.meta
-                        }
-                      >
+                  {/* =====================================
+                      MESSAGE
+                  ===================================== */}
+
+                  <div
+                    className={
+                      styles.body
+                    }
+                  >
+                    <p
+                      className={
+                        styles.message
+                      }
+                    >
+                      {
+                        request.message
+                      }
+                    </p>
+
+                    {/* ===================================
+                        METADATA
+                    =================================== */}
+
+                    <div
+                      className={
+                        styles.meta
+                      }
+                    >
+                      <div>
+                        <span>
+                          CONTACT
+                        </span>
+
+                        <strong>
+                          {
+                            request.contact_handle
+                          }
+                        </strong>
+                      </div>
+
+                      {request.order_reference && (
                         <div>
                           <span>
-                            CONTACT
+                            ORDER /
+                            REFERENCE
                           </span>
 
                           <strong>
                             {
-                              request.contact_handle
+                              request.order_reference
                             }
                           </strong>
                         </div>
+                      )}
 
-                        {request.order_reference && (
+                      {/* =================================
+                          SERVICE
+                      ================================= */}
+
+                      {request.topic ===
+                        "service" && (
+                        <>
                           <div>
                             <span>
-                              ORDER / REFERENCE
+                              SERVICE
+                            </span>
+
+                            <strong>
+                              {request.service_name ??
+                                "—"}
+                            </strong>
+                          </div>
+
+                          <div>
+                            <span>
+                              PACKAGE
+                            </span>
+
+                            <strong>
+                              {request.package_name ??
+                                "—"}
+                            </strong>
+                          </div>
+
+                          {request.package_price !==
+                            null && (
+                            <div>
+                              <span>
+                                PACKAGE PRICE
+                              </span>
+
+                              <strong>
+                                $
+                                {Number(
+                                  request.package_price
+                                ).toFixed(
+                                  2
+                                )}
+                              </strong>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* =================================
+                          PRODUCT
+                      ================================= */}
+
+                      {request.topic ===
+                        "product" && (
+                        <>
+                          <div>
+                            <span>
+                              PRODUCT
+                            </span>
+
+                            <strong>
+                              {request.product_name ??
+                                "—"}
+                            </strong>
+                          </div>
+
+                          <div>
+                            <span>
+                              PLATFORM /
+                              REGION
+                            </span>
+
+                            <strong>
+                              {request.product_platform ??
+                                "—"}{" "}
+                              ·{" "}
+                              {request.product_region ??
+                                "—"}
+                            </strong>
+                          </div>
+                        </>
+                      )}
+
+                      {/* =================================
+                          GENERAL
+                      ================================= */}
+
+                      {request.topic ===
+                        "general" &&
+                        request.general_subject && (
+                          <div>
+                            <span>
+                              SUBJECT
                             </span>
 
                             <strong>
                               {
-                                request.order_reference
+                                request.general_subject
                               }
                             </strong>
                           </div>
                         )}
 
-                        {request.topic ===
-                          "product" && (
-                          <>
-                            <div>
-                              <span>
-                                PRODUCT
-                              </span>
+                      {/* =================================
+                          HISTORICAL ADMIN
+                      ================================= */}
 
-                              <strong>
-                                {request.product_name ??
-                                  "—"}
-                              </strong>
-                            </div>
+                      <div>
+                        <span>
+                          ASSIGNED ADMIN
+                        </span>
 
-                            <div>
-                              <span>
-                                PLATFORM / REGION
-                              </span>
+                        <strong>
+                          {request.assigned_to ||
+                            "Unassigned"}
+                        </strong>
+                      </div>
 
-                              <strong>
-                                {request.product_platform ??
-                                  "—"}{" "}
-                                ·{" "}
-                                {request.product_region ??
-                                  "—"}
-                              </strong>
-                            </div>
-                          </>
-                        )}
+                      <div>
+                        <span>
+                          SOURCE
+                        </span>
 
-                        <div>
-                          <span>
-                            ASSIGNED ADMIN
-                          </span>
+                        <strong>
+                          {
+                            request.source
+                          }
+                        </strong>
+                      </div>
 
-                          <strong>
-                            {request.assigned_to ||
-                              "Unassigned"}
-                          </strong>
-                        </div>
+                      <div>
+                        <span>
+                          RECORD TYPE
+                        </span>
+
+                        <strong>
+                          Legacy / Read Only
+                        </strong>
                       </div>
                     </div>
+                  </div>
 
-                    {/* =====================================
-                        ACTIVE CONTROLS
-                    ===================================== */}
+                  {/* =====================================
+                      READ ONLY NOTICE
+                  ===================================== */}
 
-                    {activeWork && (
-                      <>
-                        <div
-                          className={
-                            styles.assignment
-                          }
-                        >
-                          <div>
-                            <span
-                              className={
-                                styles.fieldLabel
-                              }
-                            >
-                              WORKING ON THIS
-                            </span>
+                  <div
+                    className={
+                      styles.settledNote
+                    }
+                  >
+                    <span>
+                      ARCHIVED SYSTEM
+                    </span>
 
-                            <p>
-                              Assign the admin responsible for this conversation.
-                            </p>
-                          </div>
-
-                          <form
-                            action={
-                              assignRequestAdmin
-                            }
-                            className={
-                              styles.assignmentForm
-                            }
-                          >
-                            <input
-                              type="hidden"
-                              name="id"
-                              value={
-                                request.id
-                              }
-                            />
-
-                            <input
-                              className={
-                                styles.assignmentInput
-                              }
-                              name="assigned_to"
-                              defaultValue={
-                                request.assigned_to ??
-                                ""
-                              }
-                              placeholder="Admin username"
-                              minLength={2}
-                              maxLength={80}
-                              required
-                            />
-
-                            <button
-                              className={
-                                styles.assignmentButton
-                              }
-                            >
-                              {request.status ===
-                              "open"
-                                ? "Assign & Start"
-                                : "Update Admin"}
-                            </button>
-                          </form>
-                        </div>
-
-                        <div
-                          className={
-                            styles.actions
-                          }
-                        >
-                          {request.status ===
-                            "in_progress" && (
-                            <form
-                              action={
-                                setRequestStatus
-                              }
-                            >
-                              <input
-                                type="hidden"
-                                name="id"
-                                value={
-                                  request.id
-                                }
-                              />
-
-                              <button
-                                name="status"
-                                value="open"
-                              >
-                                Reopen
-                              </button>
-                            </form>
-                          )}
-
-                          <form
-                            action={
-                              setRequestStatus
-                            }
-                          >
-                            <input
-                              type="hidden"
-                              name="id"
-                              value={
-                                request.id
-                              }
-                            />
-
-                            <button
-                              name="status"
-                              value="resolved"
-                              className={
-                                styles.primary
-                              }
-                            >
-                              Resolve
-                            </button>
-                          </form>
-
-                          <form
-                            action={
-                              softDeleteRequest
-                            }
-                          >
-                            <input
-                              type="hidden"
-                              name="id"
-                              value={
-                                request.id
-                              }
-                            />
-
-                            <button
-                              className={
-                                styles.danger
-                              }
-                            >
-                              Delete
-                            </button>
-                          </form>
-                        </div>
-                      </>
-                    )}
-
-                    {/* =====================================
-                        COMPLETED CONTROLS
-                    ===================================== */}
-
-                    {view ===
-                      "completed" && (
-                      <div
-                        className={
-                          styles.actions
-                        }
-                      >
-                        <form
-                          action={
-                            setRequestStatus
-                          }
-                        >
-                          <input
-                            type="hidden"
-                            name="id"
-                            value={
-                              request.id
-                            }
-                          />
-
-                          <button
-                            name="status"
-                            value="open"
-                          >
-                            Reopen
-                          </button>
-                        </form>
-
-                        {request.status ===
-                          "resolved" && (
-                          <form
-                            action={
-                              setRequestStatus
-                            }
-                          >
-                            <input
-                              type="hidden"
-                              name="id"
-                              value={
-                                request.id
-                              }
-                            />
-
-                            <button
-                              name="status"
-                              value="closed"
-                            >
-                              Close
-                            </button>
-                          </form>
-                        )}
-
-                        <form
-                          action={
-                            softDeleteRequest
-                          }
-                        >
-                          <input
-                            type="hidden"
-                            name="id"
-                            value={
-                              request.id
-                            }
-                          />
-
-                          <button
-                            className={
-                              styles.danger
-                            }
-                          >
-                            Delete
-                          </button>
-                        </form>
-                      </div>
-                    )}
-
-                    {/* =====================================
-                        DELETED CONTROLS
-                    ===================================== */}
-
-                    {view ===
-                      "deleted" && (
-                      <div
-                        className={
-                          styles.actions
-                        }
-                      >
-                        <form
-                          action={
-                            restoreRequest
-                          }
-                        >
-                          <input
-                            type="hidden"
-                            name="id"
-                            value={
-                              request.id
-                            }
-                          />
-
-                          <button
-                            className={
-                              styles.primary
-                            }
-                          >
-                            Restore
-                          </button>
-                        </form>
-
-                        <form
-                          action={
-                            permanentlyDeleteRequest
-                          }
-                        >
-                          <input
-                            type="hidden"
-                            name="id"
-                            value={
-                              request.id
-                            }
-                          />
-
-                          <button
-                            className={
-                              styles.danger
-                            }
-                          >
-                            Permanently Delete
-                          </button>
-                        </form>
-                      </div>
-                    )}
-                  </article>
-                );
-              }
+                    <strong>
+                      Read Only
+                    </strong>
+                  </div>
+                </article>
+              )
             )}
           </div>
         )}

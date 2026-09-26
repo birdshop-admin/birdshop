@@ -28,30 +28,23 @@ export const runtime =
 ========================================================= */
 
 type SupabaseWebhookPayload = {
-  type?:
-    string;
+  type?: string;
 
-  table?:
-    string;
+  table?: string;
 
-  schema?:
-    string;
+  schema?: string;
 
   record?: {
-    id?:
-      string;
+    id?: string;
   } | null;
 };
 
 type Conversation = {
-  id:
-    string;
+  id: string;
 
-  public_token:
-    string;
+  public_token: string;
 
-  reference:
-    string;
+  reference: string;
 
   conversation_type:
     ConversationType;
@@ -106,10 +99,8 @@ type Conversation = {
 ========================================================= */
 
 function safeSecretEqual(
-  left:
-    string,
-  right:
-    string
+  left: string,
+  right: string
 ) {
   const leftBuffer =
     Buffer.from(
@@ -135,8 +126,7 @@ function safeSecretEqual(
 }
 
 function normalizeSiteUrl(
-  value:
-    string
+  value: string
 ) {
   return value
     .trim()
@@ -152,9 +142,7 @@ function isEmail(
     | null
     | undefined
 ) {
-  if (
-    !value
-  ) {
+  if (!value) {
     return false;
   }
 
@@ -164,8 +152,7 @@ function isEmail(
 }
 
 function normalizeConversationType(
-  value:
-    string
+  value: string
 ):
   ConversationType {
 
@@ -186,8 +173,7 @@ function normalizeConversationType(
 ========================================================= */
 
 export async function POST(
-  request:
-    Request
+  request: Request
 ) {
   /* =======================================================
      ENVIRONMENT
@@ -221,7 +207,7 @@ export async function POST(
     !siteUrlRaw
   ) {
     console.error(
-      "BirdShop conversation webhook is missing required environment configuration."
+      "BirdShop conversation webhook is missing environment variables."
     );
 
     return NextResponse.json(
@@ -240,7 +226,7 @@ export async function POST(
   }
 
   /* =======================================================
-     AUTHENTICATE WEBHOOK
+     VERIFY WEBHOOK SECRET
   ======================================================= */
 
   const suppliedSecret =
@@ -259,6 +245,9 @@ export async function POST(
       {
         ok:
           false,
+
+        error:
+          "Unauthorized.",
       },
       {
         status:
@@ -276,10 +265,7 @@ export async function POST(
 
   try {
     payload =
-      (
-        await request.json()
-      ) as
-        SupabaseWebhookPayload;
+      await request.json();
   } catch {
     return NextResponse.json(
       {
@@ -297,7 +283,7 @@ export async function POST(
   }
 
   /* =======================================================
-     ONLY CONVERSATION INSERTS
+     ONLY NEW CONVERSATIONS
   ======================================================= */
 
   if (
@@ -324,9 +310,7 @@ export async function POST(
       ""
     ).trim();
 
-  if (
-    !conversationId
-  ) {
+  if (!conversationId) {
     return NextResponse.json(
       {
         ok:
@@ -351,8 +335,7 @@ export async function POST(
 
   const {
     data,
-    error:
-      conversationError,
+    error,
   } =
     await supabase
       .from(
@@ -383,16 +366,13 @@ export async function POST(
       )
       .maybeSingle();
 
-  if (
-    conversationError
-  ) {
+  if (error) {
     console.error(
-      "Unable to load BirdShop conversation for email.",
+      "Unable to load BirdShop conversation.",
       {
         conversationId,
-
         error:
-          conversationError.message,
+          error.message,
       }
     );
 
@@ -411,9 +391,7 @@ export async function POST(
     );
   }
 
-  if (
-    !data
-  ) {
+  if (!data) {
     return NextResponse.json(
       {
         ok:
@@ -454,6 +432,11 @@ export async function POST(
       siteUrlRaw
     );
 
+  const type =
+    normalizeConversationType(
+      conversation.conversation_type
+    );
+
   const chatUrl =
     `${siteUrl}/service-chat?token=${encodeURIComponent(
       conversation.public_token
@@ -461,11 +444,6 @@ export async function POST(
 
   const recoveryUrl =
     `${siteUrl}/service-chat`;
-
-  const type =
-    normalizeConversationType(
-      conversation.conversation_type
-    );
 
   const adminUrl =
     `${siteUrl}/admin/chat?view=active&type=${encodeURIComponent(
@@ -475,7 +453,7 @@ export async function POST(
     )}`;
 
   /* =======================================================
-     EMAIL DATA
+     TEMPLATE DATA
   ======================================================= */
 
   const emailData = {
@@ -532,38 +510,39 @@ export async function POST(
       adminUrl,
     });
 
-  /* =======================================================
-     SEND
-
-     Idempotency prevents duplicate successful sends if
-     Supabase retries the webhook after a partial failure.
-  ======================================================= */
-
   const resend =
     new Resend(
       resendKey
     );
 
-  const jobs:
-    Promise<unknown>[] =
-    [];
+  /* =======================================================
+     CUSTOMER EMAIL
+  ======================================================= */
 
-  const customerCanReceive =
-    isEmail(
-      conversation.customer_email
-    );
+  let customerEmailSent =
+    false;
 
   if (
-    customerCanReceive
+    isEmail(
+      conversation.customer_email
+    )
   ) {
-    jobs.push(
-      resend.emails.send(
+    const {
+      data:
+        customerSend,
+
+      error:
+        customerError,
+    } =
+      await resend.emails.send(
         {
           from:
             emailFrom,
 
           to:
-            conversation.customer_email!,
+            [
+              conversation.customer_email!,
+            ],
 
           subject:
             customerTemplate.subject,
@@ -578,18 +557,65 @@ export async function POST(
           idempotencyKey:
             `birdshop-conversation-customer-${conversation.id}`,
         }
-      )
-    );
+      );
+
+    if (
+      customerError
+    ) {
+      console.error(
+        "BirdShop customer email failed.",
+        {
+          conversationId,
+
+          error:
+            customerError.message,
+        }
+      );
+
+      return NextResponse.json(
+        {
+          ok:
+            false,
+
+          error:
+            "Customer email failed.",
+
+          resendError:
+            customerError.message,
+        },
+        {
+          status:
+            502,
+        }
+      );
+    }
+
+    customerEmailSent =
+      Boolean(
+        customerSend?.id
+      );
   }
 
-  jobs.push(
-    resend.emails.send(
+  /* =======================================================
+     ADMIN EMAIL
+  ======================================================= */
+
+  const {
+    data:
+      adminSend,
+
+    error:
+      adminSendError,
+  } =
+    await resend.emails.send(
       {
         from:
           emailFrom,
 
         to:
-          adminEmail,
+          [
+            adminEmail,
+          ],
 
         subject:
           adminTemplate.subject,
@@ -604,69 +630,52 @@ export async function POST(
         idempotencyKey:
           `birdshop-conversation-admin-${conversation.id}`,
       }
-    )
-  );
-
-  const results =
-    await Promise.allSettled(
-      jobs
-    );
-
-  const failed =
-    results.filter(
-      (
-        result
-      ) =>
-        result.status ===
-        "rejected"
     );
 
   if (
-    failed.length >
-    0
+    adminSendError
   ) {
     console.error(
-      "One or more BirdShop conversation emails failed.",
+      "BirdShop admin email failed.",
       {
         conversationId,
 
-        customerAttempted:
-          customerCanReceive,
-
-        failureCount:
-          failed.length,
+        error:
+          adminSendError.message,
       }
     );
 
-    /*
-     * Return a failure so Supabase may retry.
-     *
-     * Resend idempotency prevents already-successful email
-     * sends from becoming duplicates on retry.
-     */
     return NextResponse.json(
       {
         ok:
           false,
 
         error:
-          "One or more emails failed.",
+          "Admin email failed.",
+
+        resendError:
+          adminSendError.message,
       },
       {
         status:
-          500,
+          502,
       }
     );
   }
+
+  /* =======================================================
+     SUCCESS
+  ======================================================= */
 
   return NextResponse.json({
     ok:
       true,
 
-    customerEmailSent:
-      customerCanReceive,
+    customerEmailSent,
 
     adminEmailSent:
-      true,
+      Boolean(
+        adminSend?.id
+      ),
   });
 }

@@ -1,50 +1,61 @@
+import "server-only";
+
 import {
   createClient,
 } from "@supabase/supabase-js";
 
 /* =========================================================
-   BIRDSHOP SERVER-ONLY SUPABASE ADMIN CLIENT
+   ENVIRONMENT HELPER
+========================================================= */
 
-   IMPORTANT:
-   Never import this file into a Client Component.
+function requireEnvironmentVariable(
+  name: string
+) {
+  const value =
+    process.env[name]
+      ?.trim();
 
-   SUPABASE_SECRET_KEY is the modern server-only Supabase
-   secret key.
+  if (!value) {
+    throw new Error(
+      `${name} is not configured.`
+    );
+  }
 
-   It bypasses Row Level Security and must never be exposed
-   through NEXT_PUBLIC variables or browser code.
+  return value;
+}
+
+/* =========================================================
+   ADMIN CLIENT
+
+   SERVER ONLY.
+
+   This client uses the Supabase secret key and therefore
+   must never be imported into client/browser code.
 ========================================================= */
 
 export function createAdminClient() {
   const supabaseUrl =
-    process.env
-      .NEXT_PUBLIC_SUPABASE_URL;
-
-  const secretKey =
-    process.env
-      .SUPABASE_SECRET_KEY;
-
-  if (!supabaseUrl) {
-    throw new Error(
-      "NEXT_PUBLIC_SUPABASE_URL is not configured."
+    requireEnvironmentVariable(
+      "NEXT_PUBLIC_SUPABASE_URL"
     );
-  }
 
-  if (!secretKey) {
-    throw new Error(
-      "SUPABASE_SECRET_KEY is not configured."
+  const supabaseSecretKey =
+    requireEnvironmentVariable(
+      "SUPABASE_SECRET_KEY"
     );
-  }
 
   return createClient(
     supabaseUrl,
-    secretKey,
+    supabaseSecretKey,
     {
       auth: {
+        persistSession:
+          false,
+
         autoRefreshToken:
           false,
 
-        persistSession:
+        detectSessionInUrl:
           false,
       },
     }

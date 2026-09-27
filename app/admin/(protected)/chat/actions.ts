@@ -8,9 +8,15 @@ import {
   redirect,
 } from "next/navigation";
 
+import type Stripe from "stripe";
+
 import {
   createClient,
 } from "@/lib/supabase/server";
+
+import {
+  getStripe,
+} from "@/lib/stripe";
 
 /* =========================================================
    TYPES
@@ -25,6 +31,26 @@ export type SendAdminChatResult =
 
       error: string;
     };
+
+type CancelPaymentRequestRow = {
+  id: string;
+
+  conversation_id: string;
+
+  status: string;
+
+  order_id:
+    | string
+    | null;
+
+  stripe_checkout_session_id:
+    | string
+    | null;
+
+  paid_at:
+    | string
+    | null;
+};
 
 /* =========================================================
    ADMIN
@@ -48,7 +74,8 @@ async function requireAdmin() {
   }
 
   const {
-    data: admin,
+    data:
+      admin,
   } =
     await supabase
       .from(
@@ -82,7 +109,8 @@ function chatUrl(
   message?: string,
   tone:
     | "success"
-    | "error" = "success"
+    | "error" =
+    "success"
 ) {
   const params =
     new URLSearchParams();
@@ -92,14 +120,18 @@ function chatUrl(
     view
   );
 
-  if (conversationId) {
+  if (
+    conversationId
+  ) {
     params.set(
       "conversation",
       conversationId
     );
   }
 
-  if (message) {
+  if (
+    message
+  ) {
     params.set(
       "message",
       message
@@ -113,6 +145,10 @@ function chatUrl(
 
   return `/admin/chat?${params.toString()}`;
 }
+
+/* =========================================================
+   REFRESH
+========================================================= */
 
 function refreshAdmin() {
   revalidatePath(
@@ -130,17 +166,11 @@ function refreshAdmin() {
 
 /* =========================================================
    SEND CHAT MESSAGE
-
-   IMPORTANT:
-   NO REDIRECT
-   NO REVALIDATE
-   NO ROUTER REFRESH
-
-   AdminLiveThread handles the message UI itself.
 ========================================================= */
 
 export async function sendAdminChatMessage(
-  formData: FormData
+  formData:
+    FormData
 ): Promise<SendAdminChatResult> {
   const supabase =
     await requireAdmin();
@@ -149,27 +179,37 @@ export async function sendAdminChatMessage(
     String(
       formData.get(
         "conversation_id"
-      ) ?? ""
+      ) ??
+        ""
     ).trim();
 
   const body =
     String(
       formData.get(
         "body"
-      ) ?? ""
+      ) ??
+        ""
     ).trim();
 
-  if (!conversationId) {
+  if (
+    !conversationId
+  ) {
     return {
-      ok: false,
+      ok:
+        false,
+
       error:
         "Conversation ID is missing.",
     };
   }
 
-  if (!body) {
+  if (
+    !body
+  ) {
     return {
-      ok: false,
+      ok:
+        false,
+
       error:
         "Enter a message before sending.",
     };
@@ -180,7 +220,9 @@ export async function sendAdminChatMessage(
     4000
   ) {
     return {
-      ok: false,
+      ok:
+        false,
+
       error:
         "Message is too long.",
     };
@@ -200,16 +242,21 @@ export async function sendAdminChatMessage(
       }
     );
 
-  if (error) {
+  if (
+    error
+  ) {
     return {
-      ok: false,
+      ok:
+        false,
+
       error:
         error.message,
     };
   }
 
   return {
-    ok: true,
+    ok:
+      true,
   };
 }
 
@@ -218,7 +265,8 @@ export async function sendAdminChatMessage(
 ========================================================= */
 
 export async function createPaymentRequest(
-  formData: FormData
+  formData:
+    FormData
 ) {
   const supabase =
     await requireAdmin();
@@ -227,31 +275,37 @@ export async function createPaymentRequest(
     String(
       formData.get(
         "conversation_id"
-      ) ?? ""
+      ) ??
+        ""
     ).trim();
 
   const amount =
     Number(
       formData.get(
         "amount"
-      ) ?? 0
+      ) ??
+        0
     );
 
   const title =
     String(
       formData.get(
         "title"
-      ) ?? ""
+      ) ??
+        ""
     ).trim();
 
   const description =
     String(
       formData.get(
         "description"
-      ) ?? ""
+      ) ??
+        ""
     ).trim();
 
-  if (!conversationId) {
+  if (
+    !conversationId
+  ) {
     throw new Error(
       "Conversation ID missing."
     );
@@ -261,7 +315,8 @@ export async function createPaymentRequest(
     !Number.isFinite(
       amount
     ) ||
-    amount < 0.5
+    amount <
+      0.5
   ) {
     redirect(
       chatUrl(
@@ -273,7 +328,9 @@ export async function createPaymentRequest(
     );
   }
 
-  if (!title) {
+  if (
+    !title
+  ) {
     redirect(
       chatUrl(
         "active",
@@ -305,7 +362,9 @@ export async function createPaymentRequest(
       }
     );
 
-  if (error) {
+  if (
+    error
+  ) {
     redirect(
       chatUrl(
         "active",
@@ -329,10 +388,24 @@ export async function createPaymentRequest(
 
 /* =========================================================
    CANCEL PAYMENT REQUEST
+
+   IMPORTANT:
+
+   1. Verify the BirdShop payment request.
+   2. If Stripe Checkout exists, inspect it.
+   3. If payment already completed, refuse cancellation.
+   4. If Checkout is open, expire it.
+   5. Only AFTER Stripe is safe do we cancel BirdShop.
+
+   This prevents:
+
+   BirdShop = cancelled
+   Stripe   = still payable
 ========================================================= */
 
 export async function cancelPaymentRequest(
-  formData: FormData
+  formData:
+    FormData
 ) {
   const supabase =
     await requireAdmin();
@@ -341,14 +414,16 @@ export async function cancelPaymentRequest(
     String(
       formData.get(
         "conversation_id"
-      ) ?? ""
+      ) ??
+        ""
     ).trim();
 
   const requestId =
     String(
       formData.get(
         "payment_request_id"
-      ) ?? ""
+      ) ??
+        ""
     ).trim();
 
   if (
@@ -357,6 +432,244 @@ export async function cancelPaymentRequest(
   ) {
     return;
   }
+
+  /* =======================================================
+     LOAD REQUEST
+  ======================================================= */
+
+  const {
+    data:
+      rawPaymentRequest,
+
+    error:
+      paymentLookupError,
+  } =
+    await supabase
+      .from(
+        "service_payment_requests"
+      )
+      .select(
+        [
+          "id",
+          "conversation_id",
+          "status",
+          "order_id",
+          "stripe_checkout_session_id",
+          "paid_at",
+        ].join(",")
+      )
+      .eq(
+        "id",
+        requestId
+      )
+      .eq(
+        "conversation_id",
+        conversationId
+      )
+      .maybeSingle();
+
+  if (
+    paymentLookupError
+  ) {
+    redirect(
+      chatUrl(
+        "active",
+        conversationId,
+        paymentLookupError.message,
+        "error"
+      )
+    );
+  }
+
+  const paymentRequest =
+    rawPaymentRequest as
+      CancelPaymentRequestRow | null;
+
+  if (
+    !paymentRequest
+  ) {
+    redirect(
+      chatUrl(
+        "active",
+        conversationId,
+        "Payment request not found.",
+        "error"
+      )
+    );
+  }
+
+  /* =======================================================
+     DATABASE PAYMENT CHECK
+  ======================================================= */
+
+  if (
+    paymentRequest.status ===
+      "paid" ||
+    Boolean(
+      paymentRequest.paid_at
+    ) ||
+    Boolean(
+      paymentRequest.order_id
+    )
+  ) {
+    redirect(
+      chatUrl(
+        "active",
+        conversationId,
+        "This payment has already been completed and cannot be cancelled.",
+        "error"
+      )
+    );
+  }
+
+  if (
+    paymentRequest.status ===
+    "cancelled"
+  ) {
+    redirect(
+      chatUrl(
+        "active",
+        conversationId,
+        "This payment request is already cancelled.",
+        "error"
+      )
+    );
+  }
+
+  /* =======================================================
+     STRIPE CHECKOUT
+  ======================================================= */
+
+  const stripeSessionId =
+    paymentRequest
+      .stripe_checkout_session_id
+      ?.trim() ??
+    "";
+
+  if (
+    stripeSessionId
+  ) {
+    const stripe =
+      getStripe();
+
+    let stripeSession:
+      Stripe.Checkout.Session;
+
+    /* =====================================================
+       RETRIEVE SESSION
+    ===================================================== */
+
+    try {
+      stripeSession =
+        await stripe
+          .checkout
+          .sessions
+          .retrieve(
+            stripeSessionId
+          );
+    } catch (
+      problem
+    ) {
+      const message =
+        problem instanceof
+          Error
+          ? problem.message
+          : "Unable to check Stripe Checkout.";
+
+      redirect(
+        chatUrl(
+          "active",
+          conversationId,
+          `Payment cancellation stopped: ${message}`,
+          "error"
+        )
+      );
+    }
+
+    /* =====================================================
+       ALREADY COMPLETED
+
+       Do not cancel something Stripe already accepted.
+    ===================================================== */
+
+    if (
+      stripeSession.status ===
+        "complete" ||
+      stripeSession.payment_status ===
+        "paid"
+    ) {
+      redirect(
+        chatUrl(
+          "active",
+          conversationId,
+          "Stripe Checkout has already completed. This payment cannot be cancelled.",
+          "error"
+        )
+      );
+    }
+
+    /* =====================================================
+       EXPIRE OPEN SESSION
+    ===================================================== */
+
+    if (
+      stripeSession.status ===
+      "open"
+    ) {
+      try {
+        stripeSession =
+          await stripe
+            .checkout
+            .sessions
+            .expire(
+              stripeSessionId
+            );
+      } catch (
+        problem
+      ) {
+        const message =
+          problem instanceof
+            Error
+            ? problem.message
+            : "Unable to expire Stripe Checkout.";
+
+        redirect(
+          chatUrl(
+            "active",
+            conversationId,
+            `Payment cancellation stopped: ${message}`,
+            "error"
+          )
+        );
+      }
+    }
+
+    /* =====================================================
+       REQUIRE EXPIRED STATE
+    ===================================================== */
+
+    if (
+      stripeSession.status !==
+      "expired"
+    ) {
+      redirect(
+        chatUrl(
+          "active",
+          conversationId,
+          "Stripe Checkout could not be safely disabled.",
+          "error"
+        )
+      );
+    }
+  }
+
+  /* =======================================================
+     CANCEL BIRDSHOP REQUEST
+
+     Stripe is now either:
+     - nonexistent
+     - or expired
+  ======================================================= */
 
   const {
     error,
@@ -369,7 +682,9 @@ export async function cancelPaymentRequest(
       }
     );
 
-  if (error) {
+  if (
+    error
+  ) {
     redirect(
       chatUrl(
         "active",
@@ -386,7 +701,7 @@ export async function cancelPaymentRequest(
     chatUrl(
       "active",
       conversationId,
-      "Payment request cancelled."
+      "Payment request cancelled and Stripe Checkout disabled."
     )
   );
 }
@@ -396,7 +711,8 @@ export async function cancelPaymentRequest(
 ========================================================= */
 
 export async function setConversationStatus(
-  formData: FormData
+  formData:
+    FormData
 ) {
   const supabase =
     await requireAdmin();
@@ -405,14 +721,16 @@ export async function setConversationStatus(
     String(
       formData.get(
         "conversation_id"
-      ) ?? ""
+      ) ??
+        ""
     ).trim();
 
   const status =
     String(
       formData.get(
         "status"
-      ) ?? ""
+      ) ??
+        ""
     ).trim();
 
   if (
@@ -420,7 +738,9 @@ export async function setConversationStatus(
     ![
       "open",
       "closed",
-    ].includes(status)
+    ].includes(
+      status
+    )
   ) {
     return;
   }
@@ -444,7 +764,9 @@ export async function setConversationStatus(
         null
       );
 
-  if (error) {
+  if (
+    error
+  ) {
     redirect(
       chatUrl(
         status ===
@@ -480,7 +802,8 @@ export async function setConversationStatus(
 ========================================================= */
 
 export async function deleteConversation(
-  formData: FormData
+  formData:
+    FormData
 ) {
   const supabase =
     await requireAdmin();
@@ -489,10 +812,13 @@ export async function deleteConversation(
     String(
       formData.get(
         "conversation_id"
-      ) ?? ""
+      ) ??
+        ""
     ).trim();
 
-  if (!conversationId) {
+  if (
+    !conversationId
+  ) {
     return;
   }
 
@@ -507,7 +833,9 @@ export async function deleteConversation(
       }
     );
 
-  if (error) {
+  if (
+    error
+  ) {
     redirect(
       chatUrl(
         "closed",
@@ -534,7 +862,8 @@ export async function deleteConversation(
 ========================================================= */
 
 export async function restoreConversation(
-  formData: FormData
+  formData:
+    FormData
 ) {
   const supabase =
     await requireAdmin();
@@ -543,10 +872,13 @@ export async function restoreConversation(
     String(
       formData.get(
         "conversation_id"
-      ) ?? ""
+      ) ??
+        ""
     ).trim();
 
-  if (!conversationId) {
+  if (
+    !conversationId
+  ) {
     return;
   }
 
@@ -561,7 +893,9 @@ export async function restoreConversation(
       }
     );
 
-  if (error) {
+  if (
+    error
+  ) {
     redirect(
       chatUrl(
         "deleted",
@@ -588,7 +922,8 @@ export async function restoreConversation(
 ========================================================= */
 
 export async function permanentlyDeleteConversation(
-  formData: FormData
+  formData:
+    FormData
 ) {
   const supabase =
     await requireAdmin();
@@ -597,10 +932,13 @@ export async function permanentlyDeleteConversation(
     String(
       formData.get(
         "conversation_id"
-      ) ?? ""
+      ) ??
+        ""
     ).trim();
 
-  if (!conversationId) {
+  if (
+    !conversationId
+  ) {
     return;
   }
 
@@ -615,7 +953,9 @@ export async function permanentlyDeleteConversation(
       }
     );
 
-  if (error) {
+  if (
+    error
+  ) {
     redirect(
       chatUrl(
         "deleted",

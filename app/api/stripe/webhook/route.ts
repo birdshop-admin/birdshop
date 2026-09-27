@@ -12,13 +12,94 @@ import {
   getStripe,
 } from "@/lib/stripe";
 
+/* =========================================================
+   RUNTIME
+========================================================= */
+
 export const runtime =
   "nodejs";
 
-async function processPaidSession(
+export const dynamic =
+  "force-dynamic";
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function requireWebhookSecret() {
+  const value =
+    process.env
+      .STRIPE_WEBHOOK_SECRET
+      ?.trim();
+
+  if (!value) {
+    throw new Error(
+      "STRIPE_WEBHOOK_SECRET is not configured."
+    );
+  }
+
+  return value;
+}
+
+function objectId(
+  value:
+    | string
+    | {
+        id: string;
+      }
+    | null
+    | undefined
+) {
+  if (!value) {
+    return null;
+  }
+
+  if (
+    typeof value ===
+    "string"
+  ) {
+    return value;
+  }
+
+  return value.id;
+}
+
+function isUuid(
+  value:
+    string
+) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value
+  );
+}
+
+/* =========================================================
+   FINALIZE PAID CHECKOUT
+========================================================= */
+
+async function finalizePaidCheckout(
   session:
     Stripe.Checkout.Session
 ) {
+  /* =======================================================
+     ONLY PAYMENT CHECKOUTS
+  ======================================================= */
+
+  if (
+    session.mode !==
+    "payment"
+  ) {
+    return;
+  }
+
+
+  /*
+   * checkout.session.completed can fire before some
+   * asynchronous payment methods actually settle.
+   *
+   * Only a Stripe session marked PAID may create an order.
+   */
+
   if (
     session.payment_status !==
     "paid"
@@ -26,347 +107,372 @@ async function processPaidSession(
     return;
   }
 
+
+  /* =======================================================
+     BIRDSHOP IDENTIFIERS
+  ======================================================= */
+
   const paymentRequestId =
     session.metadata
-      ?.payment_request_id;
+      ?.birdshop_payment_request_id
+      ?.trim() ||
+    session.client_reference_id
+      ?.trim() ||
+    "";
 
-  if (!paymentRequestId) {
-    return;
+  const conversationId =
+    session.metadata
+      ?.birdshop_conversation_id
+      ?.trim() ||
+    "";
+
+
+  if (
+    !paymentRequestId ||
+    !isUuid(
+      paymentRequestId
+    )
+  ) {
+    throw new Error(
+      "Stripe session is missing a valid BirdShop payment request ID."
+    );
   }
+
+
+  if (
+    !conversationId ||
+    !isUuid(
+      conversationId
+    )
+  ) {
+    throw new Error(
+      "Stripe session is missing a valid BirdShop conversation ID."
+    );
+  }
+
+
+  /* =======================================================
+     STRIPE PAYMENT VALUES
+  ======================================================= */
+
+  if (
+    session.amount_total ===
+    null
+  ) {
+    throw new Error(
+      "Stripe session is missing amount_total."
+    );
+  }
+
+
+  if (
+    !session.currency
+  ) {
+    throw new Error(
+      "Stripe session is missing currency."
+    );
+  }
+
+
+  const paymentIntentId =
+    objectId(
+      session.payment_intent
+    );
+
+  const stripeCustomerId =
+    objectId(
+      session.customer
+    );
+
+  const customerEmail =
+    session.customer_details
+      ?.email ??
+    session.customer_email ??
+    null;
+
+
+  /* =======================================================
+     ATOMIC SUPABASE FINALIZATION
+  ======================================================= */
 
   const supabase =
     createAdminClient();
 
-  const {
-    data:
-      paymentRequest,
-  } =
-    await supabase
-      .from(
-        "service_payment_requests"
-      )
-      .select(
-        "id, conversation_id, order_id, amount, currency, status"
-      )
-      .eq(
-        "id",
-        paymentRequestId
-      )
-      .maybeSingle();
-
-  if (
-    !paymentRequest ||
-    paymentRequest.status ===
-      "paid"
-  ) {
-    return;
-  }
-
-  if (
-    paymentRequest.status !==
-    "pending"
-  ) {
-    return;
-  }
-
-  const expectedAmount =
-    Math.round(
-      Number(
-        paymentRequest.amount
-      ) * 100
-    );
-
-  if (
-    session.amount_total !==
-    expectedAmount
-  ) {
-    throw new Error(
-      "Stripe payment amount does not match BirdShop payment request."
-    );
-  }
-
-  if (
-    session.currency
-      ?.toLowerCase() !==
-    String(
-      paymentRequest.currency
-    ).toLowerCase()
-  ) {
-    throw new Error(
-      "Stripe payment currency does not match BirdShop payment request."
-    );
-  }
 
   const {
     data:
-      order,
+      orderId,
+
+    error,
   } =
-    await supabase
-      .from(
-        "orders"
-      )
-      .select(
-        "id, service_status"
-      )
-      .eq(
-        "id",
-        paymentRequest.order_id
-      )
-      .maybeSingle();
-
-  if (!order) {
-    throw new Error(
-      "BirdShop order not found."
-    );
-  }
-
-  const paidAt =
-    new Date()
-      .toISOString();
-
-  const paymentReference =
-    typeof session.payment_intent ===
-    "string"
-      ? session.payment_intent
-      : session.id;
-
-  /*
-   * Update the order first.
-   *
-   * If anything fails afterward, Stripe will retry the
-   * webhook and BirdShop can finish synchronizing.
-   */
-  const nextServiceStatus =
-    [
-      "new",
-      "discussing",
-      "quote_sent",
-      "awaiting_payment",
-      "customer_replied",
-    ].includes(
-      order.service_status ??
-        ""
-    )
-      ? "new"
-      : order.service_status;
-
-  const {
-    error:
-      orderError,
-  } =
-    await supabase
-      .from(
-        "orders"
-      )
-      .update({
-        payment_status:
-          "paid",
-
-        payment_provider:
-          "stripe",
-
-        payment_reference:
-          paymentReference,
-
-        paid_at:
-          paidAt,
-
-        order_status:
-          "active",
-
-        subtotal:
-          Number(
-            paymentRequest.amount
-          ),
-
-        total:
-          Number(
-            paymentRequest.amount
-          ),
-
-        package_price:
-          Number(
-            paymentRequest.amount
-          ),
-
-        service_status:
-          nextServiceStatus,
-      })
-      .eq(
-        "id",
-        paymentRequest.order_id
-      );
-
-  if (orderError) {
-    throw orderError;
-  }
-
-  const {
-    data:
-      updatedRequest,
-
-    error:
-      requestError,
-  } =
-    await supabase
-      .from(
-        "service_payment_requests"
-      )
-      .update({
-        status:
-          "paid",
-
-        paid_at:
-          paidAt,
-
-        stripe_payment_intent:
-          paymentReference,
-      })
-      .eq(
-        "id",
-        paymentRequest.id
-      )
-      .eq(
-        "status",
-        "pending"
-      )
-      .select(
-        "id"
-      )
-      .maybeSingle();
-
-  if (requestError) {
-    throw requestError;
-  }
-
-  /*
-   * Only add the system message when this webhook was the
-   * request that actually changed Pending -> Paid.
-   *
-   * This prevents duplicate webhook messages.
-   */
-  if (updatedRequest) {
-    await supabase
-      .from(
-        "service_messages"
-      )
-      .insert({
-        conversation_id:
-          paymentRequest
-            .conversation_id,
-
-        sender_type:
-          "system",
-
-        sender_label:
-          "BirdShop",
-
-        body:
-          `Payment received: $${Number(
-            paymentRequest.amount
-          ).toFixed(2)}`,
-
-        message_type:
-          "system",
-
-        metadata: {
-          payment_request_id:
-            paymentRequest.id,
-
-          payment_status:
-            "paid",
-        },
-      });
-  }
-}
-
-export async function POST(
-  request: Request
-) {
-  const signature =
-    request.headers.get(
-      "stripe-signature"
-    );
-
-  const webhookSecret =
-    process.env
-      .STRIPE_WEBHOOK_SECRET;
-
-  if (
-    !signature ||
-    !webhookSecret
-  ) {
-    return NextResponse.json(
+    await supabase.rpc(
+      "birdshop_finalize_service_payment",
       {
-        error:
-          "Webhook configuration missing.",
-      },
-      {
-        status: 400,
+        p_payment_request_id:
+          paymentRequestId,
+
+        p_checkout_session_id:
+          session.id,
+
+        p_payment_intent_id:
+          paymentIntentId,
+
+        p_stripe_customer_id:
+          stripeCustomerId,
+
+        p_amount_total:
+          session.amount_total,
+
+        p_currency:
+          session.currency,
+
+        p_customer_email:
+          customerEmail,
       }
     );
+
+
+  if (error) {
+    console.error(
+      "BirdShop payment finalization failed:",
+      {
+        event:
+          "stripe_payment_finalize",
+
+        paymentRequestId,
+
+        sessionId:
+          session.id,
+
+        message:
+          error.message,
+      }
+    );
+
+    throw new Error(
+      `BirdShop payment finalization failed: ${error.message}`
+    );
   }
 
+
+  console.info(
+    "BirdShop Stripe payment finalized:",
+    {
+      paymentRequestId,
+
+      orderId,
+
+      sessionId:
+        session.id,
+    }
+  );
+}
+
+/* =========================================================
+   POST
+========================================================= */
+
+export async function POST(
+  request:
+    Request
+) {
   const stripe =
     getStripe();
 
-  const rawBody =
-    await request.text();
-
-  let event:
-    Stripe.Event;
+  let webhookSecret:
+    string;
 
   try {
-    event =
-      stripe.webhooks.constructEvent(
-        rawBody,
-        signature,
-        webhookSecret
-      );
-  } catch {
-    return NextResponse.json(
-      {
-        error:
-          "Invalid Stripe signature.",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  try {
-    if (
-      event.type ===
-        "checkout.session.completed" ||
-      event.type ===
-        "checkout.session.async_payment_succeeded"
-    ) {
-      await processPaidSession(
-        event.data
-          .object as Stripe.Checkout.Session
-      );
-    }
-
-    return NextResponse.json({
-      received:
-        true,
-    });
+    webhookSecret =
+      requireWebhookSecret();
   } catch (
     problem
   ) {
     console.error(
-      "BirdShop Stripe webhook error:",
+      "Stripe webhook configuration error:",
       problem
     );
 
     return NextResponse.json(
       {
         error:
-          "Webhook processing failed.",
+          "Webhook is not configured.",
       },
       {
-        status: 500,
+        status:
+          500,
+      }
+    );
+  }
+
+
+  /* =======================================================
+     SIGNATURE
+  ======================================================= */
+
+  const signature =
+    request.headers.get(
+      "stripe-signature"
+    );
+
+
+  if (!signature) {
+    return NextResponse.json(
+      {
+        error:
+          "Missing Stripe signature.",
+      },
+      {
+        status:
+          400,
+      }
+    );
+  }
+
+
+  /* =======================================================
+     RAW BODY
+
+     IMPORTANT:
+     Stripe signature verification requires the exact raw
+     request body. Do NOT call request.json() first.
+  ======================================================= */
+
+  const rawBody =
+    await request.text();
+
+
+  let event:
+    Stripe.Event;
+
+  try {
+    event =
+      stripe.webhooks
+        .constructEvent(
+          rawBody,
+          signature,
+          webhookSecret
+        );
+  } catch (
+    problem
+  ) {
+    console.error(
+      "Invalid Stripe webhook signature:",
+      problem instanceof
+        Error
+        ? problem.message
+        : "Unknown signature error"
+    );
+
+    return NextResponse.json(
+      {
+        error:
+          "Invalid Stripe signature.",
+      },
+      {
+        status:
+          400,
+      }
+    );
+  }
+
+
+  /* =======================================================
+     EVENTS
+  ======================================================= */
+
+  try {
+    switch (
+      event.type
+    ) {
+      /* ===================================================
+         NORMAL CARD / IMMEDIATE PAYMENT
+      =================================================== */
+
+      case "checkout.session.completed": {
+        const session =
+          event.data.object as
+            Stripe.Checkout.Session;
+
+        await finalizePaidCheckout(
+          session
+        );
+
+        break;
+      }
+
+
+      /* ===================================================
+         ASYNC PAYMENT METHOD FINISHED LATER
+      =================================================== */
+
+      case "checkout.session.async_payment_succeeded": {
+        const session =
+          event.data.object as
+            Stripe.Checkout.Session;
+
+        await finalizePaidCheckout(
+          session
+        );
+
+        break;
+      }
+
+
+      /* ===================================================
+         EVERYTHING ELSE
+
+         We acknowledge it without changing an order.
+      =================================================== */
+
+      default:
+        break;
+    }
+
+
+    return NextResponse.json({
+      received:
+        true,
+
+      eventId:
+        event.id,
+    });
+  } catch (
+    problem
+  ) {
+    /*
+     * Return 500 so Stripe retries the webhook.
+     *
+     * Our database function is idempotent, so retrying is
+     * safe.
+     */
+
+    console.error(
+      "BirdShop Stripe webhook processing failed:",
+      {
+        eventId:
+          event.id,
+
+        eventType:
+          event.type,
+
+        message:
+          problem instanceof
+            Error
+            ? problem.message
+            : "Unknown processing error",
+      }
+    );
+
+
+    return NextResponse.json(
+      {
+        error:
+          "Stripe event could not be processed.",
+      },
+      {
+        status:
+          500,
       }
     );
   }

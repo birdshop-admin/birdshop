@@ -9,10 +9,6 @@ import {
   type FormEvent,
 } from "react";
 
-import {
-  useRouter,
-} from "next/navigation";
-
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
@@ -36,11 +32,6 @@ import {
 } from "@/lib/site-config";
 
 import {
-  publishSupportChatContext,
-  type BirdShopSupportChatContext,
-} from "@/lib/support-chat";
-
-import {
   createClient,
 } from "@/lib/supabase/client";
 
@@ -60,14 +51,14 @@ type ContactTopic =
   | "review"
   | "general";
 
-type SelectedContactTopic =
-  | ContactTopic
-  | null;
-
 type ChatTopic =
   | "service"
   | "product"
   | "general";
+
+type SelectedContactTopic =
+  | ContactTopic
+  | null;
 
 type ReviewKind =
   | "Product"
@@ -83,29 +74,37 @@ type ContactClientProps = {
   initialProduct?: string;
 };
 
-type ReviewSubmission = {
-  kind:
-    "review";
+type CreatedConversation = {
+  conversation_id?: string;
 
-  reference:
-    string;
+  id?: string;
 
-  summary:
-    string;
+  reference?: string;
+
+  public_token?: string;
+
+  conversation_type?: string;
 };
 
-type CreatedConversation = {
-  conversation_id?:
-    string;
+type ConversationSuccess = {
+  reference: string;
 
-  reference?:
-    string;
+  token: string;
 
-  public_token?:
-    string;
+  conversationType:
+    ChatTopic;
 
-  conversation_type?:
-    string;
+  email: string;
+
+  title: string;
+
+  detail: string;
+};
+
+type ReviewSubmission = {
+  reference: string;
+
+  summary: string;
 };
 
 /* =========================================================
@@ -195,11 +194,11 @@ function resolveTopic({
 
   if (
     initialTopic ===
-      "review" ||
+      "service" ||
     initialTopic ===
       "product" ||
     initialTopic ===
-      "service" ||
+      "review" ||
     initialTopic ===
       "general"
   ) {
@@ -234,7 +233,9 @@ function formatPrice(
     return "Custom Quote";
   }
 
-  return `$${value.toFixed(
+  return `$${Number(
+    value
+  ).toFixed(
     2
   )}`;
 }
@@ -264,17 +265,66 @@ function isValidEmail(
   );
 }
 
+function conversationTypeLabel(
+  type:
+    ChatTopic
+) {
+  if (
+    type ===
+    "product"
+  ) {
+    return "Product Support";
+  }
+
+  if (
+    type ===
+    "general"
+  ) {
+    return "General Support";
+  }
+
+  return "Service Request";
+}
+
+/*
+ * Supabase can return a single JSON object or, depending on
+ * the function return signature, a one-row array.
+ *
+ * Supporting both makes the contact page more resilient.
+ */
+function normalizeCreatedConversation(
+  value:
+    unknown
+):
+  CreatedConversation | null {
+
+  const candidate =
+    Array.isArray(
+      value
+    )
+      ? value[0]
+      : value;
+
+  if (
+    !candidate ||
+    typeof candidate !==
+      "object"
+  ) {
+    return null;
+  }
+
+  return candidate as
+    CreatedConversation;
+}
+
 /* =========================================================
-   CONTACT CLIENT
+   COMPONENT
 ========================================================= */
 
 export default function ContactClient(
   props:
     ContactClientProps
 ) {
-  const router =
-    useRouter();
-
   const supabase =
     useMemo(
       () =>
@@ -290,7 +340,7 @@ export default function ContactClient(
     useCart();
 
   /* =======================================================
-     INITIAL VALUES
+     INITIAL DATA
   ======================================================= */
 
   const initialTopic =
@@ -440,8 +490,18 @@ export default function ContactClient(
     );
 
   const [
-    submission,
-    setSubmission,
+    conversationSuccess,
+    setConversationSuccess,
+  ] =
+    useState<
+      ConversationSuccess | null
+    >(
+      null
+    );
+
+  const [
+    reviewSubmission,
+    setReviewSubmission,
   ] =
     useState<
       ReviewSubmission | null
@@ -471,19 +531,50 @@ export default function ContactClient(
     }
 
     const frame =
-      window
-        .requestAnimationFrame(
-          () => {
-            const requestedProduct =
-              productList.find(
-                (
-                  product
-                ) =>
-                  product.slug ===
-                  props.initialProduct
-              );
+      window.requestAnimationFrame(
+        () => {
+          const requested =
+            productList.find(
+              (
+                product
+              ) =>
+                product.slug ===
+                props.initialProduct
+            );
 
-            setProductSlug(
+          setProductSlug(
+            (
+              current
+            ) => {
+              const exists =
+                productList.some(
+                  (
+                    product
+                  ) =>
+                    product.slug ===
+                    current
+                );
+
+              if (
+                exists
+              ) {
+                return current;
+              }
+
+              return (
+                requested
+                  ?.slug ??
+                productList[0]
+                  .slug
+              );
+            }
+          );
+
+          if (
+            reviewKind ===
+            "Product"
+          ) {
+            setReviewSubject(
               (
                 current
               ) => {
@@ -503,54 +594,21 @@ export default function ContactClient(
                 }
 
                 return (
-                  requestedProduct
+                  requested
                     ?.slug ??
                   productList[0]
                     .slug
                 );
               }
             );
-
-            if (
-              reviewKind ===
-              "Product"
-            ) {
-              setReviewSubject(
-                (
-                  current
-                ) => {
-                  const exists =
-                    productList.some(
-                      (
-                        product
-                      ) =>
-                        product.slug ===
-                        current
-                    );
-
-                  if (
-                    exists
-                  ) {
-                    return current;
-                  }
-
-                  return (
-                    requestedProduct
-                      ?.slug ??
-                    productList[0]
-                      .slug
-                  );
-                }
-              );
-            }
           }
-        );
+        }
+      );
 
     return () => {
-      window
-        .cancelAnimationFrame(
-          frame
-        );
+      window.cancelAnimationFrame(
+        frame
+      );
     };
   }, [
     productsLoaded,
@@ -560,7 +618,7 @@ export default function ContactClient(
   ]);
 
   /* =======================================================
-     CURRENT SERVICE
+     SELECTED SERVICE
   ======================================================= */
 
   const selectedService =
@@ -580,7 +638,7 @@ export default function ContactClient(
     );
 
   /* =======================================================
-     CURRENT PRODUCT
+     SELECTED PRODUCT
   ======================================================= */
 
   const selectedProduct =
@@ -594,7 +652,7 @@ export default function ContactClient(
     productList[0];
 
   /* =======================================================
-     REVIEW SUBJECT
+     REVIEW SUBJECTS
   ======================================================= */
 
   const selectedReviewProduct =
@@ -622,39 +680,54 @@ export default function ContactClient(
   const liveTitle =
     useMemo(
       () => {
-        switch (
-          topic
+        if (
+          topic ===
+          "service"
         ) {
-          case "service":
-            return (
-              selectedService
-                ?.name ??
-              "Custom Service Request"
-            );
-
-          case "product":
-            return (
-              selectedProduct
-                ?.name ??
-              "Product Help"
-            );
-
-          case "review":
-            return reviewKind ===
-              "Product"
-              ? selectedReviewProduct
-                  ?.name ??
-                  "Product Review"
-              : selectedReviewService
-                    ?.name ??
-                  "Service Review";
-
-          default:
-            return (
-              generalSubject ||
-              "General Support"
-            );
+          return (
+            selectedService
+              ?.name ??
+            "Custom Service Request"
+          );
         }
+
+        if (
+          topic ===
+          "product"
+        ) {
+          return (
+            selectedProduct
+              ?.name ??
+            "Product Support"
+          );
+        }
+
+        if (
+          topic ===
+          "review"
+        ) {
+          if (
+            reviewKind ===
+            "Product"
+          ) {
+            return (
+              selectedReviewProduct
+                ?.name ??
+              "Product Review"
+            );
+          }
+
+          return (
+            selectedReviewService
+              ?.name ??
+            "Service Review"
+          );
+        }
+
+        return (
+          generalSubject ||
+          "General Support"
+        );
       },
       [
         topic,
@@ -670,25 +743,32 @@ export default function ContactClient(
   const liveDetail =
     useMemo(
       () => {
-        switch (
-          topic
+        if (
+          topic ===
+          "service"
         ) {
-          case "service":
-            return "Custom Quote";
-
-          case "product":
-            return (
-              selectedProduct
-                ?.category ??
-              "Digital Product"
-            );
-
-          case "review":
-            return `${rating}/5 Review`;
-
-          default:
-            return "Private Support Chat";
+          return "Custom Quote";
         }
+
+        if (
+          topic ===
+          "product"
+        ) {
+          return (
+            selectedProduct
+              ?.category ??
+            "Digital Product"
+          );
+        }
+
+        if (
+          topic ===
+          "review"
+        ) {
+          return `${rating}/5 Review`;
+        }
+
+        return "Private Support Chat";
       },
       [
         topic,
@@ -706,116 +786,6 @@ export default function ContactClient(
             .price
         )
       : null;
-
-  /* =======================================================
-     SUPPORT CONTEXT
-  ======================================================= */
-
-  const chatContext =
-    useMemo<
-      BirdShopSupportChatContext | null
-    >(
-      () => {
-        if (
-          !topic ||
-          topic ===
-            "review"
-        ) {
-          return null;
-        }
-
-        if (
-          topic ===
-          "service"
-        ) {
-          return {
-            topic:
-              "service",
-
-            label:
-              "Custom Service Request",
-
-            serviceSlug:
-              selectedService
-                ?.slug,
-
-            serviceName:
-              selectedService
-                ?.name,
-
-            packageName:
-              "Custom Quote",
-          };
-        }
-
-        if (
-          topic ===
-          "product"
-        ) {
-          return {
-            topic:
-              "product",
-
-            label:
-              "Product Help",
-
-            productSlug:
-              selectedProduct
-                ?.slug,
-
-            productName:
-              selectedProduct
-                ?.name,
-          };
-        }
-
-        return {
-          topic:
-            "general",
-
-          label:
-            "General Support",
-
-          subject:
-            generalSubject
-              .trim() ||
-            undefined,
-        };
-      },
-      [
-        topic,
-        selectedService,
-        selectedProduct,
-        generalSubject,
-      ]
-    );
-
-  useEffect(() => {
-    if (
-      !chatContext
-    ) {
-      return;
-    }
-
-    publishSupportChatContext(
-      chatContext
-    );
-  }, [
-    chatContext,
-  ]);
-
-  /* =======================================================
-     SERVICE CHANGE
-  ======================================================= */
-
-  function handleServiceChange(
-    nextSlug:
-      string
-  ) {
-    setServiceSlug(
-      nextSlug
-    );
-  }
 
   /* =======================================================
      REVIEW TYPE
@@ -850,62 +820,75 @@ export default function ContactClient(
   }
 
   /* =======================================================
-     REVIEW SUMMARY
+     RESET CONTACT FIELDS
   ======================================================= */
 
-  function buildReviewSummary(
-    reference:
-      string
-  ) {
-    const reviewedName =
-      reviewKind ===
-      "Product"
-        ? selectedReviewProduct
-            ?.name
-        : selectedReviewService
-            ?.name;
+  function resetContactFields() {
+    setDisplayName(
+      ""
+    );
 
-    return [
-      "BIRDSHOP REVIEW SUBMISSION",
+    setCustomerEmail(
+      ""
+    );
 
-      "==========================",
+    setContactHandle(
+      ""
+    );
 
-      `Reference: ${reference}`,
+    setGeneralSubject(
+      ""
+    );
 
-      `Experience: ${reviewKind}`,
+    setOrderReference(
+      ""
+    );
 
-      `Reviewed: ${
-        reviewedName ??
-        "Not Selected"
-      }`,
+    setMessage(
+      ""
+    );
 
-      `Rating: ${rating}/5`,
+    setWebsite(
+      ""
+    );
 
-      `Headline: ${reviewTitle.trim()}`,
+    setSubmitError(
+      null
+    );
 
-      "",
-
-      message.trim(),
-
-      "",
-
-      "Status: Pending moderation",
-    ].join(
-      "\n"
+    setCopied(
+      false
     );
   }
 
   /* =======================================================
      CREATE PRIVATE CONVERSATION
+
+     IMPORTANT:
+
+     There is deliberately NO navigation in this function.
+
+     It only:
+       1. validates
+       2. creates the conversation
+       3. receives reference + token
+       4. sets confirmation state
+
+     The browser stays on /contact.
   ======================================================= */
 
   async function createPrivateConversation(
     conversationType:
       ChatTopic
   ) {
+    const email =
+      customerEmail
+        .trim()
+        .toLowerCase();
+
     if (
       !isValidEmail(
-        customerEmail
+        email
       )
     ) {
       throw new Error(
@@ -913,14 +896,24 @@ export default function ContactClient(
       );
     }
 
+    const trimmedMessage =
+      message.trim();
+
     if (
-      message
-        .trim()
-        .length >
+      trimmedMessage.length <
+      5
+    ) {
+      throw new Error(
+        "Please add a little more detail to your message."
+      );
+    }
+
+    if (
+      trimmedMessage.length >
       4000
     ) {
       throw new Error(
-        "Private-chat requests cannot exceed 4000 characters."
+        "Private-chat messages cannot exceed 4000 characters."
       );
     }
 
@@ -957,24 +950,6 @@ export default function ContactClient(
       );
     }
 
-    const email =
-      customerEmail
-        .trim()
-        .toLowerCase();
-
-    const alternateContact =
-      contactHandle
-        .trim();
-
-    /*
-     * Product and General Support can optionally include a
-     * related order/reference.
-     *
-     * The universal conversation schema does not need to
-     * pretend that reference is the conversation's own
-     * BS reference, so we preserve it inside the first
-     * customer message.
-     */
     const relatedReference =
       orderReference
         .trim();
@@ -989,14 +964,12 @@ export default function ContactClient(
       )
         ? [
             `Related Order / Reference: ${relatedReference}`,
-
             "",
-
-            message.trim(),
+            trimmedMessage,
           ].join(
             "\n"
           )
-        : message.trim();
+        : trimmedMessage;
 
     const subject =
       conversationType ===
@@ -1027,7 +1000,8 @@ export default function ContactClient(
             email,
 
           p_customer_contact:
-            alternateContact ||
+            contactHandle
+              .trim() ||
             null,
 
           p_subject:
@@ -1106,19 +1080,21 @@ export default function ContactClient(
     }
 
     const created =
-      data as
-        | CreatedConversation
-        | null;
+      normalizeCreatedConversation(
+        data
+      );
 
     const reference =
       String(
-        created?.reference ??
+        created
+          ?.reference ??
         ""
       ).trim();
 
     const token =
       String(
-        created?.public_token ??
+        created
+          ?.public_token ??
         ""
       ).trim();
 
@@ -1126,7 +1102,7 @@ export default function ContactClient(
       !reference
     ) {
       throw new Error(
-        "BirdShop created the conversation but did not return a reference."
+        "BirdShop created the conversation but did not return its reference."
       );
     }
 
@@ -1134,95 +1110,132 @@ export default function ContactClient(
       !token
     ) {
       throw new Error(
-        "BirdShop created the conversation but could not open the private chat."
+        "BirdShop created the conversation but did not return private chat access."
       );
     }
 
-    /* =====================================================
-       SAVE CONTEXT
-    ===================================================== */
+    let detail =
+      "Private Support";
 
     if (
       conversationType ===
       "service"
     ) {
-      publishSupportChatContext({
-        topic:
-          "service",
-
-        label:
-          "Custom Service Request",
-
-        serviceSlug:
-          selectedService
-            ?.slug,
-
-        serviceName:
-          selectedService
-            ?.name,
-
-        packageName:
-          "Custom Quote",
-
-        reference,
-      });
+      detail =
+        "Custom Quote";
     }
 
     if (
       conversationType ===
       "product"
     ) {
-      publishSupportChatContext({
-        topic:
-          "product",
+      const parts = [
+        selectedProduct
+          ?.platform,
+        selectedProduct
+          ?.region,
+      ].filter(
+        Boolean
+      );
 
-        label:
-          "Product Help",
-
-        productSlug:
-          selectedProduct
-            ?.slug,
-
-        productName:
-          selectedProduct
-            ?.name,
-
-        reference,
-      });
+      detail =
+        parts.length >
+        0
+          ? parts.join(
+              " · "
+            )
+          : "Product Support";
     }
 
-    if (
-      conversationType ===
-      "general"
-    ) {
-      publishSupportChatContext({
-        topic:
-          "general",
+    /*
+     * THIS IS THE SUCCESS ACTION.
+     *
+     * Setting React state does not change the URL.
+     * The customer stays on /contact.
+     */
+    setConversationSuccess({
+      reference,
 
-        label:
-          "General Support",
+      token,
 
-        subject:
-          generalSubject
-            .trim(),
+      conversationType,
 
-        reference,
-      });
-    }
+      email,
 
-    /* =====================================================
-       OPEN PRIVATE CHAT
-    ===================================================== */
+      title:
+        conversationType ===
+          "service"
+          ? selectedService
+              ?.name ??
+            "Custom Service Request"
+          : conversationType ===
+              "product"
+            ? selectedProduct
+                ?.name ??
+              "Product Support"
+            : generalSubject
+                .trim() ||
+              "General Support",
 
-    router.push(
-      `/service-chat?token=${encodeURIComponent(
-        token
-      )}`
+      detail,
+    });
+
+    /*
+     * Put the new confirmation screen at the top.
+     *
+     * Still no navigation.
+     */
+    window.requestAnimationFrame(
+      () => {
+        window.scrollTo({
+          top:
+            0,
+
+          behavior:
+            "smooth",
+        });
+      }
     );
   }
 
   /* =======================================================
-     REVIEW
+     REVIEW SUMMARY
+  ======================================================= */
+
+  function buildReviewSummary(
+    reference:
+      string
+  ) {
+    const reviewedName =
+      reviewKind ===
+      "Product"
+        ? selectedReviewProduct
+            ?.name
+        : selectedReviewService
+            ?.name;
+
+    return [
+      "BIRDSHOP REVIEW SUBMISSION",
+      "==========================",
+      `Reference: ${reference}`,
+      `Experience: ${reviewKind}`,
+      `Reviewed: ${
+        reviewedName ??
+        "Not Selected"
+      }`,
+      `Rating: ${rating}/5`,
+      `Headline: ${reviewTitle.trim()}`,
+      "",
+      message.trim(),
+      "",
+      "Status: Pending moderation",
+    ].join(
+      "\n"
+    );
+  }
+
+  /* =======================================================
+     SUBMIT REVIEW
   ======================================================= */
 
   async function submitReview() {
@@ -1307,7 +1320,8 @@ export default function ContactClient(
               .trim(),
 
           p_body:
-            message.trim(),
+            message
+              .trim(),
 
           p_subject_slug:
             reviewSlug,
@@ -1336,21 +1350,41 @@ export default function ContactClient(
       String(
         data ??
         ""
+      ).trim();
+
+    if (
+      !reference
+    ) {
+      throw new Error(
+        "BirdShop received the review but did not return a reference."
       );
+    }
 
-    const summary =
-      buildReviewSummary(
-        reference
-      );
-
-    setSubmission({
-      kind:
-        "review",
-
+    setReviewSubmission({
       reference,
 
-      summary,
+      summary:
+        buildReviewSummary(
+          reference
+        ),
     });
+
+    window.setTimeout(
+      () => {
+        document
+          .getElementById(
+            "submitted-request"
+          )
+          ?.scrollIntoView({
+            behavior:
+              "smooth",
+
+            block:
+              "center",
+          });
+      },
+      50
+    );
   }
 
   /* =======================================================
@@ -1361,8 +1395,7 @@ export default function ContactClient(
     event:
       FormEvent<HTMLFormElement>
   ) {
-    event
-      .preventDefault();
+    event.preventDefault();
 
     if (
       submitting
@@ -1389,11 +1422,10 @@ export default function ContactClient(
     }
 
     /*
-     * Honeypot
+     * Honeypot.
      */
     if (
-      website
-        .trim()
+      website.trim()
     ) {
       return;
     }
@@ -1411,11 +1443,6 @@ export default function ContactClient(
       return;
     }
 
-    /*
-     * Every real private conversation now requires email.
-     *
-     * Reviews stay on the existing contact model.
-     */
     if (
       topic !==
         "review" &&
@@ -1424,7 +1451,7 @@ export default function ContactClient(
       )
     ) {
       setSubmitError(
-        "Enter a valid email address so you can return to your private conversation later."
+        "Enter a valid email address so you can recover your private conversation later."
       );
 
       return;
@@ -1440,30 +1467,14 @@ export default function ContactClient(
         "review"
       ) {
         await submitReview();
-
-        window.setTimeout(
-          () => {
-            document
-              .getElementById(
-                "submitted-request"
-              )
-              ?.scrollIntoView({
-                behavior:
-                  "smooth",
-
-                block:
-                  "center",
-              });
-          },
-          50
+      } else {
+        /*
+         * TypeScript now knows this is one of our chat topics.
+         */
+        await createPrivateConversation(
+          topic
         );
-
-        return;
       }
-
-      await createPrivateConversation(
-        topic
-      );
     } catch (
       problem
     ) {
@@ -1481,12 +1492,12 @@ export default function ContactClient(
   }
 
   /* =======================================================
-     COPY REVIEW
+     COPY CONVERSATION REFERENCE
   ======================================================= */
 
-  async function copySubmission() {
+  async function copyConversationReference() {
     if (
-      !submission
+      !conversationSuccess
     ) {
       return;
     }
@@ -1495,7 +1506,44 @@ export default function ContactClient(
       await navigator
         .clipboard
         .writeText(
-          submission
+          conversationSuccess
+            .reference
+        );
+
+      setCopied(
+        true
+      );
+
+      window.setTimeout(
+        () =>
+          setCopied(
+            false
+          ),
+        1800
+      );
+    } catch {
+      setCopied(
+        false
+      );
+    }
+  }
+
+  /* =======================================================
+     COPY REVIEW
+  ======================================================= */
+
+  async function copyReviewSubmission() {
+    if (
+      !reviewSubmission
+    ) {
+      return;
+    }
+
+    try {
+      await navigator
+        .clipboard
+        .writeText(
+          reviewSubmission
             .summary
         );
 
@@ -1518,7 +1566,285 @@ export default function ContactClient(
   }
 
   /* =======================================================
-     DISPLAY
+     START ANOTHER REQUEST
+  ======================================================= */
+
+  function startAnotherRequest() {
+    setConversationSuccess(
+      null
+    );
+
+    resetContactFields();
+
+    window.scrollTo({
+      top:
+        0,
+
+      behavior:
+        "smooth",
+    });
+  }
+
+  /* =======================================================
+     PRIVATE CONVERSATION CONFIRMATION
+
+     This entire screen is rendered while URL remains:
+     /contact
+
+     The token link below is the ONLY way this file enters
+     /service-chat.
+  ======================================================= */
+
+  if (conversationSuccess) {
+  const chatHref =
+    `/service-chat?token=${encodeURIComponent(
+      conversationSuccess.token
+    )}`;
+
+  return (
+    <main className="page-shell">
+      <SiteHeader />
+
+      <section className={styles.successPage}>
+        <div className={styles.successShell}>
+          <div className={styles.successHero}>
+            <div className={styles.successHeroCopy}>
+              <span className={styles.successEyebrow}>
+                PRIVATE CONVERSATION CREATED
+              </span>
+
+              <h1>You&apos;re all set.</h1>
+
+              <p>
+                Your private BirdShop conversation is now ready.
+                A recovery email is being sent with your
+                reference and private chat access so you can
+                return later at any time.
+              </p>
+            </div>
+
+            <div className={styles.successHeroStatus}>
+              <div className={styles.successCheckWrap}>
+                <CheckIcon />
+              </div>
+
+              <div className={styles.successHeroStatusText}>
+                <strong>Conversation Ready</strong>
+                <span>Reference secured and chat access prepared.</span>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.successReferenceBar}>
+            <div>
+              <span>YOUR REFERENCE</span>
+              <p>Save this code if you ever need to return later.</p>
+            </div>
+
+            <strong>{conversationSuccess.reference}</strong>
+          </div>
+
+          <div className={styles.successGrid}>
+            <div className={styles.successMainCard}>
+              <div className={styles.successCardHeader}>
+                <div>
+                  <span>BIRDSHOP PRIVATE CONVERSATION</span>
+                  <h2>{conversationSuccess.title}</h2>
+                </div>
+
+                <div className={styles.successMiniBadge}>
+                  {conversationTypeLabel(
+                    conversationSuccess.conversationType
+                  )}
+                </div>
+              </div>
+
+              <div className={styles.successDetailsGrid}>
+                <div className={styles.successDetailCard}>
+                  <span>TYPE</span>
+                  <strong>
+                    {conversationTypeLabel(
+                      conversationSuccess.conversationType
+                    )}
+                  </strong>
+                </div>
+
+                <div className={styles.successDetailCard}>
+                  <span>DETAIL</span>
+                  <strong>{conversationSuccess.detail}</strong>
+                </div>
+
+                <div className={styles.successDetailCard}>
+                  <span>RECOVERY EMAIL</span>
+                  <strong>{conversationSuccess.email}</strong>
+                </div>
+
+                <div className={styles.successDetailCard}>
+                  <span>ORDER STATUS</span>
+                  <strong>Not created yet</strong>
+                </div>
+              </div>
+
+              <div className={styles.successTimelineCard}>
+                <span>WHAT HAPPENS NEXT</span>
+
+                <div className={styles.successTimeline}>
+                  <div className={styles.successTimelineItem}>
+                    <div className={styles.successTimelineIcon}>
+                      <CheckIcon />
+                    </div>
+
+                    <div>
+                      <strong>Conversation created</strong>
+                      <p>
+                        Your request has been saved into BirdShop
+                        private chat.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={styles.successTimelineItem}>
+                    <div className={styles.successTimelineIcon}>
+                      <ClockIcon />
+                    </div>
+
+                    <div>
+                      <strong>Recovery email sent</strong>
+                      <p>
+                        You’ll receive your reference and return
+                        instructions by email.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={styles.successTimelineItem}>
+                    <div className={styles.successTimelineIcon}>
+                      <MessageIcon />
+                    </div>
+
+                    <div>
+                      <strong>Continue in private chat</strong>
+                      <p>
+                        Discuss the request with BirdShop before
+                        any order or payment is finalized.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.successInfoNotice}>
+                <ShieldIcon />
+
+                <p>
+                  No order has been created from this conversation
+                  yet. BirdShop will confirm scope, pricing,
+                  timing, and payment inside the private chat.
+                </p>
+              </div>
+
+              <div className={styles.successPrimaryActions}>
+                <button
+                  type="button"
+                  onClick={copyConversationReference}
+                  className={styles.successGhostButton}
+                >
+                  {copied ? (
+                    <CheckIcon />
+                  ) : (
+                    <CopyIcon />
+                  )}
+                  {copied ? "Reference Copied" : "Copy Reference"}
+                </button>
+
+                <Link
+                  href={chatHref}
+                  prefetch={false}
+                  className={styles.successPrimaryButton}
+                >
+                  <MessageIcon />
+                  Continue to Private Chat
+                  <ArrowIcon />
+                </Link>
+              </div>
+            </div>
+
+            <aside className={styles.successSidebar}>
+              <div className={styles.successSidebarCard}>
+                <span>RETURN LATER</span>
+                <h3>Use your reference anytime.</h3>
+                <p>
+                  If you leave now, you can come back through
+                  <strong> My Service / Private Chat </strong>
+                  using:
+                </p>
+
+                <div className={styles.successReturnInfo}>
+                  <div>
+                    <small>REFERENCE</small>
+                    <strong>{conversationSuccess.reference}</strong>
+                  </div>
+
+                  <div>
+                    <small>EMAIL</small>
+                    <strong>{conversationSuccess.email}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.successSidebarCard}>
+                <span>EMAIL NOTICE</span>
+                <h3>Didn’t see the email?</h3>
+                <p>
+                  Check Spam or Junk first. Your recovery email
+                  is sent so you can reopen the conversation later
+                  without losing access.
+                </p>
+              </div>
+
+              <div className={styles.successSidebarActions}>
+                <Link
+                  href="/service-chat"
+                  prefetch={false}
+                  className={styles.successSecondaryButton}
+                >
+                  <ShieldIcon />
+                  My Service / Return Later
+                  <ArrowIcon />
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={startAnotherRequest}
+                  className={styles.successWhiteButton}
+                >
+                  <MessageIcon />
+                  Start Another Request
+                </button>
+
+                <a
+                  href={siteConfig.discordUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={styles.successDiscordButton}
+                >
+                  <DiscordIcon />
+                  Open BirdShop Discord
+                  <ArrowIcon />
+                </a>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <SiteFooter />
+    </main>
+  );
+}
+
+  /* =======================================================
+     NORMAL CONTACT PAGE
   ======================================================= */
 
   const selectedTopicLabel =
@@ -1530,10 +1856,6 @@ export default function ContactClient(
         topic
     )?.label ??
     "Choose a Topic";
-
-  /* =======================================================
-     RENDER
-  ======================================================= */
 
   return (
     <main
@@ -1690,11 +2012,11 @@ export default function ContactClient(
 
           <div>
             <strong>
-              Open Privately
+              Confirmation
             </strong>
 
             <small>
-              SECURE CONVERSATION
+              SAVE YOUR REFERENCE
             </small>
           </div>
         </div>
@@ -1710,14 +2032,14 @@ export default function ContactClient(
             </strong>
 
             <small>
-              BIRDSHOP SUPPORT
+              WHEN YOU&apos;RE READY
             </small>
           </div>
         </div>
       </section>
 
       {/* ===================================================
-          CONTACT
+          CONTACT SECTION
       =================================================== */}
 
       <section
@@ -1752,7 +2074,7 @@ export default function ContactClient(
         </div>
 
         {/* ===============================================
-            TOPICS
+            TOPIC CARDS
         =============================================== */}
 
         <div
@@ -1784,8 +2106,12 @@ export default function ContactClient(
                     null
                   );
 
-                  setSubmission(
+                  setReviewSubmission(
                     null
+                  );
+
+                  setCopied(
+                    false
                   );
                 }}
               >
@@ -1894,7 +2220,7 @@ export default function ContactClient(
                       onChange={(
                         event
                       ) =>
-                        handleServiceChange(
+                        setServiceSlug(
                           event
                             .target
                             .value
@@ -2005,7 +2331,7 @@ export default function ContactClient(
               )}
 
               {/* =========================================
-                  PRODUCT
+                  PRODUCT SUPPORT
               ========================================= */}
 
               {topic ===
@@ -2029,12 +2355,9 @@ export default function ContactClient(
                     </h3>
 
                     <p>
-                      Choose the product,
-                      explain what you
-                      need help with, then
-                      continue directly
-                      in your private
-                      BirdShop chat.
+                      Choose the product
+                      and explain what you
+                      need help with.
                     </p>
                   </div>
 
@@ -2250,7 +2573,7 @@ export default function ContactClient(
                       submitted to
                       moderation first.
                       Approved reviews
-                      can then appear
+                      may then appear
                       publicly.
                     </p>
                   </div>
@@ -2486,8 +2809,8 @@ export default function ContactClient(
                       placeholder={
                         reviewKind ===
                         "Service"
-                          ? "Package or other useful detail"
-                          : "Purchase type or other useful detail"
+                          ? "Package or useful service detail"
+                          : "Purchase type or useful product detail"
                       }
                       maxLength={
                         220
@@ -2498,7 +2821,7 @@ export default function ContactClient(
               )}
 
               {/* =========================================
-                  GENERAL
+                  GENERAL SUPPORT
               ========================================= */}
 
               {topic ===
@@ -2523,11 +2846,10 @@ export default function ContactClient(
                     </h3>
 
                     <p>
-                      Ask your question,
-                      then continue
-                      directly with
-                      BirdShop in a
-                      private support
+                      Ask your question
+                      and BirdShop will
+                      keep the discussion
+                      inside one private
                       conversation.
                     </p>
                   </div>
@@ -2601,7 +2923,7 @@ export default function ContactClient(
               )}
 
               {/* =========================================
-                  CUSTOMER
+                  CONTACT INFORMATION
               ========================================= */}
 
               <section
@@ -2626,11 +2948,9 @@ export default function ContactClient(
                   <p>
                     Private conversations
                     require an email so
-                    you can recover the
-                    chat later. Discord
-                    can be added as an
-                    optional alternate
-                    contact.
+                    you can recover them
+                    later. Discord is
+                    optional.
                   </p>
                 </div>
 
@@ -2890,10 +3210,6 @@ export default function ContactClient(
 
                     <input
                       type="text"
-                      tabIndex={
-                        -1
-                      }
-                      autoComplete="off"
                       value={
                         website
                       }
@@ -2906,12 +3222,16 @@ export default function ContactClient(
                             .value
                         )
                       }
+                      tabIndex={
+                        -1
+                      }
+                      autoComplete="off"
                     />
                   </label>
                 </div>
 
                 {/* =======================================
-                    NOTICE
+                    EXPLANATION
                 ======================================= */}
 
                 <div
@@ -2924,14 +3244,14 @@ export default function ContactClient(
                   <p>
                     {topic ===
                     "service"
-                      ? "This creates a private conversation only. No order is created yet. BirdShop will confirm scope, price, timing, and payment before an order is created."
+                      ? "This creates a private conversation only. No order is created yet. BirdShop confirms scope, price, timing, and payment in chat first."
                       : topic ===
                           "product"
-                        ? "Product Help opens a private BirdShop conversation. It does not create a new order or payment request."
+                        ? "Product Help creates a private BirdShop conversation. It does not create another order."
                         : topic ===
                             "general"
-                          ? "General Support opens a private BirdShop conversation so your messages and replies stay together."
-                          : "Your review is saved as pending and will not appear publicly until a BirdShop admin approves it."}
+                          ? "General Support creates a private BirdShop conversation so your messages stay together."
+                          : "Your review is saved as pending and does not appear publicly until approved."}
                   </p>
                 </div>
 
@@ -2965,11 +3285,11 @@ export default function ContactClient(
                     ? topic ===
                         "review"
                       ? "Submitting..."
-                      : "Opening Private Chat..."
+                      : "Creating Private Conversation..."
                     : topic ===
                         "review"
                       ? "Submit Review"
-                      : "Start Private Chat"}
+                      : "Create Private Conversation"}
 
                   <ArrowIcon />
                 </button>
@@ -2977,7 +3297,7 @@ export default function ContactClient(
             </form>
 
             {/* ===========================================
-                SUMMARY
+                SUMMARY SIDEBAR
             =========================================== */}
 
             <aside
@@ -3096,7 +3416,7 @@ export default function ContactClient(
                   styles.summaryStatus
                 }
               >
-                {submission ? (
+                {reviewSubmission ? (
                   <CheckIcon />
                 ) : (
                   <MessageIcon />
@@ -3104,26 +3424,26 @@ export default function ContactClient(
 
                 <div>
                   <strong>
-                    {submission
+                    {reviewSubmission
                       ? "Review submitted."
                       : topic ===
                           "review"
                         ? "Ready for moderation."
-                        : "Ready for private chat."}
+                        : "Ready to create."}
                   </strong>
 
                   <p>
-                    {submission
-                      ? `Reference ${submission.reference}`
+                    {reviewSubmission
+                      ? `Reference ${reviewSubmission.reference}`
                       : topic ===
                           "service"
-                        ? "Discuss the job first. An order is created later after verified payment."
+                        ? "Create the conversation first. Discuss the job before an order exists."
                         : topic ===
                             "product"
-                          ? "Your product issue will continue directly in BirdShop Chat."
+                          ? "Product questions continue privately in BirdShop Chat."
                           : topic ===
                               "general"
-                            ? "Your support question will continue directly in BirdShop Chat."
+                            ? "Support continues privately in BirdShop Chat."
                             : "Your review enters moderation after submission."}
                   </p>
                 </div>
@@ -3164,10 +3484,10 @@ export default function ContactClient(
       </section>
 
       {/* ===================================================
-          REVIEW SUCCESS ONLY
+          REVIEW SUCCESS
       =================================================== */}
 
-      {submission && (
+      {reviewSubmission && (
         <section
           id="submitted-request"
           className={
@@ -3192,10 +3512,9 @@ export default function ContactClient(
               <p>
                 Your review has been
                 submitted for
-                moderation. Keep the
-                reference below if you
-                need to contact
-                BirdShop about it.
+                moderation. Keep your
+                reference if you need
+                to contact BirdShop.
               </p>
             </div>
 
@@ -3219,7 +3538,8 @@ export default function ContactClient(
 
             <strong>
               {
-                submission.reference
+                reviewSubmission
+                  .reference
               }
             </strong>
           </div>
@@ -3231,7 +3551,8 @@ export default function ContactClient(
           >
             <pre>
               {
-                submission.summary
+                reviewSubmission
+                  .summary
               }
             </pre>
 
@@ -3243,7 +3564,7 @@ export default function ContactClient(
               <button
                 type="button"
                 onClick={
-                  copySubmission
+                  copyReviewSubmission
                 }
               >
                 {copied ? (

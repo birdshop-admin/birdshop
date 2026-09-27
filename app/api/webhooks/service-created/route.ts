@@ -16,72 +16,93 @@ import {
   type ConversationType,
 } from "@/lib/email/service-created";
 
+/* =========================================================
+   RUNTIME
+========================================================= */
+
 export const runtime =
   "nodejs";
+
+export const dynamic =
+  "force-dynamic";
 
 /* =========================================================
    TYPES
 ========================================================= */
 
 type ConversationRecord = {
-  id:
-    string;
+  id?: string | null;
 
-  public_token:
-    string;
-
-  reference:
-    string;
-
-  conversation_type:
-    ConversationType;
-
-  customer_name:
+  public_token?:
     | string
     | null;
 
-  customer_email:
+  reference?:
     | string
     | null;
 
-  customer_contact:
+  conversation_type?:
     | string
     | null;
 
-  subject:
+  customer_name?:
     | string
     | null;
 
-  request_message:
+  customer_email?:
     | string
     | null;
 
-  service_name:
+  customer_contact?:
     | string
     | null;
 
-  package_name:
+  subject?:
     | string
     | null;
 
-  product_name:
+  request_message?:
     | string
     | null;
 
-  product_platform:
+  service_slug?:
     | string
     | null;
 
-  product_region:
+  service_name?:
     | string
     | null;
 
-  deleted_at:
+  package_id?:
+    | string
+    | null;
+
+  package_name?:
+    | string
+    | null;
+
+  product_slug?:
+    | string
+    | null;
+
+  product_name?:
+    | string
+    | null;
+
+  product_platform?:
+    | string
+    | null;
+
+  product_region?:
+    | string
+    | null;
+
+  source?:
     | string
     | null;
 };
 
-type SupabaseWebhookPayload = {
+type DatabaseWebhookPayload = {
   type?:
     string;
 
@@ -92,79 +113,97 @@ type SupabaseWebhookPayload = {
     string;
 
   record?:
-    ConversationRecord | null;
+    ConversationRecord
+    | null;
 
   old_record?:
-    unknown;
+    Record<
+      string,
+      unknown
+    >
+    | null;
 };
 
 /* =========================================================
-   HELPERS
+   ENVIRONMENT
 ========================================================= */
 
-function safeSecretEqual(
-  left:
+function requireEnvironmentVariable(
+  name: string
+) {
+  const value =
+    process.env[name]
+      ?.trim();
+
+  if (!value) {
+    throw new Error(
+      `${name} is not configured.`
+    );
+  }
+
+  return value;
+}
+
+/* =========================================================
+   SECRET COMPARISON
+========================================================= */
+
+function secretsMatch(
+  received:
     string,
-  right:
+  expected:
     string
 ) {
-  const leftBuffer =
+  const receivedBuffer =
     Buffer.from(
-      left
+      received
     );
 
-  const rightBuffer =
+  const expectedBuffer =
     Buffer.from(
-      right
+      expected
     );
 
   if (
-    leftBuffer.length !==
-    rightBuffer.length
+    receivedBuffer.length !==
+    expectedBuffer.length
   ) {
     return false;
   }
 
   return timingSafeEqual(
-    leftBuffer,
-    rightBuffer
+    receivedBuffer,
+    expectedBuffer
   );
 }
+
+/* =========================================================
+   URL
+========================================================= */
 
 function normalizeSiteUrl(
   value:
     string
 ) {
-  return value
-    .trim()
-    .replace(
-      /\/+$/,
-      ""
-    );
-}
-
-function isEmail(
-  value:
-    | string
-    | null
-    | undefined
-) {
-  if (!value) {
-    return false;
-  }
-
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-    value.trim()
+  return value.replace(
+    /\/+$/,
+    ""
   );
 }
 
+/* =========================================================
+   CONVERSATION TYPE
+========================================================= */
+
 function normalizeConversationType(
   value:
-    string
+    string | null | undefined
 ):
-  ConversationType {
+  ConversationType | null {
 
   if (
+    value ===
+      "service" ||
     value ===
       "product" ||
     value ===
@@ -173,7 +212,7 @@ function normalizeConversationType(
     return value;
   }
 
-  return "service";
+  return null;
 }
 
 /* =========================================================
@@ -184,360 +223,401 @@ export async function POST(
   request:
     Request
 ) {
-  /* =======================================================
-     ENVIRONMENT
-  ======================================================= */
-
-  const webhookSecret =
-    process.env
-      .BIRDSHOP_WEBHOOK_SECRET;
-
-  const resendKey =
-    process.env
-      .RESEND_API_KEY;
-
-  const emailFrom =
-    process.env
-      .BIRDSHOP_EMAIL_FROM;
-
-  const adminEmail =
-    process.env
-      .BIRDSHOP_ADMIN_EMAIL;
-
-  const siteUrlRaw =
-    process.env
-      .BIRDSHOP_SITE_URL;
-
-  if (
-    !webhookSecret ||
-    !resendKey ||
-    !emailFrom ||
-    !adminEmail ||
-    !siteUrlRaw
-  ) {
-    console.error(
-      "BirdShop conversation webhook is missing required environment variables."
-    );
-
-    return NextResponse.json(
-      {
-        ok:
-          false,
-
-        error:
-          "Webhook configuration is incomplete.",
-      },
-      {
-        status:
-          500,
-      }
-    );
-  }
-
-  /* =======================================================
-     VERIFY WEBHOOK SECRET
-  ======================================================= */
-
-  const suppliedSecret =
-    request.headers.get(
-      "x-birdshop-webhook-secret"
-    );
-
-  if (
-    !suppliedSecret ||
-    !safeSecretEqual(
-      suppliedSecret,
-      webhookSecret
-    )
-  ) {
-    return NextResponse.json(
-      {
-        ok:
-          false,
-
-        error:
-          "Unauthorized.",
-      },
-      {
-        status:
-          401,
-      }
-    );
-  }
-
-  /* =======================================================
-     READ WEBHOOK
-  ======================================================= */
-
-  let payload:
-    SupabaseWebhookPayload;
-
   try {
-    payload =
-      (
-        await request.json()
-      ) as
-        SupabaseWebhookPayload;
-  } catch {
-    return NextResponse.json(
-      {
-        ok:
-          false,
+    /* =====================================================
+       WEBHOOK SECRET
+    ===================================================== */
 
+    const expectedSecret =
+      requireEnvironmentVariable(
+        "BIRDSHOP_WEBHOOK_SECRET"
+      );
+
+    const receivedSecret =
+      request.headers
+        .get(
+          "x-birdshop-webhook-secret"
+        )
+        ?.trim() ??
+      "";
+
+    if (
+      !receivedSecret ||
+      !secretsMatch(
+        receivedSecret,
+        expectedSecret
+      )
+    ) {
+      return NextResponse.json(
+        {
+          ok:
+            false,
+
+          error:
+            "Unauthorized.",
+        },
+        {
+          status:
+            401,
+        }
+      );
+    }
+
+    /* =====================================================
+       PAYLOAD
+    ===================================================== */
+
+    let payload:
+      DatabaseWebhookPayload;
+
+    try {
+      payload =
+        await request.json() as
+          DatabaseWebhookPayload;
+    } catch {
+      return NextResponse.json(
+        {
+          ok:
+            false,
+
+          error:
+            "Invalid webhook payload.",
+        },
+        {
+          status:
+            400,
+        }
+      );
+    }
+
+    /* =====================================================
+       ONLY ACCEPT:
+       INSERT public.service_conversations
+    ===================================================== */
+
+    if (
+      payload.type !==
+        "INSERT" ||
+      payload.schema !==
+        "public" ||
+      payload.table !==
+        "service_conversations"
+    ) {
+      return NextResponse.json(
+        {
+          ok:
+            true,
+
+          ignored:
+            true,
+        }
+      );
+    }
+
+    const conversation =
+      payload.record;
+
+    if (
+      !conversation
+    ) {
+      return NextResponse.json(
+        {
+          ok:
+            false,
+
+          error:
+            "Conversation record missing.",
+        },
+        {
+          status:
+            400,
+        }
+      );
+    }
+
+    /* =====================================================
+       REQUIRED RECORD FIELDS
+    ===================================================== */
+
+    const conversationId =
+      String(
+        conversation.id ??
+        ""
+      ).trim();
+
+    const publicToken =
+      String(
+        conversation
+          .public_token ??
+        ""
+      ).trim();
+
+    const reference =
+      String(
+        conversation.reference ??
+        ""
+      ).trim();
+
+    const conversationType =
+      normalizeConversationType(
+        conversation
+          .conversation_type
+      );
+
+    if (
+      !conversationId ||
+      !publicToken ||
+      !reference ||
+      !conversationType
+    ) {
+      return NextResponse.json(
+        {
+          ok:
+            false,
+
+          error:
+            "Conversation record is incomplete.",
+        },
+        {
+          status:
+            400,
+        }
+      );
+    }
+
+    /* =====================================================
+       ENVIRONMENT
+    ===================================================== */
+
+    const resendApiKey =
+      requireEnvironmentVariable(
+        "RESEND_API_KEY"
+      );
+
+    const emailFrom =
+      requireEnvironmentVariable(
+        "BIRDSHOP_EMAIL_FROM"
+      );
+
+    const adminEmail =
+      requireEnvironmentVariable(
+        "BIRDSHOP_ADMIN_EMAIL"
+      );
+
+    const siteUrl =
+      normalizeSiteUrl(
+        requireEnvironmentVariable(
+          "BIRDSHOP_SITE_URL"
+        )
+      );
+
+    const resend =
+      new Resend(
+        resendApiKey
+      );
+
+    /* =====================================================
+       URLS
+
+       Do not log publicToken.
+    ===================================================== */
+
+    const chatUrl =
+      `${siteUrl}/service-chat?token=${encodeURIComponent(
+        publicToken
+      )}`;
+
+    const recoveryUrl =
+      `${siteUrl}/service-chat`;
+
+    const adminUrl =
+      `${siteUrl}/admin/chat?view=active&conversation=${encodeURIComponent(
+        conversationId
+      )}`;
+
+    /* =====================================================
+       EMAIL DATA
+    ===================================================== */
+
+    const emailData = {
+      reference,
+
+      conversationType,
+
+      customerName:
+        conversation
+          .customer_name ??
+        null,
+
+      customerEmail:
+        conversation
+          .customer_email ??
+        null,
+
+      customerContact:
+        conversation
+          .customer_contact ??
+        null,
+
+      subject:
+        conversation
+          .subject ??
+        null,
+
+      requestMessage:
+        conversation
+          .request_message ??
+        null,
+
+      serviceName:
+        conversation
+          .service_name ??
+        null,
+
+      packageName:
+        conversation
+          .package_name ??
+        null,
+
+      productName:
+        conversation
+          .product_name ??
+        null,
+
+      productPlatform:
+        conversation
+          .product_platform ??
+        null,
+
+      productRegion:
+        conversation
+          .product_region ??
+        null,
+
+      chatUrl,
+
+      recoveryUrl,
+    };
+
+    /* =====================================================
+       CUSTOMER EMAIL
+    ===================================================== */
+
+    let customerEmailSent =
+      false;
+
+    const customerEmail =
+      conversation
+        .customer_email
+        ?.trim() ??
+      "";
+
+    if (
+      customerEmail
+    ) {
+      const customerTemplate =
+        conversationCreatedCustomerEmail(
+          emailData
+        );
+
+      const {
         error:
-          "Invalid webhook body.",
-      },
-      {
-        status:
-          400,
+          customerError,
+      } =
+        await resend.emails.send(
+          {
+            from:
+              emailFrom,
+
+            to:
+              customerEmail,
+
+            subject:
+              customerTemplate.subject,
+
+            html:
+              customerTemplate.html,
+
+            text:
+              customerTemplate.text,
+          },
+          {
+            idempotencyKey:
+              `birdshop-conversation-customer-${conversationId}`,
+          }
+        );
+
+      if (
+        customerError
+      ) {
+        console.error(
+          "BirdShop customer conversation email failed:",
+          customerError.message
+        );
+
+        return NextResponse.json(
+          {
+            ok:
+              false,
+
+            error:
+              "Customer email delivery failed.",
+          },
+          {
+            status:
+              502,
+          }
+        );
       }
-    );
-  }
 
-  /* =======================================================
-     ONLY INSERTS FROM SERVICE_CONVERSATIONS
-  ======================================================= */
+      customerEmailSent =
+        true;
+    }
 
-  if (
-    payload.type !==
-      "INSERT" ||
-    payload.schema !==
-      "public" ||
-    payload.table !==
-      "service_conversations"
-  ) {
-    return NextResponse.json({
-      ok:
-        true,
+    /* =====================================================
+       ADMIN EMAIL
+    ===================================================== */
 
-      ignored:
-        true,
-    });
-  }
+    const adminTemplate =
+      conversationCreatedAdminEmail({
+        ...emailData,
 
-  /* =======================================================
-     USE THE INSERTED ROW DIRECTLY
+        adminUrl,
+      });
 
-     Supabase Database Webhooks already include the new
-     table row in payload.record.
-
-     No second Supabase API request is needed.
-  ======================================================= */
-
-  const conversation =
-    payload.record;
-
-  if (
-    !conversation ||
-    !conversation.id ||
-    !conversation.reference ||
-    !conversation.public_token
-  ) {
-    console.error(
-      "BirdShop webhook received an incomplete conversation record.",
-      {
-        hasRecord:
-          Boolean(
-            conversation
-          ),
-
-        hasId:
-          Boolean(
-            conversation
-              ?.id
-          ),
-
-        hasReference:
-          Boolean(
-            conversation
-              ?.reference
-          ),
-
-        hasToken:
-          Boolean(
-            conversation
-              ?.public_token
-          ),
-      }
-    );
-
-    return NextResponse.json(
-      {
-        ok:
-          false,
-
-        error:
-          "Conversation record is incomplete.",
-      },
-      {
-        status:
-          400,
-      }
-    );
-  }
-
-  if (
-    conversation.deleted_at
-  ) {
-    return NextResponse.json({
-      ok:
-        true,
-
-      ignored:
-        true,
-    });
-  }
-
-  /* =======================================================
-     URLS
-  ======================================================= */
-
-  const siteUrl =
-    normalizeSiteUrl(
-      siteUrlRaw
-    );
-
-  const conversationType =
-    normalizeConversationType(
-      conversation.conversation_type
-    );
-
-  const chatUrl =
-    `${siteUrl}/service-chat?token=${encodeURIComponent(
-      conversation.public_token
-    )}`;
-
-  const recoveryUrl =
-    `${siteUrl}/service-chat`;
-
-  const adminUrl =
-    `${siteUrl}/admin/chat?view=active&type=${encodeURIComponent(
-      conversationType
-    )}&conversation=${encodeURIComponent(
-      conversation.id
-    )}`;
-
-  /* =======================================================
-     EMAIL DATA
-  ======================================================= */
-
-  const emailData = {
-    reference:
-      conversation.reference,
-
-    conversationType,
-
-    customerName:
-      conversation.customer_name,
-
-    customerEmail:
-      conversation.customer_email,
-
-    customerContact:
-      conversation.customer_contact,
-
-    subject:
-      conversation.subject,
-
-    requestMessage:
-      conversation.request_message,
-
-    serviceName:
-      conversation.service_name,
-
-    packageName:
-      conversation.package_name,
-
-    productName:
-      conversation.product_name,
-
-    productPlatform:
-      conversation.product_platform,
-
-    productRegion:
-      conversation.product_region,
-
-    chatUrl,
-
-    recoveryUrl,
-  };
-
-  const customerTemplate =
-    conversationCreatedCustomerEmail(
-      emailData
-    );
-
-  const adminTemplate =
-    conversationCreatedAdminEmail({
-      ...emailData,
-
-      adminUrl,
-    });
-
-  /* =======================================================
-     RESEND
-  ======================================================= */
-
-  const resend =
-    new Resend(
-      resendKey
-    );
-
-  /* =======================================================
-     CUSTOMER EMAIL
-  ======================================================= */
-
-  let customerEmailSent =
-    false;
-
-  if (
-    isEmail(
-      conversation.customer_email
-    )
-  ) {
     const {
-      data:
-        customerSend,
-
       error:
-        customerError,
+        adminSendError,
     } =
       await resend.emails.send(
         {
           from:
             emailFrom,
 
-          to: [
-            conversation.customer_email!,
-          ],
+          to:
+            adminEmail,
 
           subject:
-            customerTemplate.subject,
+            adminTemplate.subject,
 
           html:
-            customerTemplate.html,
+            adminTemplate.html,
 
           text:
-            customerTemplate.text,
+            adminTemplate.text,
         },
         {
           idempotencyKey:
-            `birdshop-conversation-customer-${conversation.id}`,
+            `birdshop-conversation-admin-${conversationId}`,
         }
       );
 
     if (
-      customerError
+      adminSendError
     ) {
       console.error(
-        "BirdShop customer email failed.",
-        {
-          conversationId:
-            conversation.id,
-
-          error:
-            customerError.message,
-        }
+        "BirdShop admin conversation email failed:",
+        adminSendError.message
       );
 
       return NextResponse.json(
@@ -546,10 +626,7 @@ export async function POST(
             false,
 
           error:
-            "Customer email failed.",
-
-          resendError:
-            customerError.message,
+            "Admin email delivery failed.",
         },
         {
           status:
@@ -558,59 +635,28 @@ export async function POST(
       );
     }
 
-    customerEmailSent =
-      Boolean(
-        customerSend?.id
-      );
-  }
+    /* =====================================================
+       SUCCESS
+    ===================================================== */
 
-  /* =======================================================
-     ADMIN EMAIL
-  ======================================================= */
+    return NextResponse.json({
+      ok:
+        true,
 
-  const {
-    data:
-      adminSend,
+      customerEmailSent,
 
-    error:
-      adminSendError,
-  } =
-    await resend.emails.send(
-      {
-        from:
-          emailFrom,
-
-        to: [
-          adminEmail,
-        ],
-
-        subject:
-          adminTemplate.subject,
-
-        html:
-          adminTemplate.html,
-
-        text:
-          adminTemplate.text,
-      },
-      {
-        idempotencyKey:
-          `birdshop-conversation-admin-${conversation.id}`,
-      }
-    );
-
-  if (
-    adminSendError
+      adminEmailSent:
+        true,
+    });
+  } catch (
+    problem
   ) {
     console.error(
-      "BirdShop admin email failed.",
-      {
-        conversationId:
-          conversation.id,
-
-        error:
-          adminSendError.message,
-      }
+      "BirdShop conversation-created webhook failed:",
+      problem instanceof
+        Error
+        ? problem.message
+        : "Unknown error"
     );
 
     return NextResponse.json(
@@ -619,31 +665,12 @@ export async function POST(
           false,
 
         error:
-          "Admin email failed.",
-
-        resendError:
-          adminSendError.message,
+          "Webhook processing failed.",
       },
       {
         status:
-          502,
+          500,
       }
     );
   }
-
-  /* =======================================================
-     SUCCESS
-  ======================================================= */
-
-  return NextResponse.json({
-    ok:
-      true,
-
-    customerEmailSent,
-
-    adminEmailSent:
-      Boolean(
-        adminSend?.id
-      ),
-  });
 }

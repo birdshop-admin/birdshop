@@ -3,17 +3,14 @@ import "server-only";
 import Stripe from "stripe";
 
 let stripeClient:
-  | Stripe
-  | null = null;
+  Stripe | null =
+  null;
 
 export function getStripe() {
-  if (stripeClient) {
-    return stripeClient;
-  }
-
   const secretKey =
     process.env
-      .STRIPE_SECRET_KEY;
+      .STRIPE_SECRET_KEY
+      ?.trim();
 
   if (!secretKey) {
     throw new Error(
@@ -21,10 +18,12 @@ export function getStripe() {
     );
   }
 
-  stripeClient =
-    new Stripe(
-      secretKey
-    );
+  if (!stripeClient) {
+    stripeClient =
+      new Stripe(
+        secretKey
+      );
+  }
 
   return stripeClient;
 }

@@ -7,18 +7,107 @@ import {
   type NextRequest,
 } from "next/server";
 
-import {
-  ADMIN_ACTIVITY_COOKIE,
-  ADMIN_IDLE_TIMEOUT_MS,
-} from "@/lib/admin-session";
+/* =========================================================
+   TYPES
+========================================================= */
+
+type StaffRole =
+  | "owner"
+  | "service_agent";
+
+type StaffProfile = {
+  user_id:
+    string;
+
+  role:
+    StaffRole;
+
+  display_name:
+    | string
+    | null;
+
+  is_active:
+    boolean;
+};
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function redirectWithSupabaseCookies({
+  request,
+  supabaseResponse,
+  pathname,
+  searchParams,
+}: {
+  request:
+    NextRequest;
+
+  supabaseResponse:
+    NextResponse;
+
+  pathname:
+    string;
+
+  searchParams?:
+    URLSearchParams;
+}) {
+  const url =
+    request.nextUrl.clone();
+
+  url.pathname =
+    pathname;
+
+  url.search =
+    searchParams &&
+    searchParams.toString()
+      ? `?${searchParams.toString()}`
+      : "";
+
+  const redirectResponse =
+    NextResponse.redirect(
+      url
+    );
+
+  /*
+   * Supabase may have refreshed authentication cookies
+   * earlier in this same request.
+   *
+   * Preserve them on the redirect response.
+   */
+
+  for (
+    const cookie
+    of supabaseResponse
+      .cookies
+      .getAll()
+  ) {
+    redirectResponse
+      .cookies
+      .set(
+        cookie
+      );
+  }
+
+  return redirectResponse;
+}
+
+/* =========================================================
+   SESSION / ADMIN PROXY
+========================================================= */
 
 export async function updateSession(
-  request: NextRequest
+  request:
+    NextRequest
 ) {
   let supabaseResponse =
     NextResponse.next({
       request,
     });
+
+  /* =======================================================
+     SUPABASE SERVER CLIENT
+  ======================================================= */
 
   const supabase =
     createServerClient(
@@ -31,21 +120,30 @@ export async function updateSession(
       {
         cookies: {
           getAll() {
-            return request.cookies.getAll();
+            return request
+              .cookies
+              .getAll();
           },
 
           setAll(
             cookiesToSet
           ) {
+            /*
+             * Keep the incoming request cookies synchronized
+             * with any authentication refresh.
+             */
+
             cookiesToSet.forEach(
               ({
                 name,
                 value,
               }) => {
-                request.cookies.set(
-                  name,
-                  value
-                );
+                request
+                  .cookies
+                  .set(
+                    name,
+                    value
+                  );
               }
             );
 
@@ -54,23 +152,33 @@ export async function updateSession(
                 request,
               });
 
+            /*
+             * Also send refreshed cookies back to browser.
+             */
+
             cookiesToSet.forEach(
               ({
                 name,
                 value,
                 options,
               }) => {
-                supabaseResponse.cookies.set(
-                  name,
-                  value,
-                  options
-                );
+                supabaseResponse
+                  .cookies
+                  .set(
+                    name,
+                    value,
+                    options
+                  );
               }
             );
           },
         },
       }
     );
+
+  /* =======================================================
+     ROUTE
+  ======================================================= */
 
   const pathname =
     request.nextUrl.pathname;
@@ -90,6 +198,13 @@ export async function updateSession(
     pathname ===
     "/admin/logout";
 
+  /*
+   * Public pages never need BirdShop admin authorization.
+   *
+   * Login and logout need to remain reachable so authentication
+   * itself can function.
+   */
+
   if (
     !isAdminRoute ||
     isLoginPage ||
@@ -98,6 +213,10 @@ export async function updateSession(
     return supabaseResponse;
   }
 
+  /* =======================================================
+     AUTHENTICATION
+  ======================================================= */
+
   const {
     data:
       claimsData,
@@ -105,7 +224,8 @@ export async function updateSession(
     error:
       claimsError,
   } =
-    await supabase.auth
+    await supabase
+      .auth
       .getClaims();
 
   const userId =
@@ -117,137 +237,239 @@ export async function updateSession(
     claimsError ||
     !userId
   ) {
-    const loginUrl =
-      request.nextUrl.clone();
+    return redirectWithSupabaseCookies({
+      request,
 
-    loginUrl.pathname =
-      "/admin/login";
+      supabaseResponse,
 
-    loginUrl.search =
-      "";
-
-    return NextResponse.redirect(
-      loginUrl
-    );
+      pathname:
+        "/admin/login",
+    });
   }
+
+  /* =======================================================
+     BIRDSHOP STAFF PROFILE
+
+     This is intentionally retrieved through our protected
+     SECURITY DEFINER function instead of reading admin_users
+     directly.
+
+     It gives us one authoritative answer for:
+
+       - owner
+       - service_agent
+       - active / disabled
+  ======================================================= */
 
   const {
     data:
-      adminUser,
+      profileData,
 
     error:
-      adminError,
+      profileError,
   } =
-    await supabase
-      .from(
-        "admin_users"
-      )
-      .select(
-        "user_id, role"
-      )
-      .eq(
-        "user_id",
-        userId
-      )
-      .maybeSingle();
+    await supabase.rpc(
+      "birdshop_get_my_staff_profile"
+    );
 
   if (
-    adminError ||
-    !adminUser
+    profileError ||
+    !profileData
   ) {
-    const loginUrl =
-      request.nextUrl.clone();
+    return redirectWithSupabaseCookies({
+      request,
 
-    loginUrl.pathname =
-      "/admin/login";
+      supabaseResponse,
 
-    loginUrl.search =
-      "";
-
-    return NextResponse.redirect(
-      loginUrl
-    );
+      pathname:
+        "/admin/login",
+    });
   }
 
-  /*
-   * Heartbeat requests update the
-   * activity cookie themselves.
-   */
+  const profile =
+    profileData as
+      StaffProfile;
+
+  /* =======================================================
+     PROFILE VALIDATION
+  ======================================================= */
+
   if (
-    pathname ===
-    "/admin/session/heartbeat"
+    profile.user_id !==
+      userId ||
+    profile.is_active !==
+      true ||
+    ![
+      "owner",
+      "service_agent",
+    ].includes(
+      profile.role
+    )
+  ) {
+    return redirectWithSupabaseCookies({
+      request,
+
+      supabaseResponse,
+
+      pathname:
+        "/admin/login",
+    });
+  }
+
+  /* =======================================================
+     OWNER
+
+     Owner keeps full access to the existing administration
+     panel.
+  ======================================================= */
+
+  if (
+    profile.role ===
+    "owner"
   ) {
     return supabaseResponse;
   }
 
-  const rawLastActive =
-    request.cookies.get(
-      ADMIN_ACTIVITY_COOKIE
-    )?.value;
+  /* =======================================================
+     SERVICE AGENT
 
-  const lastActive =
-    Number(
-      rawLastActive
-    );
+     Service Agents may access ONE administration page:
+
+       /admin/chat
+
+     Everything else under /admin is blocked.
+  ======================================================= */
 
   if (
-    rawLastActive &&
-    Number.isFinite(
-      lastActive
-    ) &&
-    Date.now() -
-      lastActive >=
-      ADMIN_IDLE_TIMEOUT_MS
+    profile.role ===
+    "service_agent"
   ) {
-    const logoutUrl =
-      request.nextUrl.clone();
+    const isServiceChat =
+      pathname ===
+      "/admin/chat";
 
-    logoutUrl.pathname =
-      "/admin/logout";
+    /*
+     * Trying any other admin page sends the employee back
+     * to the restricted Service Desk.
+     */
 
-    logoutUrl.search =
-      "?reason=inactive";
+    if (
+      !isServiceChat
+    ) {
+      const serviceParams =
+        new URLSearchParams();
 
-    return NextResponse.redirect(
-      logoutUrl
+      serviceParams.set(
+        "view",
+        "active"
+      );
+
+      serviceParams.set(
+        "type",
+        "service"
+      );
+
+      return redirectWithSupabaseCookies({
+        request,
+
+        supabaseResponse,
+
+        pathname:
+          "/admin/chat",
+
+        searchParams:
+          serviceParams,
+      });
+    }
+
+    /* =====================================================
+       CANONICAL SERVICE-ONLY CHAT URL
+
+       Even if someone manually enters:
+
+       /admin/chat?type=product
+       /admin/chat?type=general
+       /admin/chat?view=deleted
+
+       the URL is rewritten to the only workspace the
+       Service Agent is allowed to use.
+
+       We preserve a conversation ID only so clicking between
+       approved service conversations continues to work.
+    ===================================================== */
+
+    const safeParams =
+      new URLSearchParams();
+
+    safeParams.set(
+      "view",
+      "active"
     );
+
+    safeParams.set(
+      "type",
+      "service"
+    );
+
+    const conversationId =
+      request
+        .nextUrl
+        .searchParams
+        .get(
+          "conversation"
+        );
+
+    if (
+      conversationId
+    ) {
+      safeParams.set(
+        "conversation",
+        conversationId
+      );
+    }
+
+    const currentParams =
+      request
+        .nextUrl
+        .searchParams
+        .toString();
+
+    const targetParams =
+      safeParams
+        .toString();
+
+    if (
+      currentParams !==
+      targetParams
+    ) {
+      return redirectWithSupabaseCookies({
+        request,
+
+        supabaseResponse,
+
+        pathname:
+          "/admin/chat",
+
+        searchParams:
+          safeParams,
+      });
+    }
+
+    return supabaseResponse;
   }
 
-  /*
-   * First protected request after
-   * login establishes activity.
-   */
-  if (
-    !rawLastActive ||
-    !Number.isFinite(
-      lastActive
-    )
-  ) {
-    supabaseResponse.cookies.set(
-      ADMIN_ACTIVITY_COOKIE,
-      String(
-        Date.now()
-      ),
-      {
-        httpOnly: true,
+  /* =======================================================
+     FAIL CLOSED
 
-        sameSite:
-          "lax",
+     Unknown future role = no administration access.
+  ======================================================= */
 
-        secure:
-          process.env.NODE_ENV ===
-          "production",
+  return redirectWithSupabaseCookies({
+    request,
 
-        path:
-          "/admin",
+    supabaseResponse,
 
-        maxAge:
-          60 *
-          60 *
-          24,
-      }
-    );
-  }
-
-  return supabaseResponse;
+    pathname:
+      "/admin/login",
+  });
 }

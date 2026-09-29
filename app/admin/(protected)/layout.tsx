@@ -13,6 +13,33 @@ import styles from "./admin-shell.module.css";
 export const dynamic =
   "force-dynamic";
 
+/* =========================================================
+   TYPES
+========================================================= */
+
+type StaffRole =
+  | "owner"
+  | "service_agent";
+
+type StaffProfile = {
+  user_id:
+    string;
+
+  role:
+    StaffRole;
+
+  display_name:
+    | string
+    | null;
+
+  is_active:
+    boolean;
+};
+
+/* =========================================================
+   PROTECTED ADMIN LAYOUT
+========================================================= */
+
 export default async function ProtectedAdminLayout({
   children,
 }: Readonly<{
@@ -51,37 +78,64 @@ export default async function ProtectedAdminLayout({
   }
 
   /* =======================================================
-     ADMIN AUTHORIZATION
+     BIRDSHOP STAFF PROFILE
+
+     IMPORTANT:
+
+     We intentionally use the protected RPC instead of
+     reading admin_users directly.
+
+     This gives the application one consistent source for:
+
+       owner
+       service_agent
+       active / disabled
   ======================================================= */
 
   const {
     data:
-      adminUser,
+      profileData,
 
     error:
-      adminError,
+      profileError,
   } =
-    await supabase
-      .from(
-        "admin_users"
-      )
-      .select(
-        "user_id, role"
-      )
-      .eq(
-        "user_id",
-        userId
-      )
-      .maybeSingle();
+    await supabase.rpc(
+      "birdshop_get_my_staff_profile"
+    );
 
   if (
-    adminError ||
-    !adminUser
+    profileError ||
+    !profileData
   ) {
     redirect(
       "/admin/login"
     );
   }
+
+  const profile =
+    profileData as
+      StaffProfile;
+
+  if (
+    profile.user_id !==
+      userId ||
+    profile.is_active !==
+      true ||
+    ![
+      "owner",
+      "service_agent",
+    ].includes(
+      profile.role
+    )
+  ) {
+    redirect(
+      "/admin/login"
+    );
+  }
+
+  const isOwner =
+    profile.role ===
+    "owner";
 
   /* =======================================================
      PROTECTED ADMIN
@@ -94,19 +148,18 @@ export default async function ProtectedAdminLayout({
       }
     >
       {/* ===============================================
-          GLOBAL ADMIN CHAT NOTIFICATIONS
+          OWNER GLOBAL CHAT NOTIFICATIONS
 
-          Remains mounted while navigating between:
-          Overview
-          Products
-          Inventory
-          Orders
-          Chat
-          Legacy Support
-          Reviews
+          Service Agents live directly inside their
+          service-chat workspace.
+
+          They should not receive Product Support or
+          General Support notifications.
       =============================================== */}
 
-      <AdminGlobalChatNotifier />
+      {isOwner && (
+        <AdminGlobalChatNotifier />
+      )}
 
       {
         children

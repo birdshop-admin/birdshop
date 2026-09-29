@@ -11,49 +11,118 @@ import AdminLogoutButton from "@/components/AdminLogoutButton";
 
 import styles from "./AdminSidebar.module.css";
 
-const navigation = [
+/* =========================================================
+   TYPES
+========================================================= */
+
+export type AdminSidebarRole =
+  | "owner"
+  | "service_agent";
+
+type AdminSidebarProps = {
+  role?:
+    AdminSidebarRole;
+};
+
+/* =========================================================
+   OWNER NAVIGATION
+========================================================= */
+
+const ownerNavigation = [
   {
-    label: "Overview",
-    href: "/admin",
+    label:
+      "Overview",
+
+    href:
+      "/admin",
   },
 
   {
-    label: "Products",
-    href: "/admin/products",
+    label:
+      "Products",
+
+    href:
+      "/admin/products",
   },
 
   {
-    label: "Inventory",
-    href: "/admin/inventory",
+    label:
+      "Inventory",
+
+    href:
+      "/admin/inventory",
   },
 
   {
-    label: "Orders",
-    href: "/admin/orders",
+    label:
+      "Orders",
+
+    href:
+      "/admin/orders",
   },
 
   {
-    label: "Chat",
-    href: "/admin/chat",
+    label:
+      "Chat",
+
+    href:
+      "/admin/chat",
   },
 
   {
-    label: "Support",
-    href: "/admin/requests",
+    label:
+      "Support",
+
+    href:
+      "/admin/requests",
   },
 
   {
-    label: "Reviews",
-    href: "/admin/reviews",
+    label:
+      "Reviews",
+
+    href:
+      "/admin/reviews",
   },
 ];
 
+/* =========================================================
+   SERVICE AGENT NAVIGATION
+
+   Deliberately tiny.
+
+   No hidden/disabled admin features are displayed.
+========================================================= */
+
+const serviceAgentNavigation = [
+  {
+    label:
+      "Service Chat",
+
+    href:
+      "/admin/chat?view=active&type=service",
+  },
+];
+
+/* =========================================================
+   ACTIVE LINK
+========================================================= */
+
 function isActive(
-  pathname: string,
-  href: string
+  pathname:
+    string,
+
+  href:
+    string
 ) {
+  const pathOnly =
+    href.split(
+      "?"
+    )[0];
+
   if (
-    href === "/admin"
+    pathOnly ===
+    "/admin"
   ) {
     return (
       pathname ===
@@ -63,16 +132,37 @@ function isActive(
 
   return (
     pathname ===
-      href ||
+      pathOnly ||
     pathname.startsWith(
-      `${href}/`
+      `${pathOnly}/`
     )
   );
 }
 
-export default function AdminSidebar() {
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+export default function AdminSidebar({
+  role =
+    "owner",
+}: AdminSidebarProps) {
   const pathname =
     usePathname();
+
+  const isServiceAgent =
+    role ===
+    "service_agent";
+
+  const navigation =
+    isServiceAgent
+      ? serviceAgentNavigation
+      : ownerNavigation;
+
+  const homeHref =
+    isServiceAgent
+      ? "/admin/chat?view=active&type=service"
+      : "/admin";
 
   return (
     <aside
@@ -80,8 +170,14 @@ export default function AdminSidebar() {
         styles.sidebar
       }
     >
+      {/* ===================================================
+          BRAND
+      =================================================== */}
+
       <Link
-        href="/admin"
+        href={
+          homeHref
+        }
         className={
           styles.brand
         }
@@ -100,10 +196,16 @@ export default function AdminSidebar() {
           </strong>
 
           <span>
-            ADMINISTRATION
+            {isServiceAgent
+              ? "SERVICE STAFF"
+              : "ADMINISTRATION"}
           </span>
         </div>
       </Link>
+
+      {/* ===================================================
+          NAVIGATION
+      =================================================== */}
 
       <nav
         className={
@@ -115,7 +217,9 @@ export default function AdminSidebar() {
             styles.navLabel
           }
         >
-          MANAGEMENT
+          {isServiceAgent
+            ? "SERVICE DESK"
+            : "MANAGEMENT"}
         </span>
 
         {navigation.map(
@@ -156,19 +260,35 @@ export default function AdminSidebar() {
         )}
       </nav>
 
+      {/* ===================================================
+          FOOTER
+      =================================================== */}
+
       <div
         className={
           styles.bottom
         }
       >
-        <Link
-          href="/"
-          className={
-            styles.storeLink
-          }
-        >
-          ← View Store
-        </Link>
+        {!isServiceAgent && (
+          <Link
+            href="/"
+            className={
+              styles.storeLink
+            }
+          >
+            ← View Store
+          </Link>
+        )}
+
+        {isServiceAgent && (
+          <div
+            className={
+              styles.storeLink
+            }
+          >
+            Service access only
+          </div>
+        )}
 
         <div
           className={

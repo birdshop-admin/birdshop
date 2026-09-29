@@ -226,7 +226,7 @@ function validEmail(
 }
 
 /* =========================================================
-   PAYMENT EMAILS
+   PAYMENT CONFIRMATION EMAILS
 ========================================================= */
 
 async function sendPaymentConfirmationEmails({
@@ -254,10 +254,6 @@ async function sendPaymentConfirmationEmails({
 }) {
   const supabase =
     createAdminClient();
-
-  /* =======================================================
-     LOAD PAYMENT
-  ======================================================= */
 
   const {
     data:
@@ -322,10 +318,6 @@ async function sendPaymentConfirmationEmails({
     );
   }
 
-  /* =======================================================
-     LOAD CONVERSATION
-  ======================================================= */
-
   const {
     data:
       conversationRaw,
@@ -373,10 +365,6 @@ async function sendPaymentConfirmationEmails({
       "Payment conversation could not be loaded."
     );
   }
-
-  /* =======================================================
-     LOAD ORDER
-  ======================================================= */
 
   const {
     data:
@@ -437,10 +425,6 @@ async function sendPaymentConfirmationEmails({
       "BirdShop refused to send a receipt for an unpaid order."
     );
   }
-
-  /* =======================================================
-     EMAIL VALUES
-  ======================================================= */
 
   const customerEmail =
     conversation
@@ -527,10 +511,6 @@ async function sendPaymentConfirmationEmails({
     order.customer_name ||
     "Customer";
 
-  /* =======================================================
-     RESEND
-  ======================================================= */
-
   const resend =
     new Resend(
       requireEnvironmentVariable(
@@ -550,13 +530,6 @@ async function sendPaymentConfirmationEmails({
 
   /* =======================================================
      CUSTOMER RECEIPT
-
-     Database flag:
-       prevents normal duplicate sends.
-
-     Resend idempotency key:
-       prevents duplicates if multiple Stripe webhooks race
-       before the database flag gets updated.
   ======================================================= */
 
   if (
@@ -788,10 +761,6 @@ async function finalizePaidCheckout(
   session:
     Stripe.Checkout.Session
 ) {
-  /* =======================================================
-     ONLY ONE-TIME PAYMENT CHECKOUTS
-  ======================================================= */
-
   if (
     session.mode !==
     "payment"
@@ -799,23 +768,12 @@ async function finalizePaidCheckout(
     return;
   }
 
-  /*
-   * checkout.session.completed may happen before an
-   * asynchronous payment method actually settles.
-   *
-   * Only Stripe PAID state may create a BirdShop order.
-   */
-
   if (
     session.payment_status !==
     "paid"
   ) {
     return;
   }
-
-  /* =======================================================
-     BIRDSHOP IDS
-  ======================================================= */
 
   const paymentRequestId =
     session.metadata
@@ -854,10 +812,6 @@ async function finalizePaidCheckout(
     );
   }
 
-  /* =======================================================
-     STRIPE PAYMENT VALUES
-  ======================================================= */
-
   if (
     session.amount_total ===
     null
@@ -891,10 +845,6 @@ async function finalizePaidCheckout(
       ?.email ??
     session.customer_email ??
     null;
-
-  /* =======================================================
-     ATOMIC DATABASE FINALIZATION
-  ======================================================= */
 
   const supabase =
     createAdminClient();
@@ -986,17 +936,6 @@ async function finalizePaidCheckout(
     }
   );
 
-  /* =======================================================
-     PAYMENT EMAILS
-
-     These happen only AFTER:
-     ✓ Stripe signature
-     ✓ Stripe paid status
-     ✓ BirdShop amount verification
-     ✓ BirdShop currency verification
-     ✓ order creation / idempotent finalization
-  ======================================================= */
-
   await sendPaymentConfirmationEmails({
     paymentRequestId,
 
@@ -1017,6 +956,240 @@ async function finalizePaidCheckout(
       paymentRequestId,
 
       orderId,
+    }
+  );
+}
+
+/* =========================================================
+   SUCCESSFUL REFUND
+========================================================= */
+
+async function synchronizeRefundedCharge(
+  charge:
+    Stripe.Charge
+) {
+  const paymentIntentId =
+    objectId(
+      charge.payment_intent
+    );
+
+  if (
+    !paymentIntentId
+  ) {
+    console.info(
+      "BirdShop ignored refund without PaymentIntent:",
+      {
+        chargeId:
+          charge.id,
+      }
+    );
+
+    return;
+  }
+
+  const supabase =
+    createAdminClient();
+
+  const {
+    data:
+      orderId,
+
+    error,
+  } =
+    await supabase.rpc(
+      "birdshop_sync_service_refund",
+      {
+        p_payment_intent_id:
+          paymentIntentId,
+
+        p_charge_id:
+          charge.id,
+
+        p_amount_refunded:
+          charge.amount_refunded,
+
+        p_currency:
+          charge.currency,
+
+        p_is_fully_refunded:
+          charge.refunded,
+      }
+    );
+
+  if (
+    error
+  ) {
+    throw new Error(
+      `BirdShop refund synchronization failed: ${error.message}`
+    );
+  }
+
+  if (
+    !orderId
+  ) {
+    console.info(
+      "Stripe refund did not belong to a BirdShop service order:",
+      {
+        paymentIntentId,
+
+        chargeId:
+          charge.id,
+      }
+    );
+
+    return;
+  }
+
+  console.info(
+    "BirdShop Stripe refund synchronized:",
+    {
+      orderId,
+
+      paymentIntentId,
+
+      chargeId:
+        charge.id,
+
+      amountRefunded:
+        charge.amount_refunded,
+
+      fullRefund:
+        charge.refunded,
+    }
+  );
+}
+
+/* =========================================================
+   FAILED REFUND
+========================================================= */
+
+async function recordFailedRefund(
+  refund:
+    Stripe.Refund
+) {
+  const stripe =
+    getStripe();
+
+  let paymentIntentId =
+    objectId(
+      refund.payment_intent
+    );
+
+  const chargeId =
+    objectId(
+      refund.charge
+    );
+
+  /*
+   * Refund normally contains payment_intent.
+   * If not, retrieve the associated charge as fallback.
+   */
+
+  if (
+    !paymentIntentId &&
+    chargeId
+  ) {
+    try {
+      const charge =
+        await stripe
+          .charges
+          .retrieve(
+            chargeId
+          );
+
+      paymentIntentId =
+        objectId(
+          charge.payment_intent
+        );
+    } catch (
+      problem
+    ) {
+      console.warn(
+        "Unable to resolve PaymentIntent for failed refund:",
+        problem
+      );
+    }
+  }
+
+  if (
+    !paymentIntentId
+  ) {
+    console.info(
+      "BirdShop ignored failed refund without PaymentIntent:",
+      {
+        refundId:
+          refund.id,
+
+        chargeId,
+      }
+    );
+
+    return;
+  }
+
+  const supabase =
+    createAdminClient();
+
+  const {
+    data:
+      orderId,
+
+    error,
+  } =
+    await supabase.rpc(
+      "birdshop_record_service_refund_failure",
+      {
+        p_payment_intent_id:
+          paymentIntentId,
+
+        p_charge_id:
+          chargeId,
+
+        p_refund_id:
+          refund.id,
+
+        p_failure_reason:
+          refund.failure_reason ??
+          "Stripe refund failed.",
+      }
+    );
+
+  if (
+    error
+  ) {
+    throw new Error(
+      `BirdShop failed refund recording failed: ${error.message}`
+    );
+  }
+
+  if (
+    !orderId
+  ) {
+    console.info(
+      "Failed Stripe refund did not belong to a BirdShop service order:",
+      {
+        paymentIntentId,
+
+        refundId:
+          refund.id,
+      }
+    );
+
+    return;
+  }
+
+  console.warn(
+    "BirdShop Stripe refund failed:",
+    {
+      orderId,
+
+      paymentIntentId,
+
+      refundId:
+        refund.id,
+
+      reason:
+        refund.failure_reason,
     }
   );
 }
@@ -1058,10 +1231,6 @@ export async function POST(
     );
   }
 
-  /* =======================================================
-     SIGNATURE
-  ======================================================= */
-
   const signature =
     request.headers.get(
       "stripe-signature"
@@ -1081,13 +1250,6 @@ export async function POST(
       }
     );
   }
-
-  /* =======================================================
-     RAW BODY
-
-     Stripe signature verification must receive the exact
-     untouched request body.
-  ======================================================= */
 
   const rawBody =
     await request.text();
@@ -1127,16 +1289,12 @@ export async function POST(
     );
   }
 
-  /* =======================================================
-     EVENTS
-  ======================================================= */
-
   try {
     switch (
       event.type
     ) {
       /* ===================================================
-         NORMAL CARD / IMMEDIATE PAYMENT
+         PAYMENT COMPLETE
       =================================================== */
 
       case "checkout.session.completed": {
@@ -1152,7 +1310,7 @@ export async function POST(
       }
 
       /* ===================================================
-         ASYNC PAYMENT FINISHED LATER
+         DELAYED PAYMENT COMPLETE
       =================================================== */
 
       case "checkout.session.async_payment_succeeded": {
@@ -1168,8 +1326,36 @@ export async function POST(
       }
 
       /* ===================================================
-         EVERYTHING ELSE
+         PARTIAL OR FULL REFUND
       =================================================== */
+
+      case "charge.refunded": {
+        const charge =
+          event.data.object as
+            Stripe.Charge;
+
+        await synchronizeRefundedCharge(
+          charge
+        );
+
+        break;
+      }
+
+      /* ===================================================
+         REFUND FAILED
+      =================================================== */
+
+      case "refund.failed": {
+        const refund =
+          event.data.object as
+            Stripe.Refund;
+
+        await recordFailedRefund(
+          refund
+        );
+
+        break;
+      }
 
       default:
         break;
@@ -1185,16 +1371,6 @@ export async function POST(
   } catch (
     problem
   ) {
-    /*
-     * Return 500 so Stripe retries.
-     *
-     * This is safe because:
-     *
-     * - order creation is idempotent
-     * - Resend uses deterministic idempotency keys
-     * - successful email delivery is tracked in Supabase
-     */
-
     console.error(
       "BirdShop Stripe webhook processing failed:",
       {

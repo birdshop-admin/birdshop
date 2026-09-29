@@ -13,50 +13,70 @@ import {
 
 import {
   ADMIN_ACTIVITY_COOKIE,
+  ADMIN_SESSION_COOKIE,
 } from "@/lib/admin-session";
+
+/* =========================================================
+   COOKIE OPTIONS
+========================================================= */
+
+function deleteCookieOptions() {
+  return {
+    path:
+      "/admin",
+
+    maxAge:
+      0,
+  };
+}
+
+/* =========================================================
+   END SESSION
+========================================================= */
 
 async function endSession() {
   const supabase =
     await createClient();
 
-  await supabase.auth
-    .signOut();
+  try {
+    await supabase.auth
+      .signOut();
+  } catch {
+    /*
+     * BirdShop cookies are still cleared even if the
+     * Supabase sign-out request itself fails.
+     */
+  }
 
   const cookieStore =
     await cookies();
 
   cookieStore.set(
+    ADMIN_SESSION_COOKIE,
+    "",
+    deleteCookieOptions()
+  );
+
+  cookieStore.set(
     ADMIN_ACTIVITY_COOKIE,
     "",
-    {
-      path:
-        "/admin",
-
-      maxAge:
-        0,
-    }
+    deleteCookieOptions()
   );
 
   /*
-   * Removes the legacy cookie from
-   * the previous close-tab system.
-   *
-   * This is important because an old
-   * value may still exist in your
-   * browser right now.
+   * Legacy session cookies.
    */
+
   cookieStore.set(
     "birdshop_admin_exit",
     "",
-    {
-      path:
-        "/admin",
-
-      maxAge:
-        0,
-    }
+    deleteCookieOptions()
   );
 }
+
+/* =========================================================
+   REASON
+========================================================= */
 
 function reasonFromRequest(
   request:
@@ -73,6 +93,8 @@ function reasonFromRequest(
     reason ===
       "inactive" ||
     reason ===
+      "session" ||
+    reason ===
       "closed"
   ) {
     return reason;
@@ -81,6 +103,10 @@ function reasonFromRequest(
   return null;
 }
 
+/* =========================================================
+   POST
+========================================================= */
+
 export async function POST(
   request:
     NextRequest
@@ -88,7 +114,8 @@ export async function POST(
   await endSession();
 
   return NextResponse.json({
-    ok: true,
+    ok:
+      true,
 
     reason:
       reasonFromRequest(
@@ -96,6 +123,10 @@ export async function POST(
       ),
   });
 }
+
+/* =========================================================
+   GET
+========================================================= */
 
 export async function GET(
   request:

@@ -7,6 +7,12 @@ import {
   type NextRequest,
 } from "next/server";
 
+import {
+  ADMIN_ACTIVITY_COOKIE,
+  ADMIN_IDLE_TIMEOUT_MS,
+  ADMIN_SESSION_COOKIE,
+} from "@/lib/admin-session";
+
 /* =========================================================
    TYPES
 ========================================================= */
@@ -31,7 +37,12 @@ type StaffProfile = {
 };
 
 /* =========================================================
-   HELPERS
+   REDIRECT WITH SUPABASE COOKIES
+
+   Supabase may refresh/delete authentication cookies during
+   this request.
+
+   Any redirect we create must preserve those cookie changes.
 ========================================================= */
 
 function redirectWithSupabaseCookies({
@@ -69,13 +80,6 @@ function redirectWithSupabaseCookies({
       url
     );
 
-  /*
-   * Supabase may have refreshed authentication cookies
-   * earlier in this same request.
-   *
-   * Preserve them on the redirect response.
-   */
-
   for (
     const cookie
     of supabaseResponse
@@ -93,7 +97,50 @@ function redirectWithSupabaseCookies({
 }
 
 /* =========================================================
-   SESSION / ADMIN PROXY
+   LOGIN REDIRECT
+========================================================= */
+
+function redirectToLogin({
+  request,
+  supabaseResponse,
+  reason,
+}: {
+  request:
+    NextRequest;
+
+  supabaseResponse:
+    NextResponse;
+
+  reason?:
+    "inactive"
+    | "session";
+}) {
+  const searchParams =
+    new URLSearchParams();
+
+  if (
+    reason
+  ) {
+    searchParams.set(
+      "reason",
+      reason
+    );
+  }
+
+  return redirectWithSupabaseCookies({
+    request,
+
+    supabaseResponse,
+
+    pathname:
+      "/admin/login",
+
+    searchParams,
+  });
+}
+
+/* =========================================================
+   ADMIN SESSION PROXY
 ========================================================= */
 
 export async function updateSession(
@@ -107,6 +154,9 @@ export async function updateSession(
 
   /* =======================================================
      SUPABASE SERVER CLIENT
+
+     This handles authentication-cookie refreshes while the
+     request moves through the proxy.
   ======================================================= */
 
   const supabase =
@@ -129,8 +179,7 @@ export async function updateSession(
             cookiesToSet
           ) {
             /*
-             * Keep the incoming request cookies synchronized
-             * with any authentication refresh.
+             * Update the request copy.
              */
 
             cookiesToSet.forEach(
@@ -147,13 +196,18 @@ export async function updateSession(
               }
             );
 
+            /*
+             * Create a fresh response containing the updated
+             * request.
+             */
+
             supabaseResponse =
               NextResponse.next({
                 request,
               });
 
             /*
-             * Also send refreshed cookies back to browser.
+             * Return refreshed Supabase cookies to browser.
              */
 
             cookiesToSet.forEach(
@@ -177,7 +231,7 @@ export async function updateSession(
     );
 
   /* =======================================================
-     ROUTE
+     ROUTE CLASSIFICATION
   ======================================================= */
 
   const pathname =
@@ -190,31 +244,51 @@ export async function updateSession(
       "/admin/"
     );
 
-  const isLoginPage =
+  /*
+   * Everything underneath /admin/login must remain reachable,
+   * including:
+   *
+   * /admin/login
+   * /admin/login/session
+   */
+
+  const isLoginRoute =
     pathname ===
-    "/admin/login";
+      "/admin/login" ||
+    pathname.startsWith(
+      "/admin/login/"
+    );
 
   const isLogoutRoute =
     pathname ===
-    "/admin/logout";
+      "/admin/logout";
 
   /*
-   * Public pages never need BirdShop admin authorization.
-   *
-   * Login and logout need to remain reachable so authentication
-   * itself can function.
+   * Heartbeat performs its own strict authentication +
+   * BirdShop-session validation.
    */
+
+  const isHeartbeatRoute =
+    pathname ===
+      "/admin/session/heartbeat";
+
+  /* =======================================================
+     PUBLIC / SPECIAL ADMIN ROUTES
+  ======================================================= */
 
   if (
     !isAdminRoute ||
-    isLoginPage ||
-    isLogoutRoute
+    isLoginRoute ||
+    isLogoutRoute ||
+    isHeartbeatRoute
   ) {
     return supabaseResponse;
   }
 
   /* =======================================================
-     AUTHENTICATION
+     1. SUPABASE AUTHENTICATION
+
+     The person must still have a valid Supabase login.
   ======================================================= */
 
   const {
@@ -224,8 +298,7 @@ export async function updateSession(
     error:
       claimsError,
   } =
-    await supabase
-      .auth
+    await supabase.auth
       .getClaims();
 
   const userId =
@@ -237,28 +310,133 @@ export async function updateSession(
     claimsError ||
     !userId
   ) {
-    return redirectWithSupabaseCookies({
+    return redirectToLogin({
       request,
 
       supabaseResponse,
-
-      pathname:
-        "/admin/login",
     });
   }
 
   /* =======================================================
-     BIRDSHOP STAFF PROFILE
+     2. BIRDSHOP BROWSER-SESSION GATE
 
-     This is intentionally retrieved through our protected
-     SECURITY DEFINER function instead of reading admin_users
-     directly.
+     This is deliberately separate from Supabase.
 
-     It gives us one authoritative answer for:
+     An old Supabase login alone is NOT enough to enter
+     BirdShop Administration.
+  ======================================================= */
 
-       - owner
-       - service_agent
-       - active / disabled
+  const adminSession =
+    request.cookies
+      .get(
+        ADMIN_SESSION_COOKIE
+      )
+      ?.value;
+
+  const rawLastActive =
+    request.cookies
+      .get(
+        ADMIN_ACTIVITY_COOKIE
+      )
+      ?.value;
+
+  if (
+    !adminSession ||
+    !rawLastActive
+  ) {
+    /*
+     * A Supabase session survived but the BirdShop browser
+     * session did not.
+     *
+     * Clear Supabase authentication too so the user must
+     * provide credentials again.
+     */
+
+    try {
+      await supabase.auth
+        .signOut();
+    } catch {
+      /*
+       * The missing BirdShop session is already enough to
+       * deny access, even if signOut itself fails.
+       */
+    }
+
+    return redirectToLogin({
+      request,
+
+      supabaseResponse,
+
+      reason:
+        "session",
+    });
+  }
+
+  /* =======================================================
+     3. SERVER-SIDE IDLE TIMEOUT
+  ======================================================= */
+
+  const lastActive =
+    Number(
+      rawLastActive
+    );
+
+  if (
+    !Number.isFinite(
+      lastActive
+    )
+  ) {
+    try {
+      await supabase.auth
+        .signOut();
+    } catch {
+      // Access is still denied.
+    }
+
+    return redirectToLogin({
+      request,
+
+      supabaseResponse,
+
+      reason:
+        "session",
+    });
+  }
+
+  const idleFor =
+    Date.now() -
+    lastActive;
+
+  if (
+    idleFor >=
+    ADMIN_IDLE_TIMEOUT_MS
+  ) {
+    /*
+     * This is authoritative.
+     *
+     * A client cannot revive an already-expired admin
+     * session by refreshing or sending a late heartbeat.
+     */
+
+    try {
+      await supabase.auth
+        .signOut();
+    } catch {
+      // Access remains denied.
+    }
+
+    return redirectToLogin({
+      request,
+
+      supabaseResponse,
+
+      reason:
+        "inactive",
+    });
+  }
+
+  /* =======================================================
+     4. ACTIVE BIRDSHOP STAFF ACCOUNT
   ======================================================= */
 
   const {
@@ -276,23 +454,26 @@ export async function updateSession(
     profileError ||
     !profileData
   ) {
-    return redirectWithSupabaseCookies({
+    try {
+      await supabase.auth
+        .signOut();
+    } catch {
+      // Access remains denied.
+    }
+
+    return redirectToLogin({
       request,
 
       supabaseResponse,
 
-      pathname:
-        "/admin/login",
+      reason:
+        "session",
     });
   }
 
   const profile =
     profileData as
       StaffProfile;
-
-  /* =======================================================
-     PROFILE VALIDATION
-  ======================================================= */
 
   if (
     profile.user_id !==
@@ -306,21 +487,27 @@ export async function updateSession(
       profile.role
     )
   ) {
-    return redirectWithSupabaseCookies({
+    try {
+      await supabase.auth
+        .signOut();
+    } catch {
+      // Access remains denied.
+    }
+
+    return redirectToLogin({
       request,
 
       supabaseResponse,
 
-      pathname:
-        "/admin/login",
+      reason:
+        "session",
     });
   }
 
   /* =======================================================
-     OWNER
+     5. OWNER
 
-     Owner keeps full access to the existing administration
-     panel.
+     Full administration remains available.
   ======================================================= */
 
   if (
@@ -331,13 +518,9 @@ export async function updateSession(
   }
 
   /* =======================================================
-     SERVICE AGENT
+     6. SERVICE AGENT
 
-     Service Agents may access ONE administration page:
-
-       /admin/chat
-
-     Everything else under /admin is blocked.
+     Service Agents are restricted to the Service Desk.
   ======================================================= */
 
   if (
@@ -348,10 +531,9 @@ export async function updateSession(
       pathname ===
       "/admin/chat";
 
-    /*
-     * Trying any other admin page sends the employee back
-     * to the restricted Service Desk.
-     */
+    /* =====================================================
+       BLOCK ALL OTHER ADMIN ROUTES
+    ===================================================== */
 
     if (
       !isServiceChat
@@ -383,19 +565,23 @@ export async function updateSession(
     }
 
     /* =====================================================
-       CANONICAL SERVICE-ONLY CHAT URL
+       FORCE SAFE SERVICE CHAT URL
 
-       Even if someone manually enters:
+       These are NOT allowed for Service Agent:
 
-       /admin/chat?type=product
-       /admin/chat?type=general
-       /admin/chat?view=deleted
+         ?type=product
+         ?type=general
+         ?view=closed
+         ?view=deleted
 
-       the URL is rewritten to the only workspace the
-       Service Agent is allowed to use.
+       Only:
 
-       We preserve a conversation ID only so clicking between
-       approved service conversations continues to work.
+         view=active
+         type=service
+
+       A conversation ID may be preserved. Database RLS/RPC
+       rules still determine whether that specific service
+       belongs to the employee.
     ===================================================== */
 
     const safeParams =
@@ -412,8 +598,7 @@ export async function updateSession(
     );
 
     const conversationId =
-      request
-        .nextUrl
+      request.nextUrl
         .searchParams
         .get(
           "conversation"
@@ -429,18 +614,17 @@ export async function updateSession(
     }
 
     const currentParams =
-      request
-        .nextUrl
+      request.nextUrl
         .searchParams
         .toString();
 
-    const targetParams =
+    const requiredParams =
       safeParams
         .toString();
 
     if (
       currentParams !==
-      targetParams
+      requiredParams
     ) {
       return redirectWithSupabaseCookies({
         request,
@@ -459,17 +643,17 @@ export async function updateSession(
   }
 
   /* =======================================================
-     FAIL CLOSED
+     7. FAIL CLOSED
 
-     Unknown future role = no administration access.
+     Any unknown future role gets no Admin access.
   ======================================================= */
 
-  return redirectWithSupabaseCookies({
+  return redirectToLogin({
     request,
 
     supabaseResponse,
 
-    pathname:
-      "/admin/login",
+    reason:
+      "session",
   });
 }

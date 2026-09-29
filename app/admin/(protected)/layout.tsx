@@ -8,6 +8,8 @@ import {
 
 import AdminGlobalChatNotifier from "@/components/AdminGlobalChatNotifier";
 
+import AdminSessionHeartbeat from "@/components/AdminSessionHeartbeat";
+
 import styles from "./admin-shell.module.css";
 
 export const dynamic =
@@ -88,7 +90,7 @@ export default async function ProtectedAdminLayout({
   }
 
   /* =======================================================
-     STAFF PROFILE
+     STAFF
   ======================================================= */
 
   const {
@@ -145,7 +147,7 @@ export default async function ProtectedAdminLayout({
       : "Service Staff");
 
   /* =======================================================
-     ADMIN
+     PROTECTED ADMIN
   ======================================================= */
 
   return (
@@ -154,16 +156,27 @@ export default async function ProtectedAdminLayout({
         styles.shell
       }
     >
+      {/* ===============================================
+          REAL USER ACTIVITY / SESSION TIMEOUT
+      =============================================== */}
+
+      <AdminSessionHeartbeat />
+
+      {/* ===============================================
+          OWNER GLOBAL CHAT NOTIFICATIONS
+      =============================================== */}
+
       {isOwner && (
         <AdminGlobalChatNotifier />
       )}
 
-      {/* =================================================
-          SIGNED-IN STAFF INDICATOR
+      {/* ===============================================
+          CURRENT STAFF
 
-          Temporary functional version.
-          We'll redesign this with the whole Admin UI later.
-      ================================================= */}
+          Temporary functional design.
+          We can integrate this beautifully into the
+          sidebar during the full redesign.
+      =============================================== */}
 
       <div
         style={{

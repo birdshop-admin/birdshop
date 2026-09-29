@@ -4,22 +4,24 @@ import {
   useState,
 } from "react";
 
-import {
-  ADMIN_TAB_STORAGE_KEY,
-} from "@/lib/admin-session";
-
 export default function AdminLogoutButton() {
   const [
     loading,
     setLoading,
   ] =
-    useState(false);
+    useState(
+      false
+    );
 
   async function logout() {
-    setLoading(true);
+    if (
+      loading
+    ) {
+      return;
+    }
 
-    window.sessionStorage.removeItem(
-      ADMIN_TAB_STORAGE_KEY
+    setLoading(
+      true
     );
 
     try {
@@ -31,6 +33,9 @@ export default function AdminLogoutButton() {
 
           credentials:
             "same-origin",
+
+          cache:
+            "no-store",
         }
       );
     } finally {

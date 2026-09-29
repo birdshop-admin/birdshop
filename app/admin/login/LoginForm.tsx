@@ -5,41 +5,61 @@ import {
   type FormEvent,
 } from "react";
 
-import {
-  createClient,
-} from "@/lib/supabase/client";
-
-import {
-  ADMIN_TAB_STORAGE_KEY,
-} from "@/lib/admin-session";
-
 import styles from "./login.module.css";
+
+/* =========================================================
+   RESPONSE
+========================================================= */
+
+type LoginResponse = {
+  ok?:
+    boolean;
+
+  error?:
+    string;
+
+  destination?:
+    string;
+};
+
+/* =========================================================
+   LOGIN FORM
+========================================================= */
 
 export default function LoginForm() {
   const [
     email,
     setEmail,
-  ] = useState("");
+  ] =
+    useState("");
 
   const [
     password,
     setPassword,
-  ] = useState("");
+  ] =
+    useState("");
 
   const [
     showPassword,
     setShowPassword,
-  ] = useState(false);
+  ] =
+    useState(
+      false
+    );
 
   const [
     error,
     setError,
-  ] = useState("");
+  ] =
+    useState("");
 
   const [
     loading,
     setLoading,
-  ] = useState(false);
+  ] =
+    useState(
+      false
+    );
 
   async function handleSubmit(
     event:
@@ -47,99 +67,22 @@ export default function LoginForm() {
   ) {
     event.preventDefault();
 
+    if (
+      loading
+    ) {
+      return;
+    }
+
     setError("");
-    setLoading(true);
+
+    setLoading(
+      true
+    );
 
     try {
-      const supabase =
-        createClient();
-
-      /* ===================================================
-         SIGN IN
-      =================================================== */
-
-      const {
-        data,
-        error:
-          signInError,
-      } =
-        await supabase.auth
-          .signInWithPassword({
-            email:
-              email.trim(),
-
-            password,
-          });
-
-      if (
-        signInError ||
-        !data.user
-      ) {
-        setError(
-          "The email or password is incorrect."
-        );
-
-        setLoading(false);
-
-        return;
-      }
-
-      /* ===================================================
-         VERIFY ADMIN
-      =================================================== */
-
-      const {
-        data:
-          adminUser,
-
-        error:
-          adminError,
-      } =
-        await supabase
-          .from(
-            "admin_users"
-          )
-          .select(
-            "user_id, role"
-          )
-          .eq(
-            "user_id",
-            data.user.id
-          )
-          .maybeSingle();
-
-      if (
-        adminError ||
-        !adminUser
-      ) {
-        await supabase.auth
-          .signOut();
-
-        setError(
-          "This account is not authorized to access BirdShop administration."
-        );
-
-        setLoading(false);
-
-        return;
-      }
-
-      /* ===================================================
-         RESET ADMIN ACTIVITY TIMER
-
-         This is the important fix.
-
-         A previous admin session may have left an old
-         birdshop_admin_last_active timestamp behind.
-
-         Before entering /admin, refresh that timestamp so
-         the proxy does not immediately consider this new
-         login inactive.
-      =================================================== */
-
-      const heartbeatResponse =
+      const response =
         await fetch(
-          "/admin/session/heartbeat",
+          "/admin/login/session",
           {
             method:
               "POST",
@@ -149,52 +92,57 @@ export default function LoginForm() {
 
             cache:
               "no-store",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify({
+                email:
+                  email.trim(),
+
+                password,
+              }),
           }
         );
 
+      let result:
+        LoginResponse = {};
+
+      try {
+        result =
+          await response.json() as
+            LoginResponse;
+      } catch {
+        result = {};
+      }
+
       if (
-        !heartbeatResponse.ok
+        !response.ok ||
+        !result.ok
       ) {
-        await supabase.auth
-          .signOut();
-
         setError(
-          "BirdShop could not initialize the secure admin session. Please try again."
+          result.error ||
+          "BirdShop could not verify this account."
         );
-
-        setLoading(false);
 
         return;
       }
 
-      /* ===================================================
-         TAB-ONLY ACCESS MARKER
-
-         sessionStorage survives refreshes but is removed
-         automatically when this browser tab is closed.
-      =================================================== */
-
-      window.sessionStorage.setItem(
-        ADMIN_TAB_STORAGE_KEY,
-        "1"
-      );
-
-      /* ===================================================
-         ENTER ADMIN
-
-         Full navigation makes sure the server receives the
-         freshly updated Supabase + activity cookies.
-      =================================================== */
-
       window.location.replace(
+        result.destination ||
         "/admin"
       );
     } catch {
       setError(
-        "BirdShop could not start the admin session. Please try again."
+        "BirdShop could not start the secure admin session. Please try again."
       );
-
-      setLoading(false);
+    } finally {
+      setLoading(
+        false
+      );
     }
   }
 
@@ -221,7 +169,7 @@ export default function LoginForm() {
         <input
           id="admin-email"
           type="email"
-          autoComplete="email"
+          autoComplete="username"
           value={
             email
           }
@@ -232,7 +180,7 @@ export default function LoginForm() {
               event.target.value
             )
           }
-          placeholder="owner@birdshop.gg"
+          placeholder="staff@birdshop.store"
           required
         />
       </div>
@@ -300,7 +248,9 @@ export default function LoginForm() {
           }
           role="alert"
         >
-          {error}
+          {
+            error
+          }
         </div>
       )}
 

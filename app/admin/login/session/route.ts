@@ -1,4 +1,8 @@
 import {
+  randomUUID,
+} from "crypto";
+
+import {
   NextResponse,
 } from "next/server";
 
@@ -12,7 +16,6 @@ import {
 
 import {
   ADMIN_ACTIVITY_COOKIE,
-  ADMIN_IDLE_TIMEOUT_MS,
   ADMIN_SESSION_COOKIE,
 } from "@/lib/admin-session";
 
@@ -20,12 +23,23 @@ import {
    RUNTIME
 ========================================================= */
 
+export const runtime =
+  "nodejs";
+
 export const dynamic =
   "force-dynamic";
 
 /* =========================================================
    TYPES
 ========================================================= */
+
+type LoginBody = {
+  email?:
+    unknown;
+
+  password?:
+    unknown;
+};
 
 type StaffProfile = {
   user_id:
@@ -65,16 +79,10 @@ function sessionCookieOptions() {
 }
 
 /* =========================================================
-   END INVALID SESSION
+   CLEAR BIRDSHOP SESSION
 ========================================================= */
 
-async function endInvalidSession() {
-  const supabase =
-    await createClient();
-
-  await supabase.auth
-    .signOut();
-
+async function clearBirdShopSession() {
   const cookieStore =
     await cookies();
 
@@ -99,134 +107,115 @@ async function endInvalidSession() {
         0,
     }
   );
+
+  /*
+   * Remove cookies from older versions too.
+   */
+
+  cookieStore.set(
+    "birdshop_admin_exit",
+    "",
+    {
+      path:
+        "/admin",
+
+      maxAge:
+        0,
+    }
+  );
 }
 
 /* =========================================================
-   POST
+   POST LOGIN
 ========================================================= */
 
-export async function POST() {
-  const cookieStore =
-    await cookies();
+export async function POST(
+  request:
+    Request
+) {
+  let body:
+    LoginBody;
 
-  const sessionGate =
-    cookieStore.get(
-      ADMIN_SESSION_COOKIE
-    )?.value;
-
-  const activityRaw =
-    cookieStore.get(
-      ADMIN_ACTIVITY_COOKIE
-    )?.value;
-
-  /* =======================================================
-     BIRDSHOP SESSION REQUIRED
-  ======================================================= */
-
-  if (
-    !sessionGate ||
-    !activityRaw
-  ) {
-    await endInvalidSession();
-
+  try {
+    body =
+      await request.json() as
+        LoginBody;
+  } catch {
     return NextResponse.json(
       {
-        ok:
-          false,
-
-        reason:
-          "session",
+        error:
+          "Invalid login request.",
       },
       {
         status:
-          401,
+          400,
       }
     );
   }
 
-  const previousActivity =
-    Number(
-      activityRaw
-    );
+  const email =
+    typeof body.email ===
+      "string"
+      ? body.email.trim()
+      : "";
+
+  const password =
+    typeof body.password ===
+      "string"
+      ? body.password
+      : "";
 
   if (
-    !Number.isFinite(
-      previousActivity
-    )
+    !email ||
+    !password
   ) {
-    await endInvalidSession();
-
     return NextResponse.json(
       {
-        ok:
-          false,
-
-        reason:
-          "session",
+        error:
+          "Enter your email and password.",
       },
       {
         status:
-          401,
+          400,
       }
     );
   }
-
-  /* =======================================================
-     SERVER IDLE CHECK
-
-     The browser cannot resurrect an already-expired session
-     by sending a late heartbeat.
-  ======================================================= */
-
-  if (
-    Date.now() -
-      previousActivity >=
-    ADMIN_IDLE_TIMEOUT_MS
-  ) {
-    await endInvalidSession();
-
-    return NextResponse.json(
-      {
-        ok:
-          false,
-
-        reason:
-          "inactive",
-      },
-      {
-        status:
-          440,
-      }
-    );
-  }
-
-  /* =======================================================
-     SUPABASE USER
-  ======================================================= */
 
   const supabase =
     await createClient();
 
+  /* =======================================================
+     PASSWORD AUTHENTICATION
+
+     This happens on the BirdShop server route.
+
+     The admin-session gate is only created AFTER the
+     password is successfully verified.
+  ======================================================= */
+
   const {
-    data: {
-      user,
-    },
+    data:
+      signInData,
+
+    error:
+      signInError,
   } =
     await supabase.auth
-      .getUser();
+      .signInWithPassword({
+        email,
+        password,
+      });
 
   if (
-    !user
+    signInError ||
+    !signInData.user
   ) {
-    await endInvalidSession();
+    await clearBirdShopSession();
 
     return NextResponse.json(
       {
-        ok:
-          false,
-
-        reason:
-          "session",
+        error:
+          "The email or password is incorrect.",
       },
       {
         status:
@@ -236,7 +225,7 @@ export async function POST() {
   }
 
   /* =======================================================
-     ACTIVE BIRDSHOP STAFF
+     STAFF AUTHORIZATION
   ======================================================= */
 
   const {
@@ -254,15 +243,15 @@ export async function POST() {
     profileError ||
     !profileData
   ) {
-    await endInvalidSession();
+    await supabase.auth
+      .signOut();
+
+    await clearBirdShopSession();
 
     return NextResponse.json(
       {
-        ok:
-          false,
-
-        reason:
-          "session",
+        error:
+          "This account is not authorized to access BirdShop administration.",
       },
       {
         status:
@@ -277,7 +266,7 @@ export async function POST() {
 
   if (
     profile.user_id !==
-      user.id ||
+      signInData.user.id ||
     profile.is_active !==
       true ||
     ![
@@ -287,15 +276,15 @@ export async function POST() {
       profile.role
     )
   ) {
-    await endInvalidSession();
+    await supabase.auth
+      .signOut();
+
+    await clearBirdShopSession();
 
     return NextResponse.json(
       {
-        ok:
-          false,
-
-        reason:
-          "session",
+        error:
+          "This account is not authorized to access BirdShop administration.",
       },
       {
         status:
@@ -305,22 +294,56 @@ export async function POST() {
   }
 
   /* =======================================================
-     REFRESH REAL ACTIVITY TIME
+     CREATE BROWSER-SESSION GATE
 
-     Still a SESSION cookie.
-     No persistent expiration is added.
+     IMPORTANT:
+
+     No maxAge.
+     No expires.
+
+     This is intentionally a browser-session cookie.
   ======================================================= */
+
+  const cookieStore =
+    await cookies();
+
+  const now =
+    Date.now();
+
+  cookieStore.set(
+    ADMIN_SESSION_COOKIE,
+    randomUUID(),
+    sessionCookieOptions()
+  );
 
   cookieStore.set(
     ADMIN_ACTIVITY_COOKIE,
     String(
-      Date.now()
+      now
     ),
     sessionCookieOptions()
   );
 
+  /* =======================================================
+     DESTINATION
+  ======================================================= */
+
+  const destination =
+    profile.role ===
+    "service_agent"
+      ? "/admin/chat?view=active&type=service"
+      : "/admin";
+
   return NextResponse.json({
     ok:
       true,
+
+    destination,
+
+    role:
+      profile.role,
+
+    displayName:
+      profile.display_name,
   });
 }

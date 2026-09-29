@@ -5,8 +5,18 @@ import {
 } from "next/navigation";
 
 import {
+  cookies,
+} from "next/headers";
+
+import {
   createClient,
 } from "@/lib/supabase/server";
+
+import {
+  ADMIN_ACTIVITY_COOKIE,
+  ADMIN_IDLE_TIMEOUT_MS,
+  ADMIN_SESSION_COOKIE,
+} from "@/lib/admin-session";
 
 import LoginForm from "./LoginForm";
 
@@ -15,11 +25,37 @@ import styles from "./login.module.css";
 export const dynamic =
   "force-dynamic";
 
+/* =========================================================
+   TYPES
+========================================================= */
+
 type LoginPageProps = {
-  searchParams: Promise<{
-    reason?: string;
-  }>;
+  searchParams:
+    Promise<{
+      reason?:
+        string;
+    }>;
 };
+
+type StaffProfile = {
+  user_id:
+    string;
+
+  role:
+    | "owner"
+    | "service_agent";
+
+  display_name:
+    | string
+    | null;
+
+  is_active:
+    boolean;
+};
+
+/* =========================================================
+   PAGE
+========================================================= */
 
 export default async function AdminLoginPage({
   searchParams,
@@ -27,47 +63,105 @@ export default async function AdminLoginPage({
   const params =
     await searchParams;
 
-  const supabase =
-    await createClient();
+  const cookieStore =
+    await cookies();
 
-  const {
-    data:
-      claimsData,
-  } =
-    await supabase.auth
-      .getClaims();
+  const adminSession =
+    cookieStore.get(
+      ADMIN_SESSION_COOKIE
+    )?.value;
 
-  const userId =
-    claimsData
-      ?.claims
-      ?.sub;
+  const activityRaw =
+    cookieStore.get(
+      ADMIN_ACTIVITY_COOKIE
+    )?.value;
+
+  const lastActive =
+    Number(
+      activityRaw
+    );
+
+  const sessionStillActive =
+    Boolean(
+      adminSession
+    ) &&
+    Boolean(
+      activityRaw
+    ) &&
+    Number.isFinite(
+      lastActive
+    ) &&
+    Date.now() -
+      lastActive <
+      ADMIN_IDLE_TIMEOUT_MS;
+
+  /* =======================================================
+     ONLY AUTO-ENTER IF BOTH:
+
+       Supabase auth exists
+       BirdShop browser session exists
+
+     An old Supabase login by itself no longer redirects.
+  ======================================================= */
 
   if (
-    userId
+    sessionStillActive
   ) {
+    const supabase =
+      await createClient();
+
     const {
       data:
-        adminUser,
+        claimsData,
     } =
-      await supabase
-        .from(
-          "admin_users"
-        )
-        .select(
-          "user_id"
-        )
-        .eq(
-          "user_id",
-          userId
-        )
-        .maybeSingle();
+      await supabase.auth
+        .getClaims();
+
+    const userId =
+      claimsData
+        ?.claims
+        ?.sub;
 
     if (
-      adminUser
+      userId
     ) {
-      redirect(
-        "/admin"
-      );
+      const {
+        data:
+          profileData,
+      } =
+        await supabase.rpc(
+          "birdshop_get_my_staff_profile"
+        );
+
+      const profile =
+        profileData as
+          StaffProfile | null;
+
+      if (
+        profile &&
+        profile.user_id ===
+          userId &&
+        profile.is_active ===
+          true
+      ) {
+        if (
+          profile.role ===
+          "service_agent"
+        ) {
+          redirect(
+            "/admin/chat?view=active&type=service"
+          );
+        }
+
+        if (
+          profile.role ===
+          "owner"
+        ) {
+          redirect(
+            "/admin"
+          );
+        }
+      }
     }
   }
 
@@ -175,23 +269,27 @@ export default async function AdminLoginPage({
                 styles.sessionNotice
               }
             >
-              Your admin session
-              ended after 3 minutes
-              of inactivity.
+              Your BirdShop admin session
+              ended after 15 minutes of
+              inactivity. Sign in again to
+              continue.
             </div>
           )}
 
-          {params.reason ===
-            "closed" && (
+          {(
+            params.reason ===
+              "session" ||
+            params.reason ===
+              "closed"
+          ) && (
             <div
               className={
                 styles.sessionNotice
               }
             >
-              Your admin session
-              ended because the
-              admin page was closed
-              or refreshed.
+              Your previous BirdShop admin
+              browser session has ended.
+              Sign in again to continue.
             </div>
           )}
 

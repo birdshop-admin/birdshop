@@ -37,7 +37,7 @@ type StaffProfile = {
 };
 
 /* =========================================================
-   PROTECTED ADMIN LAYOUT
+   LAYOUT
 ========================================================= */
 
 export default async function ProtectedAdminLayout({
@@ -50,7 +50,7 @@ export default async function ProtectedAdminLayout({
     await createClient();
 
   /* =======================================================
-     AUTHENTICATED USER
+     AUTH
   ======================================================= */
 
   const {
@@ -68,6 +68,16 @@ export default async function ProtectedAdminLayout({
       ?.claims
       ?.sub;
 
+  const email =
+    typeof claimsData
+      ?.claims
+      ?.email ===
+    "string"
+      ? claimsData
+          .claims
+          .email
+      : null;
+
   if (
     claimsError ||
     !userId
@@ -78,18 +88,7 @@ export default async function ProtectedAdminLayout({
   }
 
   /* =======================================================
-     BIRDSHOP STAFF PROFILE
-
-     IMPORTANT:
-
-     We intentionally use the protected RPC instead of
-     reading admin_users directly.
-
-     This gives the application one consistent source for:
-
-       owner
-       service_agent
-       active / disabled
+     STAFF PROFILE
   ======================================================= */
 
   const {
@@ -137,8 +136,16 @@ export default async function ProtectedAdminLayout({
     profile.role ===
     "owner";
 
+  const displayName =
+    profile.display_name
+      ?.trim() ||
+    email ||
+    (isOwner
+      ? "BirdShop Owner"
+      : "Service Staff");
+
   /* =======================================================
-     PROTECTED ADMIN
+     ADMIN
   ======================================================= */
 
   return (
@@ -147,19 +154,130 @@ export default async function ProtectedAdminLayout({
         styles.shell
       }
     >
-      {/* ===============================================
-          OWNER GLOBAL CHAT NOTIFICATIONS
-
-          Service Agents live directly inside their
-          service-chat workspace.
-
-          They should not receive Product Support or
-          General Support notifications.
-      =============================================== */}
-
       {isOwner && (
         <AdminGlobalChatNotifier />
       )}
+
+      {/* =================================================
+          SIGNED-IN STAFF INDICATOR
+
+          Temporary functional version.
+          We'll redesign this with the whole Admin UI later.
+      ================================================= */}
+
+      <div
+        style={{
+          position:
+            "fixed",
+
+          top:
+            "14px",
+
+          right:
+            "18px",
+
+          zIndex:
+            999,
+
+          display:
+            "flex",
+
+          alignItems:
+            "center",
+
+          gap:
+            "11px",
+
+          padding:
+            "8px 12px",
+
+          border:
+            "1px solid rgba(83, 101, 77, 0.2)",
+
+          borderRadius:
+            "7px",
+
+          background:
+            "rgba(241, 238, 228, 0.96)",
+
+          boxShadow:
+            "0 8px 25px rgba(15, 25, 17, 0.08)",
+
+          backdropFilter:
+            "blur(12px)",
+
+          color:
+            "#263126",
+        }}
+      >
+        <div>
+          <div
+            style={{
+              fontSize:
+                "7px",
+
+              fontWeight:
+                700,
+
+              letterSpacing:
+                "0.18em",
+
+              color:
+                "#768173",
+            }}
+          >
+            SIGNED IN AS
+          </div>
+
+          <div
+            style={{
+              marginTop:
+                "2px",
+
+              fontFamily:
+                "Georgia, 'Times New Roman', serif",
+
+              fontSize:
+                "12px",
+            }}
+          >
+            {
+              displayName
+            }
+          </div>
+        </div>
+
+        <span
+          style={{
+            padding:
+              "5px 7px",
+
+            borderRadius:
+              "999px",
+
+            background:
+              isOwner
+                ? "#263b2c"
+                : "#596b51",
+
+            color:
+              "#f0ece2",
+
+            fontSize:
+              "7px",
+
+            fontWeight:
+              700,
+
+            letterSpacing:
+              "0.14em",
+          }}
+        >
+          {isOwner
+            ? "OWNER"
+            : "SERVICE AGENT"}
+        </span>
+      </div>
 
       {
         children

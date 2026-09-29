@@ -6,19 +6,105 @@ import {
   createClient,
 } from "@/lib/supabase/server";
 
+import {
+  acceptServiceConversation,
+  cancelServiceAgentPaymentRequest,
+  createServiceAgentPaymentRequest,
+  leaveServiceConversation,
+} from "./agent-actions";
+
 import ServiceAgentLiveThread, {
   type ServiceAgentMessage,
 } from "./ServiceAgentLiveThread";
 
+import paymentStyles from "@/components/ChatPaymentUI.module.css";
 import styles from "./chat.module.css";
 
 /* =========================================================
    TYPES
 ========================================================= */
 
-type ServiceConversation = {
+type StaffProfile = {
+  user_id:
+    string;
+
+  role:
+    "service_agent";
+
+  display_name:
+    | string
+    | null;
+
+  is_active:
+    boolean;
+};
+
+type QueueConversation = {
   id:
     string;
+
+  reference:
+    string;
+
+  workflow_status:
+    string;
+
+  status:
+    string;
+
+  last_message_at:
+    string;
+
+  last_sender_type:
+    | string
+    | null;
+
+  customer_name:
+    | string
+    | null;
+
+  subject:
+    | string
+    | null;
+
+  service_name:
+    | string
+    | null;
+
+  package_name:
+    | string
+    | null;
+
+  request_message:
+    | string
+    | null;
+
+  assigned_staff_user_id:
+    | string
+    | null;
+
+  assigned_to:
+    | string
+    | null;
+
+  assigned_at:
+    | string
+    | null;
+
+  is_mine:
+    boolean;
+
+  is_unassigned:
+    boolean;
+};
+
+type ConversationDetail = {
+  id:
+    string;
+
+  order_id:
+    | string
+    | null;
 
   reference:
     string;
@@ -59,6 +145,10 @@ type ServiceConversation = {
     | string
     | null;
 
+  request_message:
+    | string
+    | null;
+
   service_name:
     | string
     | null;
@@ -66,6 +156,77 @@ type ServiceConversation = {
   package_name:
     | string
     | null;
+
+  assigned_staff_user_id:
+    string;
+
+  assigned_to:
+    | string
+    | null;
+
+  assigned_at:
+    | string
+    | null;
+};
+
+type PaymentRequest = {
+  id:
+    string;
+
+  conversation_id:
+    string;
+
+  order_id:
+    | string
+    | null;
+
+  amount:
+    | number
+    | string;
+
+  currency:
+    string;
+
+  title:
+    string;
+
+  description:
+    | string
+    | null;
+
+  status:
+    | "pending"
+    | "paid"
+    | "cancelled"
+    | "expired";
+
+  stripe_checkout_session_id:
+    | string
+    | null;
+
+  stripe_payment_status:
+    | string
+    | null;
+
+  refund_status:
+    | string
+    | null;
+
+  refunded_amount:
+    | number
+    | string
+    | null;
+
+  paid_at:
+    | string
+    | null;
+
+  cancelled_at:
+    | string
+    | null;
+
+  created_at:
+    string;
 };
 
 type PageProps = {
@@ -106,6 +267,27 @@ function formatDate(
   );
 }
 
+function money(
+  value:
+    | number
+    | string,
+  currency =
+    "USD"
+) {
+  return Number(
+    value
+  ).toLocaleString(
+    "en-US",
+    {
+      style:
+        "currency",
+
+      currency:
+        currency.toUpperCase(),
+    }
+  );
+}
+
 function statusLabel(
   value:
     | string
@@ -123,47 +305,15 @@ function statusLabel(
     .replace(
       /\b\w/g,
       (
-        character
+        letter
       ) =>
-        character
-          .toUpperCase()
+        letter.toUpperCase()
     );
-}
-
-function isUnread(
-  conversation:
-    ServiceConversation
-) {
-  if (
-    conversation
-      .last_sender_type !==
-    "customer"
-  ) {
-    return false;
-  }
-
-  if (
-    !conversation
-      .admin_last_read_at
-  ) {
-    return true;
-  }
-
-  return (
-    new Date(
-      conversation
-        .last_message_at
-    ).getTime() >
-    new Date(
-      conversation
-        .admin_last_read_at
-    ).getTime()
-  );
 }
 
 function conversationTitle(
   conversation:
-    ServiceConversation
+    QueueConversation
 ) {
   return (
     conversation.service_name ||
@@ -174,7 +324,7 @@ function conversationTitle(
 
 function conversationSubtitle(
   conversation:
-    ServiceConversation
+    QueueConversation
 ) {
   return (
     conversation.package_name ||
@@ -182,28 +332,7 @@ function conversationSubtitle(
   );
 }
 
-function customerName(
-  conversation:
-    ServiceConversation
-) {
-  return (
-    conversation.customer_name ||
-    "Customer"
-  );
-}
-
-function customerContact(
-  conversation:
-    ServiceConversation
-) {
-  return (
-    conversation.customer_contact ||
-    conversation.customer_email ||
-    "No contact available"
-  );
-}
-
-function buildConversationHref(
+function conversationHref(
   id:
     string
 ) {
@@ -228,8 +357,19 @@ function buildConversationHref(
   return `/admin/chat?${params.toString()}`;
 }
 
+function isUnread(
+  conversation:
+    QueueConversation
+) {
+  return (
+    conversation
+      .last_sender_type ===
+    "customer"
+  );
+}
+
 /* =========================================================
-   SERVICE AGENT CHAT
+   PAGE
 ========================================================= */
 
 export default async function ServiceAgentChatPage({
@@ -242,163 +382,317 @@ export default async function ServiceAgentChatPage({
     await createClient();
 
   /* =======================================================
-     SERVICE CONVERSATIONS ONLY
+     STAFF
   ======================================================= */
 
   const {
     data:
-      conversationData,
+      profileData,
+  } =
+    await supabase.rpc(
+      "birdshop_get_my_staff_profile"
+    );
+
+  const profile =
+    profileData as
+      StaffProfile;
+
+  const staffName =
+    profile
+      ?.display_name
+      ?.trim() ||
+    "Service Staff";
+
+  /* =======================================================
+     SAFE QUEUE
+
+     This returns:
+       - unassigned services
+       - this employee's services
+
+     It does NOT expose other employees' services.
+  ======================================================= */
+
+  const {
+    data:
+      queueData,
 
     error:
-      conversationError,
+      queueError,
   } =
-    await supabase
-      .from(
-        "service_conversations"
-      )
-      .select(
-        `
-          id,
-          reference,
-          conversation_type,
-          workflow_status,
-          status,
-          last_message_at,
-          last_sender_type,
-          admin_last_read_at,
-          customer_name,
-          customer_email,
-          customer_contact,
-          subject,
-          service_name,
-          package_name
-        `
-      )
-      .eq(
-        "conversation_type",
-        "service"
-      )
-      .eq(
-        "status",
-        "open"
-      )
-      .is(
-        "deleted_at",
-        null
-      )
-      .order(
-        "last_message_at",
-        {
-          ascending:
-            false,
-        }
-      );
+    await supabase.rpc(
+      "birdshop_staff_list_service_queue"
+    );
 
   if (
-    conversationError
+    queueError
   ) {
     throw new Error(
-      `Unable to load service conversations: ${conversationError.message}`
+      `Unable to load service queue: ${queueError.message}`
     );
   }
 
-  const conversations =
+  const queue =
     (
-      conversationData ??
+      queueData ??
       []
-    ) as unknown as
-      ServiceConversation[];
+    ) as
+      QueueConversation[];
 
-  /* =======================================================
-     SELECTED CHAT
-
-     Selection is only allowed from the already-filtered
-     service conversation list.
-  ======================================================= */
-
-  const selected =
-    conversations.find(
+  const available =
+    queue.filter(
       (
         conversation
       ) =>
-        conversation.id ===
-        params.conversation
-    ) ??
-    conversations[0] ??
-    null;
+        conversation
+          .is_unassigned
+    );
+
+  const mine =
+    queue.filter(
+      (
+        conversation
+      ) =>
+        conversation
+          .is_mine
+    );
 
   /* =======================================================
-     MESSAGES
+     SELECTED
   ======================================================= */
+
+  const requested =
+    params.conversation
+      ? queue.find(
+          (
+            conversation
+          ) =>
+            conversation.id ===
+            params.conversation
+        ) ??
+        null
+      : null;
+
+  const selected =
+    requested ??
+    available[0] ??
+    mine[0] ??
+    null;
+
+  const selectedIsMine =
+    selected
+      ?.is_mine ===
+    true;
+
+  /* =======================================================
+     FULL CONVERSATION
+
+     ONLY AVAILABLE AFTER THE AGENT OWNS IT.
+  ======================================================= */
+
+  let detail:
+    ConversationDetail | null =
+      null;
 
   let messages:
     ServiceAgentMessage[] =
       [];
 
+  let paymentRequests:
+    PaymentRequest[] =
+      [];
+
   if (
-    selected
+    selected &&
+    selectedIsMine
   ) {
     const {
-      data,
+      data:
+        detailData,
 
-      error,
+      error:
+        detailError,
     } =
       await supabase
         .from(
-          "service_messages"
+          "service_conversations"
         )
         .select(
-          "id, conversation_id, sender_type, sender_label, body, message_type, metadata, created_at"
+          `
+            id,
+            order_id,
+            reference,
+            conversation_type,
+            workflow_status,
+            status,
+            last_message_at,
+            last_sender_type,
+            admin_last_read_at,
+            customer_name,
+            customer_email,
+            customer_contact,
+            subject,
+            request_message,
+            service_name,
+            package_name,
+            assigned_staff_user_id,
+            assigned_to,
+            assigned_at
+          `
         )
         .eq(
-          "conversation_id",
+          "id",
           selected.id
         )
-        .order(
-          "created_at",
-          {
-            ascending:
-              true,
-          }
-        );
+        .maybeSingle();
 
     if (
-      error
+      detailError
     ) {
       throw new Error(
-        `Unable to load service messages: ${error.message}`
+        `Unable to load service: ${detailError.message}`
       );
     }
 
-    messages =
-      (
-        data ??
-        []
-      ) as unknown as
-        ServiceAgentMessage[];
-
-    /* =====================================================
-       MARK READ
-
-       Uses the restricted staff RPC.
-
-       Service Agent never receives generic UPDATE access.
-    ===================================================== */
+    detail =
+      detailData as
+        ConversationDetail | null;
 
     if (
-      isUnread(
-        selected
-      )
+      detail
     ) {
-      await supabase.rpc(
-        "birdshop_staff_mark_service_chat_read",
-        {
-          p_conversation_id:
-            selected.id,
-        }
-      );
+      const [
+        messageResult,
+        paymentResult,
+      ] =
+        await Promise.all([
+          supabase
+            .from(
+              "service_messages"
+            )
+            .select(
+              "id, conversation_id, sender_type, sender_label, body, message_type, metadata, created_at"
+            )
+            .eq(
+              "conversation_id",
+              detail.id
+            )
+            .order(
+              "created_at",
+              {
+                ascending:
+                  true,
+              }
+            ),
+
+          supabase
+            .from(
+              "service_payment_requests"
+            )
+            .select(
+              `
+                id,
+                conversation_id,
+                order_id,
+                amount,
+                currency,
+                title,
+                description,
+                status,
+                stripe_checkout_session_id,
+                stripe_payment_status,
+                refund_status,
+                refunded_amount,
+                paid_at,
+                cancelled_at,
+                created_at
+              `
+            )
+            .eq(
+              "conversation_id",
+              detail.id
+            )
+            .order(
+              "created_at",
+              {
+                ascending:
+                  false,
+              }
+            ),
+        ]);
+
+      if (
+        messageResult.error
+      ) {
+        throw new Error(
+          `Unable to load messages: ${messageResult.error.message}`
+        );
+      }
+
+      if (
+        paymentResult.error
+      ) {
+        throw new Error(
+          `Unable to load payments: ${paymentResult.error.message}`
+        );
+      }
+
+      messages =
+        (
+          messageResult.data ??
+          []
+        ) as unknown as
+          ServiceAgentMessage[];
+
+      paymentRequests =
+        (
+          paymentResult.data ??
+          []
+        ) as unknown as
+          PaymentRequest[];
+
+      if (
+        detail.last_sender_type ===
+        "customer"
+      ) {
+        await supabase.rpc(
+          "birdshop_staff_mark_service_chat_read",
+          {
+            p_conversation_id:
+              detail.id,
+          }
+        );
+      }
     }
   }
+
+  /* =======================================================
+     PAYMENT STATE
+  ======================================================= */
+
+  const pendingPayment =
+    paymentRequests.find(
+      (
+        payment
+      ) =>
+        payment.status ===
+        "pending"
+    ) ??
+    null;
+
+  const paidPayment =
+    paymentRequests.find(
+      (
+        payment
+      ) =>
+        payment.status ===
+        "paid"
+    ) ??
+    null;
+
+  const latestPayment =
+    paymentRequests[0] ??
+    null;
 
   /* =======================================================
      UI
@@ -434,19 +728,19 @@ export default async function ServiceAgentChatPage({
             </span>
 
             <h1>
-              Service Chat
+              Service Desk
             </h1>
 
             <p>
-              Handle active customer service conversations.
-              Payments, orders, products, inventory and
-              administration remain owner-only.
+              Accept available service requests,
+              work directly with customers, and
+              send secure BirdShop payment requests.
             </p>
           </div>
         </header>
 
         {/* =================================================
-            STAFF ACCESS BAR
+            STATUS
         ================================================= */}
 
         <div
@@ -460,17 +754,21 @@ export default async function ServiceAgentChatPage({
             }
           >
             <span>
-              STAFF ACCESS
+              SIGNED IN
             </span>
 
             <strong>
-              Service conversations only
+              {
+                staffName
+              }
             </strong>
           </div>
 
-          <strong>
-            LIMITED
-          </strong>
+          <span>
+            {available.length} AVAILABLE
+            {" · "}
+            {mine.length} MINE
+          </span>
         </div>
 
         {/* =================================================
@@ -483,7 +781,7 @@ export default async function ServiceAgentChatPage({
           }
         >
           {/* ===============================================
-              INBOX
+              QUEUE
           =============================================== */}
 
           <aside
@@ -491,34 +789,34 @@ export default async function ServiceAgentChatPage({
               styles.inbox
             }
           >
+            {/* =============================================
+                AVAILABLE
+            ============================================= */}
+
             <div
               className={
                 styles.inboxHeading
               }
             >
               <span>
-                SERVICE INBOX
+                AVAILABLE REQUESTS
               </span>
 
               <strong>
                 {
-                  conversations.length
-                }{" "}
-                {conversations.length ===
-                1
-                  ? "conversation"
-                  : "conversations"}
+                  available.length
+                }
               </strong>
             </div>
 
-            {conversations.length ===
+            {available.length ===
             0 ? (
               <div
                 className={
                   styles.emptyInbox
                 }
               >
-                No active service conversations.
+                No unassigned service requests.
               </div>
             ) : (
               <div
@@ -526,80 +824,184 @@ export default async function ServiceAgentChatPage({
                   styles.conversationList
                 }
               >
-                {conversations.map(
+                {available.map(
                   (
                     conversation
-                  ) => {
-                    const unread =
-                      isUnread(
-                        conversation
-                      );
-
-                    return (
-                      <Link
-                        key={
+                  ) => (
+                    <Link
+                      key={
+                        conversation.id
+                      }
+                      href={
+                        conversationHref(
                           conversation.id
-                        }
-                        href={
-                          buildConversationHref(
-                            conversation.id
-                          )
-                        }
-                        className={`${styles.conversationItem} ${
+                        )
+                      }
+                      className={`${styles.conversationItem} ${
+                        selected?.id ===
+                        conversation.id
+                          ? styles.activeConversation
+                          : ""
+                      }`}
+                    >
+                      <div>
+                        <span>
+                          AVAILABLE ·{" "}
+                          {
+                            conversation.reference
+                          }
+                        </span>
+
+                        {isUnread(
+                          conversation
+                        ) && (
+                          <small>
+                            NEW
+                          </small>
+                        )}
+                      </div>
+
+                      <strong>
+                        {conversationTitle(
+                          conversation
+                        )}
+                      </strong>
+
+                      <p>
+                        {conversation.customer_name ||
+                          "Customer"}
+
+                        {" · "}
+
+                        {conversationSubtitle(
+                          conversation
+                        )}
+                      </p>
+
+                      <time>
+                        {formatDate(
+                          conversation.last_message_at
+                        )}
+                      </time>
+                    </Link>
+                  )
+                )}
+              </div>
+            )}
+
+            {/* =============================================
+                MY SERVICES
+            ============================================= */}
+
+            <div
+              className={
+                styles.inboxHeading
+              }
+              style={{
+                marginTop:
+                  "18px",
+              }}
+            >
+              <span>
+                MY SERVICES
+              </span>
+
+              <strong>
+                {
+                  mine.length
+                }
+              </strong>
+            </div>
+
+            {mine.length ===
+            0 ? (
+              <div
+                className={
+                  styles.emptyInbox
+                }
+              >
+                You have not accepted a service yet.
+              </div>
+            ) : (
+              <div
+                className={
+                  styles.conversationList
+                }
+              >
+                {mine.map(
+                  (
+                    conversation
+                  ) => (
+                    <Link
+                      key={
+                        conversation.id
+                      }
+                      href={
+                        conversationHref(
+                          conversation.id
+                        )
+                      }
+                      className={`${styles.conversationItem} ${
+                        selected?.id ===
+                        conversation.id
+                          ? styles.activeConversation
+                          : ""
+                      }`}
+                      style={{
+                        borderLeft:
+                          "3px solid #82927a",
+
+                        background:
                           selected?.id ===
                           conversation.id
-                            ? styles.activeConversation
-                            : ""
-                        }`}
-                      >
-                        <div>
-                          <span>
-                            SERVICE ·{" "}
-                            {
-                              conversation.reference
-                            }
-                          </span>
+                            ? undefined
+                            : "rgba(114, 135, 105, 0.08)",
+                      }}
+                    >
+                      <div>
+                        <span>
+                          MY SERVICE ·{" "}
+                          {
+                            conversation.reference
+                          }
+                        </span>
 
-                          {unread && (
-                            <small>
-                              NEW
-                            </small>
-                          )}
-                        </div>
+                        <small>
+                          YOURS
+                        </small>
+                      </div>
 
-                        <strong>
-                          {conversationTitle(
-                            conversation
-                          )}
-                        </strong>
+                      <strong>
+                        {conversationTitle(
+                          conversation
+                        )}
+                      </strong>
 
-                        <p>
-                          {customerName(
-                            conversation
-                          )}
+                      <p>
+                        {conversation.customer_name ||
+                          "Customer"}
 
-                          {" · "}
+                        {" · "}
 
-                          {conversationSubtitle(
-                            conversation
-                          )}
-                        </p>
+                        {conversationSubtitle(
+                          conversation
+                        )}
+                      </p>
 
-                        <time>
-                          {formatDate(
-                            conversation.last_message_at
-                          )}
-                        </time>
-                      </Link>
-                    );
-                  }
+                      <time>
+                        {formatDate(
+                          conversation.last_message_at
+                        )}
+                      </time>
+                    </Link>
+                  )
                 )}
               </div>
             )}
           </aside>
 
           {/* ===============================================
-              CHAT
+              EMPTY
           =============================================== */}
 
           {!selected ? (
@@ -608,18 +1010,18 @@ export default async function ServiceAgentChatPage({
                 styles.emptyChat
               }
             >
-              No service conversations are waiting.
+              There are no service requests waiting.
             </section>
-          ) : (
+          ) : !selectedIsMine ? (
+            /* =============================================
+               AVAILABLE REQUEST PREVIEW
+            ============================================= */
+
             <section
               className={
                 styles.chat
               }
             >
-              {/* ===========================================
-                  CHAT HEADER
-              =========================================== */}
-
               <header
                 className={
                   styles.chatHeader
@@ -627,7 +1029,7 @@ export default async function ServiceAgentChatPage({
               >
                 <div>
                   <span>
-                    SERVICE ·{" "}
+                    AVAILABLE ·{" "}
                     {
                       selected.reference
                     }
@@ -653,24 +1055,201 @@ export default async function ServiceAgentChatPage({
                 >
                   <div>
                     <span>
-                      ACCESS
+                      STATUS
                     </span>
 
                     <strong>
-                      Service
+                      Waiting
                     </strong>
                   </div>
 
                   <div>
                     <span>
-                      CHAT
+                      ASSIGNED
                     </span>
 
                     <strong>
-                      Open
+                      No
+                    </strong>
+                  </div>
+                </div>
+              </header>
+
+              <div
+                className={
+                  styles.customerBar
+                }
+              >
+                <div>
+                  <span>
+                    CUSTOMER
+                  </span>
+
+                  <strong>
+                    {selected.customer_name ||
+                      "Customer"}
+                  </strong>
+
+                  <small>
+                    Contact details unlock after acceptance.
+                  </small>
+                </div>
+
+                <span>
+                  {
+                    selected.reference
+                  }
+                </span>
+              </div>
+
+              <section
+                className={
+                  paymentStyles.panel
+                }
+              >
+                <div
+                  className={
+                    paymentStyles.panelHeader
+                  }
+                >
+                  <div>
+                    <span
+                      className={
+                        paymentStyles.panelEyebrow
+                      }
+                    >
+                      AVAILABLE SERVICE
+                    </span>
+
+                    <strong
+                      className={
+                        paymentStyles.panelTitle
+                      }
+                    >
+                      Accept this request?
                     </strong>
                   </div>
 
+                  <p
+                    className={
+                      paymentStyles.panelCopy
+                    }
+                  >
+                    Once accepted, this conversation
+                    becomes yours and disappears from
+                    other Service Agents&apos; queues.
+                  </p>
+                </div>
+
+                <div
+                  style={{
+                    padding:
+                      "18px 0 24px",
+
+                    fontFamily:
+                      "Georgia, 'Times New Roman', serif",
+
+                    fontSize:
+                      "13px",
+
+                    lineHeight:
+                      1.7,
+
+                    color:
+                      "#4d584c",
+                  }}
+                >
+                  {selected.request_message ||
+                    "The customer did not include additional request details."}
+                </div>
+
+                <form
+                  action={
+                    acceptServiceConversation
+                  }
+                >
+                  <input
+                    type="hidden"
+                    name="conversation_id"
+                    value={
+                      selected.id
+                    }
+                  />
+
+                  <button
+                    type="submit"
+                    className={
+                      paymentStyles.button
+                    }
+                  >
+                    Accept Service
+                  </button>
+                </form>
+              </section>
+
+              <footer
+                className={
+                  styles.chatFooter
+                }
+              >
+                <span>
+                  Accepting automatically introduces
+                  you to the customer.
+                </span>
+              </footer>
+            </section>
+          ) : !detail ? (
+            <section
+              className={
+                styles.emptyChat
+              }
+            >
+              Unable to load the accepted service.
+            </section>
+          ) : (
+            /* =============================================
+               MY SERVICE
+            ============================================= */
+
+            <section
+              className={
+                styles.chat
+              }
+            >
+              {/* ===========================================
+                  HEADER
+              =========================================== */}
+
+              <header
+                className={
+                  styles.chatHeader
+                }
+              >
+                <div>
+                  <span>
+                    MY SERVICE ·{" "}
+                    {
+                      detail.reference
+                    }
+                  </span>
+
+                  <h2>
+                    {detail.service_name ||
+                      detail.subject ||
+                      "Custom Service Request"}
+                  </h2>
+
+                  <p>
+                    {detail.package_name ||
+                      "Custom Quote"}
+                  </p>
+                </div>
+
+                <div
+                  className={
+                    styles.orderFacts
+                  }
+                >
                   <div>
                     <span>
                       STATUS
@@ -678,8 +1257,43 @@ export default async function ServiceAgentChatPage({
 
                     <strong>
                       {statusLabel(
-                        selected.workflow_status
+                        detail.workflow_status
                       )}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>
+                      PROVIDER
+                    </span>
+
+                    <strong>
+                      {detail.assigned_to ||
+                        staffName}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>
+                      PAYMENT
+                    </span>
+
+                    <strong>
+                      {latestPayment
+                        ? statusLabel(
+                            latestPayment
+                              .refund_status &&
+                            latestPayment
+                              .refund_status !==
+                              "none"
+                              ? latestPayment
+                                  .refund_status ===
+                                "full"
+                                ? "refunded"
+                                : "partially_refunded"
+                              : latestPayment.status
+                          )
+                        : "Not Sent"}
                     </strong>
                   </div>
                 </div>
@@ -700,27 +1314,26 @@ export default async function ServiceAgentChatPage({
                   </span>
 
                   <strong>
-                    {customerName(
-                      selected
-                    )}
+                    {detail.customer_name ||
+                      "Customer"}
                   </strong>
 
                   <small>
-                    {customerContact(
-                      selected
-                    )}
+                    {detail.customer_contact ||
+                      detail.customer_email ||
+                      "No customer contact"}
                   </small>
                 </div>
 
                 <span>
                   {
-                    selected.reference
+                    detail.reference
                   }
                 </span>
               </div>
 
               {/* ===========================================
-                  SECURITY / ACCESS INFORMATION
+                  ASSIGNMENT
               =========================================== */}
 
               <div
@@ -734,38 +1347,447 @@ export default async function ServiceAgentChatPage({
                   }
                 >
                   <span>
-                    SERVICE WORKSPACE
+                    ASSIGNED TO YOU
                   </span>
 
                   <strong>
-                    Customer communication
+                    {detail.assigned_to ||
+                      staffName}
                   </strong>
                 </div>
 
-                <span>
-                  CHAT ONLY
-                </span>
+                <form
+                  action={
+                    leaveServiceConversation
+                  }
+                >
+                  <input
+                    type="hidden"
+                    name="conversation_id"
+                    value={
+                      detail.id
+                    }
+                  />
+
+                  <button
+                    type="submit"
+                    className={
+                      paymentStyles.secondaryButton
+                    }
+                  >
+                    Leave Service
+                  </button>
+                </form>
               </div>
 
               {/* ===========================================
-                  LIVE THREAD
+                  PAYMENT CENTER
+              =========================================== */}
+
+              <section
+                className={
+                  paymentStyles.panel
+                }
+              >
+                <div
+                  className={
+                    paymentStyles.panelHeader
+                  }
+                >
+                  <div>
+                    <span
+                      className={
+                        paymentStyles.panelEyebrow
+                      }
+                    >
+                      PAYMENT CENTER
+                    </span>
+
+                    <strong
+                      className={
+                        paymentStyles.panelTitle
+                      }
+                    >
+                      {paidPayment
+                        ? paidPayment
+                            .refund_status ===
+                          "full"
+                          ? "Payment refunded"
+                          : paidPayment
+                                .refund_status ===
+                              "partial"
+                            ? "Payment partially refunded"
+                            : "Payment received"
+                        : pendingPayment
+                          ? "Payment request pending"
+                          : "Send secure payment request"}
+                    </strong>
+                  </div>
+
+                  <p
+                    className={
+                      paymentStyles.panelCopy
+                    }
+                  >
+                    {paidPayment
+                      ? "BirdShop has recorded the customer's payment."
+                      : "The customer receives a secure Stripe Checkout button inside their private conversation."}
+                  </p>
+                </div>
+
+                {paidPayment ? (
+                  <article
+                    style={{
+                      padding:
+                        "18px 0",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display:
+                          "flex",
+
+                        justifyContent:
+                          "space-between",
+
+                        gap:
+                          "20px",
+
+                        alignItems:
+                          "center",
+                      }}
+                    >
+                      <div>
+                        <span
+                          className={
+                            paymentStyles.fieldLabel
+                          }
+                        >
+                          {
+                            paidPayment.title
+                          }
+                        </span>
+
+                        <div
+                          style={{
+                            marginTop:
+                              "7px",
+
+                            fontFamily:
+                              "Georgia, 'Times New Roman', serif",
+
+                            fontSize:
+                              "30px",
+
+                            color:
+                              "#263126",
+                          }}
+                        >
+                          {money(
+                            paidPayment.amount,
+                            paidPayment.currency
+                          )}
+                        </div>
+                      </div>
+
+                      <strong>
+                        {paidPayment
+                          .refund_status ===
+                        "full"
+                          ? "REFUNDED"
+                          : paidPayment
+                                .refund_status ===
+                              "partial"
+                            ? "PARTIALLY REFUNDED"
+                            : "PAID"}
+                      </strong>
+                    </div>
+
+                    {Number(
+                      paidPayment
+                        .refunded_amount ??
+                        0
+                    ) >
+                      0 && (
+                      <p>
+                        Refunded:{" "}
+                        {money(
+                          Number(
+                            paidPayment
+                              .refunded_amount
+                          ),
+                          paidPayment.currency
+                        )}
+                      </p>
+                    )}
+                  </article>
+                ) : pendingPayment ? (
+                  <article
+                    style={{
+                      padding:
+                        "18px 0",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display:
+                          "flex",
+
+                        justifyContent:
+                          "space-between",
+
+                        gap:
+                          "20px",
+
+                        alignItems:
+                          "center",
+                      }}
+                    >
+                      <div>
+                        <span
+                          className={
+                            paymentStyles.fieldLabel
+                          }
+                        >
+                          {
+                            pendingPayment.title
+                          }
+                        </span>
+
+                        <div
+                          style={{
+                            marginTop:
+                              "7px",
+
+                            fontFamily:
+                              "Georgia, 'Times New Roman', serif",
+
+                            fontSize:
+                              "30px",
+
+                            color:
+                              "#263126",
+                          }}
+                        >
+                          {money(
+                            pendingPayment.amount,
+                            pendingPayment.currency
+                          )}
+                        </div>
+                      </div>
+
+                      <strong>
+                        PENDING
+                      </strong>
+                    </div>
+
+                    {pendingPayment.description && (
+                      <p>
+                        {
+                          pendingPayment.description
+                        }
+                      </p>
+                    )}
+
+                    <div
+                      className={
+                        paymentStyles.requestFooter
+                      }
+                    >
+                      <span>
+                        Waiting for customer payment.
+                      </span>
+
+                      <form
+                        action={
+                          cancelServiceAgentPaymentRequest
+                        }
+                      >
+                        <input
+                          type="hidden"
+                          name="conversation_id"
+                          value={
+                            detail.id
+                          }
+                        />
+
+                        <input
+                          type="hidden"
+                          name="payment_request_id"
+                          value={
+                            pendingPayment.id
+                          }
+                        />
+
+                        <button
+                          type="submit"
+                          className={
+                            paymentStyles.secondaryButton
+                          }
+                        >
+                          Cancel Request
+                        </button>
+                      </form>
+                    </div>
+                  </article>
+                ) : detail.order_id ? (
+                  <div
+                    style={{
+                      padding:
+                        "20px 0",
+
+                      color:
+                        "#5c665a",
+
+                      fontFamily:
+                        "Georgia, 'Times New Roman', serif",
+                    }}
+                  >
+                    This service already has an order.
+                  </div>
+                ) : (
+                  <form
+                    action={
+                      createServiceAgentPaymentRequest
+                    }
+                    className={
+                      paymentStyles.form
+                    }
+                  >
+                    <input
+                      type="hidden"
+                      name="conversation_id"
+                      value={
+                        detail.id
+                      }
+                    />
+
+                    <div
+                      className={
+                        paymentStyles.fields
+                      }
+                    >
+                      <label
+                        className={
+                          paymentStyles.field
+                        }
+                      >
+                        <span
+                          className={
+                            paymentStyles.fieldLabel
+                          }
+                        >
+                          TITLE
+                        </span>
+
+                        <input
+                          className={
+                            paymentStyles.input
+                          }
+                          name="title"
+                          defaultValue={`${detail.service_name ||
+                            "BirdShop Service"}${
+                            detail.package_name
+                              ? ` — ${detail.package_name}`
+                              : ""
+                          }`}
+                          maxLength={
+                            180
+                          }
+                          required
+                        />
+                      </label>
+
+                      <label
+                        className={
+                          paymentStyles.field
+                        }
+                      >
+                        <span
+                          className={
+                            paymentStyles.fieldLabel
+                          }
+                        >
+                          AMOUNT
+                        </span>
+
+                        <input
+                          className={
+                            paymentStyles.input
+                          }
+                          name="amount"
+                          type="number"
+                          min="0.50"
+                          step="0.01"
+                          placeholder="24.99"
+                          required
+                        />
+                      </label>
+                    </div>
+
+                    <label
+                      className={
+                        paymentStyles.field
+                      }
+                    >
+                      <span
+                        className={
+                          paymentStyles.fieldLabel
+                        }
+                      >
+                        DESCRIPTION · OPTIONAL
+                      </span>
+
+                      <textarea
+                        className={
+                          paymentStyles.textarea
+                        }
+                        name="description"
+                        rows={2}
+                        maxLength={
+                          2000
+                        }
+                        placeholder="Describe exactly what this payment covers..."
+                      />
+                    </label>
+
+                    <div
+                      className={
+                        paymentStyles.actions
+                      }
+                    >
+                      <span>
+                        The customer cannot change this amount.
+                      </span>
+
+                      <button
+                        type="submit"
+                        className={
+                          paymentStyles.button
+                        }
+                      >
+                        Send Payment Request
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </section>
+
+              {/* ===========================================
+                  CHAT
               =========================================== */}
 
               <ServiceAgentLiveThread
                 key={
-                  selected.id
+                  detail.id
                 }
                 conversationId={
-                  selected.id
+                  detail.id
                 }
                 initialMessages={
                   messages
                 }
               />
-
-              {/* ===========================================
-                  FOOTER
-              =========================================== */}
 
               <footer
                 className={
@@ -778,12 +1800,14 @@ export default async function ServiceAgentChatPage({
                   }
                 >
                   <span>
-                    Service Staff
+                    {
+                      staffName
+                    }
                   </span>
                 </div>
 
                 <span>
-                  Payments and administration are owner-only
+                  Owner access remains available at all times.
                 </span>
               </footer>
             </section>

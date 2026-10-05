@@ -843,3 +843,31 @@
   outline: 2px solid #465b40;
   outline-offset: 3px;
 }
+/* Keep the message composer reachable beneath the new notices. */
+.page {
+  height: auto;
+  min-height: calc(100dvh - 78px);
+  overflow: visible;
+}
+
+.workspace {
+  height: auto;
+  align-items: start;
+}
+
+.chat {
+  height: clamp(420px, 65dvh, 760px);
+  min-height: 0;
+}
+
+.messages {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.chatHeader,
+.composer,
+.closed {
+  flex-shrink: 0;
+}

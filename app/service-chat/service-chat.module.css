@@ -843,11 +843,13 @@
   outline: 2px solid #465b40;
   outline-offset: 3px;
 }
-/* Keep the message composer reachable beneath the new notices. */
+/* Chat layout: visible composer, without excess page space. */
 .page {
+  box-sizing: border-box;
   height: auto;
-  min-height: calc(100dvh - 78px);
+  min-height: 0;
   overflow: visible;
+  padding: 18px 24px 24px;
 }
 
 .workspace {
@@ -856,7 +858,7 @@
 }
 
 .chat {
-  height: clamp(420px, 65dvh, 760px);
+  height: clamp(420px, 70dvh, 900px);
   min-height: 0;
 }
 
@@ -870,4 +872,48 @@
 .composer,
 .closed {
   flex-shrink: 0;
+}
+
+/* Desktop: notices and chat share the available screen height. */
+@media (min-width: 1001px) {
+  .page {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: calc(100dvh - 78px);
+    min-height: 720px;
+  }
+
+  .page > * {
+    flex-shrink: 0;
+  }
+
+  .inboxBack {
+    align-self: flex-start;
+    margin-bottom: 0;
+  }
+
+  .chatNotice,
+  .page > aside {
+    margin-bottom: 0;
+    padding: 10px 16px;
+  }
+
+  .workspace {
+    flex: 1 1 0;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .chat {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .summary {
+    box-sizing: border-box;
+    max-height: 100%;
+    overflow-y: auto;
+  }
 }

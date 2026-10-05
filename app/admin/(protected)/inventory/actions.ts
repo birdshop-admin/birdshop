@@ -165,7 +165,7 @@ export async function addInventoryCodes(formData: FormData) {
   if (existingError) {
     redirect(
       inventoryUrl(
-        `Could not check existing inventory: ${existingError.message}`,
+        "Could not check existing inventory. Please retry.",
         "error",
       ),
     );

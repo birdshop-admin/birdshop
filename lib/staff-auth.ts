@@ -20,13 +20,21 @@ export async function requireStaff(ownerOnly = false) {
     data: { user },
     error,
   } = await supabase.auth.getUser();
+  if (
+    error &&
+    (error.name === "AuthRetryableFetchError" || Number(error.status) >= 500)
+  )
+    throw new Error(
+      "Staff authentication is temporarily unavailable. Please retry.",
+    );
   if (error || !user) redirect("/admin/login");
   const { data, error: profileError } = await supabase.rpc(
     "birdshop_get_my_staff_profile",
   );
+  if (profileError)
+    throw new Error("Staff access could not be checked. Please retry.");
   const profile = data as StaffProfile | null;
   if (
-    profileError ||
     !profile ||
     profile.user_id !== user.id ||
     !profile.is_active ||

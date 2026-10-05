@@ -4,6 +4,7 @@ import {
   readBody,
   isUuid,
   PublicError,
+  publicErrorResponse,
 } from "@/lib/server-config";
 import { rateLimit } from "@/lib/rate-limit";
 import { serverRpc } from "@/lib/payment-service";
@@ -63,13 +64,11 @@ export async function POST(request: Request, context: Context) {
       await serverRpc("birdshop_get_service_chat", { p_token: token }),
       { headers: privateHeaders },
     );
-  } catch {
-    return Response.json(
-      {
-        error:
-          "Unable to send message. Check your message or wait before retrying.",
-      },
-      { status: 400, headers: privateHeaders },
+  } catch (error) {
+    return publicErrorResponse(
+      error,
+      "Unable to send message. Check your message or wait before retrying.",
+      400,
     );
   }
 }

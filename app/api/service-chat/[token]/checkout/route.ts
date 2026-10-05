@@ -1,4 +1,8 @@
-import { readBody, PublicError } from "@/lib/server-config";
+import {
+  readBody,
+  PublicError,
+  publicErrorResponse,
+} from "@/lib/server-config";
 import { assertSameOrigin, isUuid, privateHeaders } from "@/lib/server-config";
 import { rateLimit, limitRequest } from "@/lib/rate-limit";
 import {
@@ -44,17 +48,10 @@ export async function POST(
       console.error("BirdShop service checkout failed", {
         errorType: error instanceof Error ? error.name : "unknown",
       });
-    return Response.json(
-      {
-        error:
-          error instanceof PublicError
-            ? error.message
-            : "Checkout is unavailable. Refresh your conversation or contact BirdShop before retrying.",
-      },
-      {
-        status: error instanceof PublicError ? error.status : 409,
-        headers: privateHeaders,
-      },
+    return publicErrorResponse(
+      error,
+      "Checkout is unavailable. Refresh your conversation or contact BirdShop before retrying.",
+      409,
     );
   }
 }

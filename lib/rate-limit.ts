@@ -26,6 +26,7 @@ export async function rateLimit(
     throw new PublicError(
       "Too many requests. Please wait a moment and try again.",
       429,
+      seconds,
     );
 }
 

@@ -1,3 +1,4 @@
+import { publicErrorResponse } from "@/lib/server-config";
 import { tokenHash } from "@/lib/order-access";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { privateHeaders } from "@/lib/server-config";
@@ -19,12 +20,11 @@ export async function GET(request: Request) {
       { status: data.status, orderToken },
       { headers: privateHeaders },
     );
-  } catch {
-    return Response.json(
-      {
-        error: "Checkout is unavailable. Check your email or contact BirdShop.",
-      },
-      { status: 404, headers: privateHeaders },
+  } catch (error) {
+    return publicErrorResponse(
+      error,
+      "Checkout is unavailable. Check your email or contact BirdShop.",
+      404,
     );
   }
 }

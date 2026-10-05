@@ -71,8 +71,8 @@ export default async function Page({
           <article>
             <h2>{profile.display_name || "Owner"}</h2>
             <p>
-              This browser session stays signed in while in use. Use Sign out on
-              shared devices.
+              This browser session stays signed in during inactivity and
+              refreshes. Use Sign out on shared devices.
             </p>
             <AdminLogoutButton />
           </article>

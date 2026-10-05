@@ -478,9 +478,7 @@ export async function updateProduct(formData: FormData) {
 
   if (currentProductError || !currentProduct) {
     throw new Error(
-      `Unable to load the current product before saving: ${
-        currentProductError?.message ?? "Product not found."
-      }`,
+      `Unable to load the current product before saving: ${"Product could not be loaded. Refresh and retry."}`,
     );
   }
 

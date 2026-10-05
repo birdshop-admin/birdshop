@@ -1,3 +1,4 @@
+import { publicErrorResponse } from "@/lib/server-config";
 import { readBody } from "@/lib/server-config";
 import { after } from "next/server";
 import { randomUUID } from "node:crypto";
@@ -55,13 +56,11 @@ export async function POST(request: Request) {
       },
       { headers: privateHeaders },
     );
-  } catch {
-    return Response.json(
-      {
-        error:
-          "Unable to process this request. Check your details or wait before retrying.",
-      },
-      { status: 400, headers: privateHeaders },
+  } catch (error) {
+    return publicErrorResponse(
+      error,
+      "Unable to process this request. Check your details and try again.",
+      400,
     );
   }
 }

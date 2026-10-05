@@ -25,11 +25,24 @@ export async function updateSession(request: NextRequest) {
   );
   const { data, error } = await supabase.auth.getClaims();
   if (
+    error &&
+    (error.name === "AuthRetryableFetchError" || Number(error.status) >= 500)
+  )
+    return new NextResponse(
+      "Authentication is temporarily unavailable. Please retry shortly.",
+      { status: 503, headers: { "Cache-Control": "no-store" } },
+    );
+  if (
     !error &&
     data?.claims?.sub &&
     request.cookies.get(ADMIN_SESSION_COOKIE)?.value
   )
     return response;
+  if (path === "/admin/session/heartbeat")
+    return NextResponse.json(
+      { ok: false },
+      { status: 401, headers: { "Cache-Control": "no-store" } },
+    );
   const url = request.nextUrl.clone();
   url.pathname = "/admin/login";
   url.search = "?reason=session";

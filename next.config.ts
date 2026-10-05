@@ -13,7 +13,9 @@ const nextConfig: NextConfig = {
         ],
       },
       ...[
-        "/service-chat",
+        "/service-chat/:path*",
+        "/api/customer-inbox/:path*",
+        "/api/customer-device/:path*",
         "/checkout/:path*",
         "/orders/:path*",
         "/admin/:path*",

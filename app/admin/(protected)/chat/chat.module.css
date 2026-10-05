@@ -1153,3 +1153,59 @@
     flex-wrap: wrap;
   }
 }
+
+@media (max-width: 767px) {
+  .workspace[data-mobile-detail="true"] .chat {
+    height: calc(100dvh - 90px);
+    min-height: 0;
+    overflow: hidden;
+  }
+  .messages {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .composer {
+    flex-shrink: 0;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+.paymentDrawer {
+  flex-shrink: 0;
+  border-bottom: 1px solid #d9ddcf;
+  background: #f4f0e7;
+  color: #263126;
+}
+.paymentDrawer summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 12px 20px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 13px;
+}
+.paymentDrawer summary::-webkit-details-marker {
+  display: none;
+}
+.paymentDrawer summary span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #bbc4b3;
+  border-radius: 50%;
+}
+.paymentDrawer[open] summary span {
+  transform: rotate(180deg);
+}
+.paymentDrawer > div {
+  max-height: 38dvh;
+  overflow-y: auto;
+}
+.paymentDrawer summary:focus-visible {
+  outline: 2px solid #536347;
+  outline-offset: -3px;
+}

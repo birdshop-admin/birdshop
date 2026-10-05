@@ -53,7 +53,13 @@ export function inboxError(error: unknown) {
       status,
       headers: {
         ...privateHeaders,
-        ...(status === 429 ? { "Retry-After": "900" } : {}),
+        ...(status === 429
+          ? {
+              "Retry-After": String(
+                error instanceof PublicError ? (error.retryAfter ?? 900) : 900,
+              ),
+            }
+          : {}),
       },
     },
   );

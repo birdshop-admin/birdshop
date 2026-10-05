@@ -1,3 +1,4 @@
+import { publicErrorResponse } from "@/lib/server-config";
 import {
   assertSameOrigin,
   readBody,
@@ -53,15 +54,11 @@ export async function POST(request: Request) {
       p_meta: String(body.p_meta ?? ""),
     });
     return Response.json({ data }, { headers: privateHeaders });
-  } catch (problem) {
-    return Response.json(
-      {
-        error:
-          problem instanceof Error
-            ? problem.message
-            : "Your review could not be submitted.",
-      },
-      { status: 400, headers: privateHeaders },
+  } catch (error) {
+    return publicErrorResponse(
+      error,
+      "Your review could not be submitted. Check your details and try again.",
+      400,
     );
   }
 }

@@ -1,3 +1,4 @@
+import { paymentLabel } from "@/lib/payment-display";
 import PaymentActionForm, { PaymentFeedback } from "./PaymentActionForm";
 import SubmitButton from "@/components/SubmitButton";
 import Link from "next/link";
@@ -732,7 +733,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
       supabase
         .from("service_payment_requests")
         .select(
-          "id, conversation_id, order_id, amount, currency, title, description, status, stripe_checkout_session_id, paid_at, cancelled_at, created_at",
+          "id, conversation_id, order_id, amount, currency, title, description, status, refund_status, refunded_amount, stripe_checkout_session_id, paid_at, cancelled_at, created_at",
         )
         .eq("conversation_id", selected.id)
         .order("created_at", {
@@ -1344,7 +1345,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
 
                           <strong>
                             {paidPayment
-                              ? `Paid · ${money(
+                              ? `${paymentLabel(paidPayment)} · ${money(
                                   paidPayment.amount,
                                   paidPayment.currency,
                                 )}`
@@ -1375,9 +1376,18 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                         {paidPayment ? (
                           <article className={paymentStyles.paidSummary}>
                             <div>
-                              <span>PAYMENT RECEIVED</span>
+                              <span>{paymentLabel(paidPayment)}</span>
 
                               <strong>{paidPayment.title}</strong>
+                              {Number(paidPayment.refunded_amount ?? 0) > 0 && (
+                                <p>
+                                  Refunded{" "}
+                                  {money(
+                                    paidPayment.refunded_amount ?? 0,
+                                    paidPayment.currency,
+                                  )}
+                                </p>
+                              )}
 
                               <p>
                                 The payment is verified and the linked service

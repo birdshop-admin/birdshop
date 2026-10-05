@@ -30,7 +30,10 @@ export function siteUrl(): string {
 export function assertSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
   if (!origin || origin !== siteUrl())
-    throw new Error("Invalid request origin.");
+    throw new PublicError(
+      "This request could not be verified. Reload the page and retry.",
+      403,
+    );
 }
 
 export const privateHeaders = {
@@ -82,8 +85,30 @@ export class PublicError extends Error {
   constructor(
     message: string,
     public readonly status = 409,
+    public readonly retryAfter?: number,
   ) {
     super(message);
     this.name = "PublicError";
   }
+}
+
+// Only explicitly public errors cross the browser boundary.
+export function publicErrorResponse(
+  error: unknown,
+  fallback: string,
+  fallbackStatus = 400,
+) {
+  const known = error instanceof PublicError;
+  return Response.json(
+    { error: known ? error.message : fallback },
+    {
+      status: known ? error.status : fallbackStatus,
+      headers: {
+        ...privateHeaders,
+        ...(known && error.status === 429
+          ? { "Retry-After": String(error.retryAfter ?? 60) }
+          : {}),
+      },
+    },
+  );
 }

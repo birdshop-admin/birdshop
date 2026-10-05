@@ -11,12 +11,32 @@ export async function POST() {
     data: { user },
     error,
   } = await supabase.auth.getUser();
-  if (error || !user) return Response.json({ ok: false }, { status: 401 });
+  if (error)
+    return Response.json(
+      { ok: false },
+      {
+        status:
+          error.name === "AuthRetryableFetchError" ||
+          Number(error.status) >= 500
+            ? 503
+            : 401,
+        headers: privateHeaders,
+      },
+    );
+  if (!user)
+    return Response.json(
+      { ok: false },
+      { status: 401, headers: privateHeaders },
+    );
   const { data: profile, error: profileError } = await supabase.rpc(
     "birdshop_get_my_staff_profile",
   );
+  if (profileError)
+    return Response.json(
+      { ok: false },
+      { status: 503, headers: privateHeaders },
+    );
   if (
-    profileError ||
     !profile ||
     !profile.is_active ||
     profile.user_id !== user.id ||

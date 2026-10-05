@@ -1,4 +1,5 @@
 "use client";
+import { paymentLabel } from "@/lib/payment-display";
 
 import {
   FormEvent,
@@ -47,6 +48,8 @@ type ChatMessage = {
 };
 
 type PaymentRequest = {
+  refund_status?: string | null;
+  refunded_amount?: number | string | null;
   id: string;
 
   amount: number | string;
@@ -886,7 +889,7 @@ export default function ServiceChatClient() {
                           </div>
 
                           <span className={paymentStyles.requestStatus}>
-                            {statusLabel(request.status)}
+                            {paymentLabel(request)}
                           </span>
                         </div>
 
@@ -915,12 +918,21 @@ export default function ServiceChatClient() {
                           ) : request.status === "paid" ||
                             chat.payment_status === "paid" ? (
                             <strong className={paymentStyles.paidLabel}>
-                              ✓ Payment Received
+                              {paymentLabel(request)}
                             </strong>
                           ) : null}
                         </div>
 
                         <div className={paymentStyles.requestFooter}>
+                          {Number(request.refunded_amount ?? 0) > 0 && (
+                            <p>
+                              Refunded{" "}
+                              {money(
+                                request.refunded_amount ?? 0,
+                                request.currency,
+                              )}
+                            </p>
+                          )}
                           <span>
                             {canPay
                               ? "Secure checkout powered by Stripe."

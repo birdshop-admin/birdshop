@@ -1,246 +1,288 @@
 "use client";
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import styles from "./AdminAnalytics.module.css";
-type Period = "7d" | "30d" | "all";
-type Analytics = {
-  online_now: number;
-  views_7d: number;
-  views_30d: number;
-  views_all: number;
-  visitors_7d: number;
-  visitors_30d: number;
-  visitors_all: number;
-};
-type Sales = {
-  currency: string;
-  gross_revenue: number;
-  refunds: number;
-  net_revenue: number;
-  net_7d: number;
-  net_30d: number;
-  product_net_revenue: number;
-  service_net_revenue: number;
-  paid_orders: number;
-};
-const amount = (value: number, currency: string) =>
-  Number(value).toLocaleString("en-US", { style: "currency", currency });
+import { useState } from "react";
+import { useAdminReport } from "./useAdminReport";
+import {
+  formatCount as count,
+  formatMoney as money,
+  type Report,
+} from "@/lib/admin-reporting";
+import s from "./AdminReports.module.css";
 export default function AdminAnalytics() {
-  const [period, setPeriod] = useState<Period>("7d");
-  const [data, setData] = useState<Analytics | null>(null);
-  const [sales, setSales] = useState<Sales[]>([]);
-  const [sold, setSold] = useState(0);
-  const [error, setError] = useState("");
-  const [series, setSeries] = useState<
-    { day: string; views: number; paid_orders: number; units: number }[]
-  >([]);
-  const [updated, setUpdated] = useState("");
-  useEffect(() => {
-    const db = createClient();
-    let stopped = false,
-      busy = false;
-    const refresh = async () => {
-      if (stopped || busy || document.visibilityState !== "visible") return;
-      busy = true;
-      try {
-        const [visitors, revenue, products, timeline] = await Promise.all([
-          db.rpc("birdshop_admin_site_analytics"),
-          db.rpc("birdshop_v2_sales_stats"),
-          db.rpc("birdshop_public_store_stats"),
-          db.rpc("birdshop_v2_analytics_series", {
-            p_days: period === "7d" ? 7 : 30,
-          }),
-        ]);
-        if (visitors.error || revenue.error || products.error || timeline.error)
-          throw new Error(
-            "Analytics could not refresh. Previous figures are kept until the next successful update.",
-          );
-        if (!stopped) {
-          setData(
-            (Array.isArray(visitors.data)
-              ? visitors.data[0]
-              : visitors.data) as Analytics,
-          );
-          setSales(revenue.data as Sales[]);
-          setSeries(timeline.data);
-          setSold(Number(products.data?.[0]?.products_sold ?? 0));
-          setUpdated(
-            new Date().toLocaleTimeString([], {
-              hour: "numeric",
-              minute: "2-digit",
-            }),
-          );
-          setError("");
-        }
-      } catch (problem) {
-        if (!stopped)
-          setError(
-            problem instanceof Error
-              ? problem.message
-              : "Analytics unavailable.",
-          );
-      } finally {
-        busy = false;
-      }
-    };
-    void refresh();
-    const timer = setInterval(refresh, 30_000);
-    document.addEventListener("visibilitychange", refresh);
-    return () => {
-      stopped = true;
-      clearInterval(timer);
-      document.removeEventListener("visibilitychange", refresh);
-    };
-  }, [period]);
+  const [days, setDays] = useState<number | null>(30);
+  const { data: d, error } = useAdminReport<Report>(
+    "birdshop_admin_report",
+    days,
+  );
   return (
-    <section className={styles.panel}>
-      <header>
-        <div>
-          <span>STORE ACTIVITY</span>
-          <h2>Traffic & revenue</h2>
-        </div>
-        <div
-          className={styles.periods}
-          role="group"
-          aria-label="Analytics period"
-        >
-          {(["7d", "30d", "all"] as Period[]).map((p) => (
-            <button
-              key={p}
-              aria-pressed={period === p}
-              onClick={() => setPeriod(p)}
-            >
-              {p === "all"
-                ? "All time"
-                : `Last ${p === "7d" ? "7" : "30"} days`}
-            </button>
-          ))}
-        </div>
-      </header>
-      {error && <p role="alert">{error}</p>}
-      <div className={styles.grid}>
-        <article>
-          <span>Live now</span>
-          <strong>
-            {data ? Number(data.online_now).toLocaleString() : "—"}
-          </strong>
-          <small>Seen in the last 2 minutes</small>
-        </article>
-        <article>
-          <span>Page views</span>
-          <strong>
-            {data ? Number(data[`views_${period}`]).toLocaleString() : "—"}
-          </strong>
-          <small>
-            {period === "all"
-              ? "Since tracking began"
-              : `Last ${period === "7d" ? "7" : "30"} days`}
-          </small>
-        </article>
-        <article>
-          <span>Approx. visitors</span>
-          <strong>
-            {data ? Number(data[`visitors_${period}`]).toLocaleString() : "—"}
-          </strong>
-          <small>Anonymous browser identifiers</small>
-        </article>
-        <article>
-          <span>Products Sold</span>
-          <strong>{data ? sold.toLocaleString() : "—"}</strong>
-          <small>All time, including refunded purchases</small>
-        </article>
-      </div>
-      {data && (
-        <p>
-          Paid Orders ·{" "}
-          {sales
-            .reduce((n, s) => n + Number(s.paid_orders), 0)
-            .toLocaleString()}{" "}
-          <small>(all time)</small>
-        </p>
-      )}
-      {sales.map((s) => (
-        <div key={s.currency} className={styles.revenue}>
-          <article>
-            <span>
-              {period === "all"
-                ? "All-time net revenue"
-                : "Net from payments in period"}
-            </span>
-            <strong>
-              {amount(
-                period === "all"
-                  ? s.net_revenue
-                  : period === "7d"
-                    ? s.net_7d
-                    : s.net_30d,
-                s.currency,
-              )}
-            </strong>
-          </article>
-          <article>
-            <span>All-time payments</span>
-            <strong>{amount(s.gross_revenue, s.currency)}</strong>
-          </article>
-          <article>
-            <span>All-time refunds</span>
-            <strong>{amount(s.refunds, s.currency)}</strong>
-          </article>
-          <article>
-            <span>Product / service net</span>
-            <small>
-              {amount(s.product_net_revenue, s.currency)} /{" "}
-              {amount(s.service_net_revenue, s.currency)}
-            </small>
-          </article>
-        </div>
-      ))}
-      {data && (
-        <section aria-label="Recorded daily page views">
-          <h3>
-            Daily page views ·{" "}
-            {period === "7d" ? "last 7 days" : "last 30 days"} (UTC)
-          </h3>
-          <div className={styles.chart}>
-            {series.map((row) => (
-              <div
-                key={row.day}
-                className={styles.barColumn}
-                title={`${row.day}: ${row.views} views, ${row.paid_orders} orders, ${row.units} products sold`}
+    <div className={s.report}>
+      <section className={s.panel}>
+        <div className={s.heading}>
+          <div>
+            <span className={s.eyebrow}>HISTORICAL PERFORMANCE</span>
+            <h2>The bigger picture</h2>
+          </div>
+          <div className={s.periods} role="group" aria-label="Reporting period">
+            {[7, 30, 90, null].map((n) => (
+              <button
+                key={String(n)}
+                aria-pressed={days === n}
+                onClick={() => setDays(n)}
               >
-                <span
-                  style={{
-                    height: `${Math.max(1, (Number(row.views) / Math.max(1, ...series.map((r) => Number(r.views)))) * 100)}%`,
-                  }}
-                />
-                <small>{row.day.slice(8)}</small>
-              </div>
+                {n === null ? "All time" : n + " days"}
+              </button>
             ))}
           </div>
-          <details>
-            <summary>View exact daily figures</summary>
-            <div className={styles.dailyRows}>
-              {series.map((row) => (
-                <p key={row.day}>
-                  <time>{row.day}</time>
-                  <span>
-                    {row.views} views · {row.paid_orders} orders · {row.units}{" "}
-                    units
-                  </span>
-                </p>
-              ))}
-            </div>
-          </details>
-        </section>
+        </div>
+        <p>
+          All figures below use the selected payment and traffic period.
+          Reporting days use UTC.
+        </p>
+      </section>
+      {error && (
+        <p role="alert" className={s.error}>
+          {error}
+        </p>
       )}
-      <footer>
-        {updated
-          ? `Updated ${updated} · Refreshes every 30 seconds while visible.`
-          : "Loading activity…"}{" "}
-        Test orders are excluded. Archived and deleted orders retain their sales
-        history. Period net subtracts refunds from payments made during that
-        period.
-      </footer>
-    </section>
+      {!d ? (
+        <section className={s.panel} aria-busy={!error}>
+          <p role="status">
+            {error
+              ? "Figures are currently unavailable."
+              : "Loading this period…"}
+          </p>
+        </section>
+      ) : (
+        <>
+          <div className={s.metrics}>
+            {[
+              ["Paid orders", d.paid_orders],
+              ["Digital units sold", d.units],
+              ["Page views", d.views],
+              ["Approx. visitors", d.visitors],
+            ].map(([label, n]) => (
+              <article key={String(label)}>
+                <span>{label}</span>
+                <strong>{count(Number(n))}</strong>
+                <small>
+                  {label === "Approx. visitors"
+                    ? "Distinct anonymous browser IDs"
+                    : "Selected period"}
+                </small>
+              </article>
+            ))}
+          </div>
+          <section className={s.panel}>
+            <div className={s.heading}>
+              <div>
+                <span className={s.eyebrow}>CONFIRMED SALES</span>
+                <h2>Revenue & refunds</h2>
+              </div>
+            </div>
+            {d.revenue.length ? (
+              d.revenue.map((r) => (
+                <div key={r.currency}>
+                  <h3>{r.currency.toUpperCase()}</h3>
+                  <div className={s.revenue}>
+                    {[
+                      ["Gross payments", r.gross],
+                      ["Refunds on these payments", r.refunds],
+                      ["Net revenue", r.net],
+                    ].map(([label, n]) => (
+                      <article key={String(label)}>
+                        <span>{label}</span>
+                        <strong>{money(Number(n), r.currency)}</strong>
+                      </article>
+                    ))}
+                  </div>
+                  <dl className={s.facts}>
+                    <div>
+                      <dt>Average paid order · before refunds</dt>
+                      <dd>{money(r.average_order, r.currency)}</dd>
+                    </div>
+                    <div>
+                      <dt>Digital · {count(r.digital_orders)} orders</dt>
+                      <dd>{money(r.digital_net, r.currency)} net</dd>
+                    </div>
+                    <div>
+                      <dt>Services · {count(r.service_orders)} orders</dt>
+                      <dd>{money(r.service_net, r.currency)} net</dd>
+                    </div>
+                  </dl>
+                  <h3 style={{ marginTop: 24 }}>
+                    Net by {d.bucket} · {r.currency}
+                  </h3>
+                  <div
+                    className={s.chart}
+                    role="img"
+                    aria-label={
+                      "Net revenue by " + d.bucket + ". Exact figures follow."
+                    }
+                  >
+                    {d.series.map((row) => {
+                      const n = Number(
+                        row.revenue.find((x) => x.currency === r.currency)
+                          ?.net ?? 0,
+                      );
+                      const max = Math.max(
+                        1,
+                        ...d.series.map((x) =>
+                          Number(
+                            x.revenue.find((v) => v.currency === r.currency)
+                              ?.net ?? 0,
+                          ),
+                        ),
+                      );
+                      return (
+                        <div
+                          className={s.bar}
+                          key={row.day}
+                          title={row.day + ": " + money(n, r.currency)}
+                        >
+                          <span style={{ height: (n / max) * 100 + "%" }} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className={s.chartLabels}>
+                    <span>{d.series[0]?.day}</span>
+                    <span>{d.series.at(-1)?.day}</span>
+                  </div>
+                  <details>
+                    <summary>Exact revenue figures</summary>
+                    <div className={s.detailRows}>
+                      {d.series.map((row) => {
+                        const v = row.revenue.find(
+                          (x) => x.currency === r.currency,
+                        );
+                        return (
+                          <p key={row.day}>
+                            <time>{row.day}</time>
+                            <span>
+                              Gross {money(v?.gross ?? 0, r.currency)} · Refunds{" "}
+                              {money(v?.refunds ?? 0, r.currency)} · Net{" "}
+                              {money(v?.net ?? 0, r.currency)}
+                            </span>
+                          </p>
+                        );
+                      })}
+                    </div>
+                  </details>
+                </div>
+              ))
+            ) : (
+              <p className={s.empty}>
+                No confirmed sales in this period. Your first payment will
+                appear here.
+              </p>
+            )}
+            <p>
+              Refunds are the confirmed cumulative refunds attached to payments
+              made in this period—not refunds grouped by the date they were
+              issued. Archived sales remain included. Currencies are never
+              combined.
+            </p>
+          </section>
+          <section className={s.panel}>
+            <div className={s.heading}>
+              <div>
+                <span className={s.eyebrow}>ANONYMOUS TRAFFIC</span>
+                <h2>Visits over time</h2>
+              </div>
+            </div>
+            {Number(d.views) > 0 ? (
+              <>
+                <div
+                  className={s.chart}
+                  role="img"
+                  aria-label="Page views over time. Exact figures follow."
+                >
+                  {d.series.map((row) => (
+                    <div
+                      className={s.bar}
+                      key={row.day}
+                      title={row.day + ": " + row.views + " views"}
+                    >
+                      <span
+                        style={{
+                          height:
+                            (Number(row.views) /
+                              Math.max(
+                                1,
+                                ...d.series.map((x) => Number(x.views)),
+                              )) *
+                              100 +
+                            "%",
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className={s.chartLabels}>
+                  <span>{d.series[0]?.day}</span>
+                  <span>{d.series.at(-1)?.day}</span>
+                </div>
+              </>
+            ) : (
+              <p className={s.empty}>No recorded page views in this period.</p>
+            )}
+            <details>
+              <summary>Exact traffic & sales figures</summary>
+              <div className={s.detailRows}>
+                {d.series.map((row) => (
+                  <p key={row.day}>
+                    <time>{row.day}</time>
+                    <span>
+                      {count(row.views)} views · {count(row.visitors)} visitors
+                      · {count(row.paid_orders)} orders · {count(row.units)}{" "}
+                      units
+                    </span>
+                  </p>
+                ))}
+              </div>
+            </details>
+            <p>
+              Presence heartbeats do not add page views. Visitor counts are
+              approximate; one browser identifier may cover multiple visits.
+            </p>
+          </section>
+          <section className={s.panel}>
+            <div className={s.heading}>
+              <div>
+                <span className={s.eyebrow}>DIGITAL CATALOG</span>
+                <h2>Top products</h2>
+              </div>
+            </div>
+            {d.products.length ? (
+              d.products.map((p, i) => (
+                <div
+                  className={s.actionRow}
+                  key={String(p.product_id) + p.product_name + p.currency}
+                >
+                  <span>
+                    {i + 1}. {p.product_name}
+                    <br />
+                    <small>{count(p.units)} paid units</small>
+                  </span>
+                  <b>{money(p.gross, p.currency)}</b>
+                </div>
+              ))
+            ) : (
+              <p className={s.empty}>Digital product sales will appear here.</p>
+            )}
+            <p>
+              Revenue uses purchased item snapshots, before refunds. Product
+              quantities include historically sold units even when refunded.
+              Test orders are excluded.
+            </p>
+          </section>
+          <footer className={s.foot}>
+            Updated {new Date(d.updated_at).toLocaleTimeString()} ·{" "}
+            {d.bucket === "month"
+              ? "All-time charts group by month."
+              : "Charts group by day."}
+          </footer>
+        </>
+      )}
+    </div>
   );
 }

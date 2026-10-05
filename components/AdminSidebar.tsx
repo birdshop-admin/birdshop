@@ -24,49 +24,14 @@ type AdminSidebarProps = {
 ========================================================= */
 
 const ownerNavigation = [
+  { label: "Overview", href: "/admin" },
+  { label: "Chat", href: "/admin/chat" },
+  { label: "Orders", href: "/admin/orders" },
+  { label: "Products", href: "/admin/products" },
+  { label: "Inventory", href: "/admin/inventory" },
   { label: "Analytics", href: "/admin/analytics" },
+  { label: "Reviews", href: "/admin/reviews" },
   { label: "Settings", href: "/admin/settings" },
-  {
-    label: "Overview",
-
-    href: "/admin",
-  },
-
-  {
-    label: "Products",
-
-    href: "/admin/products",
-  },
-
-  {
-    label: "Inventory",
-
-    href: "/admin/inventory",
-  },
-
-  {
-    label: "Orders",
-
-    href: "/admin/orders",
-  },
-
-  {
-    label: "Chat",
-
-    href: "/admin/chat",
-  },
-
-  {
-    label: "Legacy Support",
-
-    href: "/admin/requests",
-  },
-
-  {
-    label: "Reviews",
-
-    href: "/admin/reviews",
-  },
 ];
 
 /* =========================================================
@@ -144,28 +109,42 @@ export default function AdminSidebar({ role = "owner" }: AdminSidebarProps) {
           NAVIGATION
       =================================================== */}
 
-      <details className={styles.mobileMenu} onKeyDown={event=>{if(event.key==='Escape')event.currentTarget.removeAttribute('open');}} onClick={event=>{if((event.target as HTMLElement).closest('a'))event.currentTarget.removeAttribute('open');}}>
+      <details
+        className={styles.mobileMenu}
+        onKeyDown={(event) => {
+          if (event.key === "Escape")
+            event.currentTarget.removeAttribute("open");
+        }}
+        onClick={(event) => {
+          if ((event.target as HTMLElement).closest("a"))
+            event.currentTarget.removeAttribute("open");
+        }}
+      >
         <summary>
           BirdShop ·{" "}
           {navigation.find((item) => isActive(pathname, item.href))?.label ||
             "Admin"}{" "}
           <span>Menu ↓</span>
         </summary>
-        <div className={styles.mobileSheet}><nav aria-label="Mobile admin navigation">
-          {navigation.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={isActive(pathname, item.href) ? "page" : undefined}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className={styles.mobileActions}>
-          <Link href="/">View store</Link>
-          <AdminLogoutButton />
-        </div></div>
+        <div className={styles.mobileSheet}>
+          <nav aria-label="Mobile admin navigation">
+            {navigation.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={
+                  isActive(pathname, item.href) ? "page" : undefined
+                }
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <div className={styles.mobileActions}>
+            <Link href="/">View store</Link>
+            <AdminLogoutButton />
+          </div>
+        </div>
       </details>
 
       <nav className={styles.nav}>

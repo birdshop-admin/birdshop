@@ -111,12 +111,6 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
             <p>Sign in using your authorized BirdShop account.</p>
           </div>
 
-          {params.reason === "inactive" && (
-            <div className={styles.sessionNotice}>
-              Your previous session ended. Sign in again to continue.
-            </div>
-          )}
-
           {(params.reason === "session" || params.reason === "closed") && (
             <div className={styles.sessionNotice}>
               Your previous BirdShop admin browser session has ended. Sign in

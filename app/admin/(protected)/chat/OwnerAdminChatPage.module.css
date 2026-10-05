@@ -1541,3 +1541,56 @@
     padding: 14px 10px !important;
   }
 }
+
+/* Dedicated mobile conversation: controls above, messages scroll, composer stays in view. */
+@media (max-width: 767px) {
+  .workspace {
+    min-height: 0;
+  }
+  .workspace[data-mobile-detail="true"] .chat {
+    height: calc(100dvh - 90px);
+    min-height: 0;
+    overflow: hidden;
+  }
+  .workspace[data-mobile-detail="true"] .chatHeader {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+  .workspace[data-mobile-detail="true"] .customerBar {
+    padding: 8px 14px;
+    gap: 6px;
+  }
+  .workspace[data-mobile-detail="true"] .liveThread {
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: none;
+    overflow: hidden;
+  }
+  .liveThread > form {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+  .liveThread textarea[data-admin-chat-composer="true"] {
+    min-height: 48px;
+    max-height: 120px;
+  }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .page {
+    height: auto;
+    min-height: 100dvh;
+  }
+  .content {
+    min-height: 0;
+    height: auto;
+  }
+  .workspace {
+    min-height: 680px;
+    grid-template-columns: 270px minmax(0, 1fr);
+  }
+  .inbox {
+    height: 100%;
+  }
+  .chat {
+    min-height: 0;
+  }
+}

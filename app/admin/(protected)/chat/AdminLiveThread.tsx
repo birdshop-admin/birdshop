@@ -1,6 +1,11 @@
 "use client";
 import PaymentActionForm from "./PaymentActionForm";
 import ChatHistory from "./ChatHistory";
+import { paymentLabel } from "@/lib/payment-display";
+import {
+  sendServiceAgentMessage,
+  cancelServiceAgentPaymentRequest,
+} from "./agent-actions";
 
 import {
   FormEvent,
@@ -50,6 +55,8 @@ export type AdminLiveMessage = {
 };
 
 export type AdminLivePaymentRequest = {
+  refund_status?: string | null;
+  refunded_amount?: number | string | null;
   id: string;
 
   conversation_id: string;
@@ -109,12 +116,6 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-function statusLabel(value: string | null) {
-  return (value ?? "new")
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
-}
-
 function paymentRequestIdFromMessage(message: AdminLiveMessage) {
   const value = message.metadata?.payment_request_id;
 
@@ -136,7 +137,9 @@ export default function AdminLiveThread({
   conversationId,
   initialMessages,
   initialPaymentRequests,
+  staffMode = false,
 }: {
+  staffMode?: boolean;
   conversationId: string;
 
   initialMessages: AdminLiveMessage[];
@@ -374,7 +377,7 @@ export default function AdminLiveThread({
     const { data, error: paymentError } = await supabase
       .from("service_payment_requests")
       .select(
-        "id, conversation_id, order_id, amount, currency, title, description, status, stripe_checkout_session_id, paid_at, cancelled_at, created_at",
+        "id, conversation_id, order_id, amount, currency, title, description, status, refund_status, refunded_amount, stripe_checkout_session_id, paid_at, cancelled_at, created_at",
       )
       .eq("conversation_id", conversationId)
       .order("created_at", {
@@ -454,7 +457,10 @@ export default function AdminLiveThread({
       .subscribe();
 
     const fallback = window.setInterval(() => {
-      void syncMessages();
+      if (document.visibilityState === "visible") {
+        void syncMessages();
+        void syncPayments();
+      }
     }, FALLBACK_SYNC_MS);
 
     return () => {
@@ -539,7 +545,9 @@ export default function AdminLiveThread({
     formData.set("request_id", sendIdentity.current.id);
 
     try {
-      const result = await sendAdminChatMessage(formData);
+      const result = await (
+        staffMode ? sendServiceAgentMessage : sendAdminChatMessage
+      )(formData);
 
       if (!result.ok) {
         setMessages((current) =>
@@ -643,7 +651,7 @@ export default function AdminLiveThread({
               </div>
 
               <span className={paymentStyles.requestStatus}>
-                {statusLabel(request.status)}
+                {paymentLabel(request)}
               </span>
             </div>
 
@@ -658,7 +666,13 @@ export default function AdminLiveThread({
                 {money(request.amount, request.currency)}
               </strong>
               {request.status === "pending" && (
-                <PaymentActionForm action={cancelPaymentRequest}>
+                <PaymentActionForm
+                  action={
+                    staffMode
+                      ? cancelServiceAgentPaymentRequest
+                      : cancelPaymentRequest
+                  }
+                >
                   <input
                     type="hidden"
                     name="conversation_id"
@@ -678,8 +692,16 @@ export default function AdminLiveThread({
 
             <div className={paymentStyles.requestFooter}>
               <span>Sent {formatDate(request.created_at)}</span>
+              {Number(request.refunded_amount ?? 0) > 0 && (
+                <span>
+                  Refunded{" "}
+                  {money(request.refunded_amount ?? 0, request.currency)}
+                </span>
+              )}
 
-              {request.status === "paid" && <strong>PAYMENT RECEIVED</strong>}
+              {request.status === "paid" && (
+                <strong>{paymentLabel(request)}</strong>
+              )}
             </div>
           </article>
         );

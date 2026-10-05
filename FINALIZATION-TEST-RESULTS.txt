@@ -1,0 +1,293 @@
+BirdShop finalization validation — 2026-10-05
+
+PASS: npm run check (ESLint + TypeScript)
+PASS: npm run build (Next.js 16.3.5 production build)
+Build used fake public Supabase configuration because production credentials were unavailable.
+PASS: 220 assertions/check groups in local PostgreSQL-compatible PGlite fixture suite.
+PASS: 42 local production HTTP checks.
+PASS: scripts/verify-finalization.mjs polling, terminal-state, safe-error, Retry-After and refund-label checks.
+
+The SQL fixture recreates exported schema/functions and applies migrations to a temporary database. This is not a test of the user's hosted Supabase configuration.
+The HTTP server used placeholder configuration: route rendering and rejected requests were exercised, not authenticated provider-dependent success paths.
+No live browser/mobile visual or keyboard testing, real Stripe transaction/webhook delivery, Resend delivery, live database migration, GitHub push or Vercel deployment was performed.
+
+SQL fixture output follows:
+Migration applied: 20261004190000_service_payment_foundation.sql
+Migration applied: 20261004190100_service_payment_recovery_and_audit.sql
+Migration applied: 20261005010000_contact_and_chat_access.sql
+Migration applied: 20261005020000_digital_checkout_and_delivery.sql
+Migration applied: 20261005020100_analytics_and_admin_controls.sql
+Migration applied: 20261005030000_final_web_hardening.sql
+Migration applied: 20261005080000_customer_inbox.sql
+Migration applied: 20261005180000_remember_device_chats.sql
+Migration applied: 20261005220000_owner_reporting.sql
+Migrations parsed and applied.
+PASS Chat starts with no order
+PASS Conversation queues customer and staff emails atomically
+PASS A quote creates no order
+PASS Duplicate active quote rejected
+PASS NaN quote rejected
+PASS Agent cannot quote unassigned conversation
+PASS Repeated checkout starts reuse one active attempt
+PASS Cancellation waits for an unbound checkout
+PASS Cancellation flag blocks another checkout
+PASS Verified payment wins a cancellation race
+PASS Paid service stays active and uncompleted
+PASS Duplicate webhook returns the same order
+PASS Duplicate event still validates amount
+PASS Duplicate event still validates payment identity
+PASS Delayed expiration cannot cancel a paid order
+PASS Exactly two receipt jobs for one paid order
+PASS A linked order blocks another quote
+PASS Out-of-order refunds cannot reduce recorded refunded amount
+PASS Full refund changes payment status and retains the order
+PASS Refunded orders cannot be permanently deleted
+PASS Refunded order source cannot be relabeled as a test
+PASS Financial conversation cannot be permanently deleted
+PASS Expired session retries get a fresh attempt id
+PASS Confirmed cancellation leaves the chat open and order-free
+PASS Email jobs use a durable lease
+PASS An active email lease prevents duplicate delivery workers
+PASS Ambiguous email retries stop before provider idempotency expiry
+PASS Shared rate limiter rejects excess attempts
+PASS Direct browser payment cancellation is revoked
+PASS Financial finalization is service-only
+PASS Unassigned agent cannot mark a chat read
+PASS Assigned active agent can mark its chat read
+PASS Inactive assigned agent cannot mark a chat read
+PASS Unexpired checkout cannot be abandoned
+PASS Expired checkout never prepared for Stripe is safely abandoned
+PASS Uncertain Stripe attempt cannot be abandoned
+PASS Verified session can recover an attention checkout
+Initial service behavior checks passed: 37
+PASS Attempt numbers and idempotency keys differ after expiry
+PASS Expired and cancelled attempts retain their history and timestamps
+PASS Paid attempt has completion timestamp
+PASS Stale observation cannot reverse paid state
+PASS Observation rejects a mismatched session
+PASS Observation rejects a mismatched PaymentIntent
+PASS Refund cannot exceed payment
+PASS Duplicate refund failures create one audit record
+PASS Failed refund does not erase successful cumulative refunds
+PASS Payment finalization audit is exactly once
+PASS Cancellation prepared and committed audited with owner actor
+PASS Audit does not copy private token or code fields
+PASS Payment remains recorded while email delivery needs attention
+PASS All new tables have RLS enabled and no browser SELECT
+PASS Claim binds UUID separately from display name
+PASS Owner opening claimed conversation does not steal assignment
+PASS Another agent cannot claim assigned chat
+PASS Another agent cannot quote assigned chat
+PASS Assigned agent quote is order-free
+PASS Wrong actor cannot prepare cancellation
+PASS No-session cancellation is audited with verified actor
+PASS Inactive agent cannot quote its own assigned chat
+PASS Inactive agent cannot claim
+PASS Genuinely synthetic test order cleanup remains available
+PASS Test label cannot bypass processor-history protection
+PASS Historical delivered order is retained even without paid status
+PASS Historical delivered code cannot become available again
+PASS Historical fulfillment mapping cannot be removed
+PASS Owner cannot forge paid state on an unpaid real order
+PASS Recorded delivery timestamp cannot be erased
+PASS Disabling a sold code does not erase retention evidence
+PASS Browser table writes cannot bypass cancellation RPC
+PASS Verified charge identity persists on request and order
+PASS Mismatched charge identity cannot rewrite history
+PASS Authenticated database role cannot invoke finalization
+PASS Authenticated database role cannot directly cancel quote
+PASS Inventory reset wrapper cannot erase real delivered history
+PASS Inventory delete wrapper cannot erase real delivered history
+PASS Synthetic inventory reset safely releases test stock
+PASS Synthetic inventory deletion safely removes only its test history
+Run 1 behavior suite completed.
+PASS Contact retries return the same private conversation
+PASS Contact creates one message and no order
+PASS Public direct access revoked: birdshop_create_conversation(text,text,text,text,text,text,text,text,text,text,text,text,text,text)
+PASS Public direct access revoked: birdshop_open_service_chat(text,text)
+PASS Public direct access revoked: birdshop_send_service_chat_message(text,text)
+PASS Public direct access revoked: birdshop_get_service_chat(text)
+PASS Public direct access revoked: birdshop_v2_create_chat_once(uuid,jsonb)
+PASS Catalog prices override tampered browser totals
+PASS Checkout stores line snapshots in integer cents
+PASS Checkout holds exactly three distinct codes
+PASS Checkout has no order before verified payment
+PASS Digital access stores a hash rather than the bearer token
+PASS Stock holds prevent another sale of the same codes
+PASS Retry reuses the existing attempt
+PASS Digital amount mismatch cannot finalize
+PASS Digital currency mismatch cannot finalize
+PASS Digital finalization is idempotent
+PASS Multi-item order receives exactly three distinct assignments
+PASS Payment does not falsely mark codes delivered
+PASS Assigned inventory is distinct from sent delivery
+PASS Product charge identity is persisted
+PASS Price changes leave historical line totals unchanged
+PASS Delivery jobs reject plaintext payloads
+PASS A second worker cannot own the delivery lease
+PASS Delivery preparation validates lease and order
+PASS Provider acceptance records sent state and delivery timestamps atomically
+PASS Older refund events cannot reduce cumulative refunds
+PASS Refunds cannot return disclosed codes to stock
+PASS Financial orders cannot be hard-deleted
+PASS Archive and refund retain historical sold quantities
+PASS Missing stock retains the paid order for attention
+PASS Restock retry allocates against the same paid order
+PASS Delivery failure retry keeps the same inventory assignment
+PASS Full refund before disclosure stops pending email
+PASS Refunded order cannot be retried for disclosure
+PASS Visitor heartbeats do not create additional page views
+PASS Service agents cannot load owner sales analytics
+PASS Net analytics equal gross minus refunds
+PASS Analytics series contains seven real daily buckets
+PASS Browser roles cannot read encrypted inventory
+PASS Digital finalization remains service-only
+Run 2 digital tests completed.
+PASS A retried customer message is inserted exactly once
+PASS Reusing a message identity with different content is rejected
+PASS Private chat payload is bounded to the latest 100 messages
+PASS Earlier history is reachable without duplicate boundary messages
+PASS A foreign chat cursor cannot reveal another conversation
+PASS Background notification checks do not mark chat messages read
+PASS Guessed private chat token is rejected
+PASS anonymous cannot read orders
+PASS anonymous cannot read order_items
+PASS anonymous cannot read service_conversations
+PASS anonymous cannot read service_messages
+PASS anonymous cannot read service_payment_requests
+PASS anonymous cannot read product_inventory
+PASS anonymous cannot read order_fulfillments
+PASS anonymous cannot read birdshop_checkout_attempts
+PASS anonymous cannot read birdshop_stripe_events
+PASS anonymous cannot read birdshop_email_jobs
+PASS anonymous cannot read birdshop_audit_log
+PASS anonymous cannot read admin_users
+PASS anonymous cannot read site_sessions
+PASS anonymous cannot read page_views
+PASS anonymous cannot execute privileged birdshop_open_conversation
+PASS anonymous cannot execute privileged birdshop_open_service_chat
+PASS anonymous cannot execute privileged birdshop_get_service_chat
+PASS anonymous cannot execute privileged birdshop_v3_read_chat
+PASS anonymous cannot execute privileged birdshop_v3_send_message
+PASS anonymous cannot execute privileged birdshop_finalize_service_payment
+PASS non-staff cannot read orders
+PASS non-staff cannot read order_items
+PASS non-staff cannot read service_conversations
+PASS non-staff cannot read service_messages
+PASS non-staff cannot read service_payment_requests
+PASS non-staff cannot read product_inventory
+PASS non-staff cannot read order_fulfillments
+PASS non-staff cannot read birdshop_checkout_attempts
+PASS non-staff cannot read birdshop_stripe_events
+PASS non-staff cannot read birdshop_email_jobs
+PASS non-staff cannot read birdshop_audit_log
+PASS non-staff cannot read admin_users
+PASS non-staff cannot read site_sessions
+PASS non-staff cannot read page_views
+PASS non-staff cannot execute privileged birdshop_open_conversation
+PASS non-staff cannot execute privileged birdshop_open_service_chat
+PASS non-staff cannot execute privileged birdshop_get_service_chat
+PASS non-staff cannot execute privileged birdshop_v3_read_chat
+PASS non-staff cannot execute privileged birdshop_v3_send_message
+PASS non-staff cannot execute privileged birdshop_finalize_service_payment
+PASS service agent cannot read orders
+PASS service agent cannot read order_items
+PASS service agent has scoped access to service_conversations
+PASS service agent has scoped access to service_messages
+PASS service agent has scoped access to service_payment_requests
+PASS service agent cannot read product_inventory
+PASS service agent cannot read order_fulfillments
+PASS service agent cannot read birdshop_checkout_attempts
+PASS service agent cannot read birdshop_stripe_events
+PASS service agent cannot read birdshop_email_jobs
+PASS service agent cannot read birdshop_audit_log
+PASS service agent has scoped access to admin_users
+PASS service agent cannot read site_sessions
+PASS service agent cannot read page_views
+PASS Agent raw conversation reads are assigned-only
+PASS Agent cannot invoke owner health RPC
+PASS Agent cannot edit a payment request directly
+PASS service agent cannot execute privileged birdshop_open_conversation
+PASS service agent cannot execute privileged birdshop_open_service_chat
+PASS service agent cannot execute privileged birdshop_get_service_chat
+PASS service agent cannot execute privileged birdshop_v3_read_chat
+PASS service agent cannot execute privileged birdshop_v3_send_message
+PASS service agent cannot execute privileged birdshop_finalize_service_payment
+PASS Owner reply retries persist one message
+PASS Owner can read financial history through RLS
+PASS Owner can read masked inventory through RLS
+PASS Owner browser cannot select encrypted inventory
+PASS Owner browser cannot write encrypted inventory directly
+PASS Owner analytics remains accessible
+PASS Inactive agent cannot read assigned messages
+PASS Inactive agent gets no active staff profile
+PASS Inactive agent cannot claim a service conversation
+PASS Database rejects cumulative refunds above order total
+PASS Database rejects nonnumeric payment totals
+PASS All legacy and current SECURITY DEFINER functions default-deny anonymous execution
+Run 3 role and bounded-history suite completed.
+PASS Deployment verification: final chat migration
+PASS Deployment verification: staff message idempotency
+PASS Deployment verification: digital finalizer
+PASS Deployment verification: inventory assignment unique
+PASS Deployment verification: refund bounds installed
+PASS Deployment verification: sensitive tables protected by RLS
+PASS Deployment verification: no anonymous private SECURITY DEFINER access
+PASS Deployment verification: no browser inventory ciphertext access
+PASS Deployment verification: no browser delivery job access
+PASS Deployment verification: no browser checkout access
+PASS Deployment verification: refund history within bounds
+PASS Deployment verification: one active service request
+PASS Deployment verification: digital email payloads encrypted
+PASS Report ranges, archive preservation, overview structure, owner-only authorization and anonymous grants
+PASS Reporting verification: owner report installed
+PASS Reporting verification: overview installed
+PASS Reporting verification: anonymous report blocked
+PASS Reporting verification: anonymous overview blocked
+PASS Reporting verification: browser cannot read reporting view directly
+PASS Reporting verification: owner check and safe search path
+
+Local HTTP output follows:
+PASS Production page renders /
+PASS Production page renders /cart
+PASS Production page renders /services
+PASS Production page renders /faqs
+PASS Production page renders /service-chat
+PASS Production page renders /how-to-order
+PASS Production page renders /products
+PASS Production page renders /reviews
+PASS Production page renders /contact
+PASS Private chat has non-leaking referrer policy
+PASS Unauthenticated admin is redirected
+PASS Maintenance rejects a missing bearer secret
+PASS Stripe webhook rejects unsigned content
+PASS Foreign-origin staff login is rejected
+PASS Foreign-origin logout is rejected
+PASS GET logout redirects without changing cookies
+PASS Foreign-origin service checkout is rejected
+PASS Invalid service payment ID is rejected
+PASS Oversized service checkout body is bounded
+PASS Foreign-origin public chat mutation rejected /api/service-chat/create
+PASS Foreign-origin public chat mutation rejected /api/service-chat/open
+PASS Foreign-origin public chat mutation rejected /api/service-chat/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+PASS Private digital result renders /checkout/return
+PASS Private digital result renders /orders/access
+PASS Guessable order access is rejected /api/checkout/status?token=guess
+PASS Guessable order access is rejected /api/orders/access?token=guess
+PASS Foreign-origin product checkout rejected
+PASS Owner page blocks anonymous direct URL /admin/inventory
+PASS Owner page blocks anonymous direct URL /admin/analytics
+PASS Owner page blocks anonymous direct URL /admin/settings
+PASS Owner page blocks anonymous direct URL /admin/orders
+PASS Owner page blocks anonymous direct URL /admin/products
+PASS Owner page blocks anonymous direct URL /admin/chat
+PASS Owner page blocks anonymous direct URL /admin/reviews
+PASS Preserved public asset cremebs.png
+PASS Preserved public asset greenbs.png
+PASS Preserved public asset landscape1.png
+PASS Preserved public asset landscape2bottom.png
+PASS Private noindex header /admin/login
+PASS Private noindex header /service-chat
+PASS Private noindex header /checkout/return
+PASS Private noindex header /orders/access
+HTTP checks passed: 42

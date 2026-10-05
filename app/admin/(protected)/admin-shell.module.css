@@ -134,3 +134,27 @@
     font-size: clamp(26px, 8vw, 38px);
   }
 }
+
+/* Tablet uses the mobile navigation too; prevent a hidden sidebar column. */
+@media (max-width: 1023px) {
+  .shell :global(main) {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+  .shell :global(main) > section {
+    width: 100%;
+  }
+  .shell :global(input),
+  .shell :global(select),
+  .shell :global(textarea) {
+    font-size: 16px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell :global(*) {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

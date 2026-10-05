@@ -1,4 +1,5 @@
 "use client";
+import { startVisiblePoll } from "@/lib/visible-poll";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -29,18 +30,15 @@ export function CheckoutReturn() {
   const [status, setStatus] = useState("Checking your payment…");
   useEffect(() => {
     if (!token) return;
-    let stopped = false;
-    let timer: ReturnType<typeof setTimeout>;
-    let checks = 0;
-    const check = async () => {
+    return startVisiblePoll(async (signal) => {
       try {
         const response = await fetch(
           `/api/checkout/status?token=${encodeURIComponent(token)}`,
-          { cache: "no-store" },
+          { cache: "no-store", signal },
         );
         const data = await response.json();
         if (!response.ok) throw new Error(data.error);
-        if (stopped) return;
+        if (signal.aborted) return false;
         if (data.orderToken) {
           try {
             if (
@@ -55,13 +53,13 @@ export function CheckoutReturn() {
           router.replace(
             `/orders/access?token=${encodeURIComponent(data.orderToken)}`,
           );
-          return;
+          return false;
         }
         if (["expired", "failed", "cancelled"].includes(data.status)) {
           setStatus(
             "This checkout did not complete. Your cart is available below.",
           );
-          return;
+          return false;
         }
         setStatus(
           query.get("payment") === "cancelled"
@@ -69,21 +67,14 @@ export function CheckoutReturn() {
             : "Waiting for verified payment confirmation. We will email your private delivery link as soon as it is ready.",
         );
       } catch (problem) {
-        if (!stopped)
+        if (!signal.aborted)
           setStatus(
             problem instanceof Error
               ? problem.message
               : "Payment confirmation is temporarily unavailable.",
           );
       }
-      checks++;
-      if (!stopped && checks < 40) timer = setTimeout(check, 4000);
-    };
-    void check();
-    return () => {
-      stopped = true;
-      clearTimeout(timer);
-    };
+    }, 4000);
   }, [token, router, query, items, clearCart]);
   return (
     <section className={styles.recovery}>
@@ -108,43 +99,25 @@ function OrderDetails({ token }: { token: string }) {
   const [data, setData] = useState<Delivery | null>(null),
     [error, setError] = useState("");
   useEffect(() => {
-    const controller = new AbortController();
-    let timer: ReturnType<typeof setTimeout>;
-    let checks = 0;
-    const refresh = async () => {
+    return startVisiblePoll(async (signal) => {
       try {
         const response = await fetch(
           `/api/orders/access?token=${encodeURIComponent(token)}`,
-          { cache: "no-store", signal: controller.signal },
+          { cache: "no-store", signal },
         );
         const result = await response.json();
-        if (!response.ok)
-          throw new Error(
-            "This private order link is unavailable. Check your email or contact BirdShop.",
-          );
-        if (controller.signal.aborted) return;
+        if (!response.ok) throw new Error("Order status unavailable.");
+        if (signal.aborted) return false;
         setData(result as Delivery);
         setError("");
-        checks++;
-        if (
-          !["sent", "cancelled"].includes(result.order.delivery_status) &&
-          checks < 30
-        )
-          timer = setTimeout(() => {
-            if (document.visibilityState === "visible") void refresh();
-          }, 10000);
+        return !["sent", "cancelled"].includes(result.order.delivery_status);
       } catch {
-        if (!controller.signal.aborted)
+        if (!signal.aborted)
           setError(
-            "Order status could not refresh. Reload this page to try again.",
+            "Order status could not refresh. We will retry automatically.",
           );
       }
-    };
-    void refresh();
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
+    }, 10000);
   }, [token]);
   return (
     <section className={styles.recovery}>

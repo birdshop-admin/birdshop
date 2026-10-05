@@ -13,7 +13,7 @@ export default async function Page() {
           <div>
             <span>STORE INSIGHTS</span>
             <h1>Analytics</h1>
-            <p>Current activity and retained sales history.</p>
+            <p>Revenue, product performance, and traffic across time.</p>
           </div>
         </header>
         <AdminAnalytics />

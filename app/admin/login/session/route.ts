@@ -226,11 +226,12 @@ export async function POST(request: Request) {
 
   const cookieStore = await cookies();
 
-  const now = Date.now();
-
   cookieStore.set(ADMIN_SESSION_COOKIE, randomUUID(), sessionCookieOptions());
 
-  cookieStore.set(ADMIN_ACTIVITY_COOKIE, String(now), sessionCookieOptions());
+  cookieStore.set(ADMIN_ACTIVITY_COOKIE, "", {
+    ...sessionCookieOptions(),
+    maxAge: 0,
+  });
 
   /* =======================================================
      DESTINATION

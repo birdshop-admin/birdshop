@@ -1,3 +1,4 @@
+import { publicErrorResponse } from "@/lib/server-config";
 import { orderToken, tokenHash } from "@/lib/order-access";
 import { readBody } from "@/lib/server-config";
 import { assertSameOrigin, isUuid, privateHeaders } from "@/lib/server-config";
@@ -84,13 +85,11 @@ export async function POST(request: Request) {
       { url, returnToken: orderToken(attempt.id) },
       { headers: privateHeaders },
     );
-  } catch {
-    return Response.json(
-      {
-        error:
-          "Checkout could not start. Check your cart, stock, and email, then retry.",
-      },
-      { status: 409, headers: privateHeaders },
+  } catch (error) {
+    return publicErrorResponse(
+      error,
+      "Checkout could not start. Check your cart, stock, and email, then retry.",
+      409,
     );
   }
 }

@@ -22,6 +22,7 @@ export default function AdminSessionHeartbeat() {
         busy = false;
       }
     };
+    void refresh();
     const timer = window.setInterval(refresh, 60_000);
     document.addEventListener("visibilitychange", refresh);
     return () => {

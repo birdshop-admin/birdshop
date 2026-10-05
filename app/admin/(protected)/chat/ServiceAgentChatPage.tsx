@@ -12,9 +12,11 @@ import {
   leaveServiceConversation,
 } from "./agent-actions";
 
-import ServiceAgentLiveThread, {
-  type ServiceAgentMessage,
-} from "./ServiceAgentLiveThread";
+import AdminLiveThread, {
+  type AdminLiveMessage as ServiceAgentMessage,
+  type AdminLivePaymentRequest,
+} from "./AdminLiveThread";
+import PaymentActionForm, { PaymentFeedback } from "./PaymentActionForm";
 
 import paymentStyles from "@/components/ChatPaymentUI.module.css";
 import styles from "./chat.module.css";
@@ -810,251 +812,267 @@ export default async function ServiceAgentChatPage({
                   PAYMENT CENTER
               =========================================== */}
 
-              <section className={paymentStyles.panel}>
-                <div className={paymentStyles.panelHeader}>
-                  <div>
-                    <span className={paymentStyles.panelEyebrow}>
-                      PAYMENT CENTER
-                    </span>
+              <details className={styles.paymentDrawer}>
+                <summary>
+                  Payment center <span aria-hidden="true">⌄</span>
+                </summary>
+                <div className={paymentStyles.panel}>
+                  <div className={paymentStyles.panelHeader}>
+                    <div>
+                      <span className={paymentStyles.panelEyebrow}>
+                        PAYMENT CENTER
+                      </span>
 
-                    <strong className={paymentStyles.panelTitle}>
-                      {paidPayment
-                        ? paidPayment.refund_status === "full"
-                          ? "Payment refunded"
-                          : paidPayment.refund_status === "partial"
-                            ? "Payment partially refunded"
-                            : "Payment received"
-                        : pendingPayment
-                          ? "Payment request pending"
-                          : "Send secure payment request"}
-                    </strong>
-                  </div>
-
-                  <p className={paymentStyles.panelCopy}>
-                    {paidPayment
-                      ? "BirdShop has recorded the customer's payment."
-                      : "The customer receives a secure Stripe Checkout button inside their private conversation."}
-                  </p>
-                </div>
-
-                {paidPayment ? (
-                  <article
-                    style={{
-                      padding: "18px 0",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-
-                        justifyContent: "space-between",
-
-                        gap: "20px",
-
-                        alignItems: "center",
-                      }}
-                    >
-                      <div>
-                        <span className={paymentStyles.fieldLabel}>
-                          {paidPayment.title}
-                        </span>
-
-                        <div
-                          style={{
-                            marginTop: "7px",
-
-                            fontFamily: "Georgia, 'Times New Roman', serif",
-
-                            fontSize: "30px",
-
-                            color: "#263126",
-                          }}
-                        >
-                          {money(paidPayment.amount, paidPayment.currency)}
-                        </div>
-                      </div>
-
-                      <strong>
-                        {paidPayment.refund_status === "full"
-                          ? "REFUNDED"
-                          : paidPayment.refund_status === "partial"
-                            ? "PARTIALLY REFUNDED"
-                            : "PAID"}
+                      <strong className={paymentStyles.panelTitle}>
+                        {paidPayment
+                          ? paidPayment.refund_status === "full"
+                            ? "Payment refunded"
+                            : paidPayment.refund_status === "partial"
+                              ? "Payment partially refunded"
+                              : "Payment received"
+                          : pendingPayment
+                            ? "Payment request pending"
+                            : "Send secure payment request"}
                       </strong>
                     </div>
 
-                    {Number(paidPayment.refunded_amount ?? 0) > 0 && (
-                      <p>
-                        Refunded:{" "}
-                        {money(
-                          Number(paidPayment.refunded_amount),
-                          paidPayment.currency,
-                        )}
-                      </p>
-                    )}
-                  </article>
-                ) : pendingPayment ? (
-                  <article
-                    style={{
-                      padding: "18px 0",
-                    }}
-                  >
-                    <div
+                    <p className={paymentStyles.panelCopy}>
+                      {paidPayment
+                        ? "BirdShop has recorded the customer's payment."
+                        : "The customer receives a secure Stripe Checkout button inside their private conversation."}
+                    </p>
+                  </div>
+
+                  {paidPayment ? (
+                    <article
                       style={{
-                        display: "flex",
-
-                        justifyContent: "space-between",
-
-                        gap: "20px",
-
-                        alignItems: "center",
+                        padding: "18px 0",
                       }}
                     >
-                      <div>
-                        <span className={paymentStyles.fieldLabel}>
-                          {pendingPayment.title}
-                        </span>
+                      <div
+                        style={{
+                          display: "flex",
 
-                        <div
-                          style={{
-                            marginTop: "7px",
+                          justifyContent: "space-between",
 
-                            fontFamily: "Georgia, 'Times New Roman', serif",
+                          gap: "20px",
 
-                            fontSize: "30px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <div>
+                          <span className={paymentStyles.fieldLabel}>
+                            {paidPayment.title}
+                          </span>
 
-                            color: "#263126",
-                          }}
-                        >
-                          {money(
-                            pendingPayment.amount,
-                            pendingPayment.currency,
-                          )}
+                          <div
+                            style={{
+                              marginTop: "7px",
+
+                              fontFamily: "Georgia, 'Times New Roman', serif",
+
+                              fontSize: "30px",
+
+                              color: "#263126",
+                            }}
+                          >
+                            {money(paidPayment.amount, paidPayment.currency)}
+                          </div>
                         </div>
+
+                        <strong>
+                          {paidPayment.refund_status === "full"
+                            ? "REFUNDED"
+                            : paidPayment.refund_status === "partial"
+                              ? "PARTIALLY REFUNDED"
+                              : "PAID"}
+                        </strong>
                       </div>
 
-                      <strong>PENDING</strong>
+                      {Number(paidPayment.refunded_amount ?? 0) > 0 && (
+                        <p>
+                          Refunded:{" "}
+                          {money(
+                            Number(paidPayment.refunded_amount),
+                            paidPayment.currency,
+                          )}
+                        </p>
+                      )}
+                    </article>
+                  ) : pendingPayment ? (
+                    <article
+                      style={{
+                        padding: "18px 0",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+
+                          justifyContent: "space-between",
+
+                          gap: "20px",
+
+                          alignItems: "center",
+                        }}
+                      >
+                        <div>
+                          <span className={paymentStyles.fieldLabel}>
+                            {pendingPayment.title}
+                          </span>
+
+                          <div
+                            style={{
+                              marginTop: "7px",
+
+                              fontFamily: "Georgia, 'Times New Roman', serif",
+
+                              fontSize: "30px",
+
+                              color: "#263126",
+                            }}
+                          >
+                            {money(
+                              pendingPayment.amount,
+                              pendingPayment.currency,
+                            )}
+                          </div>
+                        </div>
+
+                        <strong>PENDING</strong>
+                      </div>
+
+                      {pendingPayment.description && (
+                        <p>{pendingPayment.description}</p>
+                      )}
+
+                      <div className={paymentStyles.requestFooter}>
+                        <span>Waiting for customer payment.</span>
+
+                        <PaymentActionForm
+                          action={cancelServiceAgentPaymentRequest}
+                        >
+                          <input
+                            type="hidden"
+                            name="conversation_id"
+                            value={detail.id}
+                          />
+
+                          <input
+                            type="hidden"
+                            name="payment_request_id"
+                            value={pendingPayment.id}
+                          />
+
+                          <SubmitButton
+                            type="submit"
+                            className={paymentStyles.secondaryButton}
+                          >
+                            Cancel Request
+                          </SubmitButton>
+                        </PaymentActionForm>
+                      </div>
+                    </article>
+                  ) : detail.order_id ? (
+                    <div
+                      style={{
+                        padding: "20px 0",
+
+                        color: "#5c665a",
+
+                        fontFamily: "Georgia, 'Times New Roman', serif",
+                      }}
+                    >
+                      This service already has an order.
                     </div>
+                  ) : (
+                    <PaymentActionForm
+                      action={createServiceAgentPaymentRequest}
+                      className={paymentStyles.form}
+                    >
+                      <input
+                        type="hidden"
+                        name="conversation_id"
+                        value={detail.id}
+                      />
 
-                    {pendingPayment.description && (
-                      <p>{pendingPayment.description}</p>
-                    )}
+                      <div className={paymentStyles.fields}>
+                        <label className={paymentStyles.field}>
+                          <span className={paymentStyles.fieldLabel}>
+                            TITLE
+                          </span>
 
-                    <div className={paymentStyles.requestFooter}>
-                      <span>Waiting for customer payment.</span>
+                          <input
+                            className={paymentStyles.input}
+                            name="title"
+                            defaultValue={`${
+                              detail.service_name || "BirdShop Service"
+                            }${
+                              detail.package_name
+                                ? ` — ${detail.package_name}`
+                                : ""
+                            }`}
+                            maxLength={180}
+                            required
+                          />
+                        </label>
 
-                      <form action={cancelServiceAgentPaymentRequest}>
-                        <input
-                          type="hidden"
-                          name="conversation_id"
-                          value={detail.id}
+                        <label className={paymentStyles.field}>
+                          <span className={paymentStyles.fieldLabel}>
+                            AMOUNT
+                          </span>
+
+                          <input
+                            className={paymentStyles.input}
+                            name="amount"
+                            type="number"
+                            min="0.50"
+                            step="0.01"
+                            placeholder="24.99"
+                            required
+                          />
+                        </label>
+                      </div>
+
+                      <label className={paymentStyles.field}>
+                        <span className={paymentStyles.fieldLabel}>
+                          DESCRIPTION · OPTIONAL
+                        </span>
+
+                        <textarea
+                          className={paymentStyles.textarea}
+                          name="description"
+                          rows={2}
+                          maxLength={2000}
+                          placeholder="Describe exactly what this payment covers..."
                         />
+                      </label>
 
-                        <input
-                          type="hidden"
-                          name="payment_request_id"
-                          value={pendingPayment.id}
-                        />
+                      <div className={paymentStyles.actions}>
+                        <span>The customer cannot change this amount.</span>
 
                         <SubmitButton
                           type="submit"
-                          className={paymentStyles.secondaryButton}
+                          className={paymentStyles.button}
                         >
-                          Cancel Request
+                          Send Payment Request
                         </SubmitButton>
-                      </form>
-                    </div>
-                  </article>
-                ) : detail.order_id ? (
-                  <div
-                    style={{
-                      padding: "20px 0",
-
-                      color: "#5c665a",
-
-                      fontFamily: "Georgia, 'Times New Roman', serif",
-                    }}
-                  >
-                    This service already has an order.
-                  </div>
-                ) : (
-                  <form
-                    action={createServiceAgentPaymentRequest}
-                    className={paymentStyles.form}
-                  >
-                    <input
-                      type="hidden"
-                      name="conversation_id"
-                      value={detail.id}
-                    />
-
-                    <div className={paymentStyles.fields}>
-                      <label className={paymentStyles.field}>
-                        <span className={paymentStyles.fieldLabel}>TITLE</span>
-
-                        <input
-                          className={paymentStyles.input}
-                          name="title"
-                          defaultValue={`${
-                            detail.service_name || "BirdShop Service"
-                          }${
-                            detail.package_name
-                              ? ` — ${detail.package_name}`
-                              : ""
-                          }`}
-                          maxLength={180}
-                          required
-                        />
-                      </label>
-
-                      <label className={paymentStyles.field}>
-                        <span className={paymentStyles.fieldLabel}>AMOUNT</span>
-
-                        <input
-                          className={paymentStyles.input}
-                          name="amount"
-                          type="number"
-                          min="0.50"
-                          step="0.01"
-                          placeholder="24.99"
-                          required
-                        />
-                      </label>
-                    </div>
-
-                    <label className={paymentStyles.field}>
-                      <span className={paymentStyles.fieldLabel}>
-                        DESCRIPTION · OPTIONAL
-                      </span>
-
-                      <textarea
-                        className={paymentStyles.textarea}
-                        name="description"
-                        rows={2}
-                        maxLength={2000}
-                        placeholder="Describe exactly what this payment covers..."
-                      />
-                    </label>
-
-                    <div className={paymentStyles.actions}>
-                      <span>The customer cannot change this amount.</span>
-
-                      <SubmitButton
-                        type="submit"
-                        className={paymentStyles.button}
-                      >
-                        Send Payment Request
-                      </SubmitButton>
-                    </div>
-                  </form>
-                )}
-              </section>
+                      </div>
+                    </PaymentActionForm>
+                  )}
+                </div>
+              </details>
 
               {/* ===========================================
                   CHAT
               =========================================== */}
 
-              <ServiceAgentLiveThread
+              <PaymentFeedback key={detail.id} conversationId={detail.id} />
+              <AdminLiveThread
+                staffMode
+                initialPaymentRequests={
+                  [...paymentRequests].reverse() as AdminLivePaymentRequest[]
+                }
                 key={detail.id}
                 conversationId={detail.id}
                 initialMessages={messages}

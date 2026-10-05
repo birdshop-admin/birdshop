@@ -1,135 +1,270 @@
+/* =========================================================
+   SETTINGS — CREAM / FOREST GREEN
+========================================================= */
+
 .cards {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   margin: 26px 0;
 }
+
+.cards,
+.cards *,
+.section,
+.section * {
+  box-sizing: border-box;
+}
+
 .cards article,
 .section {
-  padding: 24px;
-  border: 1px solid #ffffff20;
-  border-radius: 16px;
-  background: #16251a;
   min-width: 0;
+  padding: 28px;
+  border: 1px solid #d9d5c8;
+  border-radius: 18px;
+  background: #f2eee4;
+  color: #263529;
+  box-shadow: 0 14px 36px rgb(0 0 0 / 10%);
 }
+
 .cards h2,
 .section h2 {
-  font-size: 22px;
-  font-weight: 500;
-  margin: 0 0 14px;
+  margin: 0 0 16px;
+  color: #263529;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 27px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
 }
+
 .cards p,
 .section > p {
+  margin: 0 0 16px;
+  color: #596452;
   font-size: 13px;
-  line-height: 1.7;
-  color: #bec9b4;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
 }
+
 .cards small {
   display: block;
+  margin-top: 17px;
+  color: #60695b;
   font-size: 11px;
-  line-height: 1.7;
-  color: #abbda2;
-  margin-top: 15px;
+  line-height: 1.8;
 }
-.cards button {
-  padding: 13px 18px;
+
+/* Buttons */
+
+.cards button,
+.jobs button {
   min-height: 44px;
-  border: 0;
-  border-radius: 8px;
-  background: #e3ddc7;
-  color: #1d2d1f;
+  padding: 12px 18px;
+  border: 1px solid #354c38;
+  border-radius: 9px;
+  background: #354c38;
+  color: #fffdf5;
   font: inherit;
   font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
   cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
 }
+
+.cards button:hover,
+.jobs button:hover {
+  background: #263c2a;
+  border-color: #263c2a;
+}
+
+.cards button:disabled,
+.jobs button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cards button:focus-visible,
+.jobs button:focus-visible,
+.jobs input:focus-visible {
+  outline: 3px solid #637b52;
+  outline-offset: 3px;
+}
+
+/* Delivery sections */
+
 .section {
   margin-top: 22px;
 }
+
 .jobs {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
+
 .jobs article {
-  padding: 16px;
-  background: #0f1d13;
-  border: 1px solid #ffffff13;
-  border-radius: 10px;
   min-width: 0;
+  padding: 20px;
+  border: 1px solid #ded9cb;
+  border-radius: 12px;
+  background: #fffdf7;
+  color: #263529;
 }
+
 .jobs article > div {
   display: flex;
-  gap: 14px;
-  justify-content: space-between;
   flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px 16px;
 }
+
 .jobs strong {
+  color: #263529;
   font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
   text-transform: capitalize;
+  overflow-wrap: anywhere;
 }
+
 .jobs span {
-  font-size: 11px;
+  color: #53644a;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #c4d6b4;
+  overflow-wrap: anywhere;
 }
+
 .jobs small,
 .jobs code {
   display: block;
   margin-top: 10px;
+  color: #60695b;
   font-size: 11px;
-  color: #b3c3a7;
+  line-height: 1.7;
   overflow-wrap: anywhere;
 }
+
+.jobs code {
+  padding: 8px 10px;
+  border: 1px solid #e0dccf;
+  border-radius: 6px;
+  background: #f0ede3;
+  white-space: pre-wrap;
+}
+
 .jobs p {
+  margin: 12px 0 0;
+  color: #8a3927;
   font-size: 12px;
-  color: #f0c8b5;
-  line-height: 1.6;
+  line-height: 1.75;
   overflow-wrap: anywhere;
 }
-@media (max-width: 700px) {
-  .cards {
-    grid-template-columns: 1fr;
-  }
-  .cards article,
-  .section {
-    padding: 19px;
-  }
-}
+
+/* Recovery forms */
 
 .jobs form {
   display: grid;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #e0dccf;
 }
+
 .jobs label {
   display: grid;
   gap: 8px;
+  min-width: 0;
+  color: #4c5945;
   font-size: 12px;
-  color: #cad5c1;
+  font-weight: 500;
+  line-height: 1.6;
 }
+
 .jobs input {
   width: 100%;
-  min-height: 44px;
-  background: #132016;
-  color: #f3efd9;
-  border: 1px solid #53634b;
+  min-width: 0;
+  min-height: 46px;
+  padding: 11px 12px;
+  border: 1px solid #adb69f;
   border-radius: 8px;
-  padding: 10px;
+  background: #ffffff;
+  color: #263529;
   font: inherit;
+  font-size: 16px;
+  line-height: 1.4;
 }
+
+.jobs input::placeholder {
+  color: #70776a;
+  opacity: 1;
+}
+
 .jobs button {
   justify-self: start;
-  min-height: 44px;
-  border: 0;
-  border-radius: 8px;
-  padding: 10px 16px;
-  background: #e3ddc7;
-  color: #1d2d1f;
-  font: inherit;
-  cursor: pointer;
 }
 
 .jobs input[type="checkbox"] {
   width: 20px;
+  height: 20px;
   min-height: 20px;
-  accent-color: #aebc91;
+  padding: 0;
+  accent-color: #354c38;
+  cursor: pointer;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+  .cards {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .cards article,
+  .section {
+    padding: 22px;
+    border-radius: 14px;
+  }
+
+  .cards h2,
+  .section h2 {
+    font-size: 25px;
+  }
+}
+
+@media (max-width: 430px) {
+  .cards article,
+  .section {
+    padding: 19px 16px;
+  }
+
+  .jobs article {
+    padding: 16px;
+  }
+
+  .jobs article > div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .cards button,
+  .jobs button {
+    width: 100%;
+    justify-self: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cards button,
+  .jobs button {
+    transition: none;
+  }
 }

@@ -352,7 +352,7 @@ export default function ServiceChatClient() {
       ? window.setInterval(() => {
           if (!historyBefore && document.visibilityState === "visible")
             void loadChat(true);
-        }, 8000)
+        }, 2000)
       : null;
     return () => {
       chatRequest.current?.abort();
@@ -722,12 +722,6 @@ export default function ServiceChatClient() {
 
   return (
     <section className={styles.page}>
-      {searchParams.get("welcome") === "1" && (
-        <p role="status">
-          Your private chat is ready. Your return-link email has been queued;
-          delivery may take a moment. Keep this private link safe.
-        </p>
-      )}
       <div className={styles.workspace}>
         {/* ===============================================
             CONVERSATION SUMMARY

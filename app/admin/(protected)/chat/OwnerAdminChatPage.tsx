@@ -26,7 +26,7 @@ import AdminLiveThread, {
   type AdminLivePaymentRequest,
 } from "./AdminLiveThread";
 
-import paymentStyles from "@/components/ChatPaymentUI.module.css";
+import paymentStyles from "./AdminPaymentCenter.module.css";
 import styles from "./OwnerAdminChatPage.module.css";
 
 export const dynamic = "force-dynamic";
@@ -1289,15 +1289,6 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                         Assigned to {selected.assigned_to}
                       </span>
                     )}
-
-                    <Link
-                      href={`/service-chat?token=${encodeURIComponent(
-                        selected.public_token,
-                      )}`}
-                      target="_blank"
-                    >
-                      Open Customer View ↗
-                    </Link>
                   </div>
                 </div>
 
@@ -1338,8 +1329,8 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
 
                 {selected.conversation_type === "service" && (
                   <details
-                    className={styles.paymentDrawer}
-                    open={Boolean(pendingPayment)}
+                    className={paymentStyles.paymentDrawer}
+                    key={selected.id}
                   >
                     <summary>
                       <div>
@@ -1362,12 +1353,17 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                         </strong>
                       </div>
 
-                      <span>Manage Payment</span>
+                      <span className={paymentStyles.toggle}>
+                        {paidPayment || pendingPayment || selectedOrder
+                          ? "View details"
+                          : "Create request"}
+                        <span aria-hidden="true">⌄</span>
+                      </span>
                     </summary>
 
-                    <div className={styles.paymentBody}>
+                    <div className={paymentStyles.paymentBody}>
                       {paidPayment ? (
-                        <article className={styles.paidSummary}>
+                        <article className={paymentStyles.paidSummary}>
                           <div>
                             <span>PAYMENT RECEIVED</span>
 
@@ -1443,7 +1439,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                           </div>
                         </article>
                       ) : selectedOrder ? (
-                        <div className={styles.noPaymentAction}>
+                        <div className={paymentStyles.noPaymentAction}>
                           This conversation already has a linked order.
                         </div>
                       ) : (
@@ -1503,12 +1499,15 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                               name="description"
                               rows={2}
                               maxLength={2000}
-                              placeholder="Describe exactly what this payment covers..."
+                              placeholder="What is included in this service?"
                             />
                           </label>
 
                           <div className={paymentStyles.actions}>
-                            <span>Customer cannot change the amount.</span>
+                            <span>
+                              A fixed-amount checkout appears in the customer’s
+                              chat.
+                            </span>
 
                             <SubmitButton
                               type="submit"

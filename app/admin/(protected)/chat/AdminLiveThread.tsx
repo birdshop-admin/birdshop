@@ -20,9 +20,10 @@ import {
   SERVICE_CHAT_BROADCAST_EVENT,
 } from "@/lib/service-chat-session";
 
-import { sendAdminChatMessage } from "./actions";
+import { sendAdminChatMessage, cancelPaymentRequest } from "./actions";
+import SubmitButton from "@/components/SubmitButton";
 
-import paymentStyles from "@/components/ChatPaymentUI.module.css";
+import paymentStyles from "./AdminPaymentCenter.module.css";
 import styles from "./chat.module.css";
 
 /* =========================================================
@@ -149,6 +150,16 @@ export default function AdminLiveThread({
   const [paymentRequests, setPaymentRequests] = useState<
     AdminLivePaymentRequest[]
   >(initialPaymentRequests);
+
+  const [lastServerPayments, setLastServerPayments] = useState(
+    initialPaymentRequests,
+  );
+  // Accept fresh server data after a create/cancel action revalidates the page.
+  // Realtime changes still update paymentRequests between server refreshes.
+  if (lastServerPayments !== initialPaymentRequests) {
+    setLastServerPayments(initialPaymentRequests);
+    setPaymentRequests(initialPaymentRequests);
+  }
 
   const [body, setBody] = useState("");
 
@@ -641,9 +652,28 @@ export default function AdminLiveThread({
               </p>
             )}
 
-            <strong className={paymentStyles.requestAmount}>
-              {money(request.amount, request.currency)}
-            </strong>
+            <div className={paymentStyles.paymentLine}>
+              <strong className={paymentStyles.requestAmount}>
+                {money(request.amount, request.currency)}
+              </strong>
+              {request.status === "pending" && (
+                <form action={cancelPaymentRequest}>
+                  <input
+                    type="hidden"
+                    name="conversation_id"
+                    value={conversationId}
+                  />
+                  <input
+                    type="hidden"
+                    name="payment_request_id"
+                    value={request.id}
+                  />
+                  <SubmitButton className={paymentStyles.secondaryButton}>
+                    Cancel request
+                  </SubmitButton>
+                </form>
+              )}
+            </div>
 
             <div className={paymentStyles.requestFooter}>
               <span>Sent {formatDate(request.created_at)}</span>

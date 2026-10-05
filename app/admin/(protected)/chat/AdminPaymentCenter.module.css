@@ -301,3 +301,249 @@
     font-size: 15px;
   }
 }
+
+/* Refined cream-and-forest payment surfaces. */
+.paymentDrawer {
+  border-radius: 10px;
+  border-color: #d5d6c9;
+  background: #faf8f2;
+}
+.paymentDrawer > summary {
+  padding: 13px 18px;
+}
+.paymentDrawer > summary > div > span {
+  color: #59694f;
+  letter-spacing: 0.13em;
+}
+.paymentDrawer > summary strong {
+  color: #34472e;
+  font-size: 16px;
+}
+.toggle {
+  font-weight: 500;
+}
+.toggle > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: #fffdf7;
+}
+.toggle svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.paymentBody {
+  background: #f1efe5;
+  padding: 18px;
+  max-height: min(340px, 40dvh);
+}
+.form {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 18px;
+  border: 1px solid #dedfd2;
+  border-radius: 9px;
+  background: #faf8f2;
+}
+.fields {
+  grid-template-columns: minmax(0, 1fr) 180px;
+}
+.fieldLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+}
+.input,
+.textarea {
+  background: #fffefb;
+  border-color: #d6d9cb;
+  font-size: 14px;
+}
+.actions > span {
+  max-width: 420px;
+  font-size: 11px;
+}
+.button {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: 13px;
+}
+.paymentBody > .request,
+.paidSummary,
+.noPaymentAction {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Extra specificity protects payment text from the chat's generic article rules. */
+.request.request {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: min(580px, 100%);
+  max-width: 100%;
+  align-self: flex-start;
+  margin: 4px 0;
+  padding: 18px 20px;
+  border: 1px solid #d4d8c8;
+  border-left: 3px solid #657654;
+  border-radius: 10px;
+  background: #fffdf7;
+  color: #34472e;
+  box-shadow: 0 3px 12px #29372b06;
+}
+.request.request * {
+  box-sizing: border-box;
+}
+.request.request .requestEyebrow {
+  color: #64715b;
+  font:
+    600 10px/1.4 Arial,
+    Helvetica,
+    sans-serif;
+  letter-spacing: 0.12em;
+}
+.request.request .requestTitle {
+  margin-top: 7px;
+  color: #30442b;
+  font:
+    400 19px/1.4 Georgia,
+    "Times New Roman",
+    serif;
+}
+.request.request .requestStatus {
+  color: #6c592a;
+  background: #f2ecd9;
+  border: 1px solid #e5dcc1;
+  font:
+    600 10px/1.4 Arial,
+    Helvetica,
+    sans-serif;
+  letter-spacing: 0.03em;
+  text-transform: none;
+}
+.request.request .requestDescription {
+  font:
+    400 13px/1.6 Arial,
+    Helvetica,
+    sans-serif;
+  color: #626c5d;
+}
+.paymentLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e0e2d5;
+}
+.request.request .requestAmount {
+  margin: 0;
+  color: #344c2c;
+  font:
+    400 32px/1.2 Georgia,
+    "Times New Roman",
+    serif;
+  font-variant-numeric: tabular-nums;
+}
+.request.request .requestFooter {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-color: #e6e7dd;
+  flex-wrap: wrap;
+}
+.request.request .requestFooter > span,
+.request.request .requestFooter > strong {
+  color: #6a7362;
+  font:
+    400 11px/1.5 Arial,
+    Helvetica,
+    sans-serif;
+}
+.request.request .secondaryButton {
+  min-height: 40px;
+  padding: 9px 13px;
+  background: #fffdf7;
+  border: 1px solid #b8c2aa;
+  color: #435b36;
+  font:
+    400 12px/1.5 Georgia,
+    "Times New Roman",
+    serif;
+}
+.request.request .secondaryButton:hover:not(:disabled) {
+  background: #edf1e5;
+}
+.request.request[data-status="paid"] .requestStatus {
+  background: #eaf0e1;
+  color: #445e37;
+  border-color: #d6dfc8;
+}
+.request.request[data-status="cancelled"],
+.request.request[data-status="expired"] {
+  border-left-color: #a1a697;
+  background: #f5f4ed;
+}
+.request.request[data-status="cancelled"] .requestStatus,
+.request.request[data-status="expired"] .requestStatus {
+  background: #e9e9e1;
+  border-color: #dbded1;
+  color: #606858;
+}
+@media (max-width: 700px) {
+  .paymentBody {
+    padding: 12px;
+  }
+  .form {
+    padding: 12px;
+  }
+  .fields {
+    grid-template-columns: minmax(0, 1fr) 120px;
+  }
+  .request.request {
+    padding: 16px;
+  }
+}
+@media (max-width: 430px) {
+  .fields {
+    grid-template-columns: 1fr;
+  }
+  .requestTop {
+    flex-wrap: wrap;
+  }
+  .request.request .requestTitle {
+    font-size: 17px;
+  }
+  .paymentLine form {
+    width: 100%;
+  }
+}
+
+/* Owner chat sets article text sizes with !important. Keep payment hierarchy. */
+.request.request .requestTitle {
+  font-size: 19px !important;
+}
+.request.request .requestAmount {
+  font-size: 32px !important;
+}
+.request.request .requestDescription {
+  font-size: 13px !important;
+}
+.request.request .requestEyebrow,
+.request.request .requestStatus {
+  font-size: 10px !important;
+}
+@media (max-width: 430px) {
+  .request.request .requestTitle {
+    font-size: 17px !important;
+  }
+}

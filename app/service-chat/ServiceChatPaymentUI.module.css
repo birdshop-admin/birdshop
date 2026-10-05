@@ -5,21 +5,13 @@
 .notice {
   flex: 0 0 auto;
 
-  margin:
-    10px
-    16px
-    0;
+  margin: 10px 16px 0;
 
-  padding:
-    10px
-    13px;
+  padding: 10px 13px;
 
   border-radius: 5px;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 12px;
   line-height: 1.45;
@@ -28,8 +20,7 @@
 .notice[data-tone="success"] {
   color: #486041;
 
-  border:
-    1px solid rgba(75, 106, 66, 0.18);
+  border: 1px solid rgba(75, 106, 66, 0.18);
 
   background: #e7ede3;
 }
@@ -37,8 +28,7 @@
 .notice[data-tone="neutral"] {
   color: #697266;
 
-  border:
-    1px solid rgba(88, 94, 82, 0.15);
+  border: 1px solid rgba(88, 94, 82, 0.15);
 
   background: #ece9e0;
 }
@@ -56,39 +46,23 @@
 
   gap: 0;
 
-  padding:
-    17px
-    18px;
+  padding: 17px 18px;
 
-  border:
-    1px solid rgba(55, 71, 50, 0.16);
+  border: 1px solid rgba(55, 71, 50, 0.16);
 
   border-radius: 9px;
 
   color: #293327;
 
-  background:
-    linear-gradient(
-      145deg,
-      #faf7ef,
-      #eeeade
-    );
+  background: linear-gradient(145deg, #faf7ef, #eeeade);
 
-  box-shadow:
-    0 10px 26px
-    rgba(30, 41, 28, 0.055);
+  box-shadow: 0 10px 26px rgba(30, 41, 28, 0.055);
 }
 
 .request[data-status="paid"] {
-  border-color:
-    rgba(78, 107, 69, 0.25);
+  border-color: rgba(78, 107, 69, 0.25);
 
-  background:
-    linear-gradient(
-      145deg,
-      #f2f6ef,
-      #e4eadf
-    );
+  background: linear-gradient(145deg, #f2f6ef, #e4eadf);
 }
 
 .request[data-status="cancelled"],
@@ -113,10 +87,7 @@
 .requestEyebrow {
   color: #707b6c;
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 9px;
   font-weight: 800;
@@ -127,10 +98,7 @@
 .requestTitle {
   color: #2b3629;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 19px;
   font-weight: 400;
@@ -141,24 +109,17 @@
 .requestStatus {
   flex: 0 0 auto;
 
-  padding:
-    6px
-    9px;
+  padding: 6px 9px;
 
-  border:
-    1px solid rgba(67, 85, 61, 0.16);
+  border: 1px solid rgba(67, 85, 61, 0.16);
 
   border-radius: 999px;
 
   color: #596653;
 
-  background:
-    rgba(83, 103, 76, 0.08);
+  background: rgba(83, 103, 76, 0.08);
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 8px;
   font-weight: 800;
@@ -169,17 +130,11 @@
 }
 
 .requestDescription {
-  margin:
-    11px
-    0
-    0;
+  margin: 11px 0 0;
 
   color: #687365;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 13px;
   line-height: 1.5;
@@ -202,17 +157,13 @@
 
   padding-top: 13px;
 
-  border-top:
-    1px solid rgba(43, 56, 40, 0.11);
+  border-top: 1px solid rgba(43, 56, 40, 0.11);
 }
 
 .requestAmount {
   color: #293327;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 31px;
   font-weight: 400;
@@ -227,12 +178,9 @@
   align-items: center;
   justify-content: center;
 
-  padding:
-    0
-    15px;
+  padding: 0 15px;
 
-  border:
-    1px solid #485942;
+  border: 1px solid #485942;
 
   border-radius: 5px;
 
@@ -242,10 +190,7 @@
 
   cursor: pointer;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 12px;
 }
@@ -263,10 +208,7 @@
 .paidLabel {
   color: #4d6647;
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 10px;
   font-weight: 800;
@@ -312,4 +254,85 @@
   .button {
     width: 100%;
   }
+}
+/* Light payment card with forest-green text and an outlined checkout button. */
+.request.request {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  max-width: 100%;
+  background: #fffdf7;
+  border: 1px solid #d4d8c8;
+  border-left: 3px solid #657654;
+  border-radius: 10px;
+  box-shadow: 0 3px 12px #29372b06;
+  color: #34472e;
+}
+.request.request .requestTitle {
+  color: #30442b;
+  overflow-wrap: anywhere;
+}
+.request.request .requestEyebrow {
+  color: #64715b;
+  font-size: 10px;
+  font-weight: 600;
+}
+.request.request .requestAmount {
+  color: #344c2c;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.request.request .requestStatus {
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  background: #f2ecd9;
+  color: #6c592a;
+  border-color: #e5dcc1;
+}
+.request.request .button {
+  min-height: 44px;
+  padding: 10px 17px;
+  border: 1px solid #aaba99;
+  border-radius: 7px;
+  background: #fffefb;
+  color: #3f5834;
+  font-size: 13px;
+}
+.request.request .button:hover:not(:disabled) {
+  background: #edf1e5;
+  border-color: #6c805b;
+}
+.request.request .button:focus-visible {
+  outline: 2px solid #526a48;
+  outline-offset: 3px;
+}
+.request.request .requestFooter span {
+  color: #65705e;
+  font-size: 11px;
+}
+.request.request .safeNote {
+  color: #707868;
+  font-size: 10px;
+}
+.request.request[data-status="paid"] {
+  background: #fffdf7;
+}
+.request.request[data-status="paid"] .requestStatus {
+  background: #eaf0e1;
+  color: #445e37;
+  border-color: #d6dfc8;
+}
+.request.request[data-status="cancelled"],
+.request.request[data-status="expired"] {
+  opacity: 1;
+  background: #f5f4ed;
+  border-left-color: #a1a697;
+}
+.request.request[data-status="cancelled"] .requestStatus,
+.request.request[data-status="expired"] .requestStatus {
+  background: #e9e9e1;
+  color: #606858;
+  border-color: #dbded1;
+}
+.paymentLine {
+  flex-wrap: wrap;
 }

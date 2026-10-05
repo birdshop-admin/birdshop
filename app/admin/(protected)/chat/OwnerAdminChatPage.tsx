@@ -1357,7 +1357,11 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                         {paidPayment || pendingPayment || selectedOrder
                           ? "View details"
                           : "Create request"}
-                        <span aria-hidden="true">⌄</span>
+                        <span aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="none">
+                            <path d="m6 9 6 6 6-6" />
+                          </svg>
+                        </span>
                       </span>
                     </summary>
 

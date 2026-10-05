@@ -14,7 +14,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { playChatChime, unlockChatSound } from "@/lib/chat-sound";
 
-import { readServiceChatToken, saveServiceChatToken, SERVICE_CHAT_LIVE_EVENT } from "@/lib/service-chat-session";
+import {
+  saveServiceChatToken,
+  SERVICE_CHAT_LIVE_EVENT,
+} from "@/lib/service-chat-session";
+import CustomerInbox from "./CustomerInbox";
+import Link from "next/link";
 import paymentStyles from "./ServiceChatPaymentUI.module.css";
 import styles from "./service-chat.module.css";
 
@@ -196,10 +201,6 @@ export default function ServiceChatClient() {
 
   const paymentResult = searchParams.get("payment");
 
-  const [reference, setReference] = useState("");
-
-  const [contact, setContact] = useState("");
-
   const [chat, setChat] = useState<ChatData | null>(null);
 
   const [message, setMessage] = useState("");
@@ -211,7 +212,6 @@ export default function ServiceChatClient() {
   const [checkoutId, setCheckoutId] = useState<string | null>(null);
 
   const [error, setError] = useState("");
-  const [recoveryNotice, setRecoveryNotice] = useState("");
 
   /* =======================================================
      REFS
@@ -274,7 +274,8 @@ export default function ServiceChatClient() {
 
   const loadChat = useCallback(
     async (quiet = false) => {
-      if (!token || loadingChat.current || Date.now() < refreshAfter.current) return;
+      if (!token || loadingChat.current || Date.now() < refreshAfter.current)
+        return;
       loadingChat.current = true;
       const controller = new AbortController();
       chatRequest.current = controller;
@@ -359,9 +360,18 @@ export default function ServiceChatClient() {
     let lastRefresh = 0;
 
     function refresh() {
-      if (disposed || !token || historyBefore || document.visibilityState !== "visible") return;
+      if (
+        disposed ||
+        !token ||
+        historyBefore ||
+        document.visibilityState !== "visible"
+      )
+        return;
       window.clearTimeout(pending);
-      const delay = Math.max(refreshAfter.current - Date.now(), 1000 - (Date.now() - lastRefresh));
+      const delay = Math.max(
+        refreshAfter.current - Date.now(),
+        1000 - (Date.now() - lastRefresh),
+      );
       if (loadingChat.current || delay > 0) {
         pending = window.setTimeout(refresh, Math.max(250, delay));
         return;
@@ -462,51 +472,6 @@ export default function ServiceChatClient() {
   /* =======================================================
      RECOVER / OPEN CHAT
   ======================================================= */
-
-  async function handleOpenChat(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (submitting) return;
-    setSubmitting(true);
-    setError("");
-    setRecoveryNotice("");
-
-    try {
-      const savedToken = readServiceChatToken();
-      if (savedToken) {
-        try {
-          const savedResponse = await fetch(
-            `/api/service-chat/${encodeURIComponent(savedToken)}?notify=1`,
-            { cache: "no-store", signal: AbortSignal.timeout(8000) },
-          );
-          if (savedResponse.ok) {
-            const savedChat = (await savedResponse.json()) as ChatData;
-            if (
-              savedChat.reference.trim().toUpperCase() === reference.trim().toUpperCase() &&
-              (savedChat.customer_email ?? "").trim().toLowerCase() === contact.trim().toLowerCase()
-            ) {
-              router.push(`/service-chat?token=${encodeURIComponent(savedToken)}`);
-              return;
-            }
-          }
-        } catch {
-          // Email recovery remains available if the saved session cannot be read.
-        }
-      }
-      const response = await fetch("/api/service-chat/open", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reference, contact }),
-        signal: AbortSignal.timeout(20000),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? "Unable to open conversation.");
-      setRecoveryNotice("If your details match, a private link will arrive by email. Check your spam folder too.");
-    } catch (problem) {
-      setError(problem instanceof Error ? problem.message : "Unable to open conversation.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   /* =======================================================
      SEND
@@ -652,62 +617,7 @@ export default function ServiceChatClient() {
      ACCESS / RECOVERY
   ======================================================= */
 
-  if (!token) {
-    return (
-      <section className={styles.page}>
-        <div className={styles.accessCard}>
-          <span className={styles.eyebrow}>BIRDSHOP / PRIVATE CHAT</span>
-
-          <h1>Return to your conversation.</h1>
-
-          <p>
-            Enter your BirdShop reference and the email address used when the
-            conversation was created. We’ll open your saved chat or email a private return link.
-          </p>
-
-          <form onSubmit={handleOpenChat} className={styles.accessForm}>
-            <label>
-              <span>BIRDSHOP REFERENCE</span>
-
-              <input
-                value={reference}
-                onChange={(event) => setReference(event.target.value)}
-                placeholder="BS-100003"
-                required
-              />
-            </label>
-
-            <label>
-              <span>EMAIL / CONTACT</span>
-
-              <input
-                value={contact}
-                onChange={(event) => setContact(event.target.value)}
-                placeholder="The email address used on your request"
-                required
-              />
-            </label>
-
-            {recoveryNotice && (
-              <div className={styles.chatNotice} role="status">
-                <div><strong>Check your inbox</strong><p>{recoveryNotice}</p></div>
-              </div>
-            )}
-            {error && <div className={styles.error}>{error}</div>}
-
-            <button type="submit" disabled={submitting}>
-              {submitting ? "Finding your chat..." : "Return to my chat"}
-            </button>
-          </form>
-
-          <small>
-            This recovery page works for service requests, product support, and
-            general BirdShop support.
-          </small>
-        </div>
-      </section>
-    );
-  }
+  if (!token) return <CustomerInbox />;
 
   /* =======================================================
      LOADING
@@ -774,13 +684,22 @@ export default function ServiceChatClient() {
 
   return (
     <section className={styles.page}>
+      <Link className={styles.inboxBack} href="/service-chat">
+        ← Your conversations
+      </Link>
       {searchParams.get("welcome") === "1" && !welcomeDismissed && (
         <div className={styles.chatNotice} role="status">
           <div>
             <strong>You’re in. Let’s talk.</strong>
             <p>Your private chat is ready. Save this link to return anytime.</p>
           </div>
-          <button type="button" aria-label="Dismiss welcome message" onClick={() => setWelcomeDismissed(true)}>×</button>
+          <button
+            type="button"
+            aria-label="Dismiss welcome message"
+            onClick={() => setWelcomeDismissed(true)}
+          >
+            ×
+          </button>
         </div>
       )}
       <div className={styles.workspace}>

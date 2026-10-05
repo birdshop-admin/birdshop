@@ -1,3 +1,4 @@
+import { forgetCustomerDevice } from "@/lib/customer-device";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -77,6 +78,7 @@ export async function DELETE(request: Request) {
         .eq("token_hash", inboxTokenHash(token));
       if (error) throw new Error("Sign-out unavailable");
     }
+    await forgetCustomerDevice();
     jar.set(INBOX_COOKIE, "", { ...inboxCookieOptions, maxAge: 0 });
     return Response.json({ ok: true }, { headers: privateHeaders });
   } catch (error) {

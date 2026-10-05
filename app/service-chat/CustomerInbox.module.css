@@ -245,3 +245,75 @@
     text-align: center;
   }
 }
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 26px;
+}
+.tabs button[aria-pressed="true"] {
+  background: #465b40;
+  color: #fffdf7;
+  border-color: #465b40;
+}
+.cardActions {
+  display: grid;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.recovery {
+  border-top: 1px solid #d9d6c9;
+  margin-top: 30px;
+  padding-top: 24px;
+}
+.recovery summary {
+  cursor: pointer;
+  font-size: 17px;
+  color: #354c38;
+  padding: 10px 0;
+}
+.recovery summary:focus-visible {
+  outline: 2px solid #465b40;
+  outline-offset: 4px;
+}
+.deviceNotice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 20px;
+  margin: 0 0 18px;
+  background: #f4f0e6;
+  border: 1px solid #d9d6c9;
+  border-radius: 12px;
+  color: #263326;
+}
+.deviceNotice strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.deviceNotice p {
+  font-size: 12px;
+  color: #596153;
+  margin: 5px 0 0;
+  line-height: 1.7;
+}
+.deviceNotice button {
+  flex-shrink: 0;
+}
+.deviceNotice :focus-visible {
+  outline: 2px solid #465b40;
+  outline-offset: 4px;
+}
+@media (max-width: 620px) {
+  .deviceNotice {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+  }
+  .cardActions {
+    width: 100%;
+  }
+}

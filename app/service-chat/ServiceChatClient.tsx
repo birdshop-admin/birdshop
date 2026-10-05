@@ -19,6 +19,7 @@ import {
   SERVICE_CHAT_LIVE_EVENT,
 } from "@/lib/service-chat-session";
 import CustomerInbox from "./CustomerInbox";
+import DeviceChatAccess from "./DeviceChatAccess";
 import Link from "next/link";
 import paymentStyles from "./ServiceChatPaymentUI.module.css";
 import styles from "./service-chat.module.css";
@@ -702,6 +703,11 @@ export default function ServiceChatClient() {
           </button>
         </div>
       )}
+      <DeviceChatAccess
+        key={token}
+        conversationId={chat.conversation_id}
+        token={token}
+      />
       <div className={styles.workspace}>
         {/* ===============================================
             CONVERSATION SUMMARY

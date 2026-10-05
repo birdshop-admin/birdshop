@@ -1,3 +1,4 @@
+import { rememberDeviceChat } from "@/lib/customer-device";
 import { isUuid, readBody } from "@/lib/server-config";
 import { after } from "next/server";
 import { assertSameOrigin, privateHeaders } from "@/lib/server-config";
@@ -66,11 +67,26 @@ export async function POST(request: Request) {
         p_product_region: product?.region ?? null,
       },
     });
+    // Remember only the conversation this request just created (or idempotently returned).
+    // A device-storage failure must never turn a successful creation into an error.
+    let remembered = false;
+    const created = (Array.isArray(data) ? data[0] : data) as {
+      public_token?: string;
+    } | null;
+    if (typeof created?.public_token === "string") {
+      remembered = await rememberDeviceChat(created.public_token).catch(
+        () => false,
+      );
+    }
     after(async () => {
       await drainEmailJobs(2).catch(() => undefined);
+      await createAdminClient()
+        .from("birdshop_customer_devices")
+        .delete()
+        .lt("expires_at", new Date(Date.now() - 86400000).toISOString());
     });
     return Response.json(
-      { data, emailStatus: "queued" },
+      { data, emailStatus: "queued", remembered },
       { headers: privateHeaders },
     );
   } catch {

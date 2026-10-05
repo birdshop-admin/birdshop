@@ -293,7 +293,15 @@ export default function PublicServiceChatNotifier() {
             void checkChat("live");
           },
         )
-        .subscribe();
+        .subscribe((status) => {
+          if (cancelled || status !== "SUBSCRIBED") return;
+          // Catch messages sent while the socket was connecting or reconnecting.
+          if (pathnameRef.current.startsWith("/service-chat")) {
+            window.dispatchEvent(new CustomEvent(SERVICE_CHAT_LIVE_EVENT));
+          } else {
+            void checkChat("fallback");
+          }
+        });
     }
 
     /* =====================================================

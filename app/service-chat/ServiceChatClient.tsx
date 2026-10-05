@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { playChatChime, unlockChatSound } from "@/lib/chat-sound";
 
+import { readServiceChatToken, saveServiceChatToken, SERVICE_CHAT_LIVE_EVENT } from "@/lib/service-chat-session";
 import paymentStyles from "./ServiceChatPaymentUI.module.css";
 import styles from "./service-chat.module.css";
 
@@ -219,6 +220,8 @@ export default function ServiceChatClient() {
   const [historyBefore, setHistoryBefore] = useState<string | null>(null);
   const sendIdentity = useRef<{ body: string; id: string } | null>(null);
   const loadingChat = useRef(false);
+  const refreshAfter = useRef(0);
+  const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const chatRequest = useRef<AbortController | null>(null);
   const messagesRef = useRef<HTMLDivElement | null>(null);
 
@@ -262,6 +265,7 @@ export default function ServiceChatClient() {
     initializedScrollRef.current = false;
 
     lastMessageIdRef.current = null;
+    refreshAfter.current = 0;
   }, [token]);
 
   /* =======================================================
@@ -270,10 +274,11 @@ export default function ServiceChatClient() {
 
   const loadChat = useCallback(
     async (quiet = false) => {
-      if (!token || loadingChat.current) return;
+      if (!token || loadingChat.current || Date.now() < refreshAfter.current) return;
       loadingChat.current = true;
       const controller = new AbortController();
       chatRequest.current = controller;
+      const timeout = window.setTimeout(() => controller.abort(), 15000);
 
       if (!quiet) {
         setLoading(true);
@@ -291,6 +296,10 @@ export default function ServiceChatClient() {
         const result = await response.json();
 
         if (!response.ok) {
+          if (response.status === 429) {
+            const seconds = Number(response.headers.get("Retry-After")) || 60;
+            refreshAfter.current = Date.now() + Math.max(1, seconds) * 1000;
+          }
           throw new Error(result.error ?? "Unable to load conversation.");
         }
 
@@ -316,19 +325,24 @@ export default function ServiceChatClient() {
         }
 
         setChat(next);
-
+        saveServiceChatToken(token);
         setError("");
       } catch (problem) {
-        if (controller.signal.aborted) return;
+        if (chatRequest.current !== controller) return;
         setError(
-          problem instanceof Error
-            ? problem.message
-            : "Unable to load conversation.",
+          controller.signal.aborted
+            ? "Connection interrupted. We’ll try again shortly."
+            : problem instanceof Error
+              ? problem.message
+              : "Unable to load conversation.",
         );
       } finally {
-        loadingChat.current = false;
-        if (!quiet) {
-          setLoading(false);
+        window.clearTimeout(timeout);
+        // An old request must not clear a newer request's loading state.
+        if (chatRequest.current === controller) {
+          chatRequest.current = null;
+          loadingChat.current = false;
+          if (!quiet) setLoading(false);
         }
       }
     },
@@ -340,6 +354,26 @@ export default function ServiceChatClient() {
   ======================================================= */
 
   useEffect(() => {
+    let disposed = false;
+    let pending: number | undefined;
+    let lastRefresh = 0;
+
+    function refresh() {
+      if (disposed || !token || historyBefore || document.visibilityState !== "visible") return;
+      window.clearTimeout(pending);
+      const delay = Math.max(refreshAfter.current - Date.now(), 1000 - (Date.now() - lastRefresh));
+      if (loadingChat.current || delay > 0) {
+        pending = window.setTimeout(refresh, Math.max(250, delay));
+        return;
+      }
+      lastRefresh = Date.now();
+      void loadChat(true);
+    }
+
+    window.addEventListener(SERVICE_CHAT_LIVE_EVENT, refresh);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+
     const initialLoad = window.setTimeout(() => {
       if (!token) {
         setChat(null);
@@ -348,17 +382,19 @@ export default function ServiceChatClient() {
         void loadChat();
       }
     }, 0);
-    const interval = token
-      ? window.setInterval(() => {
-          if (!historyBefore && document.visibilityState === "visible")
-            void loadChat(true);
-        }, 2000)
-      : null;
+    // Live events handle normal delivery; polling covers missed events.
+    const interval = token ? window.setInterval(refresh, 10000) : undefined;
     return () => {
-      chatRequest.current?.abort();
-      loadingChat.current = false;
+      disposed = true;
+      window.removeEventListener(SERVICE_CHAT_LIVE_EVENT, refresh);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
       window.clearTimeout(initialLoad);
-      if (interval !== null) window.clearInterval(interval);
+      window.clearTimeout(pending);
+      window.clearInterval(interval);
+      chatRequest.current?.abort();
+      chatRequest.current = null;
+      loadingChat.current = false;
     };
   }, [token, loadChat, historyBefore]);
 
@@ -429,37 +465,44 @@ export default function ServiceChatClient() {
 
   async function handleOpenChat(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
+    if (submitting) return;
     setSubmitting(true);
     setError("");
+    setRecoveryNotice("");
 
     try {
+      const savedToken = readServiceChatToken();
+      if (savedToken) {
+        try {
+          const savedResponse = await fetch(
+            `/api/service-chat/${encodeURIComponent(savedToken)}?notify=1`,
+            { cache: "no-store", signal: AbortSignal.timeout(8000) },
+          );
+          if (savedResponse.ok) {
+            const savedChat = (await savedResponse.json()) as ChatData;
+            if (
+              savedChat.reference.trim().toUpperCase() === reference.trim().toUpperCase() &&
+              (savedChat.customer_email ?? "").trim().toLowerCase() === contact.trim().toLowerCase()
+            ) {
+              router.push(`/service-chat?token=${encodeURIComponent(savedToken)}`);
+              return;
+            }
+          }
+        } catch {
+          // Email recovery remains available if the saved session cannot be read.
+        }
+      }
       const response = await fetch("/api/service-chat/open", {
         method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify({
-          reference,
-          contact,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reference, contact }),
+        signal: AbortSignal.timeout(20000),
       });
-
       const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error ?? "Unable to open conversation.");
-      }
-
-      setRecoveryNotice(result.message);
+      if (!response.ok) throw new Error(result.error ?? "Unable to open conversation.");
+      setRecoveryNotice("If your details match, a private link will arrive by email. Check your spam folder too.");
     } catch (problem) {
-      setError(
-        problem instanceof Error
-          ? problem.message
-          : "Unable to open conversation.",
-      );
+      setError(problem instanceof Error ? problem.message : "Unable to open conversation.");
     } finally {
       setSubmitting(false);
     }
@@ -519,6 +562,11 @@ export default function ServiceChatClient() {
         lastMessageIdRef.current = latest.id;
       }
 
+      // Prevent an older GET response from replacing the just-sent message.
+      chatRequest.current?.abort();
+      chatRequest.current = null;
+      loadingChat.current = false;
+      setLoading(false);
       setChat(next);
 
       setMessage("");
@@ -614,7 +662,7 @@ export default function ServiceChatClient() {
 
           <p>
             Enter your BirdShop reference and the email address used when the
-            conversation was created.
+            conversation was created. We’ll open your saved chat or email a private return link.
           </p>
 
           <form onSubmit={handleOpenChat} className={styles.accessForm}>
@@ -640,11 +688,15 @@ export default function ServiceChatClient() {
               />
             </label>
 
-            {recoveryNotice && <p role="status">{recoveryNotice}</p>}
+            {recoveryNotice && (
+              <div className={styles.chatNotice} role="status">
+                <div><strong>Check your inbox</strong><p>{recoveryNotice}</p></div>
+              </div>
+            )}
             {error && <div className={styles.error}>{error}</div>}
 
             <button type="submit" disabled={submitting}>
-              {submitting ? "Opening..." : "Open Private Chat"}
+              {submitting ? "Finding your chat..." : "Return to my chat"}
             </button>
           </form>
 
@@ -722,6 +774,15 @@ export default function ServiceChatClient() {
 
   return (
     <section className={styles.page}>
+      {searchParams.get("welcome") === "1" && !welcomeDismissed && (
+        <div className={styles.chatNotice} role="status">
+          <div>
+            <strong>You’re in. Let’s talk.</strong>
+            <p>Your private chat is ready. Save this link to return anytime.</p>
+          </div>
+          <button type="button" aria-label="Dismiss welcome message" onClick={() => setWelcomeDismissed(true)}>×</button>
+        </div>
+      )}
       <div className={styles.workspace}>
         {/* ===============================================
             CONVERSATION SUMMARY

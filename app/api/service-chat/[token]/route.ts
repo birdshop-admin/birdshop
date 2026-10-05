@@ -3,6 +3,7 @@ import {
   privateHeaders,
   readBody,
   isUuid,
+  PublicError,
 } from "@/lib/server-config";
 import { rateLimit } from "@/lib/rate-limit";
 import { serverRpc } from "@/lib/payment-service";
@@ -27,7 +28,13 @@ export async function GET(request: Request, context: Context) {
       }),
       { headers: privateHeaders },
     );
-  } catch {
+  } catch (error) {
+    if (error instanceof PublicError && error.status === 429) {
+      return Response.json(
+        { error: "Chat is catching up. Updates will resume shortly." },
+        { status: 429, headers: { ...privateHeaders, "Retry-After": "60" } },
+      );
+    }
     return Response.json(
       { error: "Conversation unavailable. Please wait and retry." },
       { status: 404, headers: privateHeaders },

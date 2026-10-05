@@ -1027,3 +1027,38 @@
     width: 100%;
   }
 }
+/* Private-chat confirmation and recovery notices. */
+.chatNotice {
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  margin: 0 0 18px;
+  padding: 17px 20px;
+  border: 1px solid #d9d6c9;
+  border-left: 3px solid #465b40;
+  border-radius: 12px;
+  background: #f4f0e6;
+  color: #263326;
+}
+.chatNotice strong { font-family: inherit; font-size: 15px; font-weight: 600; line-height: 1.4; }
+.chatNotice p { margin: 6px 0 0; color: #596153; font-family: inherit; font-size: 13px; line-height: 1.65; }
+.chatNotice > div { min-width: 0; overflow-wrap: anywhere; }
+.chatNotice > button {
+  flex: 0 0 44px;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid #d9d6c9;
+  border-radius: 8px;
+  background: transparent;
+  color: #354c38;
+  font-size: 24px;
+  cursor: pointer;
+}
+.chatNotice > button:hover { background: #e7e4d9; }
+.chatNotice > button:focus-visible { outline: 2px solid #465b40; outline-offset: 3px; }
+.accessForm .chatNotice { margin-bottom: 0; }
+@media (max-width: 620px) { .chatNotice { padding: 14px; gap: 10px; } }

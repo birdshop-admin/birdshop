@@ -1,0 +1,31 @@
+name: BirdShop background maintenance
+
+on:
+  schedule:
+    - cron: "3-58/5 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: birdshop-maintenance
+  cancel-in-progress: false
+
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Retry payments and email delivery
+        env:
+          BIRDSHOP_SITE_URL: ${{ secrets.BIRDSHOP_SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        shell: bash
+        run: |
+          if [[ "$BIRDSHOP_SITE_URL" != https://* || -z "$CRON_SECRET" ]]; then
+            echo "Set the BIRDSHOP_SITE_URL and CRON_SECRET repository secrets."
+            exit 1
+          fi
+          curl --fail --silent --show-error --max-time 60 --retry 2 --retry-delay 10 \
+            --header "Authorization: Bearer $CRON_SECRET" \
+            "${BIRDSHOP_SITE_URL%/}/api/maintenance"

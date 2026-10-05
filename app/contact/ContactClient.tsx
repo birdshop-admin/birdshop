@@ -1,13 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type FormEvent,
-} from "react";
+import { useRef, useEffect, useMemo, useState, type FormEvent } from "react";
 
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -23,21 +19,11 @@ import {
   ShieldIcon,
 } from "@/components/SiteIcons";
 
-import {
-  serviceList,
-} from "@/lib/services";
+import { serviceList } from "@/lib/services";
 
-import {
-  siteConfig,
-} from "@/lib/site-config";
+import { siteConfig } from "@/lib/site-config";
 
-import {
-  createClient,
-} from "@/lib/supabase/client";
-
-import {
-  useCart,
-} from "@/app/cart-context";
+import { useCart } from "@/app/cart-context";
 
 import styles from "./contact.module.css";
 
@@ -45,24 +31,13 @@ import styles from "./contact.module.css";
    TYPES
 ========================================================= */
 
-type ContactTopic =
-  | "service"
-  | "product"
-  | "review"
-  | "general";
+type ContactTopic = "service" | "product" | "review" | "general";
 
-type ChatTopic =
-  | "service"
-  | "product"
-  | "general";
+type ChatTopic = "service" | "product" | "general";
 
-type SelectedContactTopic =
-  | ContactTopic
-  | null;
+type SelectedContactTopic = ContactTopic | null;
 
-type ReviewKind =
-  | "Product"
-  | "Service";
+type ReviewKind = "Product" | "Service";
 
 type ContactClientProps = {
   initialTopic?: string;
@@ -91,8 +66,7 @@ type ConversationSuccess = {
 
   token: string;
 
-  conversationType:
-    ChatTopic;
+  conversationType: ChatTopic;
 
   email: string;
 
@@ -112,72 +86,52 @@ type ReviewSubmission = {
 ========================================================= */
 
 const topics: Array<{
-  id:
-    ContactTopic;
+  id: ContactTopic;
 
-  number:
-    string;
+  number: string;
 
-  label:
-    string;
+  label: string;
 
-  description:
-    string;
+  description: string;
 }> = [
   {
-    id:
-      "service",
+    id: "service",
 
-    number:
-      "01",
+    number: "01",
 
-    label:
-      "Service Request",
+    label: "Services",
 
-    description:
-      "Start a custom BirdShop game service request.",
+    description: "Start a custom BirdShop game service request.",
   },
 
   {
-    id:
-      "product",
+    id: "product",
 
-    number:
-      "02",
+    number: "02",
 
-    label:
-      "Product Help",
+    label: "Product Support",
 
-    description:
-      "Open a private conversation about a product or purchase.",
+    description: "Open a private conversation about a product or purchase.",
   },
 
   {
-    id:
-      "review",
+    id: "review",
 
-    number:
-      "03",
+    number: "03",
 
-    label:
-      "Leave Feedback",
+    label: "Leave Feedback",
 
-    description:
-      "Share an experience with a product or service.",
+    description: "Share an experience with a product or service.",
   },
 
   {
-    id:
-      "general",
+    id: "general",
 
-    number:
-      "04",
+    number: "03",
 
-    label:
-      "General Support",
+    label: "General Support",
 
-    description:
-      "Open a private conversation for anything else.",
+    description: "Open a private conversation for anything else.",
   },
 ];
 
@@ -189,97 +143,52 @@ function resolveTopic({
   initialTopic,
   initialService,
   initialProduct,
-}: ContactClientProps):
-  SelectedContactTopic {
-
+}: ContactClientProps): SelectedContactTopic {
   if (
-    initialTopic ===
-      "service" ||
-    initialTopic ===
-      "product" ||
-    initialTopic ===
-      "review" ||
-    initialTopic ===
-      "general"
+    initialTopic === "service" ||
+    initialTopic === "product" ||
+    initialTopic === "review" ||
+    initialTopic === "general"
   ) {
     return initialTopic;
   }
 
-  if (
-    initialService
-  ) {
+  if (initialService) {
     return "service";
   }
 
-  if (
-    initialProduct
-  ) {
+  if (initialProduct) {
     return "product";
   }
 
   return null;
 }
 
-function formatPrice(
-  value:
-    | number
-    | null
-    | undefined
-) {
-  if (
-    value === null ||
-    value === undefined
-  ) {
+function formatPrice(value: number | null | undefined) {
+  if (value === null || value === undefined) {
     return "Custom Quote";
   }
 
-  return `$${Number(
-    value
-  ).toFixed(
-    2
-  )}`;
+  return `$${Number(value).toFixed(2)}`;
 }
 
-function cleanErrorMessage(
-  value:
-    string
-) {
+function cleanErrorMessage(value: string) {
   return value
-    .replace(
-      /^Error:\s*/i,
-      ""
-    )
-    .replace(
-      /^P0001:\s*/i,
-      ""
-    )
+    .replace(/^Error:\s*/i, "")
+    .replace(/^P0001:\s*/i, "")
     .trim();
 }
 
-function isValidEmail(
-  value:
-    string
-) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-    value.trim()
-  );
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
-function conversationTypeLabel(
-  type:
-    ChatTopic
-) {
-  if (
-    type ===
-    "product"
-  ) {
+function conversationTypeLabel(type: ChatTopic) {
+  if (type === "product") {
     return "Product Support";
   }
 
-  if (
-    type ===
-    "general"
-  ) {
+  if (type === "general") {
     return "General Support";
   }
 
@@ -293,530 +202,231 @@ function conversationTypeLabel(
  * Supporting both makes the contact page more resilient.
  */
 function normalizeCreatedConversation(
-  value:
-    unknown
-):
-  CreatedConversation | null {
+  value: unknown,
+): CreatedConversation | null {
+  const candidate = Array.isArray(value) ? value[0] : value;
 
-  const candidate =
-    Array.isArray(
-      value
-    )
-      ? value[0]
-      : value;
-
-  if (
-    !candidate ||
-    typeof candidate !==
-      "object"
-  ) {
+  if (!candidate || typeof candidate !== "object") {
     return null;
   }
 
-  return candidate as
-    CreatedConversation;
+  return candidate as CreatedConversation;
 }
 
 /* =========================================================
    COMPONENT
 ========================================================= */
 
-export default function ContactClient(
-  props:
-    ContactClientProps
-) {
-  const supabase =
-    useMemo(
-      () =>
-        createClient(),
-      []
-    );
+export default function ContactClient(props: ContactClientProps) {
+  const router = useRouter();
+  const submissionKey = useRef<string | null>(null);
 
-  const {
-    productList,
-    productsLoaded,
-    productsError,
-  } =
-    useCart();
+  const { productList, productsLoaded, productsError } = useCart();
 
   /* =======================================================
      INITIAL DATA
   ======================================================= */
 
-  const initialTopic =
-    resolveTopic(
-      props
-    );
+  const initialTopic = resolveTopic(props);
 
   const initialServiceObject =
-    serviceList.find(
-      (
-        service
-      ) =>
-        service.slug ===
-        props.initialService
-    ) ??
+    serviceList.find((service) => service.slug === props.initialService) ??
     serviceList[0];
 
   /* =======================================================
      STATE
   ======================================================= */
 
-  const [
-    topic,
-    setTopic,
-  ] =
-    useState<SelectedContactTopic>(
-      initialTopic
-    );
+  const [topic, setTopic] = useState<SelectedContactTopic>(initialTopic);
 
-  const [
-    serviceSlug,
-    setServiceSlug,
-  ] =
-    useState(
-      initialServiceObject
-        ?.slug ??
-      ""
-    );
+  const [serviceSlug, setServiceSlug] = useState(
+    initialServiceObject?.slug ?? "",
+  );
 
-  const [
-    productSlug,
-    setProductSlug,
-  ] =
-    useState(
-      props.initialProduct ??
-      ""
-    );
+  const [productSlug, setProductSlug] = useState(props.initialProduct ?? "");
 
-  const [
-    reviewKind,
-    setReviewKind,
-  ] =
-    useState<ReviewKind>(
-      props.initialService
-        ? "Service"
-        : "Product"
-    );
+  const [reviewKind, setReviewKind] = useState<ReviewKind>(
+    props.initialService ? "Service" : "Product",
+  );
 
-  const [
-    reviewSubject,
-    setReviewSubject,
-  ] =
-    useState(
-      props.initialService ??
-      props.initialProduct ??
-      ""
-    );
+  const [reviewSubject, setReviewSubject] = useState(
+    props.initialService ?? props.initialProduct ?? "",
+  );
 
-  const [
-    reviewTitle,
-    setReviewTitle,
-  ] =
-    useState("");
+  const [reviewTitle, setReviewTitle] = useState("");
 
-  const [
-    reviewDetails,
-    setReviewDetails,
-  ] =
-    useState("");
+  const [reviewDetails, setReviewDetails] = useState("");
 
-  const [
-    rating,
-    setRating,
-  ] =
-    useState(
-      5
-    );
+  const [rating, setRating] = useState(5);
 
-  const [
-    displayName,
-    setDisplayName,
-  ] =
-    useState("");
+  const [displayName, setDisplayName] = useState("");
 
-  const [
-    customerEmail,
-    setCustomerEmail,
-  ] =
-    useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
 
-  const [
-    contactHandle,
-    setContactHandle,
-  ] =
-    useState("");
+  const [contactHandle, setContactHandle] = useState("");
 
-  const [
-    generalSubject,
-    setGeneralSubject,
-  ] =
-    useState("");
+  const [generalSubject, setGeneralSubject] = useState("");
 
-  const [
-    orderReference,
-    setOrderReference,
-  ] =
-    useState("");
+  const [orderReference, setOrderReference] = useState("");
 
-  const [
-    message,
-    setMessage,
-  ] =
-    useState("");
+  const [message, setMessage] = useState("");
 
-  const [
-    website,
-    setWebsite,
-  ] =
-    useState("");
+  const [website, setWebsite] = useState("");
 
-  const [
-    submitting,
-    setSubmitting,
-  ] =
-    useState(
-      false
-    );
+  const [submitting, setSubmitting] = useState(false);
 
-  const [
-    submitError,
-    setSubmitError,
-  ] =
-    useState<
-      string | null
-    >(
-      null
-    );
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const [
-    conversationSuccess,
-    setConversationSuccess,
-  ] =
-    useState<
-      ConversationSuccess | null
-    >(
-      null
-    );
+  const [conversationSuccess, setConversationSuccess] =
+    useState<ConversationSuccess | null>(null);
 
-  const [
-    reviewSubmission,
-    setReviewSubmission,
-  ] =
-    useState<
-      ReviewSubmission | null
-    >(
-      null
-    );
+  const [reviewSubmission, setReviewSubmission] =
+    useState<ReviewSubmission | null>(null);
 
-  const [
-    copied,
-    setCopied,
-  ] =
-    useState(
-      false
-    );
+  const [copied, setCopied] = useState(false);
 
   /* =======================================================
      PRODUCT CATALOG
   ======================================================= */
 
   useEffect(() => {
-    if (
-      !productsLoaded ||
-      productList.length ===
-        0
-    ) {
+    if (!productsLoaded || productList.length === 0) {
       return;
     }
 
-    const frame =
-      window.requestAnimationFrame(
-        () => {
-          const requested =
-            productList.find(
-              (
-                product
-              ) =>
-                product.slug ===
-                props.initialProduct
-            );
+    const frame = window.requestAnimationFrame(() => {
+      const requested = productList.find(
+        (product) => product.slug === props.initialProduct,
+      );
 
-          setProductSlug(
-            (
-              current
-            ) => {
-              const exists =
-                productList.some(
-                  (
-                    product
-                  ) =>
-                    product.slug ===
-                    current
-                );
+      setProductSlug((current) => {
+        const exists = productList.some((product) => product.slug === current);
 
-              if (
-                exists
-              ) {
-                return current;
-              }
+        if (exists) {
+          return current;
+        }
 
-              return (
-                requested
-                  ?.slug ??
-                productList[0]
-                  .slug
-              );
-            }
+        return requested?.slug ?? productList[0].slug;
+      });
+
+      if (reviewKind === "Product") {
+        setReviewSubject((current) => {
+          const exists = productList.some(
+            (product) => product.slug === current,
           );
 
-          if (
-            reviewKind ===
-            "Product"
-          ) {
-            setReviewSubject(
-              (
-                current
-              ) => {
-                const exists =
-                  productList.some(
-                    (
-                      product
-                    ) =>
-                      product.slug ===
-                      current
-                  );
-
-                if (
-                  exists
-                ) {
-                  return current;
-                }
-
-                return (
-                  requested
-                    ?.slug ??
-                  productList[0]
-                    .slug
-                );
-              }
-            );
+          if (exists) {
+            return current;
           }
-        }
-      );
+
+          return requested?.slug ?? productList[0].slug;
+        });
+      }
+    });
 
     return () => {
-      window.cancelAnimationFrame(
-        frame
-      );
+      window.cancelAnimationFrame(frame);
     };
-  }, [
-    productsLoaded,
-    productList,
-    props.initialProduct,
-    reviewKind,
-  ]);
+  }, [productsLoaded, productList, props.initialProduct, reviewKind]);
 
   /* =======================================================
      SELECTED SERVICE
   ======================================================= */
 
-  const selectedService =
-    useMemo(
-      () =>
-        serviceList.find(
-          (
-            service
-          ) =>
-            service.slug ===
-            serviceSlug
-        ) ??
-        serviceList[0],
-      [
-        serviceSlug,
-      ]
-    );
+  const selectedService = useMemo(
+    () =>
+      serviceList.find((service) => service.slug === serviceSlug) ??
+      serviceList[0],
+    [serviceSlug],
+  );
 
   /* =======================================================
      SELECTED PRODUCT
   ======================================================= */
 
   const selectedProduct =
-    productList.find(
-      (
-        product
-      ) =>
-        product.slug ===
-        productSlug
-    ) ??
+    productList.find((product) => product.slug === productSlug) ??
     productList[0];
 
   /* =======================================================
      REVIEW SUBJECTS
   ======================================================= */
 
-  const selectedReviewProduct =
-    productList.find(
-      (
-        product
-      ) =>
-        product.slug ===
-        reviewSubject
-    );
+  const selectedReviewProduct = productList.find(
+    (product) => product.slug === reviewSubject,
+  );
 
-  const selectedReviewService =
-    serviceList.find(
-      (
-        service
-      ) =>
-        service.slug ===
-        reviewSubject
-    );
+  const selectedReviewService = serviceList.find(
+    (service) => service.slug === reviewSubject,
+  );
 
   /* =======================================================
      LIVE SUMMARY
   ======================================================= */
 
-  const liveTitle =
-    useMemo(
-      () => {
-        if (
-          topic ===
-          "service"
-        ) {
-          return (
-            selectedService
-              ?.name ??
-            "Custom Service Request"
-          );
-        }
+  const liveTitle = useMemo(() => {
+    if (topic === "service") {
+      return selectedService?.name ?? "Custom Service Request";
+    }
 
-        if (
-          topic ===
-          "product"
-        ) {
-          return (
-            selectedProduct
-              ?.name ??
-            "Product Support"
-          );
-        }
+    if (topic === "product") {
+      return selectedProduct?.name ?? "Product Support";
+    }
 
-        if (
-          topic ===
-          "review"
-        ) {
-          if (
-            reviewKind ===
-            "Product"
-          ) {
-            return (
-              selectedReviewProduct
-                ?.name ??
-              "Product Review"
-            );
-          }
+    if (topic === "review") {
+      if (reviewKind === "Product") {
+        return selectedReviewProduct?.name ?? "Product Review";
+      }
 
-          return (
-            selectedReviewService
-              ?.name ??
-            "Service Review"
-          );
-        }
+      return selectedReviewService?.name ?? "Service Review";
+    }
 
-        return (
-          generalSubject ||
-          "General Support"
-        );
-      },
-      [
-        topic,
-        selectedService,
-        selectedProduct,
-        reviewKind,
-        selectedReviewProduct,
-        selectedReviewService,
-        generalSubject,
-      ]
-    );
+    return generalSubject || "General Support";
+  }, [
+    topic,
+    selectedService,
+    selectedProduct,
+    reviewKind,
+    selectedReviewProduct,
+    selectedReviewService,
+    generalSubject,
+  ]);
 
-  const liveDetail =
-    useMemo(
-      () => {
-        if (
-          topic ===
-          "service"
-        ) {
-          return "Custom Quote";
-        }
+  const liveDetail = useMemo(() => {
+    if (topic === "service") {
+      return "Custom Quote";
+    }
 
-        if (
-          topic ===
-          "product"
-        ) {
-          return (
-            selectedProduct
-              ?.category ??
-            "Digital Product"
-          );
-        }
+    if (topic === "product") {
+      return selectedProduct?.category ?? "Digital Product";
+    }
 
-        if (
-          topic ===
-          "review"
-        ) {
-          return `${rating}/5 Review`;
-        }
+    if (topic === "review") {
+      return `${rating}/5 Review`;
+    }
 
-        return "Private Support Chat";
-      },
-      [
-        topic,
-        selectedProduct,
-        rating,
-      ]
-    );
+    return "Private Support Chat";
+  }, [topic, selectedProduct, rating]);
 
   const livePrice =
-    topic ===
-      "product" &&
-    selectedProduct
-      ? formatPrice(
-          selectedProduct
-            .price
-        )
+    topic === "product" && selectedProduct
+      ? formatPrice(selectedProduct.price)
       : null;
 
   /* =======================================================
      REVIEW TYPE
   ======================================================= */
 
-  function handleReviewKind(
-    kind:
-      ReviewKind
-  ) {
-    setReviewKind(
-      kind
-    );
+  function handleReviewKind(kind: ReviewKind) {
+    setReviewKind(kind);
 
-    if (
-      kind ===
-      "Product"
-    ) {
-      setReviewSubject(
-        productList[0]
-          ?.slug ??
-        ""
-      );
+    if (kind === "Product") {
+      setReviewSubject(productList[0]?.slug ?? "");
 
       return;
     }
 
-    setReviewSubject(
-      serviceList[0]
-        ?.slug ??
-      ""
-    );
+    setReviewSubject(serviceList[0]?.slug ?? "");
   }
 
   /* =======================================================
@@ -824,41 +434,23 @@ export default function ContactClient(
   ======================================================= */
 
   function resetContactFields() {
-    setDisplayName(
-      ""
-    );
+    setDisplayName("");
 
-    setCustomerEmail(
-      ""
-    );
+    setCustomerEmail("");
 
-    setContactHandle(
-      ""
-    );
+    setContactHandle("");
 
-    setGeneralSubject(
-      ""
-    );
+    setGeneralSubject("");
 
-    setOrderReference(
-      ""
-    );
+    setOrderReference("");
 
-    setMessage(
-      ""
-    );
+    setMessage("");
 
-    setWebsite(
-      ""
-    );
+    setWebsite("");
 
-    setSubmitError(
-      null
-    );
+    setSubmitError(null);
 
-    setCopied(
-      false
-    );
+    setCopied(false);
   }
 
   /* =======================================================
@@ -866,7 +458,7 @@ export default function ContactClient(
 
      IMPORTANT:
 
-     There is deliberately NO navigation in this function.
+     On success, open the private conversation immediately.
 
      It only:
        1. validates
@@ -877,324 +469,158 @@ export default function ContactClient(
      The browser stays on /contact.
   ======================================================= */
 
-  async function createPrivateConversation(
-    conversationType:
-      ChatTopic
-  ) {
-    const email =
-      customerEmail
-        .trim()
-        .toLowerCase();
+  async function createPrivateConversation(conversationType: ChatTopic) {
+    const email = customerEmail.trim().toLowerCase();
 
-    if (
-      !isValidEmail(
-        email
-      )
-    ) {
+    if (!isValidEmail(email)) {
       throw new Error(
-        "Enter a valid email address so you can recover your private conversation later."
+        "Enter a valid email address so you can recover your private conversation later.",
       );
     }
 
-    const trimmedMessage =
-      message.trim();
+    const trimmedMessage = message.trim();
 
-    if (
-      trimmedMessage.length <
-      5
-    ) {
+    if (trimmedMessage.length < 5) {
+      throw new Error("Please add a little more detail to your message.");
+    }
+
+    if (trimmedMessage.length > 4000) {
+      throw new Error("Private-chat messages cannot exceed 4000 characters.");
+    }
+
+    if (conversationType === "service" && !selectedService) {
+      throw new Error("Choose a BirdShop service.");
+    }
+
+    if (conversationType === "product" && !selectedProduct) {
       throw new Error(
-        "Please add a little more detail to your message."
+        "The product catalog is still loading. Try again in a moment.",
       );
     }
 
-    if (
-      trimmedMessage.length >
-      4000
-    ) {
-      throw new Error(
-        "Private-chat messages cannot exceed 4000 characters."
-      );
+    if (conversationType === "general" && generalSubject.trim().length < 3) {
+      throw new Error("Add a short subject for your support request.");
     }
 
-    if (
-      conversationType ===
-        "service" &&
-      !selectedService
-    ) {
-      throw new Error(
-        "Choose a BirdShop service."
-      );
-    }
-
-    if (
-      conversationType ===
-        "product" &&
-      !selectedProduct
-    ) {
-      throw new Error(
-        "The product catalog is still loading. Try again in a moment."
-      );
-    }
-
-    if (
-      conversationType ===
-        "general" &&
-      generalSubject
-        .trim()
-        .length <
-        3
-    ) {
-      throw new Error(
-        "Add a short subject for your support request."
-      );
-    }
-
-    const relatedReference =
-      orderReference
-        .trim();
+    const relatedReference = orderReference.trim();
 
     const firstMessage =
       relatedReference &&
-      (
-        conversationType ===
-          "product" ||
-        conversationType ===
-          "general"
-      )
+      (conversationType === "product" || conversationType === "general")
         ? [
             `Related Order / Reference: ${relatedReference}`,
             "",
             trimmedMessage,
-          ].join(
-            "\n"
-          )
+          ].join("\n")
         : trimmedMessage;
 
     const subject =
-      conversationType ===
-        "service"
+      conversationType === "service"
         ? `${selectedService?.name ?? "BirdShop"} Custom Service Request`
-        : conversationType ===
-            "product"
-          ? `${selectedProduct?.name ?? "Product"} Product Help`
-          : generalSubject
-              .trim();
+        : conversationType === "product"
+          ? `${selectedProduct?.name ?? "Product"} Product Support`
+          : generalSubject.trim();
 
-    const {
-      data,
-      error,
-    } =
-      await supabase.rpc(
-        "birdshop_create_conversation",
-        {
-          p_conversation_type:
-            conversationType,
+    submissionKey.current ??= crypto.randomUUID();
+    const response = await fetch("/api/service-chat/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        request_id: submissionKey.current,
+        p_conversation_type: conversationType,
 
-          p_customer_name:
-            displayName
-              .trim() ||
-            null,
+        p_customer_name: displayName.trim() || null,
 
-          p_customer_email:
-            email,
+        p_customer_email: email,
 
-          p_customer_contact:
-            contactHandle
-              .trim() ||
-            null,
+        p_customer_contact: contactHandle.trim() || null,
 
-          p_subject:
-            subject,
+        p_subject: subject,
 
-          p_message:
-            firstMessage,
+        p_message: firstMessage,
 
-          p_service_slug:
-            conversationType ===
-              "service"
-              ? selectedService
-                    ?.slug ??
-                null
-              : null,
+        p_service_slug:
+          conversationType === "service"
+            ? (selectedService?.slug ?? null)
+            : null,
 
-          p_service_name:
-            conversationType ===
-              "service"
-              ? selectedService
-                    ?.name ??
-                null
-              : null,
+        p_service_name:
+          conversationType === "service"
+            ? (selectedService?.name ?? null)
+            : null,
 
-          p_package_id:
-            null,
+        p_package_id: null,
 
-          p_package_name:
-            conversationType ===
-              "service"
-              ? "Custom Quote"
-              : null,
+        p_package_name: conversationType === "service" ? "Custom Quote" : null,
 
-          p_product_slug:
-            conversationType ===
-              "product"
-              ? selectedProduct
-                    ?.slug ??
-                null
-              : null,
+        p_product_slug:
+          conversationType === "product"
+            ? (selectedProduct?.slug ?? null)
+            : null,
 
-          p_product_name:
-            conversationType ===
-              "product"
-              ? selectedProduct
-                    ?.name ??
-                null
-              : null,
+        p_product_name:
+          conversationType === "product"
+            ? (selectedProduct?.name ?? null)
+            : null,
 
-          p_product_platform:
-            conversationType ===
-              "product"
-              ? selectedProduct
-                    ?.platform ??
-                null
-              : null,
+        p_product_platform:
+          conversationType === "product"
+            ? (selectedProduct?.platform ?? null)
+            : null,
 
-          p_product_region:
-            conversationType ===
-              "product"
-              ? selectedProduct
-                    ?.region ??
-                null
-              : null,
-        }
-      );
+        p_product_region:
+          conversationType === "product"
+            ? (selectedProduct?.region ?? null)
+            : null,
+      }),
+    });
+    const result = await response.json();
+    if (!response.ok)
+      throw new Error(result.error || "Unable to create conversation.");
+    const data = result.data;
 
-    if (
-      error
-    ) {
+    const created = normalizeCreatedConversation(data);
+
+    const reference = String(created?.reference ?? "").trim();
+
+    const token = String(created?.public_token ?? "").trim();
+
+    if (!reference) {
       throw new Error(
-        cleanErrorMessage(
-          error.message
-        )
+        "BirdShop created the conversation but did not return its reference.",
       );
     }
 
-    const created =
-      normalizeCreatedConversation(
-        data
-      );
-
-    const reference =
-      String(
-        created
-          ?.reference ??
-        ""
-      ).trim();
-
-    const token =
-      String(
-        created
-          ?.public_token ??
-        ""
-      ).trim();
-
-    if (
-      !reference
-    ) {
+    if (!token) {
       throw new Error(
-        "BirdShop created the conversation but did not return its reference."
+        "BirdShop created the conversation but did not return private chat access.",
       );
     }
 
-    if (
-      !token
-    ) {
-      throw new Error(
-        "BirdShop created the conversation but did not return private chat access."
-      );
+    let detail = "Private Support";
+
+    if (conversationType === "service") {
+      detail = "Custom Quote";
     }
 
-    let detail =
-      "Private Support";
-
-    if (
-      conversationType ===
-      "service"
-    ) {
-      detail =
-        "Custom Quote";
-    }
-
-    if (
-      conversationType ===
-      "product"
-    ) {
-      const parts = [
-        selectedProduct
-          ?.platform,
-        selectedProduct
-          ?.region,
-      ].filter(
-        Boolean
+    if (conversationType === "product") {
+      const parts = [selectedProduct?.platform, selectedProduct?.region].filter(
+        Boolean,
       );
 
-      detail =
-        parts.length >
-        0
-          ? parts.join(
-              " · "
-            )
-          : "Product Support";
+      detail = parts.length > 0 ? parts.join(" · ") : "Product Support";
     }
 
-    /*
-     * THIS IS THE SUCCESS ACTION.
-     *
-     * Setting React state does not change the URL.
-     * The customer stays on /contact.
-     */
     setConversationSuccess({
       reference,
-
       token,
-
       conversationType,
-
       email,
-
-      title:
-        conversationType ===
-          "service"
-          ? selectedService
-              ?.name ??
-            "Custom Service Request"
-          : conversationType ===
-              "product"
-            ? selectedProduct
-                ?.name ??
-              "Product Support"
-            : generalSubject
-                .trim() ||
-              "General Support",
-
+      title: subject,
       detail,
     });
-
-    /*
-     * Put the new confirmation screen at the top.
-     *
-     * Still no navigation.
-     */
-    window.requestAnimationFrame(
-      () => {
-        window.scrollTo({
-          top:
-            0,
-
-          behavior:
-            "smooth",
-        });
-      }
+    router.push(
+      "/service-chat?token=" + encodeURIComponent(token) + "&welcome=1",
     );
   }
 
@@ -1202,36 +628,25 @@ export default function ContactClient(
      REVIEW SUMMARY
   ======================================================= */
 
-  function buildReviewSummary(
-    reference:
-      string
-  ) {
+  function buildReviewSummary(reference: string) {
     const reviewedName =
-      reviewKind ===
-      "Product"
-        ? selectedReviewProduct
-            ?.name
-        : selectedReviewService
-            ?.name;
+      reviewKind === "Product"
+        ? selectedReviewProduct?.name
+        : selectedReviewService?.name;
 
     return [
       "BIRDSHOP REVIEW SUBMISSION",
       "==========================",
       `Reference: ${reference}`,
       `Experience: ${reviewKind}`,
-      `Reviewed: ${
-        reviewedName ??
-        "Not Selected"
-      }`,
+      `Reviewed: ${reviewedName ?? "Not Selected"}`,
       `Rating: ${rating}/5`,
       `Headline: ${reviewTitle.trim()}`,
       "",
       message.trim(),
       "",
       "Status: Pending moderation",
-    ].join(
-      "\n"
-    );
+    ].join("\n");
   }
 
   /* =======================================================
@@ -1239,184 +654,108 @@ export default function ContactClient(
   ======================================================= */
 
   async function submitReview() {
-    if (
-      reviewTitle
-        .trim()
-        .length <
-      4
-    ) {
-      throw new Error(
-        "Add a short headline for your review."
-      );
+    if (reviewTitle.trim().length < 4) {
+      throw new Error("Add a short headline for your review.");
     }
 
-    if (
-      contactHandle
-        .trim()
-        .length <
-      2
-    ) {
+    if (contactHandle.trim().length < 2) {
       throw new Error(
-        "Enter a Discord username or email so BirdShop can reach you."
+        "Enter a Discord username or email so BirdShop can reach you.",
       );
     }
 
     const reviewName =
-      reviewKind ===
-      "Product"
-        ? selectedReviewProduct
-            ?.name
-        : selectedReviewService
-            ?.name;
+      reviewKind === "Product"
+        ? selectedReviewProduct?.name
+        : selectedReviewService?.name;
 
     const reviewSlug =
-      reviewKind ===
-      "Product"
-        ? selectedReviewProduct
-            ?.slug
-        : selectedReviewService
-            ?.slug;
+      reviewKind === "Product"
+        ? selectedReviewProduct?.slug
+        : selectedReviewService?.slug;
 
-    if (
-      !reviewName ||
-      !reviewSlug
-    ) {
-      throw new Error(
-        "Choose what you are reviewing."
-      );
+    if (!reviewName || !reviewSlug) {
+      throw new Error("Choose what you are reviewing.");
     }
 
     const defaultMeta =
-      reviewKind ===
-      "Product"
-        ? selectedReviewProduct
-            ?.category ??
-          "Digital Product"
+      reviewKind === "Product"
+        ? (selectedReviewProduct?.category ?? "Digital Product")
         : "Service Experience";
 
-    const {
-      data,
-      error,
-    } =
-      await supabase.rpc(
-        "submit_review",
-        {
-          p_type:
-            reviewKind,
+    const response = await fetch("/api/reviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        p_type: reviewKind,
 
-          p_reviewer:
-            displayName
-              .trim(),
+        p_reviewer: displayName.trim(),
 
-          p_contact_handle:
-            contactHandle
-              .trim(),
+        p_contact_handle: contactHandle.trim(),
 
-          p_rating:
-            rating,
+        p_rating: rating,
 
-          p_title:
-            reviewTitle
-              .trim(),
+        p_title: reviewTitle.trim(),
 
-          p_body:
-            message
-              .trim(),
+        p_body: message.trim(),
 
-          p_subject_slug:
-            reviewSlug,
+        p_subject_slug: reviewSlug,
 
-          p_subject:
-            reviewName,
+        p_subject: reviewName,
 
-          p_meta:
-            reviewDetails
-              .trim() ||
-            defaultMeta,
-        }
-      );
+        p_meta: reviewDetails.trim() || defaultMeta,
+      }),
+    });
+    const result = await response.json();
+    const data = result.data;
+    const error = response.ok
+      ? null
+      : { message: result.error || "Review submission failed." };
 
-    if (
-      error
-    ) {
-      throw new Error(
-        cleanErrorMessage(
-          error.message
-        )
-      );
+    if (error) {
+      throw new Error(cleanErrorMessage(error.message));
     }
 
-    const reference =
-      String(
-        data ??
-        ""
-      ).trim();
+    const reference = String(data ?? "").trim();
 
-    if (
-      !reference
-    ) {
+    if (!reference) {
       throw new Error(
-        "BirdShop received the review but did not return a reference."
+        "BirdShop received the review but did not return a reference.",
       );
     }
 
     setReviewSubmission({
       reference,
 
-      summary:
-        buildReviewSummary(
-          reference
-        ),
+      summary: buildReviewSummary(reference),
     });
 
-    window.setTimeout(
-      () => {
-        document
-          .getElementById(
-            "submitted-request"
-          )
-          ?.scrollIntoView({
-            behavior:
-              "smooth",
+    window.setTimeout(() => {
+      document.getElementById("submitted-request")?.scrollIntoView({
+        behavior: "smooth",
 
-            block:
-              "center",
-          });
-      },
-      50
-    );
+        block: "center",
+      });
+    }, 50);
   }
 
   /* =======================================================
      MASTER SUBMIT
   ======================================================= */
 
-  async function handleSubmit(
-    event:
-      FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (
-      submitting
-    ) {
+    if (submitting) {
       return;
     }
 
-    setSubmitError(
-      null
-    );
+    setSubmitError(null);
 
-    setCopied(
-      false
-    );
+    setCopied(false);
 
-    if (
-      !topic
-    ) {
-      setSubmitError(
-        "Choose a support option before submitting."
-      );
+    if (!topic) {
+      setSubmitError("Choose a support option before submitting.");
 
       return;
     }
@@ -1424,70 +763,43 @@ export default function ContactClient(
     /*
      * Honeypot.
      */
-    if (
-      website.trim()
-    ) {
+    if (website.trim()) {
       return;
     }
 
-    if (
-      message
-        .trim()
-        .length <
-      5
-    ) {
+    if (message.trim().length < 5) {
+      setSubmitError("Please add a little more detail to your message.");
+
+      return;
+    }
+
+    if (topic !== "review" && !isValidEmail(customerEmail)) {
       setSubmitError(
-        "Please add a little more detail to your message."
+        "Enter a valid email address so you can recover your private conversation later.",
       );
 
       return;
     }
 
-    if (
-      topic !==
-        "review" &&
-      !isValidEmail(
-        customerEmail
-      )
-    ) {
-      setSubmitError(
-        "Enter a valid email address so you can recover your private conversation later."
-      );
-
-      return;
-    }
-
-    setSubmitting(
-      true
-    );
+    setSubmitting(true);
 
     try {
-      if (
-        topic ===
-        "review"
-      ) {
+      if (topic === "review") {
         await submitReview();
       } else {
         /*
          * TypeScript now knows this is one of our chat topics.
          */
-        await createPrivateConversation(
-          topic
-        );
+        await createPrivateConversation(topic);
       }
-    } catch (
-      problem
-    ) {
+    } catch (problem) {
       setSubmitError(
-        problem instanceof
-          Error
+        problem instanceof Error
           ? problem.message
-          : "Something went wrong while submitting. Please try again."
+          : "Something went wrong while submitting. Please try again.",
       );
     } finally {
-      setSubmitting(
-        false
-      );
+      setSubmitting(false);
     }
   }
 
@@ -1496,35 +808,18 @@ export default function ContactClient(
   ======================================================= */
 
   async function copyConversationReference() {
-    if (
-      !conversationSuccess
-    ) {
+    if (!conversationSuccess) {
       return;
     }
 
     try {
-      await navigator
-        .clipboard
-        .writeText(
-          conversationSuccess
-            .reference
-        );
+      await navigator.clipboard.writeText(conversationSuccess.reference);
 
-      setCopied(
-        true
-      );
+      setCopied(true);
 
-      window.setTimeout(
-        () =>
-          setCopied(
-            false
-          ),
-        1800
-      );
+      window.setTimeout(() => setCopied(false), 1800);
     } catch {
-      setCopied(
-        false
-      );
+      setCopied(false);
     }
   }
 
@@ -1533,35 +828,18 @@ export default function ContactClient(
   ======================================================= */
 
   async function copyReviewSubmission() {
-    if (
-      !reviewSubmission
-    ) {
+    if (!reviewSubmission) {
       return;
     }
 
     try {
-      await navigator
-        .clipboard
-        .writeText(
-          reviewSubmission
-            .summary
-        );
+      await navigator.clipboard.writeText(reviewSubmission.summary);
 
-      setCopied(
-        true
-      );
+      setCopied(true);
 
-      window.setTimeout(
-        () =>
-          setCopied(
-            false
-          ),
-        1800
-      );
+      window.setTimeout(() => setCopied(false), 1800);
     } catch {
-      setCopied(
-        false
-      );
+      setCopied(false);
     }
   }
 
@@ -1570,18 +848,14 @@ export default function ContactClient(
   ======================================================= */
 
   function startAnotherRequest() {
-    setConversationSuccess(
-      null
-    );
+    setConversationSuccess(null);
 
     resetContactFields();
 
     window.scrollTo({
-      top:
-        0,
+      top: 0,
 
-      behavior:
-        "smooth",
+      behavior: "smooth",
     });
   }
 
@@ -1596,362 +870,299 @@ export default function ContactClient(
   ======================================================= */
 
   if (conversationSuccess) {
-  const chatHref =
-    `/service-chat?token=${encodeURIComponent(
-      conversationSuccess.token
+    const chatHref = `/service-chat?token=${encodeURIComponent(
+      conversationSuccess.token,
     )}`;
 
-  return (
-    <main className="page-shell">
-      <SiteHeader />
+    return (
+      <main className="page-shell">
+        <SiteHeader />
 
-      <section className={styles.successPage}>
-        <div className={styles.successShell}>
-          <div className={styles.successHero}>
-            <div className={styles.successHeroCopy}>
-              <span className={styles.successEyebrow}>
-                PRIVATE CONVERSATION CREATED
-              </span>
+        <section className={styles.successPage}>
+          <div className={styles.successShell}>
+            <div className={styles.successHero}>
+              <div className={styles.successHeroCopy}>
+                <span className={styles.successEyebrow}>
+                  PRIVATE CONVERSATION CREATED
+                </span>
 
-              <h1>You&apos;re all set.</h1>
+                <h1>You&apos;re all set.</h1>
 
-              <p>
-                Your private BirdShop conversation is now ready.
-                A recovery email is being sent with your
-                reference and private chat access so you can
-                return later at any time.
-              </p>
-            </div>
-
-            <div className={styles.successHeroStatus}>
-              <div className={styles.successCheckWrap}>
-                <CheckIcon />
+                <p>
+                  Your private BirdShop conversation is now ready. A recovery
+                  email is being sent with your reference and private chat
+                  access so you can return later at any time.
+                </p>
               </div>
 
-              <div className={styles.successHeroStatusText}>
-                <strong>Conversation Ready</strong>
-                <span>Reference secured and chat access prepared.</span>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.successReferenceBar}>
-            <div>
-              <span>YOUR REFERENCE</span>
-              <p>Save this code if you ever need to return later.</p>
-            </div>
-
-            <strong>{conversationSuccess.reference}</strong>
-          </div>
-
-          <div className={styles.successGrid}>
-            <div className={styles.successMainCard}>
-              <div className={styles.successCardHeader}>
-                <div>
-                  <span>BIRDSHOP PRIVATE CONVERSATION</span>
-                  <h2>{conversationSuccess.title}</h2>
+              <div className={styles.successHeroStatus}>
+                <div className={styles.successCheckWrap}>
+                  <CheckIcon />
                 </div>
 
-                <div className={styles.successMiniBadge}>
-                  {conversationTypeLabel(
-                    conversationSuccess.conversationType
-                  )}
+                <div className={styles.successHeroStatusText}>
+                  <strong>Conversation Ready</strong>
+                  <span>Reference secured and chat access prepared.</span>
                 </div>
               </div>
+            </div>
 
-              <div className={styles.successDetailsGrid}>
-                <div className={styles.successDetailCard}>
-                  <span>TYPE</span>
-                  <strong>
+            <div className={styles.successReferenceBar}>
+              <div>
+                <span>YOUR REFERENCE</span>
+                <p>Save this code if you ever need to return later.</p>
+              </div>
+
+              <strong>{conversationSuccess.reference}</strong>
+            </div>
+
+            <div className={styles.successGrid}>
+              <div className={styles.successMainCard}>
+                <div className={styles.successCardHeader}>
+                  <div>
+                    <span>BIRDSHOP PRIVATE CONVERSATION</span>
+                    <h2>{conversationSuccess.title}</h2>
+                  </div>
+
+                  <div className={styles.successMiniBadge}>
                     {conversationTypeLabel(
-                      conversationSuccess.conversationType
+                      conversationSuccess.conversationType,
                     )}
-                  </strong>
-                </div>
-
-                <div className={styles.successDetailCard}>
-                  <span>DETAIL</span>
-                  <strong>{conversationSuccess.detail}</strong>
-                </div>
-
-                <div className={styles.successDetailCard}>
-                  <span>RECOVERY EMAIL</span>
-                  <strong>{conversationSuccess.email}</strong>
-                </div>
-
-                <div className={styles.successDetailCard}>
-                  <span>ORDER STATUS</span>
-                  <strong>Not created yet</strong>
-                </div>
-              </div>
-
-              <div className={styles.successTimelineCard}>
-                <span>WHAT HAPPENS NEXT</span>
-
-                <div className={styles.successTimeline}>
-                  <div className={styles.successTimelineItem}>
-                    <div className={styles.successTimelineIcon}>
-                      <CheckIcon />
-                    </div>
-
-                    <div>
-                      <strong>Conversation created</strong>
-                      <p>
-                        Your request has been saved into BirdShop
-                        private chat.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className={styles.successTimelineItem}>
-                    <div className={styles.successTimelineIcon}>
-                      <ClockIcon />
-                    </div>
-
-                    <div>
-                      <strong>Recovery email sent</strong>
-                      <p>
-                        You’ll receive your reference and return
-                        instructions by email.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className={styles.successTimelineItem}>
-                    <div className={styles.successTimelineIcon}>
-                      <MessageIcon />
-                    </div>
-
-                    <div>
-                      <strong>Continue in private chat</strong>
-                      <p>
-                        Discuss the request with BirdShop before
-                        any order or payment is finalized.
-                      </p>
-                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className={styles.successInfoNotice}>
-                <ShieldIcon />
-
-                <p>
-                  No order has been created from this conversation
-                  yet. BirdShop will confirm scope, pricing,
-                  timing, and payment inside the private chat.
-                </p>
-              </div>
-
-              <div className={styles.successPrimaryActions}>
-                <button
-                  type="button"
-                  onClick={copyConversationReference}
-                  className={styles.successGhostButton}
-                >
-                  {copied ? (
-                    <CheckIcon />
-                  ) : (
-                    <CopyIcon />
-                  )}
-                  {copied ? "Reference Copied" : "Copy Reference"}
-                </button>
-
-                <Link
-                  href={chatHref}
-                  prefetch={false}
-                  className={styles.successPrimaryButton}
-                >
-                  <MessageIcon />
-                  Continue to Private Chat
-                  <ArrowIcon />
-                </Link>
-              </div>
-            </div>
-
-            <aside className={styles.successSidebar}>
-              <div className={styles.successSidebarCard}>
-                <span>RETURN LATER</span>
-                <h3>Use your reference anytime.</h3>
-                <p>
-                  If you leave now, you can come back through
-                  <strong> My Service / Private Chat </strong>
-                  using:
-                </p>
-
-                <div className={styles.successReturnInfo}>
-                  <div>
-                    <small>REFERENCE</small>
-                    <strong>{conversationSuccess.reference}</strong>
+                <div className={styles.successDetailsGrid}>
+                  <div className={styles.successDetailCard}>
+                    <span>TYPE</span>
+                    <strong>
+                      {conversationTypeLabel(
+                        conversationSuccess.conversationType,
+                      )}
+                    </strong>
                   </div>
 
-                  <div>
-                    <small>EMAIL</small>
+                  <div className={styles.successDetailCard}>
+                    <span>DETAIL</span>
+                    <strong>{conversationSuccess.detail}</strong>
+                  </div>
+
+                  <div className={styles.successDetailCard}>
+                    <span>RECOVERY EMAIL</span>
                     <strong>{conversationSuccess.email}</strong>
                   </div>
+
+                  <div className={styles.successDetailCard}>
+                    <span>ORDER STATUS</span>
+                    <strong>Not created yet</strong>
+                  </div>
+                </div>
+
+                <div className={styles.successTimelineCard}>
+                  <span>WHAT HAPPENS NEXT</span>
+
+                  <div className={styles.successTimeline}>
+                    <div className={styles.successTimelineItem}>
+                      <div className={styles.successTimelineIcon}>
+                        <CheckIcon />
+                      </div>
+
+                      <div>
+                        <strong>Conversation created</strong>
+                        <p>
+                          Your request has been saved into BirdShop private
+                          chat.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className={styles.successTimelineItem}>
+                      <div className={styles.successTimelineIcon}>
+                        <ClockIcon />
+                      </div>
+
+                      <div>
+                        <strong>Recovery email sent</strong>
+                        <p>
+                          You’ll receive your reference and return instructions
+                          by email.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className={styles.successTimelineItem}>
+                      <div className={styles.successTimelineIcon}>
+                        <MessageIcon />
+                      </div>
+
+                      <div>
+                        <strong>Continue in private chat</strong>
+                        <p>
+                          Discuss the request with BirdShop before any order or
+                          payment is finalized.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.successInfoNotice}>
+                  <ShieldIcon />
+
+                  <p>
+                    No order has been created from this conversation yet.
+                    BirdShop will confirm scope, pricing, timing, and payment
+                    inside the private chat.
+                  </p>
+                </div>
+
+                <div className={styles.successPrimaryActions}>
+                  <button
+                    type="button"
+                    onClick={copyConversationReference}
+                    className={styles.successGhostButton}
+                  >
+                    {copied ? <CheckIcon /> : <CopyIcon />}
+                    {copied ? "Reference Copied" : "Copy Reference"}
+                  </button>
+
+                  <Link
+                    href={chatHref}
+                    prefetch={false}
+                    className={styles.successPrimaryButton}
+                  >
+                    <MessageIcon />
+                    Continue to Private Chat
+                    <ArrowIcon />
+                  </Link>
                 </div>
               </div>
 
-              <div className={styles.successSidebarCard}>
-                <span>EMAIL NOTICE</span>
-                <h3>Didn’t see the email?</h3>
-                <p>
-                  Check Spam or Junk first. Your recovery email
-                  is sent so you can reopen the conversation later
-                  without losing access.
-                </p>
-              </div>
+              <aside className={styles.successSidebar}>
+                <div className={styles.successSidebarCard}>
+                  <span>RETURN LATER</span>
+                  <h3>Use your reference anytime.</h3>
+                  <p>
+                    If you leave now, you can come back through
+                    <strong> My Service / Private Chat </strong>
+                    using:
+                  </p>
 
-              <div className={styles.successSidebarActions}>
-                <Link
-                  href="/service-chat"
-                  prefetch={false}
-                  className={styles.successSecondaryButton}
-                >
-                  <ShieldIcon />
-                  My Service / Return Later
-                  <ArrowIcon />
-                </Link>
+                  <div className={styles.successReturnInfo}>
+                    <div>
+                      <small>REFERENCE</small>
+                      <strong>{conversationSuccess.reference}</strong>
+                    </div>
 
-                <button
-                  type="button"
-                  onClick={startAnotherRequest}
-                  className={styles.successWhiteButton}
-                >
-                  <MessageIcon />
-                  Start Another Request
-                </button>
+                    <div>
+                      <small>EMAIL</small>
+                      <strong>{conversationSuccess.email}</strong>
+                    </div>
+                  </div>
+                </div>
 
-                <a
-                  href={siteConfig.discordUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={styles.successDiscordButton}
-                >
-                  <DiscordIcon />
-                  Open BirdShop Discord
-                  <ArrowIcon />
-                </a>
-              </div>
-            </aside>
+                <div className={styles.successSidebarCard}>
+                  <span>EMAIL NOTICE</span>
+                  <h3>Didn’t see the email?</h3>
+                  <p>
+                    Check Spam or Junk first. Your recovery email is sent so you
+                    can reopen the conversation later without losing access.
+                  </p>
+                </div>
+
+                <div className={styles.successSidebarActions}>
+                  <Link
+                    href="/service-chat"
+                    prefetch={false}
+                    className={styles.successSecondaryButton}
+                  >
+                    <ShieldIcon />
+                    My Service / Return Later
+                    <ArrowIcon />
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={startAnotherRequest}
+                    className={styles.successWhiteButton}
+                  >
+                    <MessageIcon />
+                    Start Another Request
+                  </button>
+
+                  <a
+                    href={siteConfig.discordUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={styles.successDiscordButton}
+                  >
+                    <DiscordIcon />
+                    Open BirdShop Discord
+                    <ArrowIcon />
+                  </a>
+                </div>
+              </aside>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <SiteFooter />
-    </main>
-  );
-}
+        <SiteFooter />
+      </main>
+    );
+  }
 
   /* =======================================================
      NORMAL CONTACT PAGE
   ======================================================= */
 
   const selectedTopicLabel =
-    topics.find(
-      (
-        item
-      ) =>
-        item.id ===
-        topic
-    )?.label ??
-    "Choose a Topic";
+    topics.find((item) => item.id === topic)?.label ?? "Choose a Topic";
 
   return (
-    <main
-      className="page-shell"
-    >
+    <main className="page-shell">
       <SiteHeader />
 
       {/* ===================================================
           HERO
       =================================================== */}
 
-      <section
-        className={
-          styles.hero
-        }
-      >
-        <div
-          className={
-            styles.heroOverlay
-          }
-        />
+      <section className={styles.hero}>
+        <div className={styles.heroOverlay} />
 
-        <div
-          className={
-            styles.heroLayout
-          }
-        >
-          <div
-            className={
-              styles.heroCopy
-            }
-          >
-            <p
-              className={
-                styles.eyebrow
-              }
-            >
-              BIRDSHOP / SUPPORT
+        <div className={styles.heroLayout}>
+          <div className={styles.heroCopy}>
+            <p className={styles.eyebrow}>BIRDSHOP / SUPPORT</p>
+
+            <h1>Let&apos;s talk.</h1>
+
+            <p className={styles.heroDescription}>
+              Service requests, product questions, feedback, or general support
+              — start here and BirdShop will keep everything organized.
             </p>
 
-            <h1>
-              Let&apos;s talk.
-            </h1>
-
-            <p
-              className={
-                styles.heroDescription
-              }
-            >
-              Service requests,
-              product questions,
-              feedback, or general
-              support — start here
-              and BirdShop will keep
-              everything organized.
-            </p>
-
-            <div
-              className={
-                styles.heroFacts
-              }
-            >
+            <div className={styles.heroFacts}>
               <span>
                 <MessageIcon />
-
                 Private Conversations
               </span>
 
               <span>
                 <ClockIcon />
-
                 Clear Status
               </span>
 
               <span>
                 <ShieldIcon />
-
                 Direct Support
               </span>
             </div>
           </div>
 
-          <div
-            className={
-              styles.heroMark
-            }
-          >
-            <span>
-              BS
-            </span>
+          <div className={styles.heroMark}>
+            <span>BS</span>
 
             <div />
 
-            <strong>
-              CONTACT
-            </strong>
+            <strong>CONTACT</strong>
 
             <small>
               SUPPORT
@@ -1968,72 +1179,44 @@ export default function ContactClient(
           PROCESS
       =================================================== */}
 
-      <section
-        className={
-          styles.processStrip
-        }
-      >
+      <section className={styles.processStrip}>
         <div>
-          <span>
-            01
-          </span>
+          <span>01</span>
 
           <div>
-            <strong>
-              Choose a Topic
-            </strong>
+            <strong>Choose a Topic</strong>
 
-            <small>
-              TELL US WHAT YOU NEED
-            </small>
+            <small>TELL US WHAT YOU NEED</small>
           </div>
         </div>
 
         <div>
-          <span>
-            02
-          </span>
+          <span>02</span>
 
           <div>
-            <strong>
-              Add the Details
-            </strong>
+            <strong>Add the Details</strong>
 
-            <small>
-              GIVE US THE CONTEXT
-            </small>
+            <small>GIVE US THE CONTEXT</small>
           </div>
         </div>
 
         <div>
-          <span>
-            03
-          </span>
+          <span>03</span>
 
           <div>
-            <strong>
-              Confirmation
-            </strong>
+            <strong>Confirmation</strong>
 
-            <small>
-              SAVE YOUR REFERENCE
-            </small>
+            <small>SAVE YOUR REFERENCE</small>
           </div>
         </div>
 
         <div>
-          <span>
-            04
-          </span>
+          <span>04</span>
 
           <div>
-            <strong>
-              Continue in Chat
-            </strong>
+            <strong>Continue in Chat</strong>
 
-            <small>
-              WHEN YOU&apos;RE READY
-            </small>
+            <small>WHEN YOU&apos;RE READY</small>
           </div>
         </div>
       </section>
@@ -2042,34 +1225,17 @@ export default function ContactClient(
           CONTACT SECTION
       =================================================== */}
 
-      <section
-        className={
-          styles.contactSection
-        }
-      >
-        <div
-          className={
-            styles.sectionHeading
-          }
-        >
+      <section className={styles.contactSection}>
+        <div className={styles.sectionHeading}>
           <div>
-            <span>
-              START A CONVERSATION
-            </span>
+            <span>START A CONVERSATION</span>
 
-            <h2>
-              What can we help
-              with?
-            </h2>
+            <h2>What can we help with?</h2>
           </div>
 
           <p>
-            Choose the option that
-            best matches what you
-            need. Service, product,
-            and general support all
-            continue privately
-            through BirdShop Chat.
+            Choose the option that best matches what you need. Service, product,
+            and general support all continue privately through BirdShop Chat.
           </p>
         </div>
 
@@ -2077,254 +1243,113 @@ export default function ContactClient(
             TOPIC CARDS
         =============================================== */}
 
-        <div
-          className={
-            styles.topicGrid
-          }
-        >
-          {topics.map(
-            (
-              item
-            ) => (
+        <div className={styles.topicGrid}>
+          {topics
+            .filter((item) => item.id !== "review")
+            .map((item) => (
               <button
-                key={
-                  item.id
-                }
+                key={item.id}
                 type="button"
                 className={`${styles.topicCard} ${
-                  topic ===
-                  item.id
-                    ? styles.topicActive
-                    : ""
+                  topic === item.id ? styles.topicActive : ""
                 }`}
                 onClick={() => {
-                  setTopic(
-                    item.id
-                  );
+                  setTopic(item.id);
 
-                  setSubmitError(
-                    null
-                  );
+                  setSubmitError(null);
 
-                  setReviewSubmission(
-                    null
-                  );
+                  setReviewSubmission(null);
 
-                  setCopied(
-                    false
-                  );
+                  setCopied(false);
                 }}
               >
-                <span
-                  className={
-                    styles.topicNumber
-                  }
-                >
-                  {
-                    item.number
-                  }
-                </span>
+                <span className={styles.topicNumber}>{item.number}</span>
 
                 <div>
-                  <strong>
-                    {
-                      item.label
-                    }
-                  </strong>
+                  <strong>{item.label}</strong>
 
-                  <p>
-                    {
-                      item.description
-                    }
-                  </p>
+                  <p>{item.description}</p>
                 </div>
 
-                <span
-                  className={
-                    styles.topicStatus
-                  }
-                >
-                  {topic ===
-                  item.id ? (
-                    <CheckIcon />
-                  ) : (
-                    <ArrowIcon />
-                  )}
+                <span className={styles.topicStatus}>
+                  {topic === item.id ? <CheckIcon /> : <ArrowIcon />}
                 </span>
               </button>
-            )
-          )}
+            ))}
         </div>
 
         {topic && (
-          <div
-            className={
-              styles.contactLayout
-            }
-          >
-            <form
-              className={
-                styles.form
-              }
-              onSubmit={
-                handleSubmit
-              }
-            >
+          <div className={styles.contactLayout}>
+            <form className={styles.form} onSubmit={handleSubmit}>
               {/* =========================================
                   SERVICE
               ========================================= */}
 
-              {topic ===
-                "service" && (
-                <section
-                  className={
-                    styles.formSection
-                  }
-                >
-                  <div
-                    className={
-                      styles.formSectionHeading
-                    }
-                  >
-                    <span>
-                      CUSTOM SERVICE REQUEST
-                    </span>
+              {topic === "service" && (
+                <section className={styles.formSection}>
+                  <div className={styles.formSectionHeading}>
+                    <span>CUSTOM SERVICE REQUEST</span>
 
-                    <h3>
-                      What service do
-                      you need?
-                    </h3>
+                    <h3>What service do you need?</h3>
 
                     <p>
-                      Contact requests
-                      use a custom quote.
-                      Choose the service
-                      and explain exactly
-                      what you need.
+                      Contact requests use a custom quote. Choose the service
+                      and explain exactly what you need.
                     </p>
                   </div>
 
-                  <label
-                    className={
-                      styles.field
-                    }
-                  >
-                    <span>
-                      SERVICE
-                    </span>
+                  <label className={styles.field}>
+                    <span>SERVICE</span>
 
                     <select
-                      value={
-                        serviceSlug
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        setServiceSlug(
-                          event
-                            .target
-                            .value
-                        )
-                      }
+                      value={serviceSlug}
+                      onChange={(event) => setServiceSlug(event.target.value)}
                     >
-                      {serviceList.map(
-                        (
-                          service
-                        ) => (
-                          <option
-                            key={
-                              service.slug
-                            }
-                            value={
-                              service.slug
-                            }
-                          >
-                            {
-                              service.name
-                            }
-                          </option>
-                        )
-                      )}
+                      {serviceList.map((service) => (
+                        <option key={service.slug} value={service.slug}>
+                          {service.name}
+                        </option>
+                      ))}
                     </select>
                   </label>
 
-                  <div
-                    className={
-                      styles.packageArea
-                    }
-                  >
-                    <span
-                      className={
-                        styles.fieldLabel
-                      }
-                    >
-                      REQUEST TYPE
-                    </span>
+                  <div className={styles.packageArea}>
+                    <span className={styles.fieldLabel}>REQUEST TYPE</span>
 
-                    <div
-                      className={
-                        styles.packageGrid
-                      }
-                    >
+                    <div className={styles.packageGrid}>
                       <div
                         className={`${styles.packageButton} ${styles.packageActive}`}
                       >
                         <div>
-                          <span>
-                            CUSTOM
-                          </span>
+                          <span>CUSTOM</span>
 
-                          <strong>
-                            Custom Quote
-                          </strong>
+                          <strong>Custom Quote</strong>
                         </div>
 
-                        <strong
-                          className={
-                            styles.packagePrice
-                          }
-                        >
-                          TBD
-                        </strong>
+                        <strong className={styles.packagePrice}>TBD</strong>
 
                         <CheckIcon />
                       </div>
                     </div>
                   </div>
 
-                  <div
-                    className={
-                      styles.servicePreview
-                    }
-                  >
+                  <div className={styles.servicePreview}>
                     <div>
-                      <span>
-                        PROCESS
-                      </span>
+                      <span>PROCESS</span>
 
-                      <strong>
-                        Chat First
-                      </strong>
+                      <strong>Chat First</strong>
                     </div>
 
                     <div>
-                      <span>
-                        QUOTE
-                      </span>
+                      <span>QUOTE</span>
 
-                      <strong>
-                        Confirmed in Chat
-                      </strong>
+                      <strong>Confirmed in Chat</strong>
                     </div>
 
                     <div>
-                      <span>
-                        ORDER
-                      </span>
+                      <span>ORDER</span>
 
-                      <strong>
-                        After Payment
-                      </strong>
+                      <strong>After Payment</strong>
                     </div>
                   </div>
                 </section>
@@ -2334,210 +1359,84 @@ export default function ContactClient(
                   PRODUCT SUPPORT
               ========================================= */}
 
-              {topic ===
-                "product" && (
-                <section
-                  className={
-                    styles.formSection
-                  }
-                >
-                  <div
-                    className={
-                      styles.formSectionHeading
-                    }
-                  >
-                    <span>
-                      PRODUCT SUPPORT
-                    </span>
+              {topic === "product" && (
+                <section className={styles.formSection}>
+                  <div className={styles.formSectionHeading}>
+                    <span>PRODUCT SUPPORT</span>
 
-                    <h3>
-                      Which product?
-                    </h3>
+                    <h3>Which product?</h3>
 
                     <p>
-                      Choose the product
-                      and explain what you
-                      need help with.
+                      Choose the product and explain what you need help with.
                     </p>
                   </div>
 
-                  <label
-                    className={
-                      styles.field
-                    }
-                  >
-                    <span>
-                      PRODUCT
-                    </span>
+                  <label className={styles.field}>
+                    <span>PRODUCT</span>
 
                     <select
-                      value={
-                        selectedProduct
-                          ?.slug ??
-                        ""
-                      }
-                      disabled={
-                        !productsLoaded ||
-                        productList.length ===
-                          0
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        setProductSlug(
-                          event
-                            .target
-                            .value
-                        )
-                      }
+                      value={selectedProduct?.slug ?? ""}
+                      disabled={!productsLoaded || productList.length === 0}
+                      onChange={(event) => setProductSlug(event.target.value)}
                     >
                       {!productsLoaded && (
-                        <option
-                          value=""
-                        >
-                          Loading products...
+                        <option value="">Loading products...</option>
+                      )}
+
+                      {productsLoaded && productList.length === 0 && (
+                        <option value="">No products available</option>
+                      )}
+
+                      {productList.map((product) => (
+                        <option key={product.slug} value={product.slug}>
+                          {product.name}
                         </option>
-                      )}
-
-                      {productsLoaded &&
-                        productList.length ===
-                          0 && (
-                          <option
-                            value=""
-                          >
-                            No products available
-                          </option>
-                        )}
-
-                      {productList.map(
-                        (
-                          product
-                        ) => (
-                          <option
-                            key={
-                              product.slug
-                            }
-                            value={
-                              product.slug
-                            }
-                          >
-                            {
-                              product.name
-                            }
-                          </option>
-                        )
-                      )}
+                      ))}
                     </select>
                   </label>
 
                   {productsError && (
-                    <p
-                      className={
-                        styles.formError
-                      }
-                    >
-                      Product catalog
-                      error:{" "}
-                      {
-                        productsError
-                      }
+                    <p className={styles.formError}>
+                      Product catalog error: {productsError}
                     </p>
                   )}
 
                   {selectedProduct && (
-                    <div
-                      className={
-                        styles.productPreview
-                      }
-                    >
-                      <div
-                        className={
-                          styles.productMark
-                        }
-                      >
-                        {
-                          selectedProduct
-                            .initials
-                        }
+                    <div className={styles.productPreview}>
+                      <div className={styles.productMark}>
+                        {selectedProduct.initials}
                       </div>
 
-                      <div
-                        className={
-                          styles.productPreviewCopy
-                        }
-                      >
-                        <span>
-                          {
-                            selectedProduct
-                              .category
-                          }
-                        </span>
+                      <div className={styles.productPreviewCopy}>
+                        <span>{selectedProduct.category}</span>
 
-                        <strong>
-                          {
-                            selectedProduct
-                              .name
-                          }
-                        </strong>
+                        <strong>{selectedProduct.name}</strong>
 
                         <p>
-                          {
-                            selectedProduct
-                              .platform
-                          }{" "}
-                          ·{" "}
-                          {
-                            selectedProduct
-                              .region
-                          }
+                          {selectedProduct.platform} · {selectedProduct.region}
                         </p>
                       </div>
 
-                      <strong
-                        className={
-                          styles.productPreviewPrice
-                        }
-                      >
-                        {formatPrice(
-                          selectedProduct
-                            .price
-                        )}
+                      <strong className={styles.productPreviewPrice}>
+                        {formatPrice(selectedProduct.price)}
                       </strong>
                     </div>
                   )}
 
-                  <label
-                    className={
-                      styles.field
-                    }
-                  >
+                  <label className={styles.field}>
                     <span>
-                      ORDER /
-                      REFERENCE
-
-                      <small>
-                        OPTIONAL
-                      </small>
+                      ORDER / REFERENCE
+                      <small>OPTIONAL</small>
                     </span>
 
                     <input
                       type="text"
-                      value={
-                        orderReference
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        setOrderReference(
-                          event
-                            .target
-                            .value
-                        )
+                      value={orderReference}
+                      onChange={(event) =>
+                        setOrderReference(event.target.value)
                       }
                       placeholder="Existing order or reference"
-                      maxLength={
-                        180
-                      }
+                      maxLength={180}
                     />
                   </label>
                 </section>
@@ -2547,55 +1446,26 @@ export default function ContactClient(
                   REVIEW
               ========================================= */}
 
-              {topic ===
-                "review" && (
-                <section
-                  className={
-                    styles.formSection
-                  }
-                >
-                  <div
-                    className={
-                      styles.formSectionHeading
-                    }
-                  >
-                    <span>
-                      SHARE FEEDBACK
-                    </span>
+              {topic === "review" && (
+                <section className={styles.formSection}>
+                  <div className={styles.formSectionHeading}>
+                    <span>SHARE FEEDBACK</span>
 
-                    <h3>
-                      Tell us how it
-                      went.
-                    </h3>
+                    <h3>Tell us how it went.</h3>
 
                     <p>
-                      Reviews are
-                      submitted to
-                      moderation first.
-                      Approved reviews
-                      may then appear
-                      publicly.
+                      Reviews are submitted to moderation first. Approved
+                      reviews may then appear publicly.
                     </p>
                   </div>
 
-                  <div
-                    className={
-                      styles.reviewKind
-                    }
-                  >
+                  <div className={styles.reviewKind}>
                     <button
                       type="button"
                       className={
-                        reviewKind ===
-                        "Product"
-                          ? styles.reviewKindActive
-                          : ""
+                        reviewKind === "Product" ? styles.reviewKindActive : ""
                       }
-                      onClick={() =>
-                        handleReviewKind(
-                          "Product"
-                        )
-                      }
+                      onClick={() => handleReviewKind("Product")}
                     >
                       Product
                     </button>
@@ -2603,218 +1473,86 @@ export default function ContactClient(
                     <button
                       type="button"
                       className={
-                        reviewKind ===
-                        "Service"
-                          ? styles.reviewKindActive
-                          : ""
+                        reviewKind === "Service" ? styles.reviewKindActive : ""
                       }
-                      onClick={() =>
-                        handleReviewKind(
-                          "Service"
-                        )
-                      }
+                      onClick={() => handleReviewKind("Service")}
                     >
                       Service
                     </button>
                   </div>
 
-                  <label
-                    className={
-                      styles.field
-                    }
-                  >
-                    <span>
-                      REVIEWING
-                    </span>
+                  <label className={styles.field}>
+                    <span>REVIEWING</span>
 
                     <select
-                      value={
-                        reviewSubject
-                      }
-                      disabled={
-                        reviewKind ===
-                          "Product" &&
-                        !productsLoaded
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        setReviewSubject(
-                          event
-                            .target
-                            .value
-                        )
-                      }
+                      value={reviewSubject}
+                      disabled={reviewKind === "Product" && !productsLoaded}
+                      onChange={(event) => setReviewSubject(event.target.value)}
                     >
-                      {reviewKind ===
-                      "Product"
-                        ? productList.map(
-                            (
-                              product
-                            ) => (
-                              <option
-                                key={
-                                  product.slug
-                                }
-                                value={
-                                  product.slug
-                                }
-                              >
-                                {
-                                  product.name
-                                }
-                              </option>
-                            )
-                          )
-                        : serviceList.map(
-                            (
-                              service
-                            ) => (
-                              <option
-                                key={
-                                  service.slug
-                                }
-                                value={
-                                  service.slug
-                                }
-                              >
-                                {
-                                  service.name
-                                }
-                              </option>
-                            )
-                          )}
+                      {reviewKind === "Product"
+                        ? productList.map((product) => (
+                            <option key={product.slug} value={product.slug}>
+                              {product.name}
+                            </option>
+                          ))
+                        : serviceList.map((service) => (
+                            <option key={service.slug} value={service.slug}>
+                              {service.name}
+                            </option>
+                          ))}
                     </select>
                   </label>
 
-                  <div
-                    className={
-                      styles.ratingField
-                    }
-                  >
-                    <span
-                      className={
-                        styles.fieldLabel
-                      }
-                    >
-                      YOUR RATING
-                    </span>
+                  <div className={styles.ratingField}>
+                    <span className={styles.fieldLabel}>YOUR RATING</span>
 
-                    <div
-                      className={
-                        styles.ratingButtons
-                      }
-                    >
-                      {[
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                      ].map(
-                        (
-                          value
-                        ) => (
-                          <button
-                            key={
-                              value
-                            }
-                            type="button"
-                            onClick={() =>
-                              setRating(
-                                value
-                              )
-                            }
-                            className={
-                              value <=
-                              rating
-                                ? styles.ratingActive
-                                : ""
-                            }
-                            aria-label={`${value} star rating`}
-                            aria-pressed={
-                              value ===
-                              rating
-                            }
-                          >
-                            ★
-                          </button>
-                        )
-                      )}
+                    <div className={styles.ratingButtons}>
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setRating(value)}
+                          className={value <= rating ? styles.ratingActive : ""}
+                          aria-label={`${value} star rating`}
+                          aria-pressed={value === rating}
+                        >
+                          ★
+                        </button>
+                      ))}
                     </div>
 
-                    <small>
-                      {rating}/5
-                    </small>
+                    <small>{rating}/5</small>
                   </div>
 
-                  <label
-                    className={
-                      styles.field
-                    }
-                  >
-                    <span>
-                      REVIEW HEADLINE
-                    </span>
+                  <label className={styles.field}>
+                    <span>REVIEW HEADLINE</span>
 
                     <input
                       type="text"
-                      value={
-                        reviewTitle
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        setReviewTitle(
-                          event
-                            .target
-                            .value
-                        )
-                      }
+                      value={reviewTitle}
+                      onChange={(event) => setReviewTitle(event.target.value)}
                       placeholder="A short summary of your experience"
-                      maxLength={
-                        180
-                      }
+                      maxLength={180}
                       required
                     />
                   </label>
 
-                  <label
-                    className={
-                      styles.field
-                    }
-                  >
+                  <label className={styles.field}>
                     <span>
                       DETAILS
-
-                      <small>
-                        OPTIONAL
-                      </small>
+                      <small>OPTIONAL</small>
                     </span>
 
                     <input
                       type="text"
-                      value={
-                        reviewDetails
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        setReviewDetails(
-                          event
-                            .target
-                            .value
-                        )
-                      }
+                      value={reviewDetails}
+                      onChange={(event) => setReviewDetails(event.target.value)}
                       placeholder={
-                        reviewKind ===
-                        "Service"
+                        reviewKind === "Service"
                           ? "Package or useful service detail"
                           : "Purchase type or useful product detail"
                       }
-                      maxLength={
-                        220
-                      }
+                      maxLength={220}
                     />
                   </label>
                 </section>
@@ -2824,99 +1562,48 @@ export default function ContactClient(
                   GENERAL SUPPORT
               ========================================= */}
 
-              {topic ===
-                "general" && (
-                <section
-                  className={
-                    styles.formSection
-                  }
-                >
-                  <div
-                    className={
-                      styles.formSectionHeading
-                    }
-                  >
-                    <span>
-                      GENERAL SUPPORT
-                    </span>
+              {topic === "general" && (
+                <section className={styles.formSection}>
+                  <div className={styles.formSectionHeading}>
+                    <span>GENERAL SUPPORT</span>
 
-                    <h3>
-                      What&apos;s on
-                      your mind?
-                    </h3>
+                    <h3>What&apos;s on your mind?</h3>
 
                     <p>
-                      Ask your question
-                      and BirdShop will
-                      keep the discussion
-                      inside one private
-                      conversation.
+                      Ask your question and BirdShop will keep the discussion
+                      inside one private conversation.
                     </p>
                   </div>
 
-                  <label
-                    className={
-                      styles.field
-                    }
-                  >
-                    <span>
-                      SUBJECT
-                    </span>
+                  <label className={styles.field}>
+                    <span>SUBJECT</span>
 
                     <input
                       type="text"
-                      value={
-                        generalSubject
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        setGeneralSubject(
-                          event
-                            .target
-                            .value
-                        )
+                      value={generalSubject}
+                      onChange={(event) =>
+                        setGeneralSubject(event.target.value)
                       }
                       placeholder="What do you need help with?"
-                      maxLength={
-                        180
-                      }
+                      maxLength={180}
                       required
                     />
                   </label>
 
-                  <label
-                    className={
-                      styles.field
-                    }
-                  >
+                  <label className={styles.field}>
                     <span>
-                      ORDER /
-                      REFERENCE
-
-                      <small>
-                        OPTIONAL
-                      </small>
+                      ORDER / REFERENCE
+                      <small>OPTIONAL</small>
                     </span>
 
                     <input
                       type="text"
-                      value={
-                        orderReference
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        setOrderReference(
-                          event
-                            .target
-                            .value
-                        )
+                      value={orderReference}
+                      onChange={(event) =>
+                        setOrderReference(event.target.value)
                       }
                       placeholder="Existing order or reference"
-                      maxLength={
-                        180
-                      }
+                      maxLength={180}
                     />
                   </label>
                 </section>
@@ -2926,219 +1613,107 @@ export default function ContactClient(
                   CONTACT INFORMATION
               ========================================= */}
 
-              <section
-                className={
-                  styles.formSection
-                }
-              >
-                <div
-                  className={
-                    styles.formSectionHeading
-                  }
-                >
-                  <span>
-                    YOUR DETAILS
-                  </span>
+              <section className={styles.formSection}>
+                <div className={styles.formSectionHeading}>
+                  <span>YOUR DETAILS</span>
 
-                  <h3>
-                    How can we reach
-                    you?
-                  </h3>
+                  <h3>How can we reach you?</h3>
 
                   <p>
-                    Private conversations
-                    require an email so
-                    you can recover them
-                    later. Discord is
-                    optional.
+                    Private conversations require an email so you can recover
+                    them later. Discord is optional.
                   </p>
                 </div>
 
-                {topic ===
-                "review" ? (
-                  <div
-                    className={
-                      styles.twoFields
-                    }
-                  >
-                    <label
-                      className={
-                        styles.field
-                      }
-                    >
+                {topic === "review" ? (
+                  <div className={styles.twoFields}>
+                    <label className={styles.field}>
                       <span>
                         DISPLAY NAME
-
-                        <small>
-                          OPTIONAL
-                        </small>
+                        <small>OPTIONAL</small>
                       </span>
 
                       <input
                         type="text"
-                        value={
-                          displayName
-                        }
-                        onChange={(
-                          event
-                        ) =>
-                          setDisplayName(
-                            event
-                              .target
-                              .value
-                          )
-                        }
+                        value={displayName}
+                        onChange={(event) => setDisplayName(event.target.value)}
                         placeholder="Your name"
-                        maxLength={
-                          120
-                        }
+                        maxLength={120}
                       />
                     </label>
 
-                    <label
-                      className={
-                        styles.field
-                      }
-                    >
+                    <label className={styles.field}>
                       <span>
                         DISCORD / EMAIL
-
-                        <small>
-                          PRIVATE
-                        </small>
+                        <small>PRIVATE</small>
                       </span>
 
                       <input
                         type="text"
-                        value={
-                          contactHandle
-                        }
-                        onChange={(
-                          event
-                        ) =>
-                          setContactHandle(
-                            event
-                              .target
-                              .value
-                          )
+                        value={contactHandle}
+                        onChange={(event) =>
+                          setContactHandle(event.target.value)
                         }
                         placeholder="@username or email"
-                        maxLength={
-                          240
-                        }
+                        maxLength={240}
                         required
                       />
                     </label>
                   </div>
                 ) : (
                   <>
-                    <div
-                      className={
-                        styles.twoFields
-                      }
-                    >
-                      <label
-                        className={
-                          styles.field
-                        }
-                      >
+                    <div className={styles.twoFields}>
+                      <label className={styles.field}>
                         <span>
                           DISPLAY NAME
-
-                          <small>
-                            OPTIONAL
-                          </small>
+                          <small>OPTIONAL</small>
                         </span>
 
                         <input
                           type="text"
-                          value={
-                            displayName
-                          }
-                          onChange={(
-                            event
-                          ) =>
-                            setDisplayName(
-                              event
-                                .target
-                                .value
-                            )
+                          value={displayName}
+                          onChange={(event) =>
+                            setDisplayName(event.target.value)
                           }
                           placeholder="Your name"
-                          maxLength={
-                            120
-                          }
+                          maxLength={120}
                         />
                       </label>
 
-                      <label
-                        className={
-                          styles.field
-                        }
-                      >
+                      <label className={styles.field}>
                         <span>
                           EMAIL
-
-                          <small>
-                            REQUIRED · PRIVATE
-                          </small>
+                          <small>REQUIRED · PRIVATE</small>
                         </span>
 
                         <input
                           type="email"
-                          value={
-                            customerEmail
-                          }
-                          onChange={(
-                            event
-                          ) =>
-                            setCustomerEmail(
-                              event
-                                .target
-                                .value
-                            )
+                          value={customerEmail}
+                          onChange={(event) =>
+                            setCustomerEmail(event.target.value)
                           }
                           placeholder="you@example.com"
                           autoComplete="email"
-                          maxLength={
-                            320
-                          }
+                          maxLength={320}
                           required
                         />
                       </label>
                     </div>
 
-                    <label
-                      className={
-                        styles.field
-                      }
-                    >
+                    <label className={styles.field}>
                       <span>
                         DISCORD
-
-                        <small>
-                          OPTIONAL
-                        </small>
+                        <small>OPTIONAL</small>
                       </span>
 
                       <input
                         type="text"
-                        value={
-                          contactHandle
-                        }
-                        onChange={(
-                          event
-                        ) =>
-                          setContactHandle(
-                            event
-                              .target
-                              .value
-                          )
+                        value={contactHandle}
+                        onChange={(event) =>
+                          setContactHandle(event.target.value)
                         }
                         placeholder="@username"
-                        maxLength={
-                          240
-                        }
+                        maxLength={240}
                       />
                     </label>
                   </>
@@ -3148,49 +1723,23 @@ export default function ContactClient(
                     MESSAGE
                 ======================================= */}
 
-                <label
-                  className={
-                    styles.field
-                  }
-                >
-                  <span>
-                    MESSAGE
-                  </span>
+                <label className={styles.field}>
+                  <span>MESSAGE</span>
 
                   <textarea
-                    value={
-                      message
-                    }
-                    onChange={(
-                      event
-                    ) =>
-                      setMessage(
-                        event
-                          .target
-                          .value
-                      )
-                    }
+                    value={message}
+                    onChange={(event) => setMessage(event.target.value)}
                     placeholder={
-                      topic ===
-                      "service"
+                      topic === "service"
                         ? "Tell us exactly what you need, your goals, requirements, character/build information, and anything else BirdShop should know..."
-                        : topic ===
-                            "product"
+                        : topic === "product"
                           ? "Explain your question or issue with the product..."
-                          : topic ===
-                              "review"
+                          : topic === "review"
                             ? "Tell us what went well, what could be better, and anything you want other customers to know..."
                             : "Tell us what you need help with..."
                     }
-                    rows={
-                      7
-                    }
-                    maxLength={
-                      topic ===
-                      "review"
-                        ? 5000
-                        : 4000
-                    }
+                    rows={7}
+                    maxLength={topic === "review" ? 5000 : 4000}
                     required
                   />
                 </label>
@@ -3199,32 +1748,14 @@ export default function ContactClient(
                     HONEYPOT
                 ======================================= */}
 
-                <div
-                  className={
-                    styles.honeypot
-                  }
-                  aria-hidden="true"
-                >
+                <div className={styles.honeypot} aria-hidden="true">
                   <label>
                     Website
-
                     <input
                       type="text"
-                      value={
-                        website
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        setWebsite(
-                          event
-                            .target
-                            .value
-                        )
-                      }
-                      tabIndex={
-                        -1
-                      }
+                      value={website}
+                      onChange={(event) => setWebsite(event.target.value)}
+                      tabIndex={-1}
                       autoComplete="off"
                     />
                   </label>
@@ -3234,37 +1765,23 @@ export default function ContactClient(
                     EXPLANATION
                 ======================================= */}
 
-                <div
-                  className={
-                    styles.prepareNotice
-                  }
-                >
+                <div className={styles.prepareNotice}>
                   <ShieldIcon />
 
                   <p>
-                    {topic ===
-                    "service"
+                    {topic === "service"
                       ? "This creates a private conversation only. No order is created yet. BirdShop confirms scope, price, timing, and payment in chat first."
-                      : topic ===
-                          "product"
-                        ? "Product Help creates a private BirdShop conversation. It does not create another order."
-                        : topic ===
-                            "general"
+                      : topic === "product"
+                        ? "Product Support creates a private BirdShop conversation. It does not create another order."
+                        : topic === "general"
                           ? "General Support creates a private BirdShop conversation so your messages stay together."
                           : "Your review is saved as pending and does not appear publicly until approved."}
                   </p>
                 </div>
 
                 {submitError && (
-                  <div
-                    className={
-                      styles.formError
-                    }
-                    role="alert"
-                  >
-                    {
-                      submitError
-                    }
+                  <div className={styles.formError} role="alert">
+                    {submitError}
                   </div>
                 )}
 
@@ -3274,20 +1791,14 @@ export default function ContactClient(
 
                 <button
                   type="submit"
-                  className={
-                    styles.submitButton
-                  }
-                  disabled={
-                    submitting
-                  }
+                  className={styles.submitButton}
+                  disabled={submitting}
                 >
                   {submitting
-                    ? topic ===
-                        "review"
+                    ? topic === "review"
                       ? "Submitting..."
                       : "Creating Private Conversation..."
-                    : topic ===
-                        "review"
+                    : topic === "review"
                       ? "Submit Review"
                       : "Create Private Conversation"}
 
@@ -3300,134 +1811,69 @@ export default function ContactClient(
                 SUMMARY SIDEBAR
             =========================================== */}
 
-            <aside
-              className={
-                styles.summaryCard
-              }
-            >
-              <div
-                className={
-                  styles.summaryAccent
-                }
-              />
+            <aside className={styles.summaryCard}>
+              <div className={styles.summaryAccent} />
 
               <span>
-                {topic ===
-                "review"
-                  ? "REVIEW SUMMARY"
-                  : "PRIVATE CONVERSATION"}
+                {topic === "review" ? "REVIEW SUMMARY" : "PRIVATE CONVERSATION"}
               </span>
 
-              <h2>
-                {
-                  liveTitle
-                }
-              </h2>
+              <h2>{liveTitle}</h2>
 
-              <div
-                className={
-                  styles.summarySelected
-                }
-              >
-                <span>
-                  TYPE
-                </span>
+              <div className={styles.summarySelected}>
+                <span>TYPE</span>
 
-                <strong>
-                  {
-                    selectedTopicLabel
-                  }
-                </strong>
+                <strong>{selectedTopicLabel}</strong>
               </div>
 
-              <div
-                className={
-                  styles.summaryFacts
-                }
-              >
+              <div className={styles.summaryFacts}>
                 <div>
-                  <span>
-                    SELECTION
-                  </span>
+                  <span>SELECTION</span>
 
-                  <strong>
-                    {
-                      liveDetail
-                    }
-                  </strong>
+                  <strong>{liveDetail}</strong>
                 </div>
 
                 {livePrice && (
                   <div>
-                    <span>
-                      PRODUCT PRICE
-                    </span>
+                    <span>PRODUCT PRICE</span>
 
-                    <strong>
-                      {
-                        livePrice
-                      }
-                    </strong>
+                    <strong>{livePrice}</strong>
                   </div>
                 )}
 
-                {topic !==
-                  "review" && (
+                {topic !== "review" && (
                   <div>
-                    <span>
-                      SUPPORT
-                    </span>
+                    <span>SUPPORT</span>
 
-                    <strong>
-                      Private Chat
-                    </strong>
+                    <strong>Private Chat</strong>
                   </div>
                 )}
 
-                {topic ===
-                  "service" && (
+                {topic === "service" && (
                   <div>
-                    <span>
-                      ORDER
-                    </span>
+                    <span>ORDER</span>
 
-                    <strong>
-                      After Payment
-                    </strong>
+                    <strong>After Payment</strong>
                   </div>
                 )}
 
-                {topic ===
-                  "review" && (
+                {topic === "review" && (
                   <div>
-                    <span>
-                      RATING
-                    </span>
+                    <span>RATING</span>
 
-                    <strong>
-                      {rating}/5
-                    </strong>
+                    <strong>{rating}/5</strong>
                   </div>
                 )}
               </div>
 
-              <div
-                className={
-                  styles.summaryStatus
-                }
-              >
-                {reviewSubmission ? (
-                  <CheckIcon />
-                ) : (
-                  <MessageIcon />
-                )}
+              <div className={styles.summaryStatus}>
+                {reviewSubmission ? <CheckIcon /> : <MessageIcon />}
 
                 <div>
                   <strong>
                     {reviewSubmission
                       ? "Review submitted."
-                      : topic ===
-                          "review"
+                      : topic === "review"
                         ? "Ready for moderation."
                         : "Ready to create."}
                   </strong>
@@ -3435,14 +1881,11 @@ export default function ContactClient(
                   <p>
                     {reviewSubmission
                       ? `Reference ${reviewSubmission.reference}`
-                      : topic ===
-                          "service"
+                      : topic === "service"
                         ? "Create the conversation first. Discuss the job before an order exists."
-                        : topic ===
-                            "product"
+                        : topic === "product"
                           ? "Product questions continue privately in BirdShop Chat."
-                          : topic ===
-                              "general"
+                          : topic === "general"
                             ? "Support continues privately in BirdShop Chat."
                             : "Your review enters moderation after submission."}
                   </p>
@@ -3450,33 +1893,19 @@ export default function ContactClient(
               </div>
 
               <a
-                href={
-                  siteConfig
-                    .discordUrl
-                }
+                href={siteConfig.discordUrl}
                 target="_blank"
                 rel="noreferrer"
-                className={
-                  styles.discordLink
-                }
+                className={styles.discordLink}
               >
                 <DiscordIcon />
-
                 Open BirdShop Discord
-
                 <ArrowIcon />
               </a>
 
-              <small
-                className={
-                  styles.discordNote
-                }
-              >
-                BirdShop Chat is the
-                primary private support
-                workspace. Discord
-                remains available as an
-                alternate contact method.
+              <small className={styles.discordNote}>
+                BirdShop Chat is the primary private support workspace. Discord
+                remains available as an alternate contact method.
               </small>
             </aside>
           </div>
@@ -3488,108 +1917,43 @@ export default function ContactClient(
       =================================================== */}
 
       {reviewSubmission && (
-        <section
-          id="submitted-request"
-          className={
-            styles.preparedSection
-          }
-        >
-          <div
-            className={
-              styles.preparedHeading
-            }
-          >
+        <section id="submitted-request" className={styles.preparedSection}>
+          <div className={styles.preparedHeading}>
             <div>
-              <span>
-                REVIEW RECEIVED
-              </span>
+              <span>REVIEW RECEIVED</span>
 
-              <h2>
-                Your feedback is
-                pending review.
-              </h2>
+              <h2>Your feedback is pending review.</h2>
 
               <p>
-                Your review has been
-                submitted for
-                moderation. Keep your
-                reference if you need
-                to contact BirdShop.
+                Your review has been submitted for moderation. Keep your
+                reference if you need to contact BirdShop.
               </p>
             </div>
 
-            <div
-              className={
-                styles.preparedCheck
-              }
-            >
+            <div className={styles.preparedCheck}>
               <CheckIcon />
             </div>
           </div>
 
-          <div
-            className={
-              styles.submittedReference
-            }
-          >
-            <span>
-              REFERENCE
-            </span>
+          <div className={styles.submittedReference}>
+            <span>REFERENCE</span>
 
-            <strong>
-              {
-                reviewSubmission
-                  .reference
-              }
-            </strong>
+            <strong>{reviewSubmission.reference}</strong>
           </div>
 
-          <div
-            className={
-              styles.preparedCard
-            }
-          >
-            <pre>
-              {
-                reviewSubmission
-                  .summary
-              }
-            </pre>
+          <div className={styles.preparedCard}>
+            <pre>{reviewSubmission.summary}</pre>
 
-            <div
-              className={
-                styles.preparedActions
-              }
-            >
-              <button
-                type="button"
-                onClick={
-                  copyReviewSubmission
-                }
-              >
-                {copied ? (
-                  <CheckIcon />
-                ) : (
-                  <CopyIcon />
-                )}
+            <div className={styles.preparedActions}>
+              <button type="button" onClick={copyReviewSubmission}>
+                {copied ? <CheckIcon /> : <CopyIcon />}
 
-                {copied
-                  ? "Copied"
-                  : "Copy Summary"}
+                {copied ? "Copied" : "Copy Summary"}
               </button>
 
-              <a
-                href={
-                  siteConfig
-                    .discordUrl
-                }
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a href={siteConfig.discordUrl} target="_blank" rel="noreferrer">
                 <DiscordIcon />
-
                 Continue on Discord
-
                 <ArrowIcon />
               </a>
             </div>
@@ -3601,105 +1965,59 @@ export default function ContactClient(
           SUPPORT PATHS
       =================================================== */}
 
-      <section
-        className={
-          styles.supportSection
-        }
-      >
-        <div
-          className={
-            styles.supportHeading
-          }
-        >
-          <span>
-            BIRDSHOP SUPPORT
-          </span>
+      <section className={styles.supportSection}>
+        <div className={styles.supportHeading}>
+          <span>BIRDSHOP SUPPORT</span>
 
-          <h2>
-            Choose the right
-            path.
-          </h2>
+          <h2>Choose the right path.</h2>
         </div>
 
-        <div
-          className={
-            styles.supportGrid
-          }
-        >
-          <Link
-            href="/faqs"
-          >
+        <div className={styles.supportGrid}>
+          <Link href="/faqs">
             <div>
               <MessageIcon />
             </div>
 
             <span>
-              <small>
-                QUICK ANSWERS
-              </small>
+              <small>QUICK ANSWERS</small>
 
-              <strong>
-                Read the FAQs
-              </strong>
+              <strong>Read the FAQs</strong>
 
               <p>
-                Find answers to
-                common questions
-                before opening a
-                conversation.
+                Find answers to common questions before opening a conversation.
               </p>
             </span>
 
             <ArrowIcon />
           </Link>
 
-          <Link
-            href="/services"
-          >
+          <Link href="/services">
             <div>
               <PeopleIcon />
             </div>
 
             <span>
-              <small>
-                GAME SERVICES
-              </small>
+              <small>GAME SERVICES</small>
 
-              <strong>
-                Browse Services
-              </strong>
+              <strong>Browse Services</strong>
 
-              <p>
-                Compare services and
-                choose what kind of
-                help you need.
-              </p>
+              <p>Compare services and choose what kind of help you need.</p>
             </span>
 
             <ArrowIcon />
           </Link>
 
-          <Link
-            href="/products"
-          >
+          <Link href="/products">
             <div>
               <ShieldIcon />
             </div>
 
             <span>
-              <small>
-                DIGITAL STORE
-              </small>
+              <small>DIGITAL STORE</small>
 
-              <strong>
-                Browse Products
-              </strong>
+              <strong>Browse Products</strong>
 
-              <p>
-                Check platforms,
-                regions, stock, and
-                delivery information.
-              </p>
+              <p>Check platforms, regions, stock, and delivery information.</p>
             </span>
 
             <ArrowIcon />

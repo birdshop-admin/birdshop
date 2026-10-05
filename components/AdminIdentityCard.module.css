@@ -1,0 +1,175 @@
+/* =========================================================
+   GLOBAL ADMIN IDENTITY
+========================================================= */
+
+.card {
+  position: fixed;
+
+  top: 14px;
+  right: 20px;
+
+  z-index: 200;
+
+  width: 290px;
+  min-height: 62px;
+
+  box-sizing: border-box;
+
+  display: grid;
+
+  grid-template-columns:
+    auto
+    minmax(0, 1fr);
+
+  grid-template-areas:
+    "role name"
+    "role email";
+
+  align-items: center;
+
+  column-gap: 13px;
+  row-gap: 3px;
+
+  padding:
+    11px
+    14px;
+
+  border:
+    1px solid
+    rgba(55, 73, 53, 0.14);
+
+  border-radius: 9px;
+
+  background:
+    rgba(241, 237, 226, 0.98);
+
+  color:
+    #1d291e;
+
+  box-shadow:
+    0
+    11px
+    32px
+    rgba(0, 0, 0, 0.14);
+
+  backdrop-filter:
+    blur(14px);
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   ROLE
+========================================================= */
+
+.role {
+  grid-area: role;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height: 31px;
+
+  padding:
+    0
+    11px;
+
+  border-radius:
+    999px;
+
+  color:
+    #f3efe6;
+
+  background:
+    #354c39;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  line-height: 1;
+
+  letter-spacing:
+    0.11em;
+}
+
+/* =========================================================
+   NAME
+========================================================= */
+
+.card strong {
+  grid-area: name;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  margin: 0;
+
+  color:
+    #202c21;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 18px;
+  font-weight: 400;
+
+  line-height: 1.15;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+/* =========================================================
+   EMAIL
+========================================================= */
+
+.card p {
+  grid-area: email;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  margin: 0;
+
+  color:
+    #717d70;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 11px;
+
+  line-height: 1.25;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 900px) {
+  .card {
+    display: none;
+  }
+}

@@ -1,0 +1,1 @@
+Historical scripts retained for reference only. Do not run these scripts during deployment. They can restore obsolete workflows and permissions. Apply only the ordered supabase/migrations files in START-HERE.txt against the existing BirdShop database.

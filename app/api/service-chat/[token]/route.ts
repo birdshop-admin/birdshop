@@ -1,167 +1,68 @@
 import {
-  NextResponse,
-} from "next/server";
-
-import {
-  createClient,
-} from "@/lib/supabase/server";
-
-type RouteContext = {
-  params: Promise<{
-    token: string;
-  }>;
-};
-
-export async function GET(
-  _request: Request,
-  context: RouteContext
-) {
-  const {
-    token,
-  } =
-    await context.params;
-
-  const supabase =
-    await createClient();
-
-  const {
-    data,
-    error,
-  } =
-    await supabase.rpc(
-      "birdshop_get_service_chat",
-      {
-        p_token:
-          token,
-      }
-    );
-
-  if (
-    error ||
-    !data
-  ) {
-    return NextResponse.json(
-      {
-        error:
-          "Conversation not found.",
-      },
-      {
-        status: 404,
-      }
-    );
-  }
-
-  return NextResponse.json(
-    data,
-    {
-      headers: {
-        "Cache-Control":
-          "no-store",
-      },
-    }
-  );
+  assertSameOrigin,
+  privateHeaders,
+  readBody,
+  isUuid,
+} from "@/lib/server-config";
+import { rateLimit } from "@/lib/rate-limit";
+import { serverRpc } from "@/lib/payment-service";
+type Context = { params: Promise<{ token: string }> };
+async function getToken(context: Context) {
+  const { token } = await context.params;
+  if (token.length < 20 || token.length > 200) throw new Error("Unavailable");
+  return token;
 }
-
-export async function POST(
-  request: Request,
-  context: RouteContext
-) {
+export async function GET(request: Request, context: Context) {
   try {
-    const {
-      token,
-    } =
-      await context.params;
-
-    const body =
-      await request.json();
-
-    const message =
-      String(
-        body.message ??
-          ""
-      ).trim();
-
-    if (!message) {
-      return NextResponse.json(
-        {
-          error:
-            "Type a message first.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    const supabase =
-      await createClient();
-
-    const {
-      error:
-        sendError,
-    } =
-      await supabase.rpc(
-        "birdshop_send_service_chat_message",
-        {
-          p_token:
-            token,
-
-          p_body:
-            message,
-        }
-      );
-
-    if (sendError) {
-      return NextResponse.json(
-        {
-          error:
-            sendError.message,
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    const {
-      data,
-      error,
-    } =
-      await supabase.rpc(
-        "birdshop_get_service_chat",
-        {
-          p_token:
-            token,
-        }
-      );
-
-    if (
-      error ||
-      !data
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Message sent, but the conversation could not be refreshed.",
-        },
-        {
-          status: 500,
-        }
-      );
-    }
-
-    return NextResponse.json(
-      data
+    const token = await getToken(context);
+    await rateLimit("chat-read", token, 60, 60);
+    const query = new URL(request.url).searchParams;
+    const before = query.get("before");
+    if (before && !isUuid(before)) throw new Error("Unavailable");
+    return Response.json(
+      await serverRpc("birdshop_v3_read_chat", {
+        p_token: token,
+        p_before: before,
+        p_mark_read: query.get("notify") !== "1",
+      }),
+      { headers: privateHeaders },
     );
   } catch {
-    return NextResponse.json(
+    return Response.json(
+      { error: "Conversation unavailable. Please wait and retry." },
+      { status: 404, headers: privateHeaders },
+    );
+  }
+}
+export async function POST(request: Request, context: Context) {
+  try {
+    assertSameOrigin(request);
+    const token = await getToken(context);
+    await rateLimit("chat-send", token, 10, 60);
+    const body = JSON.parse(await readBody(request));
+    if (
+      !isUuid(body.requestId) ||
+      typeof body.message !== "string" ||
+      !body.message.trim() ||
+      body.message.length > 4000
+    )
+      throw new Error("Invalid");
+    await serverRpc("birdshop_v3_send_message", {
+      p_token: token,
+      p_body: body.message.trim(),
+      p_request_id: body.requestId,
+    });
+    return Response.json(
+      await serverRpc("birdshop_get_service_chat", { p_token: token }),
+      { headers: privateHeaders },
+    );
+  } catch {
+    return Response.json(
       {
         error:
-          "Unable to send message.",
+          "Unable to send message. Check your message or wait before retrying.",
       },
-      {
-        status: 500,
-      }
+      { status: 400, headers: privateHeaders },
     );
   }
 }

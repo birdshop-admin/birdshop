@@ -1,0 +1,124 @@
+BIRDSHOP — FINAL WEB DEPLOYMENT GUIDE
+
+Production readiness: Ready for deployment/manual live testing.
+This is the cumulative Prompt 1 + Prompt 2 + Prompt 3 web application. No production database, Stripe account, Resend account, or Vercel deployment was changed from this workspace. Use this final package, not the earlier draft ZIPs.
+
+WHAT I NEED TO DO NOW
+
+1. Prepare one coordinated deployment.
+   Unzip BirdShop-Final-Web.zip. The birdshop/ directory is the Next.js project; validation/ is a separate local test harness. Copy the complete birdshop/ contents into your existing website repository, including .github, .gitignore and .env.example. Preserve your private local environment values, domain, and Vercel project connection; do not commit secret files.
+   Keep the old production site from accepting new checkout/chat submissions while applying migrations and replacing the app: old browser RPCs are intentionally revoked by these migrations. Back up the existing Supabase database first. Test with a separate Supabase project containing a copy of the existing schema/data and Stripe test-mode credentials before opening real checkout. These are upgrades to your supplied BirdShop database, NOT an empty-database bootstrap.
+
+2. Apply the Supabase migrations in this exact order.
+   Open Supabase > your project > SQL Editor > New query. For each pending file below, paste that file's complete contents, Run, and confirm success before the next file. Keep an applied-file record. If using the Supabase CLI instead, use migration history to apply only pending files; do not run SQL Editor and CLI copies twice.
+
+   1. 20261002220000_access_and_request_fixes.sql
+   2. 20261004190000_service_payment_foundation.sql
+   3. 20261004190100_service_payment_recovery_and_audit.sql
+   4. 20261005010000_contact_and_chat_access.sql
+   5. 20261005020000_digital_checkout_and_delivery.sql
+   6. 20261005020100_analytics_and_admin_controls.sql
+   7. 20261005030000_final_web_hardening.sql
+
+   The first migration is the access/request patch you already reported as successful. Confirm it is applied and SKIP rerunning it. If any of the other files have since been applied, skip those as well. Do not run supabase/legacy/*.sql, the older BirdShop-002-complete-update.sql draft, or any earlier combined installer. A migration failure rolls back that file: stop and resolve its reported constraint/compatibility issue; never delete paid history to make it pass. No earlier migration was edited in this final pass.
+
+3. Set Vercel environment variables.
+   Open Vercel > your BirdShop project > Settings > Environment Variables. Enter each name below, assign the correct environment (test deployment versus Production), then Save. Server secrets must never be NEXT_PUBLIC variables. Use separate test and live Stripe credentials, and never point a preview/test app at production data accidentally.
+
+   NAME                                  VALUE TYPE / WHERE TO GET IT
+   NEXT_PUBLIC_SUPABASE_URL               Your Supabase project HTTPS URL; project Connect dialog.
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY   Publishable key from Supabase Settings > API Keys.
+   SUPABASE_SECRET_KEY                    Server secret key from the same Supabase project's API Keys. Existing legacy service_role key is also supported; the app variable name remains SUPABASE_SECRET_KEY.
+   STRIPE_SECRET_KEY                      Stripe account API secret; sk_test_ for testing, sk_live_ only for launch.
+   STRIPE_WEBHOOK_SECRET                  whsec_ signing secret of the exact endpoint/mode configured in step 5.
+   RESEND_API_KEY                         Resend API Keys > Create API Key; allow sending from your verified domain.
+   BIRDSHOP_SITE_URL                      Canonical HTTPS site origin, e.g. https://your-domain.example; no path, query, credentials, or stale preview address.
+   BIRDSHOP_EMAIL_FROM                    BirdShop <orders@your-verified-domain.example>.
+   BIRDSHOP_ADMIN_EMAIL                   Your real staff notification mailbox.
+   BIRDSHOP_RATE_LIMIT_SECRET             Independent random secret, at least 32 characters.
+   CRON_SECRET                           Independent random secret, at least 32 characters; same value in the scheduler.
+   INVENTORY_ENCRYPTION_KEY               Base64-encoded 32-byte key. PRESERVE your existing key if any inventory is already encrypted.
+   BIRDSHOP_ORDER_TOKEN_SECRET            Independent stable random secret, at least 32 characters.
+   NEXT_PUBLIC_DISCORD_INVITE_URL         Optional real https://discord.gg/... or https://discord.com/invite/... invitation. Without it, community buttons lead to Contact rather than a fake invite.
+
+   No NEXT_PUBLIC_STRIPE key is needed: checkout redirects through server-created Stripe sessions. There is no variable named SUPABASE_SERVICE_ROLE_KEY in this app configuration.
+
+4. Generate only the missing application secrets on your own computer.
+   In a local terminal, run this command once per missing secret:
+
+   node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
+
+   Generate a DIFFERENT output for INVENTORY_ENCRYPTION_KEY, BIRDSHOP_ORDER_TOKEN_SECRET, BIRDSHOP_RATE_LIMIT_SECRET, and CRON_SECRET. Copy each output directly into its Vercel setting and keep a secure backup. Do not paste it into chat, source files, issues, or screenshots. Do not replace an existing inventory key: that would make stored codes/email envelopes unreadable. Keep the order-token secret stable too: changing it breaks existing result links/retry URLs.
+
+5. Register the single Stripe webhook.
+   In the matching Stripe test environment, open Workbench > Webhooks > Create an event destination. Choose Your account, snapshot events, then Webhook endpoint. Endpoint URL:
+
+   https://YOUR-CANONICAL-DOMAIN/api/stripe/webhook
+
+   Enable exactly these event types:
+   checkout.session.completed
+   checkout.session.expired
+   checkout.session.async_payment_succeeded
+   checkout.session.async_payment_failed
+   charge.refunded
+   refund.created
+   refund.updated
+   refund.failed
+
+   Copy that endpoint's signing secret into STRIPE_WEBHOOK_SECRET. A Stripe CLI listener secret is different from a deployed endpoint secret. Disable old duplicate BirdShop payment handlers when switching over; retain unrelated endpoints. The webhook must be reachable without a Vercel login/password challenge and without a redirect. Test and live endpoints have different signing secrets. For live launch, repeat the setup in the live account mode and change BOTH matching Stripe variables, then redeploy. Do not change modes halfway through unresolved test checkouts.
+
+6. Verify Resend sending.
+   Open Resend > Domains > Add domain (or your existing domain). Add the DNS records Resend displays at your DNS provider, and wait for Verified status. Set BIRDSHOP_EMAIL_FROM to an address on that verified domain. Create/check the sending API key, set RESEND_API_KEY, and check BIRDSHOP_ADMIN_EMAIL. The packaged app does not require a Resend webhook. Its Sent status means provider acceptance, not confirmed inbox arrival; inspect Resend email history and the recipient inbox during testing.
+
+7. Enable the protected background worker.
+   The package includes .github/workflows/birdshop-maintenance.yml. Push it to your repository's DEFAULT branch. In GitHub > repository > Settings > Secrets and variables > Actions > New repository secret, add BIRDSHOP_SITE_URL and CRON_SECRET with the same values used by that deployment. Under Actions, enable the workflow if disabled. It calls GET /api/maintenance with Authorization: Bearer <CRON_SECRET> approximately every five minutes (UTC minutes 03,08,...58). Never put the secret in the URL.
+   If you do not use GitHub Actions, configure your scheduler to make that exact authenticated HTTPS GET every five minutes. Do not enable two schedulers. GitHub schedules can be delayed; the admin Settings page also has Run retries now. A bare unauthenticated visit to /api/maintenance SHOULD return 401. A browser/Vercel protection wall must not block the scheduler; retain the endpoint's own bearer protection.
+
+8. Deploy the new source to Vercel.
+   Project Settings > Build and Deployment: Framework Next.js, project root containing package.json, install npm ci, build npm run build, default Next.js output settings. Use a supported Node version (Node 24 was used locally). Push the final source to the connected deployment branch. If configuration was changed after a deployment, open Deployments > that deployment's menu > Redeploy. Confirm Ready and that your canonical domain serves this version. Reopen the storefront only after step 9 succeeds. Do not roll only the source back to the pre-migration app, whose public RPC permissions no longer match.
+
+9. Verify installation and workers.
+   Supabase SQL Editor: run supabase/post-deploy-verification.sql. Every row should say PASS. These checks are read-only. If one fails, stop and resolve it before charging customers.
+   Sign in as an active owner. Open Admin > Settings & delivery > Server configuration checks. All required names should be Present; this verifies presence/basic format only, not provider authentication. Confirm Supabase Authentication contains your staff users and public.admin_users maps their exact auth user UUIDs to active owner/service_agent roles. Do not create a public staff signup path.
+   In GitHub Actions, run BirdShop background maintenance > Run workflow once after the deployment is ready. Confirm a successful response. Check Settings for pending events, checkout attention states, and failed emails. In Stripe, resend one actual test Checkout event and confirm a 2xx endpoint delivery, one order, and no additional stock assignment. Keep test inventory clearly identified and separate from live stock.
+
+10. Run the focused checklist below before switching to real payments.
+
+FINAL TEST CHECKLIST
+
+Service flow
+[ ] Contact shows Services, Product Support, General Support; all offered service packages are Custom.
+[ ] Create a service chat. Admin sees it and can reply; no order exists yet. Recovering with reference/email gives a generic acknowledgment and sends the private link by email.
+[ ] Send one payment request. Open it in chat; pay in Stripe TEST mode. Confirm exactly one linked service order with correct amount/currency. Work remains In Progress until explicitly completed.
+[ ] Refresh/revisit the success link and resend the same Stripe event: still one order. Cancel/expire an unpaid checkout and start a fresh attempt safely.
+
+Digital flow
+[ ] Add known test codes to a key-managed product. Buy quantity 2 from cart using a mailbox you control and Stripe TEST mode.
+[ ] Confirm exactly one paid digital order, accurate item-price snapshots, exactly two distinct inventory assignments, and those same two codes in the email.
+[ ] Private result shows the true delivery status; a changed token, order reference/UUID, session ID, or payment=success alone reveals no purchase.
+
+Failure recovery
+[ ] In the TEST deployment, temporarily use an invalid Resend key and buy a test product. Payment stays recorded; delivery fails/queues without losing the assigned codes. Restore the real test sending key, redeploy, and run retries. Confirm the same assignments and no extra charge/order.
+[ ] Retry an already-sent delivery: no replacement allocation. For an ambiguous/attention email, inspect Resend first; use the reviewed resend only when appropriate. A replacement email can repeat the SAME codes, never allocate different ones.
+[ ] In Stripe TEST mode, issue a partial refund, then refund the remainder. Confirm cumulative totals and net revenue. Refund before disclosure should stop pending delivery; already disclosed codes must never return to stock.
+[ ] Archive a paid order. It stays in financial totals; ordinary permanent deletion or test cleanup cannot erase processor-linked history.
+
+Admin
+[ ] Owner can open Overview, Chats, Orders, Products, Inventory, Analytics, Reviews, Settings. Overview and Analytics agree. Earlier message/inventory/order history remains reachable.
+[ ] Active service agent sees the allowed service queue and their assigned chats, cannot open owner-only direct URLs, and cannot read other agents' private threads. Deactivate the account and verify access stops.
+[ ] Refresh and navigate repeatedly, including multiple tabs: no periodic logout. Explicit Logout works. Check pending buttons and long mobile forms.
+
+Public / mobile
+[ ] Check 320, 375, 390, 430, 768px and desktop widths: Home, How to Order, Products/offers, Services, Reviews/vouches, Contact, Cart, private chat, payment/result. No sideways body scroll; menus, forms, keyboard/composer and status messages remain usable.
+[ ] Verify the four existing images load, actual product images load, and the real Discord invite works as a community/backup route. Without an invite, Contact remains usable.
+[ ] Verify all emails link to the canonical domain, reach inbox/spam as expected, and make truthful payment/delivery claims. Confirm your product descriptions, service scope and business refund terms before opening paid sales.
+
+BOUNDARIES OF VALIDATION
+Passed locally: ESLint, TypeScript, Next.js production build; 213 PostgreSQL/PGlite behavior/role/deployment checks, 13 mocked payment checks, 12 encryption/worker checks, 42 local HTTP checks (280 checks total). Dummy local Supabase build settings were used, with no real service credentials. PGlite exercises PostgreSQL against your exported schema/functions and reconstructed policies; it is not execution against your live Supabase project and cannot emulate every Supabase extension or PostgREST/Realtime behavior.
+Not performed: live Supabase migrations, real Stripe test payment/webhook, real Resend email, Vercel deployment, authenticated browser/phone rendering, browser hydration inspection. Browser rendering was unavailable in this environment; the requested viewport matrix is the manual gate above. No external success is claimed.
+
+References for dashboard setup (checked during this pass):
+https://docs.stripe.com/webhooks
+https://vercel.com/docs/environment-variables
+https://resend.com/docs/dashboard/domains/introduction
+https://supabase.com/docs/guides/getting-started/api-keys

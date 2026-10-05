@@ -103,8 +103,8 @@
   padding: 22px;
   border: 1px solid var(--admin-line-light, rgba(42, 54, 39, 0.13));
   border-radius: 7px;
-  color: var(--admin-ink, #253024);
-  background: var(--admin-panel, #f2eee4);
+  color: #253024;
+  background: #f2eee4;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.07);
 }
 
@@ -132,7 +132,11 @@
   border-radius: 8px;
   color: #f0ece2;
   background:
-    radial-gradient(circle at 88% 18%, rgba(126, 149, 107, 0.18), transparent 31%),
+    radial-gradient(
+      circle at 88% 18%,
+      rgba(126, 149, 107, 0.18),
+      transparent 31%
+    ),
     linear-gradient(135deg, #101a12, #213022);
 }
 
@@ -171,8 +175,8 @@
 .modePanel {
   border: 1px solid var(--admin-line-light, rgba(42, 54, 39, 0.13));
   border-radius: 8px;
-  color: var(--admin-ink, #253024);
-  background: var(--admin-panel, #f2eee4);
+  color: #253024;
+  background: #f2eee4;
 }
 
 .addPanel {
@@ -321,7 +325,7 @@
   padding: 14px;
   border: 1px solid rgba(51, 64, 46, 0.13);
   border-radius: 6px;
-  background: var(--admin-panel-soft, #e9e4d8);
+  background: var(--admin-panel-soft, #162318);
 }
 
 .modeCard > div {
@@ -332,7 +336,7 @@
 }
 
 .modeCard span {
-  color: #697862;
+  color: rgba(242, 238, 228, 0.58);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -348,7 +352,7 @@
 }
 
 .modeCard small {
-  color: #747d71;
+  color: rgba(242, 238, 228, 0.58);
   font-size: 11px;
 }
 
@@ -423,8 +427,8 @@
   overflow: hidden;
   border: 1px solid var(--admin-line-light, rgba(42, 54, 39, 0.13));
   border-radius: 7px;
-  color: var(--admin-ink, #253024);
-  background: var(--admin-panel, #f2eee4);
+  color: #253024;
+  background: #f2eee4;
 }
 
 .inventoryMain {
@@ -517,7 +521,7 @@
   grid-template-columns: 1fr 1fr 1fr;
   border-top: 1px solid rgba(42, 53, 38, 0.09);
   border-bottom: 1px solid rgba(42, 53, 38, 0.09);
-  background: var(--admin-panel-soft, #e9e4d8);
+  background: #e9e4d8;
 }
 
 .inventoryDetails > div {
@@ -761,5 +765,39 @@
 
   .modeCard button {
     width: 100%;
+  }
+}
+
+/* Premium inventory work surfaces */
+.securityCard,
+.addPanel,
+.modePanel,
+.filters,
+.inventoryCard,
+.emptyState {
+  border-radius: 12px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.1);
+}
+
+.addPanel,
+.modePanel {
+  padding: 28px;
+}
+
+@media (max-width: 620px) {
+  .addPanel,
+  .modePanel,
+  .securityCard {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 767px) {
+  .inventoryDetails,
+  .modeGrid,
+  .statsGrid,
+  .formGrid {
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
   }
 }

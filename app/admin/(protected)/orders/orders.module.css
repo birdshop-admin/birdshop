@@ -21,10 +21,7 @@
 .content {
   min-width: 0;
 
-  padding:
-    44px
-    48px
-    80px;
+  padding: 44px 48px 80px;
 }
 
 /* =========================================================
@@ -40,49 +37,28 @@
 
   padding-bottom: 28px;
 
-  border-bottom:
-    1px solid
-    rgba(
-      241,
-      237,
-      227,
-      0.13
-    );
+  border-bottom: 1px solid rgba(241, 237, 227, 0.13);
 }
 
 .header > div:first-child > span,
 .sectionHeading > div > span {
-  color:
-    rgba(
-      228,
-      232,
-      215,
-      0.66
-    );
+  color: rgba(228, 232, 215, 0.66);
 
   font-size: 11px;
   font-weight: 700;
 
-  letter-spacing:
-    0.2em;
+  letter-spacing: 0.2em;
 }
 
 .header h1 {
-  margin:
-    8px
-    0
-    10px;
+  margin: 8px 0 10px;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 52px;
   font-weight: 400;
 
-  letter-spacing:
-    -0.04em;
+  letter-spacing: -0.04em;
 }
 
 .header p {
@@ -90,48 +66,29 @@
 
   margin: 0;
 
-  color:
-    rgba(
-      239,
-      235,
-      225,
-      0.7
-    );
+  color: rgba(239, 235, 225, 0.7);
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 16px;
   line-height: 1.55;
 }
 
 .headerBadge {
-  padding:
-    10px
-    13px;
+  padding: 10px 13px;
 
-  border:
-    1px solid
-    rgba(
-      240,
-      236,
-      226,
-      0.16
-    );
+  border: 1px solid rgba(240, 236, 226, 0.16);
 
   border-radius: 4px;
 
-  color: #152016;
+  color: #f2eee4;
 
   background: #ede8dc;
 
   font-size: 10px;
   font-weight: 700;
 
-  letter-spacing:
-    0.14em;
+  letter-spacing: 0.14em;
 }
 
 /* =========================================================
@@ -141,16 +98,11 @@
 .notice {
   margin-top: 20px;
 
-  padding:
-    14px
-    16px;
+  padding: 14px 16px;
 
   border-radius: 5px;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
 }
@@ -158,43 +110,17 @@
 .noticeSuccess {
   color: #dce8d7;
 
-  border:
-    1px solid
-    rgba(
-      128,
-      161,
-      115,
-      0.3
-    );
+  border: 1px solid rgba(128, 161, 115, 0.3);
 
-  background:
-    rgba(
-      93,
-      128,
-      80,
-      0.12
-    );
+  background: rgba(93, 128, 80, 0.12);
 }
 
 .noticeError {
   color: #efd8d3;
 
-  border:
-    1px solid
-    rgba(
-      177,
-      96,
-      84,
-      0.3
-    );
+  border: 1px solid rgba(177, 96, 84, 0.3);
 
-  background:
-    rgba(
-      144,
-      72,
-      63,
-      0.12
-    );
+  background: rgba(144, 72, 63, 0.12);
 }
 
 /* =========================================================
@@ -204,11 +130,7 @@
 .stats {
   display: grid;
 
-  grid-template-columns:
-    repeat(
-      4,
-      minmax(0, 1fr)
-    );
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 
   gap: 15px;
 
@@ -225,19 +147,8 @@
 
   padding: 22px;
 
-  border:
-    1px solid
-    rgba(
-      47,
-      58,
-      42,
-      0.15
-    );
-
   border-radius: 7px;
-
   color: #253024;
-
   background: #f1ede3;
 }
 
@@ -248,16 +159,11 @@
   font-size: 10px;
   font-weight: 700;
 
-  letter-spacing:
-    0.13em;
+  letter-spacing: 0.13em;
 }
 
 .stats strong {
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
-
+  font-family: Georgia, "Times New Roman", serif;
   font-size: 37px;
   font-weight: 400;
 }
@@ -272,21 +178,11 @@
 
   gap: 8px;
 
-  margin:
-    32px
-    0
-    34px;
+  margin: 32px 0 34px;
 
   padding-bottom: 16px;
 
-  border-bottom:
-    1px solid
-    rgba(
-      241,
-      237,
-      227,
-      0.12
-    );
+  border-bottom: 1px solid rgba(241, 237, 227, 0.12);
 }
 
 .tabs a {
@@ -297,33 +193,15 @@
 
   gap: 10px;
 
-  padding:
-    0
-    15px;
+  padding: 0 15px;
 
-  border:
-    1px solid
-    rgba(
-      240,
-      236,
-      226,
-      0.13
-    );
+  border: 1px solid rgba(240, 236, 226, 0.13);
 
   border-radius: 5px;
 
-  color:
-    rgba(
-      240,
-      236,
-      226,
-      0.72
-    );
+  color: rgba(240, 236, 226, 0.72);
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
 }
@@ -331,28 +209,17 @@
 .tabs a span {
   min-width: 24px;
 
-  padding:
-    3px
-    6px;
+  padding: 3px 6px;
 
   border-radius: 20px;
 
   text-align: center;
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 10px;
 
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.08
-    );
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .tabs .activeTab {
@@ -378,15 +245,9 @@
 }
 
 .sectionHeading h2 {
-  margin:
-    8px
-    0
-    0;
+  margin: 8px 0 0;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 34px;
   font-weight: 400;
@@ -397,20 +258,11 @@
 
   margin: 0;
 
-  color:
-    rgba(
-      239,
-      235,
-      225,
-      0.58
-    );
+  color: rgba(239, 235, 225, 0.58);
 
   text-align: right;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
   line-height: 1.5;
@@ -431,54 +283,28 @@
 
   padding: 30px;
 
-  border:
-    1px solid
-    rgba(
-      240,
-      236,
-      226,
-      0.12
-    );
+  border: 1px solid rgba(240, 236, 226, 0.12);
 
   border-radius: 7px;
 
   text-align: center;
 
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.025
-    );
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .empty > span {
-  color:
-    rgba(
-      239,
-      235,
-      225,
-      0.58
-    );
+  color: rgba(239, 235, 225, 0.58);
 
   font-size: 10px;
   font-weight: 700;
 
-  letter-spacing:
-    0.18em;
+  letter-spacing: 0.18em;
 }
 
 .empty h3 {
-  margin:
-    12px
-    0
-    7px;
+  margin: 12px 0 7px;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 28px;
   font-weight: 400;
@@ -489,18 +315,9 @@
 
   margin: 0;
 
-  color:
-    rgba(
-      239,
-      235,
-      225,
-      0.62
-    );
+  color: rgba(239, 235, 225, 0.62);
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
   line-height: 1.5;
@@ -520,16 +337,9 @@
 .serviceCard {
   overflow: hidden;
 
-  color: #222b20;
+  color: #253024;
 
-  border:
-    1px solid
-    rgba(
-      40,
-      51,
-      36,
-      0.14
-    );
+  border: 1px solid rgba(40, 51, 36, 0.14);
 
   border-radius: 8px;
 
@@ -543,18 +353,9 @@
 
   gap: 24px;
 
-  padding:
-    22px
-    24px;
+  padding: 22px 24px;
 
-  border-bottom:
-    1px solid
-    rgba(
-      40,
-      51,
-      36,
-      0.1
-    );
+  border-bottom: 1px solid rgba(40, 51, 36, 0.1);
 }
 
 .serviceTop span,
@@ -564,25 +365,18 @@
 .assignment label > span,
 .saleRow span,
 .testForm label > span {
-  color: #66715f;
+  color: rgba(242, 238, 228, 0.56);
 
   font-size: 10px;
   font-weight: 700;
 
-  letter-spacing:
-    0.13em;
+  letter-spacing: 0.13em;
 }
 
 .serviceTop h3 {
-  margin:
-    7px
-    0
-    4px;
+  margin: 7px 0 4px;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 25px;
   font-weight: 400;
@@ -591,12 +385,9 @@
 .serviceTop p {
   margin: 0;
 
-  color: #72786d;
+  color: rgba(242, 238, 228, 0.68);
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
 }
@@ -610,10 +401,7 @@
 }
 
 .servicePrice strong {
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 25px;
   font-weight: 400;
@@ -628,14 +416,7 @@
     1fr
     1fr;
 
-  border-bottom:
-    1px solid
-    rgba(
-      40,
-      51,
-      36,
-      0.1
-    );
+  border-bottom: 1px solid rgba(40, 51, 36, 0.1);
 }
 
 .serviceMeta > div {
@@ -648,18 +429,9 @@
 
   gap: 5px;
 
-  padding:
-    15px
-    20px;
+  padding: 15px 20px;
 
-  border-right:
-    1px solid
-    rgba(
-      40,
-      51,
-      36,
-      0.08
-    );
+  border-right: 1px solid rgba(40, 51, 36, 0.08);
 }
 
 .serviceMeta > div:last-child {
@@ -667,17 +439,14 @@
 }
 
 .serviceMeta strong {
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
   font-weight: 400;
 }
 
 .serviceMeta small {
-  color: #7b8077;
+  color: rgba(242, 238, 228, 0.56);
 
   font-size: 11px;
 }
@@ -687,32 +456,17 @@
 ========================================================= */
 
 .note {
-  padding:
-    16px
-    20px;
+  padding: 16px 20px;
 
-  border-bottom:
-    1px solid
-    rgba(
-      40,
-      51,
-      36,
-      0.1
-    );
+  border-bottom: 1px solid rgba(40, 51, 36, 0.1);
 }
 
 .note p {
-  margin:
-    6px
-    0
-    0;
+  margin: 6px 0 0;
 
   color: #5f665c;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
 }
@@ -722,18 +476,9 @@
 ========================================================= */
 
 .assignment {
-  padding:
-    18px
-    20px;
+  padding: 18px 20px;
 
-  border-bottom:
-    1px solid
-    rgba(
-      40,
-      51,
-      36,
-      0.1
-    );
+  border-bottom: 1px solid rgba(40, 51, 36, 0.1);
 }
 
 .assignment label {
@@ -748,18 +493,9 @@
 .assignment input {
   height: 43px;
 
-  padding:
-    0
-    12px;
+  padding: 0 12px;
 
-  border:
-    1px solid
-    rgba(
-      40,
-      51,
-      36,
-      0.17
-    );
+  border: 1px solid rgba(40, 51, 36, 0.17);
 
   border-radius: 4px;
 
@@ -767,18 +503,9 @@
 
   color: #242c22;
 
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.48
-    );
+  background: rgba(255, 255, 255, 0.48);
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
 }
@@ -797,43 +524,24 @@
 .saleActions button {
   min-height: 38px;
 
-  padding:
-    0
-    14px;
+  padding: 0 14px;
 
-  border:
-    1px solid
-    rgba(
-      42,
-      51,
-      38,
-      0.16
-    );
+  border: 1px solid rgba(42, 51, 38, 0.16);
 
   border-radius: 4px;
 
   color: #424a3f;
 
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.42
-    );
+  background: rgba(255, 255, 255, 0.42);
 
   cursor: pointer;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 12px;
 }
 
-.workflowButtons
-.primaryAction {
+.workflowButtons .primaryAction {
   color: #f1ede3;
 
   border-color: #46543e;
@@ -841,34 +549,19 @@
   background: #46543e;
 }
 
-.workflowButtons
-.dangerAction,
+.workflowButtons .dangerAction,
 .deleteButton {
   color: #87534b !important;
 
-  border-color:
-    rgba(
-      137,
-      77,
-      69,
-      0.23
-    ) !important;
+  border-color: rgba(137, 77, 69, 0.23) !important;
 
-  background:
-    rgba(
-      145,
-      78,
-      68,
-      0.06
-    ) !important;
+  background: rgba(145, 78, 68, 0.06) !important;
 }
 
 .cardFooter {
   display: flex;
 
-  padding:
-    14px
-    20px;
+  padding: 14px 20px;
 }
 
 /* =========================================================
@@ -898,24 +591,15 @@
 
   gap: 20px;
 
-  padding:
-    17px
-    20px;
+  padding: 17px 20px;
 
-  color: #252e22;
+  color: #f2eee4;
 
-  border:
-    1px solid
-    rgba(
-      40,
-      51,
-      36,
-      0.13
-    );
+  border: 1px solid rgba(40, 51, 36, 0.13);
 
   border-radius: 6px;
 
-  background: #f1ede3;
+  background: #101d13;
 }
 
 .saleRow > div {
@@ -926,10 +610,7 @@
 }
 
 .saleRow strong {
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
   font-weight: 400;
@@ -952,21 +633,17 @@
 .testForm {
   padding: 24px;
 
-  color: #263024;
+  color: #f2eee4;
 
   border-radius: 7px;
 
-  background: #f1ede3;
+  background: #101d13;
 }
 
 .formGrid {
   display: grid;
 
-  grid-template-columns:
-    repeat(
-      2,
-      minmax(0, 1fr)
-    );
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 
   gap: 16px;
 }
@@ -981,35 +658,17 @@
 .testForm input {
   min-height: 44px;
 
-  padding:
-    0
-    12px;
+  padding: 0 12px;
 
-  border:
-    1px solid
-    rgba(
-      40,
-      51,
-      36,
-      0.17
-    );
+  border: 1px solid rgba(40, 51, 36, 0.17);
 
   border-radius: 4px;
 
   outline: 0;
 
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.48
-    );
+  background: rgba(255, 255, 255, 0.48);
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
 }
@@ -1019,9 +678,7 @@
 
   margin-top: 17px;
 
-  padding:
-    0
-    18px;
+  padding: 0 18px;
 
   border: 0;
 
@@ -1033,10 +690,7 @@
 
   cursor: pointer;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 13px;
 }
@@ -1045,24 +699,13 @@
    RESPONSIVE
 ========================================================= */
 
-@media (
-  max-width:
-    1100px
-) {
+@media (max-width: 1100px) {
   .stats {
-    grid-template-columns:
-      repeat(
-        2,
-        1fr
-      );
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .serviceMeta {
-    grid-template-columns:
-      repeat(
-        2,
-        1fr
-      );
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .saleRow {
@@ -1072,27 +715,17 @@
   }
 }
 
-@media (
-  max-width:
-    800px
-) {
+@media (max-width: 800px) {
   .page {
-    grid-template-columns:
-      1fr;
+    grid-template-columns: 1fr;
   }
 
   .content {
-    padding:
-      30px
-      22px
-      60px;
+    padding: 30px 22px 60px;
   }
 }
 
-@media (
-  max-width:
-    620px
-) {
+@media (max-width: 620px) {
   .header,
   .sectionHeading,
   .serviceTop {
@@ -1109,8 +742,7 @@
   .serviceMeta,
   .formGrid,
   .saleRow {
-    grid-template-columns:
-      1fr;
+    grid-template-columns: 1fr;
   }
 
   .servicePrice {
@@ -1161,4 +793,34 @@
   color: #7a5048;
   background: #eedfd9;
   border: 1px solid rgba(126, 75, 65, 0.16);
+}
+
+/* Premium operations surfaces */
+.stats article,
+.serviceCard,
+.saleRow,
+.testForm,
+.empty {
+  border-radius: 12px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.1);
+}
+
+.serviceTop {
+  padding: 25px 26px;
+}
+
+@media (max-width: 620px) {
+  .serviceTop,
+  .testForm {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 767px) {
+  .saleRow,
+  .serviceCard,
+  .formGrid {
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+  }
 }

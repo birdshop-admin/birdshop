@@ -68,10 +68,9 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 22px;
-  border: 1px solid var(--admin-line-light, rgba(42, 54, 39, 0.13));
-  border-radius: 7px;
-  color: var(--admin-ink, #253024);
-  background: var(--admin-panel, #f2eee4);
+  border: 1px solid rgba(42, 54, 39, 0.13);
+  color: #253024;
+  background: #f2eee4;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.07);
 }
 
@@ -127,8 +126,8 @@
   overflow: hidden;
   border: 1px solid var(--admin-line-light, rgba(42, 54, 39, 0.13));
   border-radius: 8px;
-  color: var(--admin-ink, #253024);
-  background: var(--admin-panel, #f2eee4);
+  color: #253024;
+  background: #f2eee4;
 }
 
 .cardTop {
@@ -230,16 +229,16 @@
   gap: 22px;
   padding: 17px 22px;
   border-top: 1px solid rgba(42, 53, 38, 0.1);
-  background: var(--admin-panel-soft, #e9e4d8);
+  background: var(--admin-panel-soft, #162318);
 }
 
 .assignment .fieldLabel {
-  color: #66735f;
+  color: rgba(242, 238, 228, 0.56);
 }
 
 .assignment > div p {
   margin: 6px 0 0;
-  color: #697267;
+  color: rgba(242, 238, 228, 0.66);
   font-family: Georgia, "Times New Roman", serif;
   font-size: 12px;
   line-height: 1.5;
@@ -258,7 +257,7 @@
   border: 1px solid rgba(63, 78, 57, 0.17);
   border-radius: 4px;
   outline: none;
-  color: #3d493a;
+  color: #2f3b2e;
   background: var(--admin-panel-bright, #faf7ef);
   font-family: Georgia, "Times New Roman", serif;
   font-size: 13px;
@@ -291,7 +290,7 @@
   gap: 10px;
   padding: 14px 22px;
   border-top: 1px solid rgba(42, 53, 38, 0.1);
-  background: var(--admin-panel-soft, #e9e4d8);
+  background: var(--admin-panel-soft, #162318);
 }
 
 .settledNote span {
@@ -302,7 +301,7 @@
 }
 
 .settledNote strong {
-  color: #3d493a;
+  color: #f2eee4;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 13px;
   font-weight: 400;
@@ -314,7 +313,7 @@
   gap: 8px;
   padding: 15px 22px;
   border-top: 1px solid rgba(42, 53, 38, 0.1);
-  background: #e7e4db;
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .actions form {
@@ -357,8 +356,8 @@
   padding: 30px;
   border: 1px solid rgba(242, 238, 228, 0.13);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.035);
-  color: var(--admin-text-soft, rgba(242, 238, 228, 0.72));
+  background: #f2eee4;
+  color: #4f5a4c;
   text-align: center;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 14px;
@@ -465,4 +464,31 @@
   color: #7a5048;
   border-color: rgba(126, 75, 65, 0.18);
   background: #eedfd9;
+}
+
+/* Premium queue cards and readable archive states */
+.stats article,
+.card,
+.empty {
+  border-radius: 12px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.1);
+}
+
+.cardTop {
+  padding: 24px;
+}
+
+@media (max-width: 620px) {
+  .cardTop,
+  .body {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 767px) {
+  .grid,
+  .stats {
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+  }
 }

@@ -1,12 +1,8 @@
 "use client";
 
-import {
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import {
-  revealInventoryCode,
-} from "./actions";
+import { revealInventoryCode } from "./actions";
 
 import styles from "./inventory.module.css";
 
@@ -15,18 +11,32 @@ export default function RevealCodeButton({
 }: {
   inventoryId: string;
 }) {
-  const [code, setCode] =
-    useState<string | null>(null);
+  const [code, setCode] = useState<string | null>(null);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [copied, setCopied] =
-    useState(false);
+  const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    if (!code) return;
+    const hide = () => {
+      setCode(null);
+      setCopied(false);
+    };
+    const timer = window.setTimeout(hide, 30000);
+    const onVisibility = () => {
+      if (document.visibilityState !== "visible") hide();
+    };
+    window.addEventListener("blur", hide);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("blur", hide);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [code]);
   async function reveal() {
     if (code) {
       setCode(null);
@@ -37,23 +47,18 @@ export default function RevealCodeButton({
     setLoading(true);
     setError("");
 
-    const result =
-      await revealInventoryCode(
-        inventoryId
-      );
-
-    setLoading(false);
-
-    if (!result.ok) {
-      setError(
-        result.message
-      );
-      return;
+    try {
+      const result = await revealInventoryCode(inventoryId);
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+      setCode(result.code);
+    } catch {
+      setError("Code access could not be verified. Try again.");
+    } finally {
+      setLoading(false);
     }
-
-    setCode(
-      result.code
-    );
   }
 
   async function copy() {
@@ -62,71 +67,38 @@ export default function RevealCodeButton({
     }
 
     try {
-      await navigator.clipboard.writeText(
-        code
-      );
+      await navigator.clipboard.writeText(code);
 
       setCopied(true);
 
-      window.setTimeout(
-        () =>
-          setCopied(false),
-        1600
-      );
+      window.setTimeout(() => setCopied(false), 1600);
     } catch {
       setCopied(false);
     }
   }
 
   return (
-    <div
-      className={
-        styles.revealArea
-      }
-    >
+    <div className={styles.revealArea}>
       <button
         type="button"
-        className={
-          styles.revealButton
-        }
+        className={styles.revealButton}
         onClick={reveal}
         disabled={loading}
       >
-        {loading
-          ? "Checking…"
-          : code
-          ? "Hide Code"
-          : "Reveal Code"}
+        {loading ? "Checking…" : code ? "Hide Code" : "Reveal Code"}
       </button>
 
       {code && (
-        <div
-          className={
-            styles.revealedCode
-          }
-        >
+        <div className={styles.revealedCode}>
           <code>{code}</code>
 
-          <button
-            type="button"
-            onClick={copy}
-          >
-            {copied
-              ? "Copied"
-              : "Copy"}
+          <button type="button" onClick={copy}>
+            {copied ? "Copied" : "Copy"}
           </button>
         </div>
       )}
 
-      {error && (
-        <small
-          className={
-            styles.revealError
-          }
-        >
-          {error}
-        </small>
-      )}
+      {error && <small className={styles.revealError}>{error}</small>}
     </div>
   );
 }

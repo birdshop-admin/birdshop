@@ -1,10 +1,12 @@
+import SubmitButton from "@/components/SubmitButton";
 import Link from "next/link";
 
-import AdminSidebar from "@/components/AdminSidebar";
+import { redirect } from "next/navigation";
 
-import {
-  createClient,
-} from "@/lib/supabase/server";
+import AdminSidebar from "@/components/AdminSidebar";
+import AdminRefreshButton from "@/components/AdminRefreshButton";
+
+import { createClient } from "@/lib/supabase/server";
 
 import {
   cancelPaymentRequest,
@@ -15,387 +17,295 @@ import {
   setConversationStatus,
 } from "./actions";
 
+import { acceptServiceConversation } from "./agent-actions";
+
+import AdminChatQueueSync from "./AdminChatQueueSync";
+
 import AdminLiveThread, {
-  AdminLiveMessage,
-  AdminLivePaymentRequest,
+  type AdminLiveMessage,
+  type AdminLivePaymentRequest,
 } from "./AdminLiveThread";
 
 import paymentStyles from "@/components/ChatPaymentUI.module.css";
-import styles from "./chat.module.css";
+import styles from "./OwnerAdminChatPage.module.css";
 
-export const dynamic =
-  "force-dynamic";
+export const dynamic = "force-dynamic";
 
 /* =========================================================
    TYPES
 ========================================================= */
 
-type ChatView =
-  | "active"
-  | "closed"
-  | "deleted";
+type ChatView = "new" | "progress" | "completed" | "closed" | "deleted";
 
-type ConversationType =
-  | "service"
-  | "product"
-  | "general";
+type ConversationType = "service" | "product" | "general";
 
-type ConversationFilter =
-  | "all"
-  | ConversationType;
+type ConversationFilter = "all" | ConversationType;
 
 type Conversation = {
   id: string;
 
-  order_id:
-    | string
-    | null;
+  order_id: string | null;
 
   public_token: string;
 
   reference: string;
 
-  conversation_type:
-    ConversationType;
+  conversation_type: ConversationType;
 
-  workflow_status:
-    string;
+  workflow_status: string;
 
   status: string;
 
-  last_message_at:
-    string;
+  last_message_at: string;
 
-  last_sender_type:
-    | string
-    | null;
+  last_sender_type: string | null;
 
-  admin_last_read_at:
-    | string
-    | null;
+  admin_last_read_at: string | null;
 
-  created_at:
-    string;
+  created_at: string;
 
-  deleted_at:
-    | string
-    | null;
+  deleted_at: string | null;
 
-  customer_name:
-    | string
-    | null;
+  customer_name: string | null;
 
-  customer_email:
-    | string
-    | null;
+  customer_email: string | null;
 
-  customer_contact:
-    | string
-    | null;
+  customer_contact: string | null;
 
-  subject:
-    | string
-    | null;
+  subject: string | null;
 
-  service_name:
-    | string
-    | null;
+  service_name: string | null;
 
-  package_name:
-    | string
-    | null;
+  package_name: string | null;
 
-  product_name:
-    | string
-    | null;
+  product_name: string | null;
 
-  product_platform:
-    | string
-    | null;
+  product_platform: string | null;
 
-  product_region:
-    | string
-    | null;
+  product_region: string | null;
+
+  assigned_staff_user_id: string | null;
+
+  assigned_to: string | null;
+
+  assigned_at: string | null;
 };
 
 type Order = {
-  id:
-    string;
+  id: string;
 
-  reference:
-    string;
+  reference: string;
 
-  customer_name:
-    string;
+  customer_name: string;
 
-  customer_contact:
-    | string
-    | null;
+  customer_contact: string | null;
 
-  customer_email:
-    string;
+  customer_email: string;
 
-  service_name:
-    | string
-    | null;
+  service_name: string | null;
 
-  package_name:
-    | string
-    | null;
+  package_name: string | null;
 
-  total:
-    | number
-    | string;
+  total: number | string;
 
-  payment_status:
-    string;
+  payment_status: string;
 
-  service_status:
-    | string
-    | null;
+  service_status: string | null;
 };
 
 type PageProps = {
-  searchParams:
-    Promise<{
-      view?:
-        string;
+  searchParams: Promise<{
+    view?: string;
+    page?: string;
 
-      type?:
-        string;
+    type?: string;
 
-      conversation?:
-        string;
+    conversation?: string;
 
-      message?:
-        string;
+    message?: string;
 
-      tone?:
-        string;
-    }>;
+    tone?: string;
+  }>;
 };
 
 /* =========================================================
-   HELPERS
+   NORMALIZE
 ========================================================= */
 
-function normalizeView(
-  value:
-    | string
-    | undefined
-):
-  ChatView {
-
+function normalizeView(value: string | undefined): ChatView {
   if (
-    value ===
-      "closed" ||
-    value ===
-      "deleted"
+    value === "progress" ||
+    value === "completed" ||
+    value === "closed" ||
+    value === "deleted"
   ) {
     return value;
   }
 
-  return "active";
+  /*
+   * Old BirdShop links used ?view=active.
+   *
+   * Treat them as New so old URLs still work.
+   */
+
+  return "new";
 }
 
-function normalizeType(
-  value:
-    | string
-    | undefined
-):
-  ConversationFilter {
-
-  if (
-    value ===
-      "service" ||
-    value ===
-      "product" ||
-    value ===
-      "general"
-  ) {
+function normalizeType(value: string | undefined): ConversationFilter {
+  if (value === "service" || value === "product" || value === "general") {
     return value;
   }
 
   return "all";
 }
 
-function money(
-  value:
-    | number
-    | string,
-  currency =
-    "USD"
-) {
-  return Number(
-    value
-  ).toLocaleString(
-    "en-US",
-    {
-      style:
-        "currency",
+/* =========================================================
+   URL
+========================================================= */
 
-      currency:
-        currency.toUpperCase(),
-    }
-  );
+function buildChatHref({
+  view,
+  type,
+  conversation,
+}: {
+  view: ChatView;
+
+  type: ConversationFilter;
+
+  conversation?: string;
+}) {
+  const params = new URLSearchParams();
+
+  params.set("view", view);
+
+  params.set("type", type);
+
+  if (conversation) {
+    params.set("conversation", conversation);
+  }
+
+  return `/admin/chat?${params.toString()}`;
 }
 
-function formatDate(
-  value:
-    string
-) {
-  return new Intl.DateTimeFormat(
-    "en-US",
-    {
-      month:
-        "short",
+/* =========================================================
+   LABELS
+========================================================= */
 
-      day:
-        "numeric",
-
-      hour:
-        "numeric",
-
-      minute:
-        "2-digit",
-    }
-  ).format(
-    new Date(
-      value
-    )
-  );
+function statusLabel(value: string | null | undefined) {
+  return (value ?? "new")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
-function statusLabel(
-  value:
-    | string
-    | null
-    | undefined
-) {
-  return (
-    value ??
-    "new"
-  )
-    .replaceAll(
-      "_",
-      " "
-    )
-    .replace(
-      /\b\w/g,
-      (
-        character
-      ) =>
-        character.toUpperCase()
-    );
-}
-
-function conversationTypeLabel(
-  type:
-    ConversationType
-) {
-  if (
-    type ===
-      "product"
-  ) {
+function conversationTypeLabel(type: ConversationType) {
+  if (type === "product") {
     return "PRODUCT SUPPORT";
   }
 
-  if (
-    type ===
-      "general"
-  ) {
+  if (type === "general") {
     return "GENERAL SUPPORT";
   }
 
   return "SERVICE";
 }
 
-function conversationFilterLabel(
-  type:
-    ConversationFilter
-) {
-  if (
-    type ===
-      "service"
-  ) {
-    return "SERVICE";
+function filterLabel(type: ConversationFilter) {
+  if (type === "service") {
+    return "Service";
   }
 
-  if (
-    type ===
-      "product"
-  ) {
-    return "PRODUCT SUPPORT";
+  if (type === "product") {
+    return "Product Support";
   }
 
-  if (
-    type ===
-      "general"
-  ) {
-    return "GENERAL SUPPORT";
+  if (type === "general") {
+    return "General Support";
   }
 
-  return "ALL";
+  return "All";
 }
 
+function viewLabel(view: ChatView) {
+  if (view === "progress") {
+    return "In Progress";
+  }
+
+  if (view === "completed") {
+    return "Completed";
+  }
+
+  if (view === "closed") {
+    return "Closed";
+  }
+
+  if (view === "deleted") {
+    return "Deleted";
+  }
+
+  return "New";
+}
+
+/* =========================================================
+   FORMAT
+========================================================= */
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+
+    day: "numeric",
+
+    hour: "numeric",
+
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function money(value: number | string, currency = "USD") {
+  return Number(value).toLocaleString("en-US", {
+    style: "currency",
+
+    currency: currency.toUpperCase(),
+  });
+}
+
+/* =========================================================
+   CONVERSATION DATA
+========================================================= */
+
 function getOrder(
-  conversation:
-    Conversation,
-  orderMap:
-    Map<
-      string,
-      Order
-    >
+  conversation: Conversation,
+
+  orderMap: Map<string, Order>,
 ) {
-  if (
-    !conversation.order_id
-  ) {
+  if (!conversation.order_id) {
     return undefined;
   }
 
-  return orderMap.get(
-    conversation.order_id
-  );
+  return orderMap.get(conversation.order_id);
 }
 
 function getReference(
-  conversation:
-    Conversation,
-  order?:
-    Order
+  conversation: Conversation,
+
+  order?: Order,
 ) {
-  return (
-    conversation.reference ||
-    order?.reference ||
-    "BIRDSHOP"
-  );
+  return conversation.reference || order?.reference || "BIRDSHOP";
 }
 
-function getConversationTitle(
-  conversation:
-    Conversation,
-  order?:
-    Order
+function getTitle(
+  conversation: Conversation,
+
+  order?: Order,
 ) {
-  if (
-    conversation.conversation_type ===
-      "product"
-  ) {
+  if (conversation.conversation_type === "product") {
     return (
-      conversation.product_name ||
-      conversation.subject ||
-      "Product Support"
+      conversation.product_name || conversation.subject || "Product Support"
     );
   }
 
-  if (
-    conversation.conversation_type ===
-      "general"
-  ) {
-    return (
-      conversation.subject ||
-      "General Support"
-    );
+  if (conversation.conversation_type === "general") {
+    return conversation.subject || "General Support";
   }
 
   return (
@@ -406,64 +316,39 @@ function getConversationTitle(
   );
 }
 
-function getConversationSubtitle(
-  conversation:
-    Conversation,
-  order?:
-    Order
-) {
-  if (
-    conversation.conversation_type ===
-      "product"
-  ) {
-    const details =
-      [
-        conversation.product_platform,
-        conversation.product_region,
-      ].filter(
-        Boolean
-      );
+function getSubtitle(
+  conversation: Conversation,
 
-    return (
-      details.join(
-        " · "
-      ) ||
-      "Product Support"
-    );
+  order?: Order,
+) {
+  if (conversation.conversation_type === "product") {
+    const pieces = [
+      conversation.product_platform,
+      conversation.product_region,
+    ].filter(Boolean);
+
+    return pieces.join(" · ") || "Product Support";
   }
 
-  if (
-    conversation.conversation_type ===
-      "general"
-  ) {
+  if (conversation.conversation_type === "general") {
     return "General Support";
   }
 
-  return (
-    conversation.package_name ||
-    order?.package_name ||
-    "Custom Quote"
-  );
+  return conversation.package_name || order?.package_name || "Custom Quote";
 }
 
 function getCustomerName(
-  conversation:
-    Conversation,
-  order?:
-    Order
+  conversation: Conversation,
+
+  order?: Order,
 ) {
-  return (
-    conversation.customer_name ||
-    order?.customer_name ||
-    "Customer"
-  );
+  return conversation.customer_name || order?.customer_name || "Customer";
 }
 
 function getCustomerContact(
-  conversation:
-    Conversation,
-  order?:
-    Order
+  conversation: Conversation,
+
+  order?: Order,
 ) {
   return (
     conversation.customer_contact ||
@@ -474,2011 +359,1217 @@ function getCustomerContact(
   );
 }
 
-function isUnread(
-  conversation:
-    Conversation
-) {
-  if (
-    conversation.last_sender_type !==
-      "customer"
-  ) {
+/* =========================================================
+   UNREAD
+========================================================= */
+
+function isUnread(conversation: Conversation) {
+  if (conversation.last_sender_type !== "customer") {
     return false;
   }
 
-  if (
-    !conversation.admin_last_read_at
-  ) {
+  if (!conversation.admin_last_read_at) {
     return true;
   }
 
   return (
-    new Date(
-      conversation.last_message_at
-    ).getTime() >
-    new Date(
-      conversation.admin_last_read_at
-    ).getTime()
+    new Date(conversation.last_message_at).getTime() >
+    new Date(conversation.admin_last_read_at).getTime()
   );
-}
-
-function filterConversations(
-  conversations:
-    Conversation[],
-  type:
-    ConversationFilter
-) {
-  if (
-    type ===
-      "all"
-  ) {
-    return conversations;
-  }
-
-  return conversations.filter(
-    (
-      conversation
-    ) =>
-      conversation.conversation_type ===
-      type
-  );
-}
-
-function countType(
-  conversations:
-    Conversation[],
-  type:
-    ConversationFilter
-) {
-  return filterConversations(
-    conversations,
-    type
-  ).length;
-}
-
-function countUnread(
-  conversations:
-    Conversation[],
-  type:
-    ConversationFilter
-) {
-  return filterConversations(
-    conversations,
-    type
-  ).filter(
-    isUnread
-  ).length;
-}
-
-function buildChatHref({
-  view,
-  type,
-  conversation,
-}: {
-  view:
-    ChatView;
-
-  type:
-    ConversationFilter;
-
-  conversation?:
-    string;
-}) {
-  const params =
-    new URLSearchParams();
-
-  params.set(
-    "view",
-    view
-  );
-
-  params.set(
-    "type",
-    type
-  );
-
-  if (
-    conversation
-  ) {
-    params.set(
-      "conversation",
-      conversation
-    );
-  }
-
-  return `/admin/chat?${params.toString()}`;
 }
 
 /* =========================================================
-   CLOSED / DELETED CARD
+   STATUS LOGIC
 ========================================================= */
 
-function CompactConversation({
-  conversation,
-  order,
-  view,
-  filter,
-}: {
-  conversation:
-    Conversation;
+function getConversationView(
+  conversation: Conversation,
 
-  order:
-    | Order
-    | undefined;
+  order: Order | undefined,
+): ChatView {
+  if (conversation.deleted_at) {
+    return "deleted";
+  }
 
-  view:
-    | "closed"
-    | "deleted";
+  if (conversation.status !== "open") {
+    return "closed";
+  }
 
-  filter:
-    ConversationFilter;
-}) {
-  const reference =
-    getReference(
-      conversation,
-      order
+  // Payment and completion of service work are separate states.
+  if (
+    conversation.conversation_type === "service" &&
+    order?.service_status === "completed"
+  )
+    return "completed";
+
+  if (conversation.workflow_status === "completed") {
+    return "completed";
+  }
+
+  /*
+   * Truly untouched/unclaimed requests remain New.
+   */
+
+  if (
+    (!conversation.workflow_status || conversation.workflow_status === "new") &&
+    true
+  ) {
+    return "new";
+  }
+
+  return "progress";
+}
+
+/* =========================================================
+   FILTER
+========================================================= */
+
+function matchesType(
+  conversation: Conversation,
+
+  filter: ConversationFilter,
+) {
+  return filter === "all" || conversation.conversation_type === filter;
+}
+
+function sortQueue(conversations: Conversation[]) {
+  return [...conversations].sort((a, b) => {
+    const unreadA = isUnread(a) ? 1 : 0;
+
+    const unreadB = isUnread(b) ? 1 : 0;
+
+    if (unreadA !== unreadB) {
+      return unreadB - unreadA;
+    }
+
+    return (
+      new Date(b.last_message_at).getTime() -
+      new Date(a.last_message_at).getTime()
     );
+  });
+}
 
-  const title =
-    getConversationTitle(
-      conversation,
-      order
-    );
+/* =========================================================
+   STAFF COLOR
 
-  const subtitle =
-    getConversationSubtitle(
-      conversation,
-      order
-    );
+   Deterministic:
+   same account = same palette every time.
+========================================================= */
 
-  const customerName =
-    getCustomerName(
-      conversation,
-      order
-    );
+function staffPalette(conversation: Conversation) {
+  const key =
+    conversation.assigned_staff_user_id ||
+    conversation.assigned_to ||
+    (conversation.workflow_status !== "new" ? "birdshop-owner" : "");
 
-  const customerContact =
-    getCustomerContact(
-      conversation,
-      order
-    );
+  if (!key) {
+    return 0;
+  }
 
-  return (
-    <article
-      className={
-        styles.compactCard
-      }
-    >
-      <div>
-        <span>
-          {conversationTypeLabel(
-            conversation.conversation_type
-          )}{" "}
-          ·{" "}
-          {reference}{" "}
-          ·{" "}
-          {view ===
-            "deleted" &&
-          conversation.deleted_at
-            ? `DELETED ${formatDate(
-                conversation.deleted_at
-              )}`
-            : `CLOSED · LAST ACTIVITY ${formatDate(
-                conversation.last_message_at
-              )}`}
-        </span>
+  let hash = 0;
 
-        <strong>
-          {
-            title
-          }
-        </strong>
+  for (let index = 0; index < key.length; index += 1) {
+    hash = (hash << 5) - hash + key.charCodeAt(index);
 
-        <p>
-          {
-            customerName
-          }
+    hash |= 0;
+  }
 
-          {subtitle
-            ? ` · ${subtitle}`
-            : ""}
+  return (Math.abs(hash) % 6) + 1;
+}
 
-          {customerContact
-            ? ` · ${customerContact}`
-            : ""}
-        </p>
-      </div>
+function staffLabel(conversation: Conversation) {
+  if (conversation.assigned_to) {
+    return conversation.assigned_to;
+  }
 
-      <div
-        className={
-          styles.compactActions
-        }
-      >
-        {view ===
-        "closed" ? (
-          <>
-            <Link
-              href={`/service-chat?token=${encodeURIComponent(
-                conversation.public_token
-              )}`}
-              target="_blank"
-            >
-              Customer View ↗
-            </Link>
+  if (conversation.workflow_status !== "new") {
+    return "BirdShop";
+  }
 
-            <form
-              action={
-                setConversationStatus
-              }
-            >
-              <input
-                type="hidden"
-                name="conversation_id"
-                value={
-                  conversation.id
-                }
-              />
-
-              <input
-                type="hidden"
-                name="type"
-                value={
-                  filter
-                }
-              />
-
-              <button
-                type="submit"
-                name="status"
-                value="open"
-                className={
-                  styles.restoreButton
-                }
-              >
-                Reopen
-              </button>
-            </form>
-
-            <form
-              action={
-                deleteConversation
-              }
-            >
-              <input
-                type="hidden"
-                name="conversation_id"
-                value={
-                  conversation.id
-                }
-              />
-
-              <button
-                type="submit"
-                className={
-                  styles.dangerButton
-                }
-              >
-                Delete
-              </button>
-            </form>
-          </>
-        ) : (
-          <>
-            <form
-              action={
-                restoreConversation
-              }
-            >
-              <input
-                type="hidden"
-                name="conversation_id"
-                value={
-                  conversation.id
-                }
-              />
-
-              <button
-                type="submit"
-                className={
-                  styles.restoreButton
-                }
-              >
-                Restore
-              </button>
-            </form>
-
-            <form
-              action={
-                permanentlyDeleteConversation
-              }
-            >
-              <input
-                type="hidden"
-                name="conversation_id"
-                value={
-                  conversation.id
-                }
-              />
-
-              <button
-                type="submit"
-                className={
-                  styles.dangerButton
-                }
-              >
-                Delete Permanently
-              </button>
-            </form>
-          </>
-        )}
-      </div>
-    </article>
-  );
+  return null;
 }
 
 /* =========================================================
    PAGE
 ========================================================= */
 
-export default async function AdminChatPage({
-  searchParams,
-}: PageProps) {
-  const params =
-    await searchParams;
+export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const page = Math.max(1, Math.min(100000, Number(params.page) || 1));
+  const pageHref = (next: number) =>
+    `/admin/chat?${new URLSearchParams({ page: String(next), view: params.view ?? "new", type: params.type ?? "all" })}`;
 
-  const view =
-    normalizeView(
-      params.view
-    );
+  const view = normalizeView(params.view);
 
-  const filter =
-    normalizeType(
-      params.type
-    );
+  const filter = normalizeType(params.type);
 
-  const supabase =
-    await createClient();
+  const supabase = await createClient();
 
   /* =======================================================
-     ALL CONVERSATIONS
+     CONVERSATIONS
   ======================================================= */
 
   const {
-    data:
-      conversationData,
+    data: conversationData,
 
-    error:
-      conversationError,
-  } =
-    await supabase
-      .from(
-        "service_conversations"
-      )
-      .select(
-        `
-        id,
-        order_id,
-        public_token,
-        reference,
-        conversation_type,
-        workflow_status,
-        status,
-        last_message_at,
-        last_sender_type,
-        admin_last_read_at,
-        created_at,
-        deleted_at,
-        customer_name,
-        customer_email,
-        customer_contact,
-        subject,
-        service_name,
-        package_name,
-        product_name,
-        product_platform,
-        product_region
-        `
-      )
-      .order(
-        "last_message_at",
-        {
-          ascending:
-            false,
-        }
-      );
+    error: conversationError,
+  } = await supabase
+    .from("service_conversations")
+    .select(
+      `
+          id,
+          order_id,
+          public_token,
+          reference,
+          conversation_type,
+          workflow_status,
+          status,
+          last_message_at,
+          last_sender_type,
+          admin_last_read_at,
+          created_at,
+          deleted_at,
+          customer_name,
+          customer_email,
+          customer_contact,
+          subject,
+          service_name,
+          package_name,
+          product_name,
+          product_platform,
+          product_region,
+          assigned_staff_user_id,
+          assigned_to,
+          assigned_at
+        `,
+    )
+    .order("last_message_at", {
+      ascending: false,
+    })
+    .order("id")
+    .range((page - 1) * 100, page * 100 - 1);
 
-  if (
-    conversationError
-  ) {
+  if (conversationError) {
     throw new Error(
-      `Unable to load chat conversations: ${conversationError.message}`
+      `Unable to load chat conversations: Please refresh and retry.`,
     );
   }
 
-  const allConversations =
-    (
-      conversationData ??
-      []
-    ) as unknown as
-      Conversation[];
+  const allConversations = (conversationData ??
+    []) as unknown as Conversation[];
+  if (
+    params.conversation &&
+    !allConversations.some((item) => item.id === params.conversation)
+  ) {
+    const detailResult = await supabase
+      .from("service_conversations")
+      .select("*")
+      .eq("id", params.conversation)
+      .maybeSingle();
+    if (detailResult.error) throw new Error("Conversation could not load.");
+    if (detailResult.data)
+      allConversations.push(detailResult.data as Conversation);
+  }
+
+  /* =======================================================
+     ORDERS
+  ======================================================= */
+
+  const orderIds = Array.from(
+    new Set(
+      allConversations
+        .map((conversation) => conversation.order_id)
+        .filter((value): value is string => Boolean(value)),
+    ),
+  );
+
+  let orders: Order[] = [];
+
+  if (orderIds.length > 0) {
+    const { data, error } = await supabase
+      .from("orders")
+      .select(
+        `
+            id,
+            reference,
+            customer_name,
+            customer_contact,
+            customer_email,
+            service_name,
+            package_name,
+            total,
+            payment_status,
+            service_status
+          `,
+      )
+      .in("id", orderIds);
+
+    if (error) {
+      throw new Error(
+        `Unable to load service orders: Please retry or contact the owner.`,
+      );
+    }
+
+    orders = (data ?? []) as unknown as Order[];
+  }
+
+  const orderMap = new Map(orders.map((order) => [order.id, order]));
 
   /* =======================================================
      STATUS GROUPS
   ======================================================= */
 
-  const activeConversations =
-    allConversations.filter(
-      (
-        conversation
-      ) =>
-        !conversation.deleted_at &&
-        conversation.status ===
-          "open"
-    );
+  const groups: Record<ChatView, Conversation[]> = {
+    new: [],
 
-  const closedConversations =
-    allConversations.filter(
-      (
-        conversation
-      ) =>
-        !conversation.deleted_at &&
-        conversation.status !==
-          "open"
-    );
+    progress: [],
 
-  const deletedConversations =
-    allConversations.filter(
-      (
-        conversation
-      ) =>
-        Boolean(
-          conversation.deleted_at
-        )
-    );
+    completed: [],
 
-  const viewConversations =
-    view ===
-      "active"
-      ? activeConversations
-      : view ===
-          "closed"
-        ? closedConversations
-        : deletedConversations;
+    closed: [],
 
-  const filteredConversations =
-    filterConversations(
-      viewConversations,
-      filter
-    );
+    deleted: [],
+  };
 
-  /* =======================================================
-     LINKED ORDERS
-  ======================================================= */
+  for (const conversation of allConversations) {
+    const order = getOrder(conversation, orderMap);
 
-  const orderIds =
-    Array.from(
-      new Set(
-        allConversations
-          .map(
-            (
-              conversation
-            ) =>
-              conversation.order_id
-          )
-          .filter(
-            (
-              value
-            ):
-              value is string =>
-              Boolean(
-                value
-              )
-          )
-      )
-    );
+    const destination = getConversationView(conversation, order);
 
-  let orders:
-    Order[] = [];
-
-  if (
-    orderIds.length >
-    0
-  ) {
-    const {
-      data,
-      error,
-    } =
-      await supabase
-        .from(
-          "orders"
-        )
-        .select(
-          "id, reference, customer_name, customer_contact, customer_email, service_name, package_name, total, payment_status, service_status"
-        )
-        .in(
-          "id",
-          orderIds
-        );
-
-    if (
-      error
-    ) {
-      throw new Error(
-        `Unable to load linked orders: ${error.message}`
-      );
-    }
-
-    orders =
-      (
-        data ??
-        []
-      ) as unknown as
-        Order[];
+    groups[destination].push(conversation);
   }
 
-  const orderMap =
-    new Map<
-      string,
-      Order
-    >(
-      orders.map(
-        (
-          order
-        ) => [
-          order.id,
-          order,
-        ]
-      )
-    );
+  groups.new = sortQueue(groups.new);
+
+  groups.progress = sortQueue(groups.progress);
+
+  groups.completed = sortQueue(groups.completed);
+
+  groups.closed = sortQueue(groups.closed);
+
+  groups.deleted = sortQueue(groups.deleted);
 
   /* =======================================================
-     SELECTED CONVERSATION
+     KEEP SELECTED CHAT WITH USER WHEN ITS STATUS CHANGES
 
-     Selection only comes from the CURRENT FILTER.
+     Example:
+
+       In Progress
+       ↓ customer pays
+       realtime refresh
+       ↓
+       Completed
+
+     The browser follows the conversation instead of
+     suddenly showing an unrelated customer.
+  ======================================================= */
+
+  if (params.conversation) {
+    const requested = allConversations.find(
+      (conversation) => conversation.id === params.conversation,
+    );
+
+    if (requested) {
+      const requestedOrder = getOrder(requested, orderMap);
+
+      const actualView = getConversationView(requested, requestedOrder);
+
+      if (actualView !== view) {
+        redirect(
+          buildChatHref({
+            view: actualView,
+
+            type: filter,
+
+            conversation: requested.id,
+          }),
+        );
+      }
+    }
+  }
+
+  const viewConversations = groups[view];
+
+  const filteredConversations = viewConversations.filter((conversation) =>
+    matchesType(conversation, filter),
+  );
+
+  /* =======================================================
+     SELECTED
   ======================================================= */
 
   const selected =
-    view ===
-      "active"
-      ? filteredConversations.find(
-          (
-            conversation
-          ) =>
-            conversation.id ===
-            params.conversation
-        ) ??
-        filteredConversations[0] ??
-        null
-      : null;
+    filteredConversations.find(
+      (conversation) => conversation.id === params.conversation,
+    ) ?? null;
+
+  const selectedOrder = selected
+    ? (getOrder(selected, orderMap) ?? null)
+    : null;
 
   /* =======================================================
-     MESSAGES / PAYMENT REQUESTS
+     MESSAGES / PAYMENTS
   ======================================================= */
 
-  let messages:
-    AdminLiveMessage[] =
-    [];
+  let messages: AdminLiveMessage[] = [];
 
-  let paymentRequests:
-    AdminLivePaymentRequest[] =
-    [];
+  let paymentRequests: AdminLivePaymentRequest[] = [];
 
-  if (
-    selected
-  ) {
-    const [
-      messageResult,
-      paymentResult,
-    ] =
-      await Promise.all([
-        supabase
-          .from(
-            "service_messages"
-          )
-          .select(
-            "id, conversation_id, sender_type, sender_label, body, message_type, metadata, created_at"
-          )
-          .eq(
-            "conversation_id",
-            selected.id
-          )
-          .order(
-            "created_at",
-            {
-              ascending:
-                true,
-            }
-          ),
-
-        supabase
-          .from(
-            "service_payment_requests"
-          )
-          .select(
-            "id, conversation_id, order_id, amount, currency, title, description, status, stripe_checkout_session_id, paid_at, cancelled_at, created_at"
-          )
-          .eq(
-            "conversation_id",
-            selected.id
-          )
-          .order(
-            "created_at",
-            {
-              ascending:
-                true,
-            }
-          ),
-      ]);
-
-    if (
-      messageResult.error
-    ) {
-      throw new Error(
-        `Unable to load messages: ${messageResult.error.message}`
-      );
-    }
-
-    if (
-      paymentResult.error
-    ) {
-      throw new Error(
-        `Unable to load payment requests: ${paymentResult.error.message}`
-      );
-    }
-
-    messages =
-      (
-        messageResult.data ??
-        []
-      ) as unknown as
-        AdminLiveMessage[];
-
-    paymentRequests =
-      (
-        paymentResult.data ??
-        []
-      ) as unknown as
-        AdminLivePaymentRequest[];
-
-    if (
-      isUnread(
-        selected
-      )
-    ) {
-      await supabase
-        .from(
-          "service_conversations"
+  if (selected && view !== "deleted") {
+    const [messageResult, paymentResult] = await Promise.all([
+      supabase
+        .from("service_messages")
+        .select(
+          "id, conversation_id, sender_type, sender_label, body, message_type, metadata, created_at",
         )
-        .update({
-          admin_last_read_at:
-            new Date()
-              .toISOString(),
+        .eq("conversation_id", selected.id)
+        .order("created_at", {
+          ascending: false,
         })
-        .eq(
-          "id",
-          selected.id
-        );
+        .limit(100),
+
+      supabase
+        .from("service_payment_requests")
+        .select(
+          "id, conversation_id, order_id, amount, currency, title, description, status, stripe_checkout_session_id, paid_at, cancelled_at, created_at",
+        )
+        .eq("conversation_id", selected.id)
+        .order("created_at", {
+          ascending: false,
+        })
+        .limit(100),
+    ]);
+
+    if (messageResult.error) {
+      throw new Error(
+        `Unable to load messages: Please retry or contact the owner.`,
+      );
+    }
+
+    if (paymentResult.error) {
+      throw new Error(
+        `Unable to load payment requests: Please retry or contact the owner.`,
+      );
+    }
+
+    messages = (
+      messageResult.data ?? []
+    ).reverse() as unknown as AdminLiveMessage[];
+
+    paymentRequests = (paymentResult.data ??
+      []) as unknown as AdminLivePaymentRequest[];
+
+    if (isUnread(selected)) {
+      await supabase
+        .from("service_conversations")
+        .update({
+          admin_last_read_at: new Date().toISOString(),
+        })
+        .eq("id", selected.id);
     }
   }
 
-  /* =======================================================
-     SELECTED DATA
-  ======================================================= */
-
-  const selectedOrder =
-    selected
-      ? getOrder(
-          selected,
-          orderMap
-        ) ??
-        null
+  const latestPayment =
+    paymentRequests.length > 0
+      ? paymentRequests[paymentRequests.length - 1]
       : null;
 
   const pendingPayment =
-    paymentRequests.find(
-      (
-        request
-      ) =>
-        request.status ===
-        "pending"
-    ) ??
-    null;
+    paymentRequests.find((request) => request.status === "pending") ?? null;
 
   const paidPayment =
-    [
-      ...paymentRequests,
-    ]
+    [...paymentRequests]
       .reverse()
-      .find(
-        (
-          request
-        ) =>
-          request.status ===
-          "paid"
-      ) ??
-    null;
-
-  const latestPayment =
-    paymentRequests.length >
-    0
-      ? paymentRequests[
-          paymentRequests.length -
-            1
-        ]
-      : null;
-
-  const selectedReference =
-    selected
-      ? getReference(
-          selected,
-          selectedOrder ??
-            undefined
-        )
-      : "";
-
-  const selectedTitle =
-    selected
-      ? getConversationTitle(
-          selected,
-          selectedOrder ??
-            undefined
-        )
-      : "";
-
-  const selectedSubtitle =
-    selected
-      ? getConversationSubtitle(
-          selected,
-          selectedOrder ??
-            undefined
-        )
-      : "";
-
-  const selectedCustomer =
-    selected
-      ? getCustomerName(
-          selected,
-          selectedOrder ??
-            undefined
-        )
-      : "";
-
-  const selectedContact =
-    selected
-      ? getCustomerContact(
-          selected,
-          selectedOrder ??
-            undefined
-        )
-      : "";
-
-  const paymentStatus =
-    selectedOrder
-      ?.payment_status ??
-    (
-      paidPayment
-        ? "paid"
-        : pendingPayment
-          ? "pending"
-          : "not_requested"
-    );
-
-  const workflowStatus =
-    selectedOrder
-      ?.service_status ??
-    selected
-      ?.workflow_status ??
-    "new";
-
-  const quotedAmount =
-    selectedOrder &&
-    Number(
-      selectedOrder.total
-    ) >
-      0
-      ? Number(
-          selectedOrder.total
-        )
-      : latestPayment
-        ? Number(
-            latestPayment.amount
-          )
-        : 0;
+      .find((request) => request.status === "paid") ?? null;
 
   /* =======================================================
-     CATEGORY COUNTS FOR CURRENT STATUS TAB
+     SELECTED LABELS
   ======================================================= */
 
-  const allCount =
-    countType(
-      viewConversations,
-      "all"
-    );
+  const selectedReference = selected
+    ? getReference(selected, selectedOrder ?? undefined)
+    : "";
 
-  const serviceCount =
-    countType(
-      viewConversations,
-      "service"
-    );
+  const selectedTitle = selected
+    ? getTitle(selected, selectedOrder ?? undefined)
+    : "";
 
-  const productCount =
-    countType(
-      viewConversations,
-      "product"
-    );
+  const selectedSubtitle = selected
+    ? getSubtitle(selected, selectedOrder ?? undefined)
+    : "";
 
-  const generalCount =
-    countType(
-      viewConversations,
-      "general"
-    );
+  const selectedCustomer = selected
+    ? getCustomerName(selected, selectedOrder ?? undefined)
+    : "";
 
-  const allUnread =
-    view ===
-      "active"
-      ? countUnread(
-          activeConversations,
-          "all"
-        )
-      : 0;
+  const selectedContact = selected
+    ? getCustomerContact(selected, selectedOrder ?? undefined)
+    : "";
 
-  const serviceUnread =
-    view ===
-      "active"
-      ? countUnread(
-          activeConversations,
-          "service"
-        )
-      : 0;
+  const paymentStatus =
+    selectedOrder?.payment_status ??
+    paidPayment?.status ??
+    pendingPayment?.status ??
+    "not_requested";
 
-  const productUnread =
-    view ===
-      "active"
-      ? countUnread(
-          activeConversations,
-          "product"
-        )
-      : 0;
+  const workflowStatus =
+    selectedOrder?.service_status ?? selected?.workflow_status ?? "new";
 
-  const generalUnread =
-    view ===
-      "active"
-      ? countUnread(
-          activeConversations,
-          "general"
-        )
-      : 0;
+  /* =======================================================
+     COUNTS
+  ======================================================= */
+
+  function countForView(targetView: ChatView) {
+    return groups[targetView].length;
+  }
+
+  function countType(type: ConversationFilter) {
+    return viewConversations.filter((conversation) =>
+      matchesType(conversation, type),
+    ).length;
+  }
+
+  function unreadType(type: ConversationFilter) {
+    return viewConversations.filter(
+      (conversation) =>
+        matchesType(conversation, type) && isUnread(conversation),
+    ).length;
+  }
+
+  /* =======================================================
+     ARCHIVE VIEWS
+  ======================================================= */
+
+  const isArchiveView = view === "closed" || view === "deleted";
 
   /* =======================================================
      UI
   ======================================================= */
 
   return (
-    <main
-      className={
-        styles.page
-      }
-    >
+    <main className={styles.page}>
       <AdminSidebar />
 
-      <section
-        className={
-          styles.content
-        }
-      >
+      <AdminChatQueueSync />
+
+      <section className={styles.content}>
         {/* =================================================
             HEADER
         ================================================= */}
 
-        <header
-          className={
-            styles.header
-          }
-        >
+        <header className={styles.header}>
           <div>
-            <span>
-              BIRDSHOP / COMMUNICATION
-            </span>
+            <span>BIRDSHOP / COMMUNICATION</span>
 
-            <h1>
-              Chat
-            </h1>
+            <h1>Chat</h1>
 
             <p>
-              Manage service requests, product support, and
-              general support from one private BirdShop
-              conversation workspace.
+              New conversations stay visible first, active work is separated by
+              provider, and verified payments move automatically into Completed.
             </p>
           </div>
+
+          <AdminRefreshButton />
         </header>
 
+        <nav
+          aria-label="Conversation pages"
+          style={{
+            display: "flex",
+            gap: 20,
+            flexWrap: "wrap",
+            margin: "20px 0",
+          }}
+        >
+          {page > 1 && (
+            <Link href={pageHref(page - 1)}>← Newer conversations</Link>
+          )}
+          <span>
+            History page {page} · tab counts cover these 100 conversations
+          </span>
+          {allConversations.length === 100 && (
+            <Link href={pageHref(page + 1)}>Older conversations →</Link>
+          )}
+        </nav>
         {params.message && (
           <div
-            className={
-              params.tone ===
-                "error"
-                ? styles.error
-                : styles.notice
-            }
+            className={params.tone === "error" ? styles.error : styles.notice}
           >
-            {
-              params.message
-            }
+            {params.message}
           </div>
         )}
 
         {/* =================================================
-            STATUS
+            WORKFLOW TABS
         ================================================= */}
 
-        <nav
-          className={
-            styles.tabs
-          }
-        >
-          <Link
-            href={
-              buildChatHref({
-                view:
-                  "active",
+        <nav className={styles.workflowTabs}>
+          {(
+            [
+              ["new", "New"],
+              ["progress", "In Progress"],
+              ["completed", "Completed"],
+              ["closed", "Closed"],
+              ["deleted", "Deleted"],
+            ] as Array<[ChatView, string]>
+          ).map(([target, label]) => (
+            <Link
+              key={target}
+              href={buildChatHref({
+                view: target,
 
-                type:
-                  filter,
-              })
-            }
-            className={
-              view ===
-                "active"
-                ? styles.activeTab
-                : ""
-            }
-          >
-            Active
-
-            <span>
-              {
-                activeConversations.length
-              }
-            </span>
-          </Link>
-
-          <Link
-            href={
-              buildChatHref({
-                view:
-                  "closed",
-
-                type:
-                  filter,
-              })
-            }
-            className={
-              view ===
-                "closed"
-                ? styles.activeTab
-                : ""
-            }
-          >
-            Closed
-
-            <span>
-              {
-                closedConversations.length
-              }
-            </span>
-          </Link>
-
-          <Link
-            href={
-              buildChatHref({
-                view:
-                  "deleted",
-
-                type:
-                  filter,
-              })
-            }
-            className={
-              view ===
-                "deleted"
-                ? styles.activeTab
-                : ""
-            }
-          >
-            Deleted
-
-            <span>
-              {
-                deletedConversations.length
-              }
-            </span>
-          </Link>
-        </nav>
-
-        {/* =================================================
-            CATEGORY FILTER
-        ================================================= */}
-
-        <nav
-          className={
-            styles.tabs
-          }
-        >
-          <Link
-            href={
-              buildChatHref({
-                view,
-
-                type:
-                  "all",
-              })
-            }
-            className={
-              filter ===
-                "all"
-                ? styles.activeTab
-                : ""
-            }
-          >
-            All
-
-            <span>
-              {
-                allCount
-              }
-
-              {allUnread >
-                0
-                ? ` · ${allUnread} new`
-                : ""}
-            </span>
-          </Link>
-
-          <Link
-            href={
-              buildChatHref({
-                view,
-
-                type:
-                  "service",
-              })
-            }
-            className={
-              filter ===
-                "service"
-                ? styles.activeTab
-                : ""
-            }
-          >
-            Service
-
-            <span>
-              {
-                serviceCount
-              }
-
-              {serviceUnread >
-                0
-                ? ` · ${serviceUnread} new`
-                : ""}
-            </span>
-          </Link>
-
-          <Link
-            href={
-              buildChatHref({
-                view,
-
-                type:
-                  "product",
-              })
-            }
-            className={
-              filter ===
-                "product"
-                ? styles.activeTab
-                : ""
-            }
-          >
-            Product Support
-
-            <span>
-              {
-                productCount
-              }
-
-              {productUnread >
-                0
-                ? ` · ${productUnread} new`
-                : ""}
-            </span>
-          </Link>
-
-          <Link
-            href={
-              buildChatHref({
-                view,
-
-                type:
-                  "general",
-              })
-            }
-            className={
-              filter ===
-                "general"
-                ? styles.activeTab
-                : ""
-            }
-          >
-            General Support
-
-            <span>
-              {
-                generalCount
-              }
-
-              {generalUnread >
-                0
-                ? ` · ${generalUnread} new`
-                : ""}
-            </span>
-          </Link>
-        </nav>
-
-        {/* =================================================
-            ACTIVE WORKSPACE
-        ================================================= */}
-
-        {view ===
-        "active" ? (
-          <div
-            className={
-              styles.workspace
-            }
-          >
-            {/* =============================================
-                INBOX
-            ============================================= */}
-
-            <aside
+                type: filter,
+              })}
               className={
-                styles.inbox
+                view === target ? styles.workflowTabActive : styles.workflowTab
               }
             >
-              <div
+              <span>{label}</span>
+
+              <strong>{countForView(target)}</strong>
+            </Link>
+          ))}
+        </nav>
+
+        {/* =================================================
+            CATEGORY FILTERS
+        ================================================= */}
+
+        <nav className={styles.categoryTabs}>
+          {(
+            [
+              ["all", "All"],
+              ["service", "Service"],
+              ["product", "Product Support"],
+              ["general", "General Support"],
+            ] as Array<[ConversationFilter, string]>
+          ).map(([target, label]) => {
+            const unread = unreadType(target);
+
+            return (
+              <Link
+                key={target}
+                href={buildChatHref({
+                  view,
+
+                  type: target,
+                })}
                 className={
-                  styles.inboxHeading
+                  filter === target
+                    ? styles.categoryTabActive
+                    : styles.categoryTab
                 }
               >
-                <span>
-                  {conversationFilterLabel(
-                    filter
-                  )}{" "}
-                  INBOX
-                </span>
+                {label}
 
-                <strong>
-                  {
-                    filteredConversations.length
-                  }{" "}
-                  {filteredConversations.length ===
-                    1
+                <span>
+                  {countType(target)}
+
+                  {unread > 0 ? ` · ${unread} new` : ""}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* =================================================
+            ARCHIVES
+        ================================================= */}
+
+        {isArchiveView ? (
+          <section className={styles.archive}>
+            <div className={styles.archiveHeader}>
+              <div>
+                <span>{viewLabel(view).toUpperCase()}</span>
+
+                <h2>
+                  {filteredConversations.length}{" "}
+                  {filteredConversations.length === 1
                     ? "conversation"
                     : "conversations"}
-                </strong>
+                </h2>
               </div>
 
-              {filteredConversations.length ===
-              0 ? (
-                <div
-                  className={
-                    styles.emptyInbox
-                  }
-                >
-                  No active{" "}
-                  {conversationFilterLabel(
-                    filter
-                  ).toLowerCase()}{" "}
-                  conversations.
+              <p>
+                {view === "deleted"
+                  ? "Deleted conversations remain recoverable until permanently removed."
+                  : "Closed conversations are retained for reference and can be reopened."}
+              </p>
+            </div>
+
+            {filteredConversations.length === 0 ? (
+              <div className={styles.emptyArchive}>Nothing is stored here.</div>
+            ) : (
+              <div className={styles.archiveGrid}>
+                {filteredConversations.map((conversation) => {
+                  const order = getOrder(conversation, orderMap);
+
+                  return (
+                    <article
+                      key={conversation.id}
+                      className={styles.archiveCard}
+                    >
+                      <div className={styles.archiveTop}>
+                        <span>
+                          {conversationTypeLabel(
+                            conversation.conversation_type,
+                          )}
+                        </span>
+
+                        <time>{formatDate(conversation.last_message_at)}</time>
+                      </div>
+
+                      <small>{getReference(conversation, order)}</small>
+
+                      <h3>{getTitle(conversation, order)}</h3>
+
+                      <p>
+                        {getCustomerName(conversation, order)}
+                        {" · "}
+                        {getSubtitle(conversation, order)}
+                      </p>
+
+                      <div className={styles.archiveActions}>
+                        {view === "closed" ? (
+                          <>
+                            <form action={setConversationStatus}>
+                              <input
+                                type="hidden"
+                                name="conversation_id"
+                                value={conversation.id}
+                              />
+
+                              <SubmitButton
+                                type="submit"
+                                name="status"
+                                value="open"
+                              >
+                                Reopen
+                              </SubmitButton>
+                            </form>
+
+                            <form action={deleteConversation}>
+                              <input
+                                type="hidden"
+                                name="conversation_id"
+                                value={conversation.id}
+                              />
+
+                              <SubmitButton
+                                type="submit"
+                                className={styles.dangerButton}
+                              >
+                                Delete
+                              </SubmitButton>
+                            </form>
+                          </>
+                        ) : (
+                          <>
+                            <form action={restoreConversation}>
+                              <input
+                                type="hidden"
+                                name="conversation_id"
+                                value={conversation.id}
+                              />
+
+                              <SubmitButton type="submit">Restore</SubmitButton>
+                            </form>
+
+                            <form action={permanentlyDeleteConversation}>
+                              <input
+                                type="hidden"
+                                name="conversation_id"
+                                value={conversation.id}
+                              />
+
+                              <SubmitButton
+                                type="submit"
+                                className={styles.dangerButton}
+                              >
+                                Delete Permanently
+                              </SubmitButton>
+                            </form>
+                          </>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        ) : (
+          /* =================================================
+             ACTIVE WORKSPACE
+          ================================================= */
+
+          <div
+            className={styles.workspace}
+            data-mobile-detail={Boolean(params.conversation)}
+          >
+            {/* ===============================================
+                INBOX
+            =============================================== */}
+
+            <aside className={styles.inbox}>
+              <div className={styles.inboxHeading}>
+                <div>
+                  <span>{viewLabel(view).toUpperCase()}</span>
+
+                  <strong>{filterLabel(filter)}</strong>
+                </div>
+
+                <b>{filteredConversations.length}</b>
+              </div>
+
+              {filteredConversations.length === 0 ? (
+                <div className={styles.emptyInbox}>
+                  No {viewLabel(view).toLowerCase()}{" "}
+                  {filterLabel(filter).toLowerCase()} conversations.
                 </div>
               ) : (
-                <div
-                  className={
-                    styles.conversationList
-                  }
-                >
-                  {filteredConversations.map(
-                    (
-                      conversation
-                    ) => {
-                      const order =
-                        getOrder(
-                          conversation,
-                          orderMap
-                        );
+                <div className={styles.conversationList}>
+                  {filteredConversations.map((conversation) => {
+                    const order = getOrder(conversation, orderMap);
 
-                      const unread =
-                        isUnread(
-                          conversation
-                        );
+                    const unread = isUnread(conversation);
 
-                      return (
-                        <Link
-                          key={
-                            conversation.id
-                          }
-                          href={
-                            buildChatHref({
-                              view:
-                                "active",
+                    const palette = staffPalette(conversation);
 
-                              type:
-                                filter,
+                    const provider = staffLabel(conversation);
 
-                              conversation:
-                                conversation.id,
-                            })
-                          }
-                          className={`${styles.conversationItem} ${
-                            selected?.id ===
-                            conversation.id
-                              ? styles.activeConversation
-                              : ""
-                          }`}
-                        >
-                          <div>
-                            <span>
-                              {conversationTypeLabel(
-                                conversation.conversation_type
-                              )}
-                              {" · "}
-                              {getReference(
-                                conversation,
-                                order
-                              )}
-                            </span>
+                    return (
+                      <Link
+                        key={conversation.id}
+                        href={buildChatHref({
+                          view,
 
+                          type: filter,
+
+                          conversation: conversation.id,
+                        })}
+                        className={`${styles.conversationCard} ${
+                          selected?.id === conversation.id
+                            ? styles.conversationCardSelected
+                            : ""
+                        }`}
+                        data-palette={palette}
+                        data-assigned={provider ? "true" : "false"}
+                      >
+                        <div className={styles.conversationCardTop}>
+                          <span>
+                            {conversationTypeLabel(
+                              conversation.conversation_type,
+                            )}
+                            {" · "}
+                            {getReference(conversation, order)}
+                          </span>
+
+                          <div className={styles.cardBadges}>
                             {unread && (
-                              <small>
-                                NEW
+                              <small className={styles.newBadge}>NEW</small>
+                            )}
+
+                            {provider && (
+                              <small className={styles.providerBadge}>
+                                {provider}
                               </small>
                             )}
                           </div>
+                        </div>
 
-                          <strong>
-                            {getConversationTitle(
-                              conversation,
-                              order
-                            )}
-                          </strong>
+                        <strong>{getTitle(conversation, order)}</strong>
 
-                          <p>
-                            {getCustomerName(
-                              conversation,
-                              order
-                            )}
-                            {" · "}
-                            {getConversationSubtitle(
-                              conversation,
-                              order
-                            )}
-                          </p>
+                        <p>
+                          {getCustomerName(conversation, order)}
+                          {" · "}
+                          {getSubtitle(conversation, order)}
+                        </p>
 
+                        <div className={styles.cardBottom}>
                           <time>
-                            {formatDate(
-                              conversation.last_message_at
-                            )}
+                            {formatDate(conversation.last_message_at)}
                           </time>
-                        </Link>
-                      );
-                    }
-                  )}
+
+                          {view === "completed" && order && (
+                            <span>{statusLabel(order.service_status)}</span>
+                          )}
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </aside>
 
-            {/* =============================================
-                EMPTY
-            ============================================= */}
+            {/* ===============================================
+                CHAT
+            =============================================== */}
 
             {!selected ? (
-              <section
-                className={
-                  styles.emptyChat
-                }
-              >
-                {filteredConversations.length ===
-                0
-                  ? `No ${conversationFilterLabel(
-                      filter
-                    ).toLowerCase()} conversations are waiting here.`
-                  : "Select a conversation to begin."}
+              <section className={styles.emptyChat}>
+                <span>{viewLabel(view)}</span>
+
+                <h2>Choose a conversation.</h2>
+
+                <p>
+                  Select a conversation from the list to view its messages and
+                  actions.
+                </p>
               </section>
             ) : (
-              /* ===========================================
-                 CHAT
-              =========================================== */
-
-              <section
-                className={
-                  styles.chat
-                }
-              >
-                {/* =========================================
-                    HEADER
-                ========================================= */}
-
-                <header
-                  className={
-                    styles.chatHeader
-                  }
+              <section className={styles.chat}>
+                <Link
+                  className={styles.mobileBack}
+                  href={buildChatHref({ view, type: filter })}
                 >
-                  <div>
+                  ← Conversations
+                </Link>
+                {/* ===========================================
+                    CHAT HEADER
+                =========================================== */}
+
+                <header className={styles.chatHeader}>
+                  <div className={styles.chatIdentity}>
                     <span>
-                      {conversationTypeLabel(
-                        selected.conversation_type
-                      )}
+                      {conversationTypeLabel(selected.conversation_type)}
                       {" · "}
-                      {
-                        selectedReference
-                      }
+                      {selectedReference}
                     </span>
 
-                    <h2>
-                      {
-                        selectedTitle
-                      }
-                    </h2>
+                    <h2>{selectedTitle}</h2>
 
-                    <p>
-                      {
-                        selectedSubtitle
-                      }
-                    </p>
+                    <p>{selectedSubtitle}</p>
                   </div>
 
-                  <div
-                    className={
-                      styles.orderFacts
-                    }
-                  >
-                    {selected.conversation_type ===
-                    "service" ? (
+                  <div className={styles.chatFacts}>
+                    <div>
+                      <span>WORKSPACE</span>
+
+                      <strong>{viewLabel(view)}</strong>
+                    </div>
+
+                    {selected.conversation_type === "service" && (
                       <>
                         <div>
-                          <span>
-                            PAYMENT
-                          </span>
+                          <span>PAYMENT</span>
 
-                          <strong>
-                            {statusLabel(
-                              paymentStatus
-                            )}
-                          </strong>
+                          <strong>{statusLabel(paymentStatus)}</strong>
                         </div>
 
                         <div>
-                          <span>
-                            STATUS
-                          </span>
+                          <span>SERVICE</span>
 
-                          <strong>
-                            {statusLabel(
-                              workflowStatus
-                            )}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            ORDER
-                          </span>
-
-                          <strong>
-                            {selectedOrder
-                              ? "Linked"
-                              : "Not Created"}
-                          </strong>
-                        </div>
-                      </>
-                    ) : selected.conversation_type ===
-                      "product" ? (
-                      <>
-                        <div>
-                          <span>
-                            TYPE
-                          </span>
-
-                          <strong>
-                            Product Support
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            PLATFORM
-                          </span>
-
-                          <strong>
-                            {selected.product_platform ||
-                              "—"}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            STATUS
-                          </span>
-
-                          <strong>
-                            {statusLabel(
-                              selected.workflow_status
-                            )}
-                          </strong>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div>
-                          <span>
-                            TYPE
-                          </span>
-
-                          <strong>
-                            General Support
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            SUBJECT
-                          </span>
-
-                          <strong>
-                            {selected.subject ||
-                              "General Question"}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            STATUS
-                          </span>
-
-                          <strong>
-                            {statusLabel(
-                              selected.workflow_status
-                            )}
-                          </strong>
+                          <strong>{statusLabel(workflowStatus)}</strong>
                         </div>
                       </>
                     )}
                   </div>
                 </header>
 
-                {/* =========================================
-                    CUSTOMER
-                ========================================= */}
+                {/* ===========================================
+                    CUSTOMER BAR
+                =========================================== */}
 
-                <div
-                  className={
-                    styles.customerBar
-                  }
-                >
+                <div className={styles.customerBar}>
                   <div>
-                    <span>
-                      CUSTOMER
-                    </span>
+                    <span>CUSTOMER</span>
 
-                    <strong>
-                      {
-                        selectedCustomer
-                      }
-                    </strong>
+                    <strong>{selectedCustomer}</strong>
 
-                    <small>
-                      {
-                        selectedContact
-                      }
-                    </small>
+                    <small>{selectedContact}</small>
                   </div>
 
-                  <Link
-                    href={`/service-chat?token=${encodeURIComponent(
-                      selected.public_token
-                    )}`}
-                    target="_blank"
-                  >
-                    Open Customer View ↗
-                  </Link>
+                  <div className={styles.customerActions}>
+                    {selected.assigned_to && (
+                      <span
+                        className={styles.assignedChip}
+                        data-palette={staffPalette(selected)}
+                      >
+                        Assigned to {selected.assigned_to}
+                      </span>
+                    )}
+
+                    <Link
+                      href={`/service-chat?token=${encodeURIComponent(
+                        selected.public_token,
+                      )}`}
+                      target="_blank"
+                    >
+                      Open Customer View ↗
+                    </Link>
+                  </div>
                 </div>
 
-                {/* =========================================
-                    SERVICE PAYMENT CENTER
-                ========================================= */}
+                {/* ===========================================
+                    OWNER CLAIM
 
-                {selected.conversation_type ===
-                "service" ? (
-                  <section>
-                    {paymentStatus ===
-                    "paid" ? (
-                      <div
-                        className={
-                          styles.paymentBar
-                        }
-                      >
-                        <div
-                          className={
-                            styles.paymentBarInfo
-                          }
-                        >
-                          <span>
-                            PAYMENT CENTER
-                          </span>
+                    Service only.
+                =========================================== */}
 
-                          <strong>
-                            Payment received
-                          </strong>
-                        </div>
+                {view === "new" &&
+                  selected.conversation_type === "service" &&
+                  !selected.assigned_staff_user_id && (
+                    <div className={styles.claimBar}>
+                      <div>
+                        <span>UNASSIGNED SERVICE</span>
+
+                        <p>
+                          Take ownership as the BirdShop owner, or leave it
+                          available for Service Staff.
+                        </p>
+                      </div>
+
+                      <form action={acceptServiceConversation}>
+                        <input
+                          type="hidden"
+                          name="conversation_id"
+                          value={selected.id}
+                        />
+
+                        <SubmitButton type="submit">Take Service</SubmitButton>
+                      </form>
+                    </div>
+                  )}
+
+                {/* ===========================================
+                    PAYMENT CENTER
+                =========================================== */}
+
+                {selected.conversation_type === "service" && (
+                  <details
+                    className={styles.paymentDrawer}
+                    open={Boolean(pendingPayment)}
+                  >
+                    <summary>
+                      <div>
+                        <span>PAYMENT CENTER</span>
 
                         <strong>
-                          ✓ PAID
+                          {paidPayment
+                            ? `Paid · ${money(
+                                paidPayment.amount,
+                                paidPayment.currency,
+                              )}`
+                            : pendingPayment
+                              ? `Pending · ${money(
+                                  pendingPayment.amount,
+                                  pendingPayment.currency,
+                                )}`
+                              : latestPayment
+                                ? statusLabel(latestPayment.status)
+                                : "No payment request"}
                         </strong>
                       </div>
-                    ) : (
-                      <details>
-                        <summary
-                          className={
-                            styles.paymentBar
-                          }
-                          style={{
-                            listStyle:
-                              "none",
 
-                            cursor:
-                              "pointer",
-                          }}
-                        >
-                          <div
-                            className={
-                              styles.paymentBarInfo
-                            }
-                          >
-                            <span>
-                              PAYMENT CENTER
-                            </span>
+                      <span>Manage Payment</span>
+                    </summary>
 
-                            <strong>
-                              {pendingPayment
-                                ? `${money(
-                                    pendingPayment.amount,
-                                    pendingPayment.currency
-                                  )} request pending`
-                                : "No payment request sent"}
-                            </strong>
+                    <div className={styles.paymentBody}>
+                      {paidPayment ? (
+                        <article className={styles.paidSummary}>
+                          <div>
+                            <span>PAYMENT RECEIVED</span>
+
+                            <strong>{paidPayment.title}</strong>
+
+                            <p>
+                              The payment is verified and the linked service
+                              order has been created.
+                            </p>
                           </div>
 
-                          <span>
-                            {pendingPayment
-                              ? "Manage Request ↓"
-                              : "Create Request ↓"}
-                          </span>
-                        </summary>
-
-                        <div
-                          className={
-                            styles.paymentDrawer
-                          }
+                          <b>
+                            {money(paidPayment.amount, paidPayment.currency)}
+                          </b>
+                        </article>
+                      ) : pendingPayment ? (
+                        <article
+                          className={paymentStyles.request}
+                          data-status="pending"
                         >
-                          {pendingPayment ? (
-                            <article
-                              className={
-                                paymentStyles.request
-                              }
-                              data-status={
-                                pendingPayment.status
-                              }
-                            >
-                              <div
-                                className={
-                                  paymentStyles.requestTop
-                                }
-                              >
-                                <div>
-                                  <span
-                                    className={
-                                      paymentStyles.requestEyebrow
-                                    }
-                                  >
-                                    CURRENT PAYMENT REQUEST
-                                  </span>
+                          <div className={paymentStyles.requestTop}>
+                            <div>
+                              <span className={paymentStyles.requestEyebrow}>
+                                CURRENT PAYMENT REQUEST
+                              </span>
 
-                                  <strong
-                                    className={
-                                      paymentStyles.requestTitle
-                                    }
-                                  >
-                                    {
-                                      pendingPayment.title
-                                    }
-                                  </strong>
-                                </div>
-
-                                <span
-                                  className={
-                                    paymentStyles.requestStatus
-                                  }
-                                >
-                                  {statusLabel(
-                                    pendingPayment.status
-                                  )}
-                                </span>
-                              </div>
-
-                              {pendingPayment.description && (
-                                <p
-                                  className={
-                                    paymentStyles.requestDescription
-                                  }
-                                >
-                                  {
-                                    pendingPayment.description
-                                  }
-                                </p>
-                              )}
-
-                              <strong
-                                className={
-                                  paymentStyles.requestAmount
-                                }
-                              >
-                                {money(
-                                  pendingPayment.amount,
-                                  pendingPayment.currency
-                                )}
+                              <strong className={paymentStyles.requestTitle}>
+                                {pendingPayment.title}
                               </strong>
+                            </div>
 
-                              <div
-                                className={
-                                  paymentStyles.requestFooter
-                                }
-                              >
-                                <span>
-                                  Waiting for customer payment.
-                                </span>
+                            <span className={paymentStyles.requestStatus}>
+                              Pending
+                            </span>
+                          </div>
 
-                                <form
-                                  action={
-                                    cancelPaymentRequest
-                                  }
-                                >
-                                  <input
-                                    type="hidden"
-                                    name="conversation_id"
-                                    value={
-                                      selected.id
-                                    }
-                                  />
+                          {pendingPayment.description && (
+                            <p className={paymentStyles.requestDescription}>
+                              {pendingPayment.description}
+                            </p>
+                          )}
 
-                                  <input
-                                    type="hidden"
-                                    name="payment_request_id"
-                                    value={
-                                      pendingPayment.id
-                                    }
-                                  />
+                          <strong className={paymentStyles.requestAmount}>
+                            {money(
+                              pendingPayment.amount,
+                              pendingPayment.currency,
+                            )}
+                          </strong>
 
-                                  <button
-                                    type="submit"
-                                    className={
-                                      paymentStyles.secondaryButton
-                                    }
-                                  >
-                                    Cancel Request
-                                  </button>
-                                </form>
-                              </div>
-                            </article>
-                          ) : (
-                            <form
-                              action={
-                                createPaymentRequest
-                              }
-                              className={
-                                paymentStyles.form
-                              }
-                            >
+                          <div className={paymentStyles.requestFooter}>
+                            <span>Waiting for customer payment.</span>
+
+                            <form action={cancelPaymentRequest}>
                               <input
                                 type="hidden"
                                 name="conversation_id"
-                                value={
-                                  selected.id
-                                }
+                                value={selected.id}
                               />
 
-                              <div
-                                className={
-                                  paymentStyles.fields
-                                }
+                              <input
+                                type="hidden"
+                                name="payment_request_id"
+                                value={pendingPayment.id}
+                              />
+
+                              <SubmitButton
+                                type="submit"
+                                className={paymentStyles.secondaryButton}
                               >
-                                <label
-                                  className={
-                                    paymentStyles.field
-                                  }
-                                >
-                                  <span
-                                    className={
-                                      paymentStyles.fieldLabel
-                                    }
-                                  >
-                                    TITLE
-                                  </span>
-
-                                  <input
-                                    className={
-                                      paymentStyles.input
-                                    }
-                                    name="title"
-                                    defaultValue={`${selectedTitle}${
-                                      selectedSubtitle
-                                        ? ` — ${selectedSubtitle}`
-                                        : ""
-                                    }`}
-                                    maxLength={
-                                      180
-                                    }
-                                    required
-                                  />
-                                </label>
-
-                                <label
-                                  className={
-                                    paymentStyles.field
-                                  }
-                                >
-                                  <span
-                                    className={
-                                      paymentStyles.fieldLabel
-                                    }
-                                  >
-                                    AMOUNT
-                                  </span>
-
-                                  <input
-                                    className={
-                                      paymentStyles.input
-                                    }
-                                    name="amount"
-                                    type="number"
-                                    min="0.50"
-                                    max="1000000"
-                                    step="0.01"
-                                    defaultValue={
-                                      quotedAmount >
-                                      0
-                                        ? quotedAmount.toFixed(
-                                            2
-                                          )
-                                        : ""
-                                    }
-                                    placeholder="24.99"
-                                    required
-                                  />
-                                </label>
-                              </div>
-
-                              <label
-                                className={
-                                  paymentStyles.field
-                                }
-                              >
-                                <span
-                                  className={
-                                    paymentStyles.fieldLabel
-                                  }
-                                >
-                                  DESCRIPTION · OPTIONAL
-                                </span>
-
-                                <textarea
-                                  className={
-                                    paymentStyles.textarea
-                                  }
-                                  name="description"
-                                  rows={
-                                    2
-                                  }
-                                  maxLength={
-                                    2000
-                                  }
-                                  placeholder="Describe exactly what this payment covers..."
-                                />
-                              </label>
-
-                              <div
-                                className={
-                                  paymentStyles.actions
-                                }
-                              >
-                                <span>
-                                  Sending a request does not create an order. The order is linked after verified payment.
-                                </span>
-
-                                <button
-                                  type="submit"
-                                  className={
-                                    paymentStyles.button
-                                  }
-                                >
-                                  Send Payment Request
-                                </button>
-                              </div>
+                                Cancel Request
+                              </SubmitButton>
                             </form>
-                          )}
+                          </div>
+                        </article>
+                      ) : selectedOrder ? (
+                        <div className={styles.noPaymentAction}>
+                          This conversation already has a linked order.
                         </div>
-                      </details>
-                    )}
-                  </section>
-                ) : (
-                  /* =======================================
-                     PRODUCT / GENERAL SUPPORT
-                  ======================================= */
+                      ) : (
+                        <form
+                          action={createPaymentRequest}
+                          className={paymentStyles.form}
+                        >
+                          <input
+                            type="hidden"
+                            name="conversation_id"
+                            value={selected.id}
+                          />
 
-                  <div
-                    className={
-                      styles.paymentBar
-                    }
-                  >
-                    <div
-                      className={
-                        styles.paymentBarInfo
-                      }
-                    >
-                      <span>
-                        {selected.conversation_type ===
-                        "product"
-                          ? "PRODUCT SUPPORT"
-                          : "GENERAL SUPPORT"}
-                      </span>
+                          <div className={paymentStyles.fields}>
+                            <label className={paymentStyles.field}>
+                              <span className={paymentStyles.fieldLabel}>
+                                TITLE
+                              </span>
 
-                      <strong>
-                        Private support conversation
-                      </strong>
+                              <input
+                                className={paymentStyles.input}
+                                name="title"
+                                defaultValue={`${selectedTitle}${
+                                  selectedSubtitle
+                                    ? ` — ${selectedSubtitle}`
+                                    : ""
+                                }`}
+                                maxLength={180}
+                                required
+                              />
+                            </label>
+
+                            <label className={paymentStyles.field}>
+                              <span className={paymentStyles.fieldLabel}>
+                                AMOUNT
+                              </span>
+
+                              <input
+                                className={paymentStyles.input}
+                                name="amount"
+                                type="number"
+                                min="0.50"
+                                step="0.01"
+                                placeholder="24.99"
+                                required
+                              />
+                            </label>
+                          </div>
+
+                          <label className={paymentStyles.field}>
+                            <span className={paymentStyles.fieldLabel}>
+                              DESCRIPTION · OPTIONAL
+                            </span>
+
+                            <textarea
+                              className={paymentStyles.textarea}
+                              name="description"
+                              rows={2}
+                              maxLength={2000}
+                              placeholder="Describe exactly what this payment covers..."
+                            />
+                          </label>
+
+                          <div className={paymentStyles.actions}>
+                            <span>Customer cannot change the amount.</span>
+
+                            <SubmitButton
+                              type="submit"
+                              className={paymentStyles.button}
+                            >
+                              Send Payment Request
+                            </SubmitButton>
+                          </div>
+                        </form>
+                      )}
                     </div>
-
-                    <strong>
-                      NO PAYMENT
-                    </strong>
-                  </div>
+                  </details>
                 )}
 
-                {/* =========================================
+                {/* ===========================================
                     LIVE THREAD
-                ========================================= */}
 
-                <AdminLiveThread
-                  key={
-                    selected.id
-                  }
-                  conversationId={
-                    selected.id
-                  }
-                  initialMessages={
-                    messages
-                  }
-                  initialPaymentRequests={
-                    paymentRequests
-                  }
-                />
+                    Completed/Paid is still live because paid
+                    does NOT mean the actual service work is
+                    necessarily finished.
+                =========================================== */}
 
-                {/* =========================================
+                <div className={styles.liveThread}>
+                  <AdminLiveThread
+                    key={selected.id}
+                    conversationId={selected.id}
+                    initialMessages={messages}
+                    initialPaymentRequests={paymentRequests}
+                  />
+                </div>
+
+                {/* ===========================================
                     FOOTER
-                ========================================= */}
+                =========================================== */}
 
-                <footer
-                  className={
-                    styles.chatFooter
-                  }
-                >
-                  <div
-                    className={
-                      styles.footerActions
-                    }
-                  >
-                    <form
-                      action={
-                        setConversationStatus
-                      }
-                    >
+                <footer className={styles.chatFooter}>
+                  <div>
+                    <form action={setConversationStatus}>
                       <input
                         type="hidden"
                         name="conversation_id"
-                        value={
-                          selected.id
-                        }
+                        value={selected.id}
                       />
 
-                      <button
-                        type="submit"
-                        name="status"
-                        value="closed"
-                      >
+                      <SubmitButton type="submit" name="status" value="closed">
                         Close Conversation
-                      </button>
+                      </SubmitButton>
                     </form>
                   </div>
 
                   {selectedOrder ? (
-                    <Link
-                      href="/admin/orders?view=services"
-                    >
-                      Open Linked Order →
+                    <Link href="/admin/orders?view=services">
+                      Open Service Order →
                     </Link>
-                  ) : selected.conversation_type ===
-                    "service" ? (
-                    <span>
-                      No order created yet
-                    </span>
                   ) : (
-                    <span>
-                      Support conversation
-                    </span>
+                    <span>No order created yet</span>
                   )}
                 </footer>
               </section>
             )}
           </div>
-        ) : (
-          /* =================================================
-             CLOSED / DELETED
-          ================================================= */
-
-          <section
-            className={
-              styles.compactArea
-            }
-          >
-            {filteredConversations.length ===
-            0 ? (
-              <div
-                className={
-                  styles.emptyChat
-                }
-              >
-                No{" "}
-                {conversationFilterLabel(
-                  filter
-                ).toLowerCase()}{" "}
-                conversations in this section.
-              </div>
-            ) : (
-              filteredConversations.map(
-                (
-                  conversation
-                ) => (
-                  <CompactConversation
-                    key={
-                      conversation.id
-                    }
-                    conversation={
-                      conversation
-                    }
-                    order={
-                      getOrder(
-                        conversation,
-                        orderMap
-                      )
-                    }
-                    view={
-                      view
-                    }
-                    filter={
-                      filter
-                    }
-                  />
-                )
-              )
-            )}
-          </section>
         )}
       </section>
     </main>

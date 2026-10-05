@@ -1,15 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import ProductCheckout from "@/components/ProductCheckout";
 
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
 import styles from "./cart.module.css";
 
-import {
-  useCart,
-} from "@/app/cart-context";
+import { useCart } from "@/app/cart-context";
 
 /* =========================================================
    CART PAGE
@@ -27,117 +26,64 @@ export default function CartPage() {
     removeFromCart,
     clearCart,
     refreshProducts,
-  } =
-    useCart();
+  } = useCart();
 
   /* =======================================================
      VALID CART ITEMS
   ======================================================= */
 
-  const validItems =
-    items.flatMap(
-      (
-        item
-      ) => {
-        const product =
-          products[
-            item.slug
-          ];
+  const validItems = items.flatMap((item) => {
+    const product = products[item.slug];
 
-        if (
-          !product
-        ) {
-          return [];
-        }
+    if (!product) {
+      return [];
+    }
 
-        return [
-          {
-            ...item,
-            product,
-          },
-        ];
-      }
-    );
+    return [
+      {
+        ...item,
+        product,
+      },
+    ];
+  });
 
   /* =======================================================
      TOTALS
   ======================================================= */
 
-  const subtotal =
-    validItems.reduce(
-      (
-        total,
-        item
-      ) =>
-        total +
-        item.product
-          .price *
-          item.quantity,
-      0
-    );
+  const subtotal = validItems.reduce(
+    (total, item) => total + item.product.price * item.quantity,
+    0,
+  );
 
   /* =======================================================
      LOADING
   ======================================================= */
 
-  if (
-    !productsLoaded
-  ) {
+  if (!productsLoaded) {
     return (
-      <main
-        className="page-shell"
-      >
+      <main className="page-shell">
         <SiteHeader />
 
-        <section
-          className={
-            styles.topSection
-          }
-        >
-          <div
-            className={
-              styles.cartHero
-            }
-          >
-            <span>
-              YOUR ORDER
-            </span>
+        <section className={styles.topSection}>
+          <div className={styles.cartHero}>
+            <span>YOUR ORDER</span>
 
-            <h1>
-              Shopping Cart
-            </h1>
+            <h1>Shopping Cart</h1>
 
-            <p>
-              Loading your
-              BirdShop cart...
-            </p>
+            <p>Loading your BirdShop cart...</p>
           </div>
         </section>
 
-        <section
-          className={
-            styles.cartArea
-          }
-        >
-          <div
-            className={
-              styles.emptyCart
-            }
-          >
-            <span>
-              LOADING CART
-            </span>
+        <section className={styles.cartArea}>
+          <div className={styles.emptyCart}>
+            <span>LOADING CART</span>
 
-            <h2>
-              Checking your
-              products.
-            </h2>
+            <h2>Checking your products.</h2>
 
             <p>
-              BirdShop is
-              confirming the latest
-              product information,
-              pricing, and stock.
+              BirdShop is confirming the latest product information, pricing,
+              and stock.
             </p>
           </div>
         </section>
@@ -151,66 +97,30 @@ export default function CartPage() {
      DATABASE ERROR
   ======================================================= */
 
-  if (
-    productsError
-  ) {
+  if (productsError) {
     return (
-      <main
-        className="page-shell"
-      >
+      <main className="page-shell">
         <SiteHeader />
 
-        <section
-          className={
-            styles.topSection
-          }
-        >
-          <div
-            className={
-              styles.cartHero
-            }
-          >
-            <span>
-              YOUR ORDER
-            </span>
+        <section className={styles.topSection}>
+          <div className={styles.cartHero}>
+            <span>YOUR ORDER</span>
 
-            <h1>
-              Shopping Cart
-            </h1>
+            <h1>Shopping Cart</h1>
 
-            <p>
-              We could not load
-              the latest product
-              information.
-            </p>
+            <p>We could not load the latest product information.</p>
           </div>
         </section>
 
-        <section
-          className={
-            styles.cartArea
-          }
-        >
-          <div
-            className={
-              styles.emptyCart
-            }
-          >
-            <span>
-              CONNECTION ERROR
-            </span>
+        <section className={styles.cartArea}>
+          <div className={styles.emptyCart}>
+            <span>CONNECTION ERROR</span>
 
-            <h2>
-              Unable to load
-              your cart.
-            </h2>
+            <h2>Unable to load your cart.</h2>
 
             <p>
-              BirdShop could not
-              reach the product
-              catalog. Your saved
-              cart has not been
-              intentionally cleared.
+              BirdShop could not reach the product catalog. Your saved cart has
+              not been intentionally cleared.
             </p>
 
             <button
@@ -234,38 +144,20 @@ export default function CartPage() {
   ======================================================= */
 
   return (
-    <main
-      className="page-shell"
-    >
+    <main className="page-shell">
       <SiteHeader />
 
       {/* ===================================================
           CART HERO
       =================================================== */}
 
-      <section
-        className={
-          styles.topSection
-        }
-      >
-        <div
-          className={
-            styles.cartHero
-          }
-        >
-          <span>
-            YOUR ORDER
-          </span>
+      <section className={styles.topSection}>
+        <div className={styles.cartHero}>
+          <span>YOUR ORDER</span>
 
-          <h1>
-            Shopping Cart
-          </h1>
+          <h1>Shopping Cart</h1>
 
-          <p>
-            Review your BirdShop
-            products before
-            continuing to checkout.
-          </p>
+          <p>Review your BirdShop products before continuing to checkout.</p>
         </div>
       </section>
 
@@ -273,369 +165,164 @@ export default function CartPage() {
           CART
       =================================================== */}
 
-      <section
-        className={
-          styles.cartArea
-        }
-      >
-        {validItems.length ===
-        0 ? (
+      <section className={styles.cartArea}>
+        {validItems.length === 0 ? (
           /* ===============================================
              EMPTY CART
           =============================================== */
 
-          <div
-            className={
-              styles.emptyCart
-            }
-          >
-            <span>
-              YOUR CART IS EMPTY
-            </span>
+          <div className={styles.emptyCart}>
+            <span>YOUR CART IS EMPTY</span>
 
-            <h2>
-              Nothing here yet.
-            </h2>
+            <h2>Nothing here yet.</h2>
 
-            <p>
-              Browse BirdShop
-              products and add
-              something to your
-              cart.
-            </p>
+            <p>Browse BirdShop products and add something to your cart.</p>
 
-            <Link
-              href="/products"
-            >
-              Browse Products →
-            </Link>
+            <Link href="/products">Browse Products →</Link>
           </div>
         ) : (
           /* ===============================================
              CART CONTENT
           =============================================== */
 
-          <div
-            className={
-              styles.cartLayout
-            }
-          >
+          <div className={styles.cartLayout}>
             {/* =============================================
                 ITEMS
             ============================================= */}
 
-            <div
-              className={
-                styles.cartItems
-              }
-            >
-              <div
-                className={
-                  styles.cartHeading
-                }
-              >
-                <h2>
-                  Your Items
-                </h2>
+            <div className={styles.cartItems}>
+              <div className={styles.cartHeading}>
+                <h2>Your Items</h2>
 
-                <button
-                  type="button"
-                  onClick={
-                    clearCart
-                  }
-                >
+                <button type="button" onClick={clearCart}>
                   Clear Cart
                 </button>
               </div>
 
-              {validItems.map(
-                ({
-                  slug,
-                  quantity,
-                  product,
-                }) => {
-                  const lineTotal =
-                    product.price *
-                    quantity;
+              {validItems.map(({ slug, quantity, product }) => {
+                const lineTotal = product.price * quantity;
 
-                  const atMaximum =
-                    quantity >=
-                    product.stock;
+                const atMaximum = quantity >= product.stock;
 
-                  const lowStock =
-                    product.stock >
-                      0 &&
-                    product.stock <
-                      25;
+                const lowStock = product.stock > 0 && product.stock < 25;
 
-                  return (
-                    <article
-                      key={
-                        slug
-                      }
-                      className={
-                        styles.cartItem
-                      }
-                    >
-                      {/* ===================================
+                return (
+                  <article key={slug} className={styles.cartItem}>
+                    {/* ===================================
                           PRODUCT ART
                       =================================== */}
 
-                      <Link
-                        href={`/products/${slug}`}
-                        className={
-                          styles.itemVisual
-                        }
-                      >
-                        <span>
-                          {
-                            product.initials
-                          }
-                        </span>
-                      </Link>
+                    <Link
+                      href={`/products/${slug}`}
+                      className={styles.itemVisual}
+                    >
+                      <span>{product.initials}</span>
+                    </Link>
 
-                      {/* ===================================
+                    {/* ===================================
                           PRODUCT INFO
                       =================================== */}
 
-                      <div
-                        className={
-                          styles.itemInfo
-                        }
+                    <div className={styles.itemInfo}>
+                      <span>{product.category}</span>
+
+                      <Link href={`/products/${slug}`}>
+                        <h3>{product.name}</h3>
+                      </Link>
+
+                      <p>
+                        {product.platform}
+
+                        {" · "}
+
+                        {product.region}
+                      </p>
+
+                      {lowStock && <p>{product.stock} left in stock</p>}
+
+                      <button
+                        type="button"
+                        onClick={() => removeFromCart(slug)}
                       >
-                        <span>
-                          {
-                            product.category
-                          }
-                        </span>
+                        Remove
+                      </button>
+                    </div>
 
-                        <Link
-                          href={`/products/${slug}`}
-                        >
-                          <h3>
-                            {
-                              product.name
-                            }
-                          </h3>
-                        </Link>
-
-                        <p>
-                          {
-                            product.platform
-                          }
-
-                          {" · "}
-
-                          {
-                            product.region
-                          }
-                        </p>
-
-                        {lowStock && (
-                          <p>
-                            {
-                              product.stock
-                            }{" "}
-                            left in stock
-                          </p>
-                        )}
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            removeFromCart(
-                              slug
-                            )
-                          }
-                        >
-                          Remove
-                        </button>
-                      </div>
-
-                      {/* ===================================
+                    {/* ===================================
                           QUANTITY
                       =================================== */}
 
-                      <div
-                        className={
-                          styles.quantityControl
-                        }
+                    <div className={styles.quantityControl}>
+                      <button
+                        type="button"
+                        aria-label={`Decrease ${product.name} quantity`}
+                        onClick={() => updateQuantity(slug, quantity - 1)}
                       >
-                        <button
-                          type="button"
-                          aria-label={`Decrease ${product.name} quantity`}
-                          onClick={() =>
-                            updateQuantity(
-                              slug,
-                              quantity -
-                                1
-                            )
-                          }
-                        >
-                          −
-                        </button>
+                        −
+                      </button>
 
-                        <span>
-                          {
-                            quantity
-                          }
-                        </span>
+                      <span>{quantity}</span>
 
-                        <button
-                          type="button"
-                          aria-label={`Increase ${product.name} quantity`}
-                          disabled={
-                            atMaximum
-                          }
-                          onClick={() =>
-                            updateQuantity(
-                              slug,
-                              quantity +
-                                1
-                            )
-                          }
-                        >
-                          +
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        aria-label={`Increase ${product.name} quantity`}
+                        disabled={atMaximum}
+                        onClick={() => updateQuantity(slug, quantity + 1)}
+                      >
+                        +
+                      </button>
+                    </div>
 
-                      {/* ===================================
+                    {/* ===================================
                           PRICE
                       =================================== */}
 
-                      <strong
-                        className={
-                          styles.itemPrice
-                        }
-                      >
-                        $
-                        {lineTotal.toFixed(
-                          2
-                        )}
-                      </strong>
-                    </article>
-                  );
-                }
-              )}
+                    <strong className={styles.itemPrice}>
+                      ${lineTotal.toFixed(2)}
+                    </strong>
+                  </article>
+                );
+              })}
             </div>
 
             {/* =============================================
                 ORDER SUMMARY
             ============================================= */}
 
-            <aside
-              className={
-                styles.summary
-              }
-            >
-              <span>
-                ORDER SUMMARY
-              </span>
+            <aside className={styles.summary}>
+              <span>ORDER SUMMARY</span>
 
-              <h2>
-                Summary
-              </h2>
+              <h2>Summary</h2>
 
-              <div
-                className={
-                  styles.summaryLine
-                }
-              >
-                <span>
-                  Items
-                </span>
+              <div className={styles.summaryLine}>
+                <span>Items</span>
 
                 <strong>
-                  {validItems.reduce(
-                    (
-                      total,
-                      item
-                    ) =>
-                      total +
-                      item.quantity,
-                    0
-                  )}
+                  {validItems.reduce((total, item) => total + item.quantity, 0)}
                 </strong>
               </div>
 
-              <div
-                className={
-                  styles.summaryLine
-                }
-              >
-                <span>
-                  Subtotal
-                </span>
+              <div className={styles.summaryLine}>
+                <span>Subtotal</span>
 
-                <strong>
-                  $
-                  {subtotal.toFixed(
-                    2
-                  )}
-                </strong>
+                <strong>${subtotal.toFixed(2)}</strong>
               </div>
 
-              <div
-                className={
-                  styles.summaryLine
-                }
-              >
-                <span>
-                  Delivery
-                </span>
+              <div className={styles.summaryLine}>
+                <span>Delivery</span>
 
-                <strong>
-                  Digital
-                </strong>
+                <strong>Digital</strong>
               </div>
 
-              <div
-                className={
-                  styles.totalLine
-                }
-              >
-                <span>
-                  Total
-                </span>
+              <div className={styles.totalLine}>
+                <span>Total</span>
 
-                <strong>
-                  $
-                  {subtotal.toFixed(
-                    2
-                  )}
-                </strong>
+                <strong>${subtotal.toFixed(2)}</strong>
               </div>
 
-              <button
-                type="button"
-                className={
-                  styles.checkoutButton
-                }
-              >
-                Proceed to
-                Checkout
+              <ProductCheckout />
 
-                <span>
-                  →
-                </span>
-              </button>
-
-              <p
-                className={
-                  styles.checkoutNote
-                }
-              >
-                Checkout/payment
-                integration will be
-                connected later.
-              </p>
-
-              <Link
-                href="/products"
-                className={
-                  styles.continueLink
-                }
-              >
+              <Link href="/products" className={styles.continueLink}>
                 ← Continue Shopping
               </Link>
             </aside>

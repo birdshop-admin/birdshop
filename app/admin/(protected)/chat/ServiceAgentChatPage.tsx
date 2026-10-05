@@ -1,10 +1,9 @@
+import SubmitButton from "@/components/SubmitButton";
 import Link from "next/link";
 
 import AdminSidebar from "@/components/AdminSidebar";
 
-import {
-  createClient,
-} from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 import {
   acceptServiceConversation,
@@ -25,296 +24,159 @@ import styles from "./chat.module.css";
 ========================================================= */
 
 type StaffProfile = {
-  user_id:
-    string;
+  user_id: string;
 
-  role:
-    "service_agent";
+  role: "service_agent";
 
-  display_name:
-    | string
-    | null;
+  display_name: string | null;
 
-  is_active:
-    boolean;
+  is_active: boolean;
 };
 
 type QueueConversation = {
-  id:
-    string;
+  id: string;
 
-  reference:
-    string;
+  reference: string;
 
-  workflow_status:
-    string;
+  workflow_status: string;
 
-  status:
-    string;
+  status: string;
 
-  last_message_at:
-    string;
+  last_message_at: string;
 
-  last_sender_type:
-    | string
-    | null;
+  last_sender_type: string | null;
 
-  customer_name:
-    | string
-    | null;
+  customer_name: string | null;
 
-  subject:
-    | string
-    | null;
+  subject: string | null;
 
-  service_name:
-    | string
-    | null;
+  service_name: string | null;
 
-  package_name:
-    | string
-    | null;
+  package_name: string | null;
 
-  request_message:
-    | string
-    | null;
+  request_message: string | null;
 
-  assigned_staff_user_id:
-    | string
-    | null;
+  assigned_staff_user_id: string | null;
 
-  assigned_to:
-    | string
-    | null;
+  assigned_to: string | null;
 
-  assigned_at:
-    | string
-    | null;
+  assigned_at: string | null;
 
-  is_mine:
-    boolean;
+  is_mine: boolean;
 
-  is_unassigned:
-    boolean;
+  is_unassigned: boolean;
 };
 
 type ConversationDetail = {
-  id:
-    string;
+  id: string;
 
-  order_id:
-    | string
-    | null;
+  order_id: string | null;
 
-  reference:
-    string;
+  reference: string;
 
-  conversation_type:
-    "service";
+  conversation_type: "service";
 
-  workflow_status:
-    string;
+  workflow_status: string;
 
-  status:
-    string;
+  status: string;
 
-  last_message_at:
-    string;
+  last_message_at: string;
 
-  last_sender_type:
-    | string
-    | null;
+  last_sender_type: string | null;
 
-  admin_last_read_at:
-    | string
-    | null;
+  admin_last_read_at: string | null;
 
-  customer_name:
-    | string
-    | null;
+  customer_name: string | null;
 
-  customer_email:
-    | string
-    | null;
+  customer_email: string | null;
 
-  customer_contact:
-    | string
-    | null;
+  customer_contact: string | null;
 
-  subject:
-    | string
-    | null;
+  subject: string | null;
 
-  request_message:
-    | string
-    | null;
+  request_message: string | null;
 
-  service_name:
-    | string
-    | null;
+  service_name: string | null;
 
-  package_name:
-    | string
-    | null;
+  package_name: string | null;
 
-  assigned_staff_user_id:
-    string;
+  assigned_staff_user_id: string;
 
-  assigned_to:
-    | string
-    | null;
+  assigned_to: string | null;
 
-  assigned_at:
-    | string
-    | null;
+  assigned_at: string | null;
 };
 
 type PaymentRequest = {
-  id:
-    string;
+  id: string;
 
-  conversation_id:
-    string;
+  conversation_id: string;
 
-  order_id:
-    | string
-    | null;
+  order_id: string | null;
 
-  amount:
-    | number
-    | string;
+  amount: number | string;
 
-  currency:
-    string;
+  currency: string;
 
-  title:
-    string;
+  title: string;
 
-  description:
-    | string
-    | null;
+  description: string | null;
 
-  status:
-    | "pending"
-    | "paid"
-    | "cancelled"
-    | "expired";
+  status: "pending" | "paid" | "cancelled" | "expired";
 
-  stripe_checkout_session_id:
-    | string
-    | null;
+  stripe_checkout_session_id: string | null;
 
-  stripe_payment_status:
-    | string
-    | null;
+  stripe_payment_status: string | null;
 
-  refund_status:
-    | string
-    | null;
+  refund_status: string | null;
 
-  refunded_amount:
-    | number
-    | string
-    | null;
+  refunded_amount: number | string | null;
 
-  paid_at:
-    | string
-    | null;
+  paid_at: string | null;
 
-  cancelled_at:
-    | string
-    | null;
+  cancelled_at: string | null;
 
-  created_at:
-    string;
+  created_at: string;
 };
 
 type PageProps = {
-  searchParams:
-    Promise<{
-      conversation?:
-        string;
-    }>;
+  searchParams: Promise<{
+    conversation?: string;
+    page?: string;
+  }>;
 };
 
 /* =========================================================
    HELPERS
 ========================================================= */
 
-function formatDate(
-  value:
-    string
-) {
-  return new Intl.DateTimeFormat(
-    "en-US",
-    {
-      month:
-        "short",
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
 
-      day:
-        "numeric",
+    day: "numeric",
 
-      hour:
-        "numeric",
+    hour: "numeric",
 
-      minute:
-        "2-digit",
-    }
-  ).format(
-    new Date(
-      value
-    )
-  );
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
-function money(
-  value:
-    | number
-    | string,
-  currency =
-    "USD"
-) {
-  return Number(
-    value
-  ).toLocaleString(
-    "en-US",
-    {
-      style:
-        "currency",
+function money(value: number | string, currency = "USD") {
+  return Number(value).toLocaleString("en-US", {
+    style: "currency",
 
-      currency:
-        currency.toUpperCase(),
-    }
-  );
+    currency: currency.toUpperCase(),
+  });
 }
 
-function statusLabel(
-  value:
-    | string
-    | null
-    | undefined
-) {
-  return (
-    value ??
-    "new"
-  )
-    .replaceAll(
-      "_",
-      " "
-    )
-    .replace(
-      /\b\w/g,
-      (
-        letter
-      ) =>
-        letter.toUpperCase()
-    );
+function statusLabel(value: string | null | undefined) {
+  return (value ?? "new")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function conversationTitle(
-  conversation:
-    QueueConversation
-) {
+function conversationTitle(conversation: QueueConversation) {
   return (
     conversation.service_name ||
     conversation.subject ||
@@ -322,50 +184,25 @@ function conversationTitle(
   );
 }
 
-function conversationSubtitle(
-  conversation:
-    QueueConversation
-) {
-  return (
-    conversation.package_name ||
-    "Custom Quote"
-  );
+function conversationSubtitle(conversation: QueueConversation) {
+  return conversation.package_name || "Custom Quote";
 }
 
-function conversationHref(
-  id:
-    string
-) {
-  const params =
-    new URLSearchParams();
+function conversationHref(id: string, page: number) {
+  const params = new URLSearchParams();
 
-  params.set(
-    "view",
-    "active"
-  );
+  params.set("view", "active");
 
-  params.set(
-    "type",
-    "service"
-  );
+  params.set("type", "service");
 
-  params.set(
-    "conversation",
-    id
-  );
+  params.set("conversation", id);
+  params.set("page", String(page));
 
   return `/admin/chat?${params.toString()}`;
 }
 
-function isUnread(
-  conversation:
-    QueueConversation
-) {
-  return (
-    conversation
-      .last_sender_type ===
-    "customer"
-  );
+function isUnread(conversation: QueueConversation) {
+  return conversation.last_sender_type === "customer";
 }
 
 /* =========================================================
@@ -375,33 +212,22 @@ function isUnread(
 export default async function ServiceAgentChatPage({
   searchParams,
 }: PageProps) {
-  const params =
-    await searchParams;
+  const params = await searchParams;
+  const page = Math.max(1, Math.min(100000, Number(params.page) || 1));
 
-  const supabase =
-    await createClient();
+  const supabase = await createClient();
 
   /* =======================================================
      STAFF
   ======================================================= */
 
-  const {
-    data:
-      profileData,
-  } =
-    await supabase.rpc(
-      "birdshop_get_my_staff_profile"
-    );
+  const { data: profileData } = await supabase.rpc(
+    "birdshop_get_my_staff_profile",
+  );
 
-  const profile =
-    profileData as
-      StaffProfile;
+  const profile = profileData as StaffProfile;
 
-  const staffName =
-    profile
-      ?.display_name
-      ?.trim() ||
-    "Service Staff";
+  const staffName = profile?.display_name?.trim() || "Service Staff";
 
   /* =======================================================
      SAFE QUEUE
@@ -414,75 +240,35 @@ export default async function ServiceAgentChatPage({
   ======================================================= */
 
   const {
-    data:
-      queueData,
+    data: queueData,
 
-    error:
-      queueError,
-  } =
-    await supabase.rpc(
-      "birdshop_staff_list_service_queue"
-    );
+    error: queueError,
+  } = await supabase
+    .rpc("birdshop_staff_list_service_queue")
+    .range((page - 1) * 100, page * 100 - 1);
 
-  if (
-    queueError
-  ) {
-    throw new Error(
-      `Unable to load service queue: ${queueError.message}`
-    );
+  if (queueError) {
+    throw new Error(`Unable to load service queue: Please refresh and retry.`);
   }
 
-  const queue =
-    (
-      queueData ??
-      []
-    ) as
-      QueueConversation[];
+  const queue = (queueData ?? []) as QueueConversation[];
 
-  const available =
-    queue.filter(
-      (
-        conversation
-      ) =>
-        conversation
-          .is_unassigned
-    );
+  const available = queue.filter((conversation) => conversation.is_unassigned);
 
-  const mine =
-    queue.filter(
-      (
-        conversation
-      ) =>
-        conversation
-          .is_mine
-    );
+  const mine = queue.filter((conversation) => conversation.is_mine);
 
   /* =======================================================
      SELECTED
   ======================================================= */
 
-  const requested =
-    params.conversation
-      ? queue.find(
-          (
-            conversation
-          ) =>
-            conversation.id ===
-            params.conversation
-        ) ??
-        null
-      : null;
+  const requested = params.conversation
+    ? (queue.find((conversation) => conversation.id === params.conversation) ??
+      null)
+    : null;
 
-  const selected =
-    requested ??
-    available[0] ??
-    mine[0] ??
-    null;
+  const selected = requested ?? null;
 
-  const selectedIsMine =
-    selected
-      ?.is_mine ===
-    true;
+  const selectedIsMine = selected?.is_mine === true;
 
   /* =======================================================
      FULL CONVERSATION
@@ -490,35 +276,21 @@ export default async function ServiceAgentChatPage({
      ONLY AVAILABLE AFTER THE AGENT OWNS IT.
   ======================================================= */
 
-  let detail:
-    ConversationDetail | null =
-      null;
+  let detail: ConversationDetail | null = null;
 
-  let messages:
-    ServiceAgentMessage[] =
-      [];
+  let messages: ServiceAgentMessage[] = [];
 
-  let paymentRequests:
-    PaymentRequest[] =
-      [];
+  let paymentRequests: PaymentRequest[] = [];
 
-  if (
-    selected &&
-    selectedIsMine
-  ) {
+  if (selected && selectedIsMine) {
     const {
-      data:
-        detailData,
+      data: detailData,
 
-      error:
-        detailError,
-    } =
-      await supabase
-        .from(
-          "service_conversations"
-        )
-        .select(
-          `
+      error: detailError,
+    } = await supabase
+      .from("service_conversations")
+      .select(
+        `
             id,
             order_id,
             reference,
@@ -538,59 +310,34 @@ export default async function ServiceAgentChatPage({
             assigned_staff_user_id,
             assigned_to,
             assigned_at
-          `
-        )
-        .eq(
-          "id",
-          selected.id
-        )
-        .maybeSingle();
+          `,
+      )
+      .eq("id", selected.id)
+      .maybeSingle();
 
-    if (
-      detailError
-    ) {
-      throw new Error(
-        `Unable to load service: ${detailError.message}`
-      );
+    if (detailError) {
+      throw new Error(`Unable to load service: Please refresh and retry.`);
     }
 
-    detail =
-      detailData as
-        ConversationDetail | null;
+    detail = detailData as ConversationDetail | null;
 
-    if (
-      detail
-    ) {
-      const [
-        messageResult,
-        paymentResult,
-      ] =
-        await Promise.all([
-          supabase
-            .from(
-              "service_messages"
-            )
-            .select(
-              "id, conversation_id, sender_type, sender_label, body, message_type, metadata, created_at"
-            )
-            .eq(
-              "conversation_id",
-              detail.id
-            )
-            .order(
-              "created_at",
-              {
-                ascending:
-                  true,
-              }
-            ),
+    if (detail) {
+      const [messageResult, paymentResult] = await Promise.all([
+        supabase
+          .from("service_messages")
+          .select(
+            "id, conversation_id, sender_type, sender_label, body, message_type, metadata, created_at",
+          )
+          .eq("conversation_id", detail.id)
+          .order("created_at", {
+            ascending: false,
+          })
+          .limit(100),
 
-          supabase
-            .from(
-              "service_payment_requests"
-            )
-            .select(
-              `
+        supabase
+          .from("service_payment_requests")
+          .select(
+            `
                 id,
                 conversation_id,
                 order_id,
@@ -606,62 +353,37 @@ export default async function ServiceAgentChatPage({
                 paid_at,
                 cancelled_at,
                 created_at
-              `
-            )
-            .eq(
-              "conversation_id",
-              detail.id
-            )
-            .order(
-              "created_at",
-              {
-                ascending:
-                  false,
-              }
-            ),
-        ]);
+              `,
+          )
+          .eq("conversation_id", detail.id)
+          .order("created_at", {
+            ascending: false,
+          }),
+      ]);
 
-      if (
-        messageResult.error
-      ) {
+      if (messageResult.error) {
         throw new Error(
-          `Unable to load messages: ${messageResult.error.message}`
+          `Unable to load messages: Please retry or contact the owner.`,
         );
       }
 
-      if (
-        paymentResult.error
-      ) {
+      if (paymentResult.error) {
         throw new Error(
-          `Unable to load payments: ${paymentResult.error.message}`
+          `Unable to load payments: Please retry or contact the owner.`,
         );
       }
 
-      messages =
-        (
-          messageResult.data ??
-          []
-        ) as unknown as
-          ServiceAgentMessage[];
+      messages = (
+        messageResult.data ?? []
+      ).reverse() as unknown as ServiceAgentMessage[];
 
-      paymentRequests =
-        (
-          paymentResult.data ??
-          []
-        ) as unknown as
-          PaymentRequest[];
+      paymentRequests = (paymentResult.data ??
+        []) as unknown as PaymentRequest[];
 
-      if (
-        detail.last_sender_type ===
-        "customer"
-      ) {
-        await supabase.rpc(
-          "birdshop_staff_mark_service_chat_read",
-          {
-            p_conversation_id:
-              detail.id,
-          }
-        );
+      if (detail.last_sender_type === "customer") {
+        await supabase.rpc("birdshop_staff_mark_service_chat_read", {
+          p_conversation_id: detail.id,
+        });
       }
     }
   }
@@ -671,97 +393,65 @@ export default async function ServiceAgentChatPage({
   ======================================================= */
 
   const pendingPayment =
-    paymentRequests.find(
-      (
-        payment
-      ) =>
-        payment.status ===
-        "pending"
-    ) ??
-    null;
+    paymentRequests.find((payment) => payment.status === "pending") ?? null;
 
   const paidPayment =
-    paymentRequests.find(
-      (
-        payment
-      ) =>
-        payment.status ===
-        "paid"
-    ) ??
-    null;
+    paymentRequests.find((payment) => payment.status === "paid") ?? null;
 
-  const latestPayment =
-    paymentRequests[0] ??
-    null;
+  const latestPayment = paymentRequests[0] ?? null;
 
   /* =======================================================
      UI
   ======================================================= */
 
   return (
-    <main
-      className={
-        styles.page
-      }
-    >
-      <AdminSidebar
-        role="service_agent"
-      />
+    <main className={styles.page}>
+      <AdminSidebar role="service_agent" />
 
-      <section
-        className={
-          styles.content
-        }
-      >
+      <section className={styles.content}>
         {/* =================================================
             HEADER
         ================================================= */}
 
-        <header
-          className={
-            styles.header
-          }
-        >
+        <header className={styles.header}>
           <div>
-            <span>
-              BIRDSHOP / SERVICE STAFF
-            </span>
+            <span>BIRDSHOP / SERVICE STAFF</span>
 
-            <h1>
-              Service Desk
-            </h1>
+            <h1>Service Desk</h1>
 
             <p>
-              Accept available service requests,
-              work directly with customers, and
-              send secure BirdShop payment requests.
+              Accept available service requests, work directly with customers,
+              and send secure BirdShop payment requests.
             </p>
           </div>
         </header>
+        <nav
+          aria-label="Service queue pages"
+          style={{
+            display: "flex",
+            gap: 20,
+            flexWrap: "wrap",
+            margin: "20px 0",
+          }}
+        >
+          {page > 1 && (
+            <Link href={`/admin/chat?page=${page - 1}`}>← Previous</Link>
+          )}
+          <span>Queue page {page} · up to 100 conversations</span>
+          {queue.length === 100 && (
+            <Link href={`/admin/chat?page=${page + 1}`}>Next →</Link>
+          )}
+        </nav>
 
         {/* =================================================
             STATUS
         ================================================= */}
 
-        <div
-          className={
-            styles.paymentBar
-          }
-        >
-          <div
-            className={
-              styles.paymentBarInfo
-            }
-          >
-            <span>
-              SIGNED IN
-            </span>
+        <div className={styles.paymentBar}>
+          <div className={styles.paymentBarInfo}>
+            <span>SIGNED IN</span>
 
-            <strong>
-              {
-                staffName
-              }
-            </strong>
+            <strong>{staffName}</strong>
           </div>
 
           <span>
@@ -776,116 +466,59 @@ export default async function ServiceAgentChatPage({
         ================================================= */}
 
         <div
-          className={
-            styles.workspace
-          }
+          className={styles.workspace}
+          data-mobile-detail={Boolean(params.conversation)}
         >
           {/* ===============================================
               QUEUE
           =============================================== */}
 
-          <aside
-            className={
-              styles.inbox
-            }
-          >
+          <aside className={styles.inbox}>
             {/* =============================================
                 AVAILABLE
             ============================================= */}
 
-            <div
-              className={
-                styles.inboxHeading
-              }
-            >
-              <span>
-                AVAILABLE REQUESTS
-              </span>
+            <div className={styles.inboxHeading}>
+              <span>AVAILABLE REQUESTS</span>
 
-              <strong>
-                {
-                  available.length
-                }
-              </strong>
+              <strong>{available.length}</strong>
             </div>
 
-            {available.length ===
-            0 ? (
-              <div
-                className={
-                  styles.emptyInbox
-                }
-              >
+            {available.length === 0 ? (
+              <div className={styles.emptyInbox}>
                 No unassigned service requests.
               </div>
             ) : (
-              <div
-                className={
-                  styles.conversationList
-                }
-              >
-                {available.map(
-                  (
-                    conversation
-                  ) => (
-                    <Link
-                      key={
-                        conversation.id
-                      }
-                      href={
-                        conversationHref(
-                          conversation.id
-                        )
-                      }
-                      className={`${styles.conversationItem} ${
-                        selected?.id ===
-                        conversation.id
-                          ? styles.activeConversation
-                          : ""
-                      }`}
-                    >
-                      <div>
-                        <span>
-                          AVAILABLE ·{" "}
-                          {
-                            conversation.reference
-                          }
-                        </span>
+              <div className={styles.conversationList}>
+                {available.map((conversation) => (
+                  <Link
+                    key={conversation.id}
+                    href={conversationHref(conversation.id, page)}
+                    className={`${styles.conversationItem} ${
+                      selected?.id === conversation.id
+                        ? styles.activeConversation
+                        : ""
+                    }`}
+                  >
+                    <div>
+                      <span>AVAILABLE · {conversation.reference}</span>
 
-                        {isUnread(
-                          conversation
-                        ) && (
-                          <small>
-                            NEW
-                          </small>
-                        )}
-                      </div>
+                      {isUnread(conversation) && <small>NEW</small>}
+                    </div>
 
-                      <strong>
-                        {conversationTitle(
-                          conversation
-                        )}
-                      </strong>
+                    <strong>{conversationTitle(conversation)}</strong>
 
-                      <p>
-                        {conversation.customer_name ||
-                          "Customer"}
+                    <p>
+                      {conversation.customer_name || "Customer"}
 
-                        {" · "}
+                      {" · "}
 
-                        {conversationSubtitle(
-                          conversation
-                        )}
-                      </p>
+                      {conversationSubtitle(conversation)}
+                    </p>
 
-                      <time>
-                        {formatDate(
-                          conversation.last_message_at
-                        )}
-                      </time>
-                    </Link>
-                  )
-                )}
+                    <time>{formatDate(conversation.last_message_at)}</time>
+                  </Link>
+                ))}
               </div>
             )}
 
@@ -894,108 +527,59 @@ export default async function ServiceAgentChatPage({
             ============================================= */}
 
             <div
-              className={
-                styles.inboxHeading
-              }
+              className={styles.inboxHeading}
               style={{
-                marginTop:
-                  "18px",
+                marginTop: "18px",
               }}
             >
-              <span>
-                MY SERVICES
-              </span>
+              <span>MY SERVICES</span>
 
-              <strong>
-                {
-                  mine.length
-                }
-              </strong>
+              <strong>{mine.length}</strong>
             </div>
 
-            {mine.length ===
-            0 ? (
-              <div
-                className={
-                  styles.emptyInbox
-                }
-              >
+            {mine.length === 0 ? (
+              <div className={styles.emptyInbox}>
                 You have not accepted a service yet.
               </div>
             ) : (
-              <div
-                className={
-                  styles.conversationList
-                }
-              >
-                {mine.map(
-                  (
-                    conversation
-                  ) => (
-                    <Link
-                      key={
-                        conversation.id
-                      }
-                      href={
-                        conversationHref(
-                          conversation.id
-                        )
-                      }
-                      className={`${styles.conversationItem} ${
-                        selected?.id ===
-                        conversation.id
-                          ? styles.activeConversation
-                          : ""
-                      }`}
-                      style={{
-                        borderLeft:
-                          "3px solid #82927a",
+              <div className={styles.conversationList}>
+                {mine.map((conversation) => (
+                  <Link
+                    key={conversation.id}
+                    href={conversationHref(conversation.id, page)}
+                    className={`${styles.conversationItem} ${
+                      selected?.id === conversation.id
+                        ? styles.activeConversation
+                        : ""
+                    }`}
+                    style={{
+                      borderLeft: "3px solid #82927a",
 
-                        background:
-                          selected?.id ===
-                          conversation.id
-                            ? undefined
-                            : "rgba(114, 135, 105, 0.08)",
-                      }}
-                    >
-                      <div>
-                        <span>
-                          MY SERVICE ·{" "}
-                          {
-                            conversation.reference
-                          }
-                        </span>
+                      background:
+                        selected?.id === conversation.id
+                          ? undefined
+                          : "rgba(114, 135, 105, 0.08)",
+                    }}
+                  >
+                    <div>
+                      <span>MY SERVICE · {conversation.reference}</span>
 
-                        <small>
-                          YOURS
-                        </small>
-                      </div>
+                      <small>YOURS</small>
+                    </div>
 
-                      <strong>
-                        {conversationTitle(
-                          conversation
-                        )}
-                      </strong>
+                    <strong>{conversationTitle(conversation)}</strong>
 
-                      <p>
-                        {conversation.customer_name ||
-                          "Customer"}
+                    <p>
+                      {conversation.customer_name || "Customer"}
 
-                        {" · "}
+                      {" · "}
 
-                        {conversationSubtitle(
-                          conversation
-                        )}
-                      </p>
+                      {conversationSubtitle(conversation)}
+                    </p>
 
-                      <time>
-                        {formatDate(
-                          conversation.last_message_at
-                        )}
-                      </time>
-                    </Link>
-                  )
-                )}
+                    <time>{formatDate(conversation.last_message_at)}</time>
+                  </Link>
+                ))}
               </div>
             )}
           </aside>
@@ -1005,11 +589,7 @@ export default async function ServiceAgentChatPage({
           =============================================== */}
 
           {!selected ? (
-            <section
-              className={
-                styles.emptyChat
-              }
-            >
+            <section className={styles.emptyChat}>
               There are no service requests waiting.
             </section>
           ) : !selectedIsMine ? (
@@ -1017,193 +597,105 @@ export default async function ServiceAgentChatPage({
                AVAILABLE REQUEST PREVIEW
             ============================================= */
 
-            <section
-              className={
-                styles.chat
-              }
-            >
-              <header
-                className={
-                  styles.chatHeader
-                }
+            <section className={styles.chat}>
+              <Link
+                className={styles.mobileBack}
+                href="/admin/chat?view=active&type=service"
               >
+                ← Conversations
+              </Link>
+              <header className={styles.chatHeader}>
                 <div>
-                  <span>
-                    AVAILABLE ·{" "}
-                    {
-                      selected.reference
-                    }
-                  </span>
+                  <span>AVAILABLE · {selected.reference}</span>
 
-                  <h2>
-                    {conversationTitle(
-                      selected
-                    )}
-                  </h2>
+                  <h2>{conversationTitle(selected)}</h2>
 
-                  <p>
-                    {conversationSubtitle(
-                      selected
-                    )}
-                  </p>
+                  <p>{conversationSubtitle(selected)}</p>
                 </div>
 
-                <div
-                  className={
-                    styles.orderFacts
-                  }
-                >
+                <div className={styles.orderFacts}>
                   <div>
-                    <span>
-                      STATUS
-                    </span>
+                    <span>STATUS</span>
 
-                    <strong>
-                      Waiting
-                    </strong>
+                    <strong>Waiting</strong>
                   </div>
 
                   <div>
-                    <span>
-                      ASSIGNED
-                    </span>
+                    <span>ASSIGNED</span>
 
-                    <strong>
-                      No
-                    </strong>
+                    <strong>No</strong>
                   </div>
                 </div>
               </header>
 
-              <div
-                className={
-                  styles.customerBar
-                }
-              >
+              <div className={styles.customerBar}>
                 <div>
-                  <span>
-                    CUSTOMER
-                  </span>
+                  <span>CUSTOMER</span>
 
-                  <strong>
-                    {selected.customer_name ||
-                      "Customer"}
-                  </strong>
+                  <strong>{selected.customer_name || "Customer"}</strong>
 
-                  <small>
-                    Contact details unlock after acceptance.
-                  </small>
+                  <small>Contact details unlock after acceptance.</small>
                 </div>
 
-                <span>
-                  {
-                    selected.reference
-                  }
-                </span>
+                <span>{selected.reference}</span>
               </div>
 
-              <section
-                className={
-                  paymentStyles.panel
-                }
-              >
-                <div
-                  className={
-                    paymentStyles.panelHeader
-                  }
-                >
+              <section className={paymentStyles.panel}>
+                <div className={paymentStyles.panelHeader}>
                   <div>
-                    <span
-                      className={
-                        paymentStyles.panelEyebrow
-                      }
-                    >
+                    <span className={paymentStyles.panelEyebrow}>
                       AVAILABLE SERVICE
                     </span>
 
-                    <strong
-                      className={
-                        paymentStyles.panelTitle
-                      }
-                    >
+                    <strong className={paymentStyles.panelTitle}>
                       Accept this request?
                     </strong>
                   </div>
 
-                  <p
-                    className={
-                      paymentStyles.panelCopy
-                    }
-                  >
-                    Once accepted, this conversation
-                    becomes yours and disappears from
-                    other Service Agents&apos; queues.
+                  <p className={paymentStyles.panelCopy}>
+                    Once accepted, this conversation becomes yours and
+                    disappears from other Service Agents&apos; queues.
                   </p>
                 </div>
 
                 <div
                   style={{
-                    padding:
-                      "18px 0 24px",
+                    padding: "18px 0 24px",
 
-                    fontFamily:
-                      "Georgia, 'Times New Roman', serif",
+                    fontFamily: "Georgia, 'Times New Roman', serif",
 
-                    fontSize:
-                      "13px",
+                    fontSize: "13px",
 
-                    lineHeight:
-                      1.7,
+                    lineHeight: 1.7,
 
-                    color:
-                      "#4d584c",
+                    color: "#4d584c",
                   }}
                 >
                   {selected.request_message ||
                     "The customer did not include additional request details."}
                 </div>
 
-                <form
-                  action={
-                    acceptServiceConversation
-                  }
-                >
+                <form action={acceptServiceConversation}>
                   <input
                     type="hidden"
                     name="conversation_id"
-                    value={
-                      selected.id
-                    }
+                    value={selected.id}
                   />
 
-                  <button
-                    type="submit"
-                    className={
-                      paymentStyles.button
-                    }
-                  >
+                  <SubmitButton type="submit" className={paymentStyles.button}>
                     Accept Service
-                  </button>
+                  </SubmitButton>
                 </form>
               </section>
 
-              <footer
-                className={
-                  styles.chatFooter
-                }
-              >
+              <footer className={styles.chatFooter}>
                 <span>
-                  Accepting automatically introduces
-                  you to the customer.
+                  Accepting automatically introduces you to the customer.
                 </span>
               </footer>
             </section>
           ) : !detail ? (
-            <section
-              className={
-                styles.emptyChat
-              }
-            >
+            <section className={styles.emptyChat}>
               Unable to load the accepted service.
             </section>
           ) : (
@@ -1211,27 +703,20 @@ export default async function ServiceAgentChatPage({
                MY SERVICE
             ============================================= */
 
-            <section
-              className={
-                styles.chat
-              }
-            >
+            <section className={styles.chat}>
+              <Link
+                className={styles.mobileBack}
+                href="/admin/chat?view=active&type=service"
+              >
+                ← Conversations
+              </Link>
               {/* ===========================================
                   HEADER
               =========================================== */}
 
-              <header
-                className={
-                  styles.chatHeader
-                }
-              >
+              <header className={styles.chatHeader}>
                 <div>
-                  <span>
-                    MY SERVICE ·{" "}
-                    {
-                      detail.reference
-                    }
-                  </span>
+                  <span>MY SERVICE · {detail.reference}</span>
 
                   <h2>
                     {detail.service_name ||
@@ -1239,59 +724,34 @@ export default async function ServiceAgentChatPage({
                       "Custom Service Request"}
                   </h2>
 
-                  <p>
-                    {detail.package_name ||
-                      "Custom Quote"}
-                  </p>
+                  <p>{detail.package_name || "Custom Quote"}</p>
                 </div>
 
-                <div
-                  className={
-                    styles.orderFacts
-                  }
-                >
+                <div className={styles.orderFacts}>
                   <div>
-                    <span>
-                      STATUS
-                    </span>
+                    <span>STATUS</span>
 
-                    <strong>
-                      {statusLabel(
-                        detail.workflow_status
-                      )}
-                    </strong>
+                    <strong>{statusLabel(detail.workflow_status)}</strong>
                   </div>
 
                   <div>
-                    <span>
-                      PROVIDER
-                    </span>
+                    <span>PROVIDER</span>
 
-                    <strong>
-                      {detail.assigned_to ||
-                        staffName}
-                    </strong>
+                    <strong>{detail.assigned_to || staffName}</strong>
                   </div>
 
                   <div>
-                    <span>
-                      PAYMENT
-                    </span>
+                    <span>PAYMENT</span>
 
                     <strong>
                       {latestPayment
                         ? statusLabel(
-                            latestPayment
-                              .refund_status &&
-                            latestPayment
-                              .refund_status !==
-                              "none"
-                              ? latestPayment
-                                  .refund_status ===
-                                "full"
+                            latestPayment.refund_status &&
+                              latestPayment.refund_status !== "none"
+                              ? latestPayment.refund_status === "full"
                                 ? "refunded"
                                 : "partially_refunded"
-                              : latestPayment.status
+                              : latestPayment.status,
                           )
                         : "Not Sent"}
                     </strong>
@@ -1303,20 +763,11 @@ export default async function ServiceAgentChatPage({
                   CUSTOMER
               =========================================== */}
 
-              <div
-                className={
-                  styles.customerBar
-                }
-              >
+              <div className={styles.customerBar}>
                 <div>
-                  <span>
-                    CUSTOMER
-                  </span>
+                  <span>CUSTOMER</span>
 
-                  <strong>
-                    {detail.customer_name ||
-                      "Customer"}
-                  </strong>
+                  <strong>{detail.customer_name || "Customer"}</strong>
 
                   <small>
                     {detail.customer_contact ||
@@ -1325,58 +776,33 @@ export default async function ServiceAgentChatPage({
                   </small>
                 </div>
 
-                <span>
-                  {
-                    detail.reference
-                  }
-                </span>
+                <span>{detail.reference}</span>
               </div>
 
               {/* ===========================================
                   ASSIGNMENT
               =========================================== */}
 
-              <div
-                className={
-                  styles.paymentBar
-                }
-              >
-                <div
-                  className={
-                    styles.paymentBarInfo
-                  }
-                >
-                  <span>
-                    ASSIGNED TO YOU
-                  </span>
+              <div className={styles.paymentBar}>
+                <div className={styles.paymentBarInfo}>
+                  <span>ASSIGNED TO YOU</span>
 
-                  <strong>
-                    {detail.assigned_to ||
-                      staffName}
-                  </strong>
+                  <strong>{detail.assigned_to || staffName}</strong>
                 </div>
 
-                <form
-                  action={
-                    leaveServiceConversation
-                  }
-                >
+                <form action={leaveServiceConversation}>
                   <input
                     type="hidden"
                     name="conversation_id"
-                    value={
-                      detail.id
-                    }
+                    value={detail.id}
                   />
 
-                  <button
+                  <SubmitButton
                     type="submit"
-                    className={
-                      paymentStyles.secondaryButton
-                    }
+                    className={paymentStyles.secondaryButton}
                   >
                     Leave Service
-                  </button>
+                  </SubmitButton>
                 </form>
               </div>
 
@@ -1384,38 +810,18 @@ export default async function ServiceAgentChatPage({
                   PAYMENT CENTER
               =========================================== */}
 
-              <section
-                className={
-                  paymentStyles.panel
-                }
-              >
-                <div
-                  className={
-                    paymentStyles.panelHeader
-                  }
-                >
+              <section className={paymentStyles.panel}>
+                <div className={paymentStyles.panelHeader}>
                   <div>
-                    <span
-                      className={
-                        paymentStyles.panelEyebrow
-                      }
-                    >
+                    <span className={paymentStyles.panelEyebrow}>
                       PAYMENT CENTER
                     </span>
 
-                    <strong
-                      className={
-                        paymentStyles.panelTitle
-                      }
-                    >
+                    <strong className={paymentStyles.panelTitle}>
                       {paidPayment
-                        ? paidPayment
-                            .refund_status ===
-                          "full"
+                        ? paidPayment.refund_status === "full"
                           ? "Payment refunded"
-                          : paidPayment
-                                .refund_status ===
-                              "partial"
+                          : paidPayment.refund_status === "partial"
                             ? "Payment partially refunded"
                             : "Payment received"
                         : pendingPayment
@@ -1424,11 +830,7 @@ export default async function ServiceAgentChatPage({
                     </strong>
                   </div>
 
-                  <p
-                    className={
-                      paymentStyles.panelCopy
-                    }
-                  >
+                  <p className={paymentStyles.panelCopy}>
                     {paidPayment
                       ? "BirdShop has recorded the customer's payment."
                       : "The customer receives a secure Stripe Checkout button inside their private conversation."}
@@ -1438,85 +840,55 @@ export default async function ServiceAgentChatPage({
                 {paidPayment ? (
                   <article
                     style={{
-                      padding:
-                        "18px 0",
+                      padding: "18px 0",
                     }}
                   >
                     <div
                       style={{
-                        display:
-                          "flex",
+                        display: "flex",
 
-                        justifyContent:
-                          "space-between",
+                        justifyContent: "space-between",
 
-                        gap:
-                          "20px",
+                        gap: "20px",
 
-                        alignItems:
-                          "center",
+                        alignItems: "center",
                       }}
                     >
                       <div>
-                        <span
-                          className={
-                            paymentStyles.fieldLabel
-                          }
-                        >
-                          {
-                            paidPayment.title
-                          }
+                        <span className={paymentStyles.fieldLabel}>
+                          {paidPayment.title}
                         </span>
 
                         <div
                           style={{
-                            marginTop:
-                              "7px",
+                            marginTop: "7px",
 
-                            fontFamily:
-                              "Georgia, 'Times New Roman', serif",
+                            fontFamily: "Georgia, 'Times New Roman', serif",
 
-                            fontSize:
-                              "30px",
+                            fontSize: "30px",
 
-                            color:
-                              "#263126",
+                            color: "#263126",
                           }}
                         >
-                          {money(
-                            paidPayment.amount,
-                            paidPayment.currency
-                          )}
+                          {money(paidPayment.amount, paidPayment.currency)}
                         </div>
                       </div>
 
                       <strong>
-                        {paidPayment
-                          .refund_status ===
-                        "full"
+                        {paidPayment.refund_status === "full"
                           ? "REFUNDED"
-                          : paidPayment
-                                .refund_status ===
-                              "partial"
+                          : paidPayment.refund_status === "partial"
                             ? "PARTIALLY REFUNDED"
                             : "PAID"}
                       </strong>
                     </div>
 
-                    {Number(
-                      paidPayment
-                        .refunded_amount ??
-                        0
-                    ) >
-                      0 && (
+                    {Number(paidPayment.refunded_amount ?? 0) > 0 && (
                       <p>
                         Refunded:{" "}
                         {money(
-                          Number(
-                            paidPayment
-                              .refunded_amount
-                          ),
-                          paidPayment.currency
+                          Number(paidPayment.refunded_amount),
+                          paidPayment.currency,
                         )}
                       </p>
                     )}
@@ -1524,197 +896,122 @@ export default async function ServiceAgentChatPage({
                 ) : pendingPayment ? (
                   <article
                     style={{
-                      padding:
-                        "18px 0",
+                      padding: "18px 0",
                     }}
                   >
                     <div
                       style={{
-                        display:
-                          "flex",
+                        display: "flex",
 
-                        justifyContent:
-                          "space-between",
+                        justifyContent: "space-between",
 
-                        gap:
-                          "20px",
+                        gap: "20px",
 
-                        alignItems:
-                          "center",
+                        alignItems: "center",
                       }}
                     >
                       <div>
-                        <span
-                          className={
-                            paymentStyles.fieldLabel
-                          }
-                        >
-                          {
-                            pendingPayment.title
-                          }
+                        <span className={paymentStyles.fieldLabel}>
+                          {pendingPayment.title}
                         </span>
 
                         <div
                           style={{
-                            marginTop:
-                              "7px",
+                            marginTop: "7px",
 
-                            fontFamily:
-                              "Georgia, 'Times New Roman', serif",
+                            fontFamily: "Georgia, 'Times New Roman', serif",
 
-                            fontSize:
-                              "30px",
+                            fontSize: "30px",
 
-                            color:
-                              "#263126",
+                            color: "#263126",
                           }}
                         >
                           {money(
                             pendingPayment.amount,
-                            pendingPayment.currency
+                            pendingPayment.currency,
                           )}
                         </div>
                       </div>
 
-                      <strong>
-                        PENDING
-                      </strong>
+                      <strong>PENDING</strong>
                     </div>
 
                     {pendingPayment.description && (
-                      <p>
-                        {
-                          pendingPayment.description
-                        }
-                      </p>
+                      <p>{pendingPayment.description}</p>
                     )}
 
-                    <div
-                      className={
-                        paymentStyles.requestFooter
-                      }
-                    >
-                      <span>
-                        Waiting for customer payment.
-                      </span>
+                    <div className={paymentStyles.requestFooter}>
+                      <span>Waiting for customer payment.</span>
 
-                      <form
-                        action={
-                          cancelServiceAgentPaymentRequest
-                        }
-                      >
+                      <form action={cancelServiceAgentPaymentRequest}>
                         <input
                           type="hidden"
                           name="conversation_id"
-                          value={
-                            detail.id
-                          }
+                          value={detail.id}
                         />
 
                         <input
                           type="hidden"
                           name="payment_request_id"
-                          value={
-                            pendingPayment.id
-                          }
+                          value={pendingPayment.id}
                         />
 
-                        <button
+                        <SubmitButton
                           type="submit"
-                          className={
-                            paymentStyles.secondaryButton
-                          }
+                          className={paymentStyles.secondaryButton}
                         >
                           Cancel Request
-                        </button>
+                        </SubmitButton>
                       </form>
                     </div>
                   </article>
                 ) : detail.order_id ? (
                   <div
                     style={{
-                      padding:
-                        "20px 0",
+                      padding: "20px 0",
 
-                      color:
-                        "#5c665a",
+                      color: "#5c665a",
 
-                      fontFamily:
-                        "Georgia, 'Times New Roman', serif",
+                      fontFamily: "Georgia, 'Times New Roman', serif",
                     }}
                   >
                     This service already has an order.
                   </div>
                 ) : (
                   <form
-                    action={
-                      createServiceAgentPaymentRequest
-                    }
-                    className={
-                      paymentStyles.form
-                    }
+                    action={createServiceAgentPaymentRequest}
+                    className={paymentStyles.form}
                   >
                     <input
                       type="hidden"
                       name="conversation_id"
-                      value={
-                        detail.id
-                      }
+                      value={detail.id}
                     />
 
-                    <div
-                      className={
-                        paymentStyles.fields
-                      }
-                    >
-                      <label
-                        className={
-                          paymentStyles.field
-                        }
-                      >
-                        <span
-                          className={
-                            paymentStyles.fieldLabel
-                          }
-                        >
-                          TITLE
-                        </span>
+                    <div className={paymentStyles.fields}>
+                      <label className={paymentStyles.field}>
+                        <span className={paymentStyles.fieldLabel}>TITLE</span>
 
                         <input
-                          className={
-                            paymentStyles.input
-                          }
+                          className={paymentStyles.input}
                           name="title"
-                          defaultValue={`${detail.service_name ||
-                            "BirdShop Service"}${
+                          defaultValue={`${
+                            detail.service_name || "BirdShop Service"
+                          }${
                             detail.package_name
                               ? ` — ${detail.package_name}`
                               : ""
                           }`}
-                          maxLength={
-                            180
-                          }
+                          maxLength={180}
                           required
                         />
                       </label>
 
-                      <label
-                        className={
-                          paymentStyles.field
-                        }
-                      >
-                        <span
-                          className={
-                            paymentStyles.fieldLabel
-                          }
-                        >
-                          AMOUNT
-                        </span>
+                      <label className={paymentStyles.field}>
+                        <span className={paymentStyles.fieldLabel}>AMOUNT</span>
 
                         <input
-                          className={
-                            paymentStyles.input
-                          }
+                          className={paymentStyles.input}
                           name="amount"
                           type="number"
                           min="0.50"
@@ -1725,49 +1022,29 @@ export default async function ServiceAgentChatPage({
                       </label>
                     </div>
 
-                    <label
-                      className={
-                        paymentStyles.field
-                      }
-                    >
-                      <span
-                        className={
-                          paymentStyles.fieldLabel
-                        }
-                      >
+                    <label className={paymentStyles.field}>
+                      <span className={paymentStyles.fieldLabel}>
                         DESCRIPTION · OPTIONAL
                       </span>
 
                       <textarea
-                        className={
-                          paymentStyles.textarea
-                        }
+                        className={paymentStyles.textarea}
                         name="description"
                         rows={2}
-                        maxLength={
-                          2000
-                        }
+                        maxLength={2000}
                         placeholder="Describe exactly what this payment covers..."
                       />
                     </label>
 
-                    <div
-                      className={
-                        paymentStyles.actions
-                      }
-                    >
-                      <span>
-                        The customer cannot change this amount.
-                      </span>
+                    <div className={paymentStyles.actions}>
+                      <span>The customer cannot change this amount.</span>
 
-                      <button
+                      <SubmitButton
                         type="submit"
-                        className={
-                          paymentStyles.button
-                        }
+                        className={paymentStyles.button}
                       >
                         Send Payment Request
-                      </button>
+                      </SubmitButton>
                     </div>
                   </form>
                 )}
@@ -1778,37 +1055,17 @@ export default async function ServiceAgentChatPage({
               =========================================== */}
 
               <ServiceAgentLiveThread
-                key={
-                  detail.id
-                }
-                conversationId={
-                  detail.id
-                }
-                initialMessages={
-                  messages
-                }
+                key={detail.id}
+                conversationId={detail.id}
+                initialMessages={messages}
               />
 
-              <footer
-                className={
-                  styles.chatFooter
-                }
-              >
-                <div
-                  className={
-                    styles.footerActions
-                  }
-                >
-                  <span>
-                    {
-                      staffName
-                    }
-                  </span>
+              <footer className={styles.chatFooter}>
+                <div className={styles.footerActions}>
+                  <span>{staffName}</span>
                 </div>
 
-                <span>
-                  Owner access remains available at all times.
-                </span>
+                <span>Owner access remains available at all times.</span>
               </footer>
             </section>
           )}

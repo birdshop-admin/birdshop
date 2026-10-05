@@ -1,4 +1,5 @@
 "use client";
+import ChatHistory from "./ChatHistory";
 
 import {
   FormEvent,
@@ -12,18 +13,14 @@ import {
   useState,
 } from "react";
 
-import {
-  createClient,
-} from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 import {
   serviceChatChannelName,
   SERVICE_CHAT_BROADCAST_EVENT,
 } from "@/lib/service-chat-session";
 
-import {
-  sendAdminChatMessage,
-} from "./actions";
+import { sendAdminChatMessage } from "./actions";
 
 import paymentStyles from "@/components/ChatPaymentUI.module.css";
 import styles from "./chat.module.css";
@@ -39,19 +36,13 @@ export type AdminLiveMessage = {
 
   sender_type: string;
 
-  sender_label:
-    | string
-    | null;
+  sender_label: string | null;
 
   body: string;
 
   message_type: string;
 
-  metadata:
-    Record<
-      string,
-      unknown
-    >;
+  metadata: Record<string, unknown>;
 
   created_at: string;
 };
@@ -61,162 +52,77 @@ export type AdminLivePaymentRequest = {
 
   conversation_id: string;
 
-  order_id:
-  | string
-  | null;
+  order_id: string | null;
 
-  amount:
-    | number
-    | string;
+  amount: number | string;
 
   currency: string;
 
   title: string;
 
-  description:
-    | string
-    | null;
+  description: string | null;
 
-  status:
-    | "pending"
-    | "paid"
-    | "cancelled"
-    | "expired";
+  status: "pending" | "paid" | "cancelled" | "expired";
 
-  stripe_checkout_session_id:
-    | string
-    | null;
+  stripe_checkout_session_id: string | null;
 
-  paid_at:
-    | string
-    | null;
+  paid_at: string | null;
 
-  cancelled_at:
-    | string
-    | null;
+  cancelled_at: string | null;
 
   created_at: string;
 };
 
-type OptimisticMessage =
-  AdminLiveMessage & {
-    optimistic?:
-      boolean;
-  };
+type OptimisticMessage = AdminLiveMessage & {
+  optimistic?: boolean;
+};
 
 /* =========================================================
    SETTINGS
 ========================================================= */
 
-const FALLBACK_SYNC_MS =
-  1000;
+const FALLBACK_SYNC_MS = 15000;
 
 /* =========================================================
    HELPERS
 ========================================================= */
 
-function money(
-  value:
-    | number
-    | string,
-  currency =
-    "USD"
-) {
-  return Number(
-    value
-  ).toLocaleString(
-    "en-US",
-    {
-      style:
-        "currency",
+function money(value: number | string, currency = "USD") {
+  return Number(value).toLocaleString("en-US", {
+    style: "currency",
 
-      currency:
-        currency.toUpperCase(),
-    }
-  );
+    currency: currency.toUpperCase(),
+  });
 }
 
-function formatDate(
-  value:
-    string
-) {
-  return new Intl.DateTimeFormat(
-    "en-US",
-    {
-      month:
-        "short",
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
 
-      day:
-        "numeric",
+    day: "numeric",
 
-      hour:
-        "numeric",
+    hour: "numeric",
 
-      minute:
-        "2-digit",
-    }
-  ).format(
-    new Date(
-      value
-    )
-  );
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
-function statusLabel(
-  value:
-    | string
-    | null
-) {
-  return (
-    value ??
-    "new"
-  )
-    .replaceAll(
-      "_",
-      " "
-    )
-    .replace(
-      /\b\w/g,
-      (
-        character
-      ) =>
-        character.toUpperCase()
-    );
+function statusLabel(value: string | null) {
+  return (value ?? "new")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
-function paymentRequestIdFromMessage(
-  message:
-    AdminLiveMessage
-) {
-  const value =
-    message.metadata
-      ?.payment_request_id;
+function paymentRequestIdFromMessage(message: AdminLiveMessage) {
+  const value = message.metadata?.payment_request_id;
 
-  return typeof value ===
-    "string"
-    ? value
-    : null;
+  return typeof value === "string" ? value : null;
 }
 
-function sortMessages<
-  T extends AdminLiveMessage
->(
-  messages:
-    T[]
-) {
-  return [
-    ...messages,
-  ].sort(
-    (
-      a,
-      b
-    ) =>
-      new Date(
-        a.created_at
-      ).getTime() -
-      new Date(
-        b.created_at
-      ).getTime()
+function sortMessages<T extends AdminLiveMessage>(messages: T[]) {
+  return [...messages].sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
   );
 }
 
@@ -229,197 +135,100 @@ export default function AdminLiveThread({
   initialMessages,
   initialPaymentRequests,
 }: {
-  conversationId:
-    string;
+  conversationId: string;
 
-  initialMessages:
-    AdminLiveMessage[];
+  initialMessages: AdminLiveMessage[];
 
-  initialPaymentRequests:
-    AdminLivePaymentRequest[];
+  initialPaymentRequests: AdminLivePaymentRequest[];
 }) {
-  const supabase =
-    useMemo(
-      () =>
-        createClient(),
-      []
-    );
+  const supabase = useMemo(() => createClient(), []);
 
-  const [
-    messages,
-    setMessages,
-  ] =
-    useState<
-      OptimisticMessage[]
-    >(
-      initialMessages
-    );
+  const [messages, setMessages] =
+    useState<OptimisticMessage[]>(initialMessages);
 
-  const [
-    paymentRequests,
-    setPaymentRequests,
-  ] =
-    useState<
-      AdminLivePaymentRequest[]
-    >(
-      initialPaymentRequests
-    );
+  const [paymentRequests, setPaymentRequests] = useState<
+    AdminLivePaymentRequest[]
+  >(initialPaymentRequests);
 
-  const [
-    body,
-    setBody,
-  ] =
-    useState("");
+  const [body, setBody] = useState("");
 
-  const [
-    sending,
-    setSending,
-  ] =
-    useState(false);
+  const sendIdentity = useRef<{ body: string; id: string } | null>(null);
+  const [sending, setSending] = useState(false);
 
-  const [
-    error,
-    setError,
-  ] =
-    useState("");
+  const [error, setError] = useState("");
 
-  const textareaRef =
-    useRef<HTMLTextAreaElement | null>(
-      null
-    );
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const messagesRef =
-    useRef<HTMLDivElement | null>(
-      null
-    );
+  const messagesRef = useRef<HTMLDivElement | null>(null);
 
-  const followBottomRef =
-    useRef(true);
+  const followBottomRef = useRef(true);
 
-  const scrollInitializedRef =
-    useRef(false);
+  const scrollInitializedRef = useRef(false);
 
   /*
    * Dedicated channel used only to wake up the customer.
    */
 
-  const customerChannelRef =
-    useRef<
-      ReturnType<
-        typeof supabase.channel
-      >
-      | null
-    >(null);
+  const customerChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(
+    null,
+  );
 
   /* =======================================================
      CUSTOMER BROADCAST CHANNEL
   ======================================================= */
 
   useEffect(() => {
-    let disposed =
-      false;
+    let disposed = false;
 
-    let channel:
-      ReturnType<
-        typeof supabase.channel
-      >
-      | null =
-      null;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
     async function connectCustomerChannel() {
-      const {
-        data,
-        error:
-          tokenError,
-      } =
-        await supabase
-          .from(
-            "service_conversations"
-          )
-          .select(
-            "public_token"
-          )
-          .eq(
-            "id",
-            conversationId
-          )
-          .maybeSingle();
+      const { data, error: tokenError } = await supabase
+        .from("service_conversations")
+        .select("public_token")
+        .eq("id", conversationId)
+        .maybeSingle();
 
-      if (
-        disposed ||
-        tokenError ||
-        !data?.public_token
-      ) {
+      if (disposed || tokenError || !data?.public_token) {
         return;
       }
 
-      const token =
-        String(
-          data.public_token
-        );
+      const token = String(data.public_token);
 
-      channel =
-        supabase.channel(
-          serviceChatChannelName(
-            token
-          )
-        );
+      channel = supabase.channel(serviceChatChannelName(token));
 
-      channel.subscribe(
-        (
-          status
-        ) => {
-          if (
-            disposed
-          ) {
-            return;
-          }
-
-          if (
-            status ===
-            "SUBSCRIBED"
-          ) {
-            customerChannelRef.current =
-              channel;
-          }
+      channel.subscribe((status) => {
+        if (disposed) {
+          return;
         }
-      );
+
+        if (status === "SUBSCRIBED") {
+          customerChannelRef.current = channel;
+        }
+      });
     }
 
     void connectCustomerChannel();
 
     return () => {
-      disposed =
-        true;
+      disposed = true;
 
-      if (
-        customerChannelRef.current ===
-        channel
-      ) {
-        customerChannelRef.current =
-          null;
+      if (customerChannelRef.current === channel) {
+        customerChannelRef.current = null;
       }
 
-      if (
-        channel
-      ) {
-        void supabase.removeChannel(
-          channel
-        );
+      if (channel) {
+        void supabase.removeChannel(channel);
       }
     };
-  }, [
-    supabase,
-    conversationId,
-  ]);
+  }, [supabase, conversationId]);
 
   /* =======================================================
      TELL CUSTOMER IMMEDIATELY
   ======================================================= */
 
   async function notifyCustomer() {
-    const channel =
-      customerChannelRef.current;
+    const channel = customerChannelRef.current;
 
     if (!channel) {
       /*
@@ -432,18 +241,14 @@ export default function AdminLiveThread({
 
     try {
       await channel.send({
-        type:
-          "broadcast",
+        type: "broadcast",
 
-        event:
-          SERVICE_CHAT_BROADCAST_EVENT,
+        event: SERVICE_CHAT_BROADCAST_EVENT,
 
         payload: {
-          conversation_id:
-            conversationId,
+          conversation_id: conversationId,
 
-          changed_at:
-            Date.now(),
+          changed_at: Date.now(),
         },
       });
     } catch {
@@ -459,466 +264,250 @@ export default function AdminLiveThread({
   ======================================================= */
 
   function handleScroll() {
-    const element =
-      messagesRef.current;
+    const element = messagesRef.current;
 
-    if (
-      !element ||
-      !scrollInitializedRef.current
-    ) {
+    if (!element || !scrollInitializedRef.current) {
       return;
     }
 
     const distance =
-      element.scrollHeight -
-      element.scrollTop -
-      element.clientHeight;
+      element.scrollHeight - element.scrollTop - element.clientHeight;
 
-    followBottomRef.current =
-      distance <=
-      110;
+    followBottomRef.current = distance <= 110;
   }
 
   const latestMessageId =
-    messages.length >
-    0
-      ? messages[
-          messages.length -
-            1
-        ].id
-      : "";
+    messages.length > 0 ? messages[messages.length - 1].id : "";
 
   useLayoutEffect(() => {
-    const element =
-      messagesRef.current;
+    const element = messagesRef.current;
 
-    if (
-      !element ||
-      !followBottomRef.current
-    ) {
+    if (!element || !followBottomRef.current) {
       return;
     }
 
-    element.scrollTop =
-      element.scrollHeight;
+    element.scrollTop = element.scrollHeight;
 
-    const frame =
-      window.requestAnimationFrame(
-        () => {
-          const current =
-            messagesRef.current;
+    const frame = window.requestAnimationFrame(() => {
+      const current = messagesRef.current;
 
-          if (
-            !current ||
-            !followBottomRef.current
-          ) {
-            return;
-          }
+      if (!current || !followBottomRef.current) {
+        return;
+      }
 
-          current.scrollTop =
-            current.scrollHeight;
+      current.scrollTop = current.scrollHeight;
 
-          scrollInitializedRef.current =
-            true;
-        }
-      );
+      scrollInitializedRef.current = true;
+    });
 
     return () => {
-      window.cancelAnimationFrame(
-        frame
-      );
+      window.cancelAnimationFrame(frame);
     };
-  }, [
-    latestMessageId,
-  ]);
+  }, [latestMessageId]);
 
   /* =======================================================
      RECONCILE
   ======================================================= */
 
-  const reconcileMessages =
-    useCallback(
-      (
-        incoming:
-          AdminLiveMessage[]
-      ) => {
-        setMessages(
-          (
-            current
-          ) => {
-            const next =
-              [
-                ...incoming,
-              ] as OptimisticMessage[];
+  const reconcileMessages = useCallback((incoming: AdminLiveMessage[]) => {
+    setMessages((current) => {
+      const next = [...incoming] as OptimisticMessage[];
 
-            const optimistic =
-              current.filter(
-                (
-                  item
-                ) =>
-                  item.optimistic
-              );
+      const optimistic = current.filter((item) => item.optimistic);
 
-            for (
-              const temp
-              of optimistic
-            ) {
-              const matchingReal =
-                incoming.find(
-                  (
-                    item
-                  ) =>
-                    item.sender_type ===
-                      "admin" &&
-                    item.body ===
-                      temp.body &&
-                    Math.abs(
-                      new Date(
-                        item.created_at
-                      ).getTime() -
-                        new Date(
-                          temp.created_at
-                        ).getTime()
-                    ) <
-                      30000
-                );
-
-              if (
-                !matchingReal
-              ) {
-                next.push(
-                  temp
-                );
-              }
-            }
-
-            return sortMessages(
-              next
-            );
-          }
+      for (const temp of optimistic) {
+        const matchingReal = incoming.find(
+          (item) =>
+            item.sender_type === "admin" &&
+            item.body === temp.body &&
+            Math.abs(
+              new Date(item.created_at).getTime() -
+                new Date(temp.created_at).getTime(),
+            ) < 30000,
         );
-      },
-      []
-    );
+
+        if (!matchingReal) {
+          next.push(temp);
+        }
+      }
+
+      return sortMessages(next);
+    });
+  }, []);
 
   /* =======================================================
      DIRECT DB SYNC
   ======================================================= */
 
-  const syncMessages =
-    useCallback(
-      async () => {
-        const {
-          data,
-          error:
-            messageError,
-        } =
-          await supabase
-            .from(
-              "service_messages"
-            )
-            .select(
-              "id, conversation_id, sender_type, sender_label, body, message_type, metadata, created_at"
-            )
-            .eq(
-              "conversation_id",
-              conversationId
-            )
-            .order(
-              "created_at",
-              {
-                ascending:
-                  true,
-              }
-            );
+  const syncMessages = useCallback(async () => {
+    const { data, error: messageError } = await supabase
+      .from("service_messages")
+      .select(
+        "id, conversation_id, sender_type, sender_label, body, message_type, metadata, created_at",
+      )
+      .eq("conversation_id", conversationId)
+      .order("created_at", {
+        ascending: false,
+      })
+      .limit(100);
 
-        if (
-          messageError ||
-          !data
-        ) {
-          return;
-        }
+    if (messageError || !data) {
+      return;
+    }
 
-        reconcileMessages(
-          data as unknown as
-            AdminLiveMessage[]
-        );
-      },
-      [
-        supabase,
-        conversationId,
-        reconcileMessages,
-      ]
-    );
+    reconcileMessages(data.reverse() as unknown as AdminLiveMessage[]);
+  }, [supabase, conversationId, reconcileMessages]);
 
-  const syncPayments =
-    useCallback(
-      async () => {
-        const {
-          data,
-          error:
-            paymentError,
-        } =
-          await supabase
-            .from(
-              "service_payment_requests"
-            )
-            .select(
-              "id, conversation_id, order_id, amount, currency, title, description, status, stripe_checkout_session_id, paid_at, cancelled_at, created_at"
-            )
-            .eq(
-              "conversation_id",
-              conversationId
-            )
-            .order(
-              "created_at",
-              {
-                ascending:
-                  true,
-              }
-            );
+  const syncPayments = useCallback(async () => {
+    const { data, error: paymentError } = await supabase
+      .from("service_payment_requests")
+      .select(
+        "id, conversation_id, order_id, amount, currency, title, description, status, stripe_checkout_session_id, paid_at, cancelled_at, created_at",
+      )
+      .eq("conversation_id", conversationId)
+      .order("created_at", {
+        ascending: false,
+      })
+      .limit(100);
 
-        if (
-          paymentError ||
-          !data
-        ) {
-          return;
-        }
+    if (paymentError || !data) {
+      return;
+    }
 
-        setPaymentRequests(
-          data as unknown as
-            AdminLivePaymentRequest[]
-        );
-      },
-      [
-        supabase,
-        conversationId,
-      ]
-    );
+    setPaymentRequests(data.reverse() as unknown as AdminLivePaymentRequest[]);
+  }, [supabase, conversationId]);
 
   /* =======================================================
      ADMIN REALTIME
   ======================================================= */
 
   useEffect(() => {
-    const channel =
-      supabase
-        .channel(
-          `birdshop-live-thread-${conversationId}`
-        )
-        .on(
-          "postgres_changes",
-          {
-            event:
-              "INSERT",
+    const channel = supabase
+      .channel(`birdshop-live-thread-${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
 
-            schema:
-              "public",
+          schema: "public",
 
-            table:
-              "service_messages",
+          table: "service_messages",
 
-            filter:
-              `conversation_id=eq.${conversationId}`,
-          },
-          (
-            payload
-          ) => {
-            const incoming =
-              payload.new as
-                AdminLiveMessage;
-
-            setMessages(
-              (
-                current
-              ) => {
-                if (
-                  current.some(
-                    (
-                      item
-                    ) =>
-                      item.id ===
-                      incoming.id
-                  )
-                ) {
-                  return current;
-                }
-
-                if (
-                  incoming.sender_type ===
-                  "admin"
-                ) {
-                  const optimisticIndex =
-                    current.findIndex(
-                      (
-                        item
-                      ) =>
-                        item.optimistic &&
-                        item.sender_type ===
-                          "admin" &&
-                        item.body ===
-                          incoming.body
-                    );
-
-                  if (
-                    optimisticIndex >=
-                    0
-                  ) {
-                    const next =
-                      [
-                        ...current,
-                      ];
-
-                    next[
-                      optimisticIndex
-                    ] =
-                      incoming;
-
-                    return sortMessages(
-                      next
-                    );
-                  }
-                }
-
-                return sortMessages([
-                  ...current,
-                  incoming,
-                ]);
-              }
-            );
-          }
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-
-            schema:
-              "public",
-
-            table:
-              "service_payment_requests",
-
-            filter:
-              `conversation_id=eq.${conversationId}`,
-          },
-          () => {
-            void syncPayments();
-          }
-        )
-        .subscribe();
-
-    const fallback =
-      window.setInterval(
-        () => {
-          void syncMessages();
+          filter: `conversation_id=eq.${conversationId}`,
         },
-        FALLBACK_SYNC_MS
-      );
+        (payload) => {
+          const incoming = payload.new as AdminLiveMessage;
+
+          setMessages((current) => {
+            if (current.some((item) => item.id === incoming.id)) {
+              return current;
+            }
+
+            if (incoming.sender_type === "admin") {
+              const optimisticIndex = current.findIndex(
+                (item) =>
+                  item.optimistic &&
+                  item.sender_type === "admin" &&
+                  item.body === incoming.body,
+              );
+
+              if (optimisticIndex >= 0) {
+                const next = [...current];
+
+                next[optimisticIndex] = incoming;
+
+                return sortMessages(next);
+              }
+            }
+
+            return sortMessages([...current, incoming]);
+          });
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+
+          schema: "public",
+
+          table: "service_payment_requests",
+
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        () => {
+          void syncPayments();
+        },
+      )
+      .subscribe();
+
+    const fallback = window.setInterval(() => {
+      void syncMessages();
+    }, FALLBACK_SYNC_MS);
 
     return () => {
-      window.clearInterval(
-        fallback
-      );
+      window.clearInterval(fallback);
 
-      void supabase.removeChannel(
-        channel
-      );
+      void supabase.removeChannel(channel);
     };
-  }, [
-    supabase,
-    conversationId,
-    syncMessages,
-    syncPayments,
-  ]);
+  }, [supabase, conversationId, syncMessages, syncPayments]);
 
   /* =======================================================
      FOCUS
   ======================================================= */
 
   function focusComposer() {
-    window.requestAnimationFrame(
-      () => {
-        textareaRef.current
-          ?.focus({
-            preventScroll:
-              true,
-          });
-      }
-    );
+    window.requestAnimationFrame(() => {
+      textareaRef.current?.focus({
+        preventScroll: true,
+      });
+    });
   }
 
   /* =======================================================
      SEND
   ======================================================= */
 
-  async function handleSubmit(
-    event:
-      FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const trimmed =
-      body.trim();
+    const trimmed = body.trim();
 
-    if (
-      !trimmed ||
-      sending
-    ) {
+    if (!trimmed || sending) {
       focusComposer();
 
       return;
     }
 
-    followBottomRef.current =
-      true;
+    followBottomRef.current = true;
 
-    const optimisticId =
-      `optimistic-${window.crypto.randomUUID()}`;
+    const optimisticId = `optimistic-${window.crypto.randomUUID()}`;
 
-    const optimisticMessage:
-      OptimisticMessage = {
-      id:
-        optimisticId,
+    const optimisticMessage: OptimisticMessage = {
+      id: optimisticId,
 
-      conversation_id:
-        conversationId,
+      conversation_id: conversationId,
 
-      sender_type:
-        "admin",
+      sender_type: "admin",
 
-      sender_label:
-        "BirdShop",
+      sender_label: "BirdShop",
 
-      body:
-        trimmed,
+      body: trimmed,
 
-      message_type:
-        "text",
+      message_type: "text",
 
       metadata: {},
 
-      created_at:
-        new Date()
-          .toISOString(),
+      created_at: new Date().toISOString(),
 
-      optimistic:
-        true,
+      optimistic: true,
     };
 
     /*
      * Immediate Admin-side appearance.
      */
 
-    setMessages(
-      (
-        current
-      ) =>
-        sortMessages([
-          ...current,
-          optimisticMessage,
-        ])
-    );
+    setMessages((current) => sortMessages([...current, optimisticMessage]));
 
     setBody("");
 
@@ -926,50 +515,28 @@ export default function AdminLiveThread({
 
     focusComposer();
 
-    setSending(
-      true
-    );
+    setSending(true);
 
-    const formData =
-      new FormData();
+    const formData = new FormData();
 
-    formData.set(
-      "conversation_id",
-      conversationId
-    );
+    formData.set("conversation_id", conversationId);
 
-    formData.set(
-      "body",
-      trimmed
-    );
+    formData.set("body", trimmed);
+    if (sendIdentity.current?.body !== trimmed)
+      sendIdentity.current = { body: trimmed, id: crypto.randomUUID() };
+    formData.set("request_id", sendIdentity.current.id);
 
     try {
-      const result =
-        await sendAdminChatMessage(
-          formData
-        );
+      const result = await sendAdminChatMessage(formData);
 
       if (!result.ok) {
-        setMessages(
-          (
-            current
-          ) =>
-            current.filter(
-              (
-                item
-              ) =>
-                item.id !==
-                optimisticId
-            )
+        setMessages((current) =>
+          current.filter((item) => item.id !== optimisticId),
         );
 
-        setBody(
-          trimmed
-        );
+        setBody(trimmed);
 
-        setError(
-          result.error
-        );
+        setError(result.error);
 
         focusComposer();
 
@@ -982,6 +549,7 @@ export default function AdminLiveThread({
        * Wake customer immediately.
        */
 
+      sendIdentity.current = null;
       void notifyCustomer();
 
       /*
@@ -989,36 +557,18 @@ export default function AdminLiveThread({
        */
 
       await syncMessages();
-    } catch (
-      problem
-    ) {
-      setMessages(
-        (
-          current
-        ) =>
-          current.filter(
-            (
-              item
-            ) =>
-              item.id !==
-              optimisticId
-          )
+    } catch (problem) {
+      setMessages((current) =>
+        current.filter((item) => item.id !== optimisticId),
       );
 
-      setBody(
-        trimmed
-      );
+      setBody(trimmed);
 
       setError(
-        problem instanceof
-          Error
-          ? problem.message
-          : "Unable to send message."
+        problem instanceof Error ? problem.message : "Unable to send message.",
       );
     } finally {
-      setSending(
-        false
-      );
+      setSending(false);
 
       focusComposer();
     }
@@ -1028,34 +578,19 @@ export default function AdminLiveThread({
      ENTER
   ======================================================= */
 
-  function handleKeyDown(
-    event:
-      KeyboardEvent<HTMLTextAreaElement>
-  ) {
-    if (
-      event.nativeEvent
-        .isComposing
-    ) {
+  function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.nativeEvent.isComposing) {
       return;
     }
 
-    if (
-      event.key ===
-        "Enter" &&
-      !event.shiftKey
-    ) {
+    if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
 
-      if (
-        sending ||
-        !body.trim()
-      ) {
+      if (sending || !body.trim()) {
         return;
       }
 
-      event.currentTarget
-        .form
-        ?.requestSubmit();
+      event.currentTarget.form?.requestSubmit();
     }
   }
 
@@ -1063,132 +598,57 @@ export default function AdminLiveThread({
      PAYMENT LOOKUP
   ======================================================= */
 
-  const paymentMap =
-    new Map(
-      paymentRequests.map(
-        (
-          request
-        ) => [
-          request.id,
-          request,
-        ]
-      )
-    );
+  const paymentMap = new Map(
+    paymentRequests.map((request) => [request.id, request]),
+  );
 
   /* =======================================================
      RENDER MESSAGE
   ======================================================= */
 
-  function renderMessage(
-    item:
-      OptimisticMessage
-  ): ReactNode {
-    if (
-      item.message_type ===
-      "payment_request"
-    ) {
-      const requestId =
-        paymentRequestIdFromMessage(
-          item
-        );
+  function renderMessage(item: OptimisticMessage): ReactNode {
+    if (item.message_type === "payment_request") {
+      const requestId = paymentRequestIdFromMessage(item);
 
-      const request =
-        requestId
-          ? paymentMap.get(
-              requestId
-            )
-          : null;
+      const request = requestId ? paymentMap.get(requestId) : null;
 
       if (request) {
         return (
           <article
-            key={
-              item.id
-            }
-            className={
-              paymentStyles.request
-            }
-            data-status={
-              request.status
-            }
+            key={item.id}
+            className={paymentStyles.request}
+            data-status={request.status}
           >
-            <div
-              className={
-                paymentStyles.requestTop
-              }
-            >
+            <div className={paymentStyles.requestTop}>
               <div>
-                <span
-                  className={
-                    paymentStyles.requestEyebrow
-                  }
-                >
+                <span className={paymentStyles.requestEyebrow}>
                   BIRDSHOP PAYMENT REQUEST
                 </span>
 
-                <strong
-                  className={
-                    paymentStyles.requestTitle
-                  }
-                >
-                  {
-                    request.title
-                  }
+                <strong className={paymentStyles.requestTitle}>
+                  {request.title}
                 </strong>
               </div>
 
-              <span
-                className={
-                  paymentStyles.requestStatus
-                }
-              >
-                {statusLabel(
-                  request.status
-                )}
+              <span className={paymentStyles.requestStatus}>
+                {statusLabel(request.status)}
               </span>
             </div>
 
             {request.description && (
-              <p
-                className={
-                  paymentStyles.requestDescription
-                }
-              >
-                {
-                  request.description
-                }
+              <p className={paymentStyles.requestDescription}>
+                {request.description}
               </p>
             )}
 
-            <strong
-              className={
-                paymentStyles.requestAmount
-              }
-            >
-              {money(
-                request.amount,
-                request.currency
-              )}
+            <strong className={paymentStyles.requestAmount}>
+              {money(request.amount, request.currency)}
             </strong>
 
-            <div
-              className={
-                paymentStyles.requestFooter
-              }
-            >
-              <span>
-                Sent{" "}
-                {formatDate(
-                  request.created_at
-                )}
-              </span>
+            <div className={paymentStyles.requestFooter}>
+              <span>Sent {formatDate(request.created_at)}</span>
 
-              {request.status ===
-                "paid" && (
-                <strong>
-                  PAYMENT RECEIVED
-                </strong>
-              )}
+              {request.status === "paid" && <strong>PAYMENT RECEIVED</strong>}
             </div>
           </article>
         );
@@ -1197,47 +657,28 @@ export default function AdminLiveThread({
 
     return (
       <article
-        key={
-          item.id
-        }
+        key={item.id}
         className={
-          item.sender_type ===
-          "admin"
+          item.sender_type === "admin"
             ? styles.adminMessage
-            : item.sender_type ===
-                "system"
+            : item.sender_type === "system"
               ? styles.systemMessage
               : styles.customerMessage
         }
-        data-optimistic={
-          item.optimistic
-            ? "true"
-            : undefined
-        }
+        data-optimistic={item.optimistic ? "true" : undefined}
       >
         <div>
           <strong>
             {item.sender_label ||
-              (item.sender_type ===
-              "admin"
-                ? "BirdShop"
-                : "Customer")}
+              (item.sender_type === "admin" ? "BirdShop" : "Customer")}
           </strong>
 
           <span>
-            {item.optimistic
-              ? "Sending..."
-              : formatDate(
-                  item.created_at
-                )}
+            {item.optimistic ? "Sending..." : formatDate(item.created_at)}
           </span>
         </div>
 
-        <p>
-          {
-            item.body
-          }
-        </p>
+        <p>{item.body}</p>
       </article>
     );
   }
@@ -1249,90 +690,42 @@ export default function AdminLiveThread({
   return (
     <>
       <div
-        ref={
-          messagesRef
-        }
-        className={
-          styles.messages
-        }
-        onScroll={
-          handleScroll
-        }
+        ref={messagesRef}
+        className={styles.messages}
+        onScroll={handleScroll}
       >
-        {messages.length ===
-        0 ? (
-          <div
-            className={
-              styles.emptyChat
-            }
-          >
-            No messages yet.
-          </div>
+        {messages.length >= 100 && (
+          <ChatHistory conversationId={conversationId} before={messages[0]} />
+        )}
+        {messages.length === 0 ? (
+          <div className={styles.emptyChat}>No messages yet.</div>
         ) : (
-          messages.map(
-            renderMessage
-          )
+          messages.map(renderMessage)
         )}
       </div>
 
-      <form
-        onSubmit={
-          handleSubmit
-        }
-        className={
-          styles.composer
-        }
-      >
+      <form onSubmit={handleSubmit} className={styles.composer}>
         <textarea
-          ref={
-            textareaRef
-          }
-          value={
-            body
-          }
-          onChange={(
-            event
-          ) =>
-            setBody(
-              event.target
-                .value
-            )
-          }
-          onKeyDown={
-            handleKeyDown
-          }
+          ref={textareaRef}
+          value={body}
+          onChange={(event) => setBody(event.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="Reply to the customer..."
           rows={2}
-          maxLength={
-            4000
-          }
+          maxLength={4000}
           autoComplete="off"
           data-admin-chat-composer="true"
         />
 
         <div>
           {error ? (
-            <span>
-              {
-                error
-              }
-            </span>
+            <span>{error}</span>
           ) : (
-            <span>
-              Enter to send · Shift + Enter for a new line
-            </span>
+            <span>Enter to send · Shift + Enter for a new line</span>
           )}
 
-          <button
-            type="submit"
-            disabled={
-              sending ||
-              !body.trim()
-            }
-          >
-            {sending
-              ? "Sending..."
-              : "Send Reply"}
+          <button type="submit" disabled={sending || !body.trim()}>
+            {sending ? "Sending..." : "Send Reply"}
           </button>
         </div>
       </form>

@@ -5,20 +5,20 @@
   --admin-bg-elevated: #111d13;
   --admin-bg-soft: #162318;
 
-  --admin-panel: #f2eee4;
-  --admin-panel-soft: #e9e4d8;
-  --admin-panel-bright: #faf7ef;
+  --admin-panel: #101d13;
+  --admin-panel-soft: #162318;
+  --admin-panel-bright: #f7f3e9;
 
-  --admin-ink: #253024;
-  --admin-ink-soft: #5f695b;
-  --admin-ink-muted: #7a8276;
+  --admin-ink: #f2eee4;
+  --admin-ink-soft: rgba(242, 238, 228, 0.72);
+  --admin-ink-muted: rgba(242, 238, 228, 0.54);
 
   --admin-text: #f2eee4;
   --admin-text-soft: rgba(242, 238, 228, 0.72);
   --admin-text-muted: rgba(242, 238, 228, 0.54);
 
   --admin-line-dark: rgba(242, 238, 228, 0.13);
-  --admin-line-light: rgba(42, 54, 39, 0.13);
+  --admin-line-light: rgba(242, 238, 228, 0.13);
 
   --admin-accent: #4f6047;
   --admin-accent-hover: #607158;
@@ -36,5 +36,101 @@
 @media (max-width: 820px) {
   .shell {
     --admin-sidebar-width: 1fr;
+  }
+}
+
+.shell :global(input),
+.shell :global(select),
+.shell :global(textarea) {
+  max-width: 100%;
+  min-width: 0;
+}
+.shell :global(button),
+.shell :global(a) {
+  touch-action: manipulation;
+}
+.shell :global(button:focus-visible),
+.shell :global(a:focus-visible),
+.shell :global(input:focus-visible),
+.shell :global(select:focus-visible),
+.shell :global(textarea:focus-visible) {
+  outline: 2px solid #d8e5bd;
+  outline-offset: 3px;
+}
+@media (max-width: 900px) {
+  .shell :global(main) {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+  .shell :global(main) > section {
+    min-width: 0;
+    padding: 24px 18px 46px;
+  }
+  .shell :global(input),
+  .shell :global(select),
+  .shell :global(textarea) {
+    font-size: 16px;
+  }
+  .shell :global(button) {
+    min-height: 44px;
+  }
+  .shell :global(table) {
+    display: block;
+    max-width: 100%;
+    overflow-x: visible;
+  }
+  .shell :global(th),
+  .shell :global(td) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+@media (max-width: 480px) {
+  .shell :global(main) > section {
+    padding: 21px 12px 40px;
+  }
+}
+
+.shell {
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+.shell :global(*) {
+  box-sizing: border-box;
+}
+.shell :global(img) {
+  max-width: 100%;
+}
+.shell :global(h1) {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1023px) {
+  .shell :global(main) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .shell :global(main) > section {
+    min-width: 0;
+  }
+  .shell :global(input),
+  .shell :global(select),
+  .shell :global(textarea) {
+    font-size: 16px;
+  }
+  .shell :global(button),
+  .shell :global(summary) {
+    min-height: 44px;
+  }
+  .shell :global(section) {
+    min-width: 0;
+  }
+}
+@media (max-width: 767px) {
+  .shell :global(main) > section {
+    padding: 20px 12px max(28px, env(safe-area-inset-bottom));
+  }
+  .shell :global(h1) {
+    font-size: clamp(26px, 8vw, 38px);
   }
 }

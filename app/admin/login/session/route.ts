@@ -1,18 +1,12 @@
-import {
-  randomUUID,
-} from "crypto";
+import { assertSameOrigin, readBody } from "@/lib/server-config";
+import { limitRequest, rateLimit } from "@/lib/rate-limit";
+import { randomUUID } from "crypto";
 
-import {
-  NextResponse,
-} from "next/server";
+import { NextResponse } from "next/server";
 
-import {
-  cookies,
-} from "next/headers";
+import { cookies } from "next/headers";
 
-import {
-  createClient,
-} from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 import {
   ADMIN_ACTIVITY_COOKIE,
@@ -23,38 +17,28 @@ import {
    RUNTIME
 ========================================================= */
 
-export const runtime =
-  "nodejs";
+export const runtime = "nodejs";
 
-export const dynamic =
-  "force-dynamic";
+export const dynamic = "force-dynamic";
 
 /* =========================================================
    TYPES
 ========================================================= */
 
 type LoginBody = {
-  email?:
-    unknown;
+  email?: unknown;
 
-  password?:
-    unknown;
+  password?: unknown;
 };
 
 type StaffProfile = {
-  user_id:
-    string;
+  user_id: string;
 
-  role:
-    | "owner"
-    | "service_agent";
+  role: "owner" | "service_agent";
 
-  display_name:
-    | string
-    | null;
+  display_name: string | null;
 
-  is_active:
-    boolean;
+  is_active: boolean;
 };
 
 /* =========================================================
@@ -63,18 +47,13 @@ type StaffProfile = {
 
 function sessionCookieOptions() {
   return {
-    httpOnly:
-      true,
+    httpOnly: true,
 
-    sameSite:
-      "strict" as const,
+    sameSite: "strict" as const,
 
-    secure:
-      process.env.NODE_ENV ===
-      "production",
+    secure: process.env.NODE_ENV === "production",
 
-    path:
-      "/admin",
+    path: "/admin",
   };
 }
 
@@ -83,106 +62,77 @@ function sessionCookieOptions() {
 ========================================================= */
 
 async function clearBirdShopSession() {
-  const cookieStore =
-    await cookies();
+  const cookieStore = await cookies();
 
-  cookieStore.set(
-    ADMIN_SESSION_COOKIE,
-    "",
-    {
-      ...sessionCookieOptions(),
+  cookieStore.set(ADMIN_SESSION_COOKIE, "", {
+    ...sessionCookieOptions(),
 
-      maxAge:
-        0,
-    }
-  );
+    maxAge: 0,
+  });
 
-  cookieStore.set(
-    ADMIN_ACTIVITY_COOKIE,
-    "",
-    {
-      ...sessionCookieOptions(),
+  cookieStore.set(ADMIN_ACTIVITY_COOKIE, "", {
+    ...sessionCookieOptions(),
 
-      maxAge:
-        0,
-    }
-  );
+    maxAge: 0,
+  });
 
   /*
    * Remove cookies from older versions too.
    */
 
-  cookieStore.set(
-    "birdshop_admin_exit",
-    "",
-    {
-      path:
-        "/admin",
+  cookieStore.set("birdshop_admin_exit", "", {
+    path: "/admin",
 
-      maxAge:
-        0,
-    }
-  );
+    maxAge: 0,
+  });
 }
 
 /* =========================================================
    POST LOGIN
 ========================================================= */
 
-export async function POST(
-  request:
-    Request
-) {
-  let body:
-    LoginBody;
+export async function POST(request: Request) {
+  let body: LoginBody;
 
   try {
-    body =
-      await request.json() as
-        LoginBody;
+    assertSameOrigin(request);
+    await limitRequest(request, "staff-login", 20, 900);
+    body = JSON.parse(await readBody(request, 8192)) as LoginBody;
   } catch {
     return NextResponse.json(
       {
-        error:
-          "Invalid login request.",
+        error: "Invalid login request.",
       },
       {
-        status:
-          400,
-      }
+        status: 400,
+      },
     );
   }
 
-  const email =
-    typeof body.email ===
-      "string"
-      ? body.email.trim()
-      : "";
+  const email = typeof body.email === "string" ? body.email.trim() : "";
 
-  const password =
-    typeof body.password ===
-      "string"
-      ? body.password
-      : "";
+  const password = typeof body.password === "string" ? body.password : "";
 
-  if (
-    !email ||
-    !password
-  ) {
+  if (!email || !password || email.length > 320 || password.length > 1024) {
     return NextResponse.json(
       {
-        error:
-          "Enter your email and password.",
+        error: "Enter your email and password.",
       },
       {
-        status:
-          400,
-      }
+        status: 400,
+      },
     );
   }
 
-  const supabase =
-    await createClient();
+  try {
+    await rateLimit("staff-login-account", email.toLowerCase(), 10, 900);
+  } catch {
+    return NextResponse.json(
+      { error: "Too many login attempts. Wait a few minutes and retry." },
+      { status: 429 },
+    );
+  }
+  const supabase = await createClient();
 
   /* =======================================================
      PASSWORD AUTHENTICATION
@@ -194,33 +144,24 @@ export async function POST(
   ======================================================= */
 
   const {
-    data:
-      signInData,
+    data: signInData,
 
-    error:
-      signInError,
-  } =
-    await supabase.auth
-      .signInWithPassword({
-        email,
-        password,
-      });
+    error: signInError,
+  } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-  if (
-    signInError ||
-    !signInData.user
-  ) {
+  if (signInError || !signInData.user) {
     await clearBirdShopSession();
 
     return NextResponse.json(
       {
-        error:
-          "The email or password is incorrect.",
+        error: "The email or password is incorrect.",
       },
       {
-        status:
-          401,
-      }
+        status: 401,
+      },
     );
   }
 
@@ -229,22 +170,13 @@ export async function POST(
   ======================================================= */
 
   const {
-    data:
-      profileData,
+    data: profileData,
 
-    error:
-      profileError,
-  } =
-    await supabase.rpc(
-      "birdshop_get_my_staff_profile"
-    );
+    error: profileError,
+  } = await supabase.rpc("birdshop_get_my_staff_profile");
 
-  if (
-    profileError ||
-    !profileData
-  ) {
-    await supabase.auth
-      .signOut();
+  if (profileError || !profileData) {
+    await supabase.auth.signOut({ scope: "local" });
 
     await clearBirdShopSession();
 
@@ -254,30 +186,19 @@ export async function POST(
           "This account is not authorized to access BirdShop administration.",
       },
       {
-        status:
-          403,
-      }
+        status: 403,
+      },
     );
   }
 
-  const profile =
-    profileData as
-      StaffProfile;
+  const profile = profileData as StaffProfile;
 
   if (
-    profile.user_id !==
-      signInData.user.id ||
-    profile.is_active !==
-      true ||
-    ![
-      "owner",
-      "service_agent",
-    ].includes(
-      profile.role
-    )
+    profile.user_id !== signInData.user.id ||
+    profile.is_active !== true ||
+    !["owner", "service_agent"].includes(profile.role)
   ) {
-    await supabase.auth
-      .signOut();
+    await supabase.auth.signOut({ scope: "local" });
 
     await clearBirdShopSession();
 
@@ -287,9 +208,8 @@ export async function POST(
           "This account is not authorized to access BirdShop administration.",
       },
       {
-        status:
-          403,
-      }
+        status: 403,
+      },
     );
   }
 
@@ -304,46 +224,30 @@ export async function POST(
      This is intentionally a browser-session cookie.
   ======================================================= */
 
-  const cookieStore =
-    await cookies();
+  const cookieStore = await cookies();
 
-  const now =
-    Date.now();
+  const now = Date.now();
 
-  cookieStore.set(
-    ADMIN_SESSION_COOKIE,
-    randomUUID(),
-    sessionCookieOptions()
-  );
+  cookieStore.set(ADMIN_SESSION_COOKIE, randomUUID(), sessionCookieOptions());
 
-  cookieStore.set(
-    ADMIN_ACTIVITY_COOKIE,
-    String(
-      now
-    ),
-    sessionCookieOptions()
-  );
+  cookieStore.set(ADMIN_ACTIVITY_COOKIE, String(now), sessionCookieOptions());
 
   /* =======================================================
      DESTINATION
   ======================================================= */
 
   const destination =
-    profile.role ===
-    "service_agent"
+    profile.role === "service_agent"
       ? "/admin/chat?view=active&type=service"
       : "/admin";
 
   return NextResponse.json({
-    ok:
-      true,
+    ok: true,
 
     destination,
 
-    role:
-      profile.role,
+    role: profile.role,
 
-    displayName:
-      profile.display_name,
+    displayName: profile.display_name,
   });
 }

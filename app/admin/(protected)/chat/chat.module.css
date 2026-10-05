@@ -43,10 +43,7 @@
 
   overflow: hidden;
 
-  padding:
-    28px
-    34px
-    30px;
+  padding: 28px 34px 30px;
 }
 
 /* =========================================================
@@ -62,19 +59,13 @@
 
   padding-bottom: 18px;
 
-  border-bottom:
-    1px solid
-    rgba(242, 238, 228, 0.12);
+  border-bottom: 1px solid rgba(242, 238, 228, 0.12);
 }
 
 .header > div > span {
-  color:
-    rgba(242, 238, 228, 0.54);
+  color: rgba(242, 238, 228, 0.54);
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 10px;
   font-weight: 800;
@@ -83,15 +74,9 @@
 }
 
 .header h1 {
-  margin:
-    8px
-    0
-    6px;
+  margin: 8px 0 6px;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 42px;
   font-weight: 400;
@@ -103,13 +88,9 @@
 
   margin: 0;
 
-  color:
-    rgba(242, 238, 228, 0.72);
+  color: rgba(242, 238, 228, 0.72);
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
   line-height: 1.5;
@@ -123,9 +104,7 @@
 .error {
   margin-top: 12px;
 
-  padding:
-    10px
-    13px;
+  padding: 10px 13px;
 
   border-radius: 5px;
 
@@ -136,23 +115,17 @@
 .notice {
   color: #dce6d6;
 
-  border:
-    1px solid
-    rgba(124, 155, 111, 0.28);
+  border: 1px solid rgba(124, 155, 111, 0.28);
 
-  background:
-    rgba(86, 112, 75, 0.18);
+  background: rgba(86, 112, 75, 0.18);
 }
 
 .error {
   color: #f0d9d1;
 
-  border:
-    1px solid
-    rgba(167, 99, 78, 0.28);
+  border: 1px solid rgba(167, 99, 78, 0.28);
 
-  background:
-    rgba(120, 70, 57, 0.18);
+  background: rgba(120, 70, 57, 0.18);
 }
 
 /* =========================================================
@@ -165,9 +138,7 @@
 
   gap: 8px;
 
-  padding:
-    14px
-    0;
+  padding: 14px 0;
 }
 
 .tabs a {
@@ -178,28 +149,19 @@
 
   gap: 10px;
 
-  padding:
-    0
-    15px;
+  padding: 0 15px;
 
-  border:
-    1px solid
-    rgba(242, 238, 228, 0.14);
+  border: 1px solid rgba(242, 238, 228, 0.14);
 
   border-radius: 5px;
 
-  color:
-    rgba(242, 238, 228, 0.76);
+  color: rgba(242, 238, 228, 0.76);
 
-  background:
-    rgba(255, 255, 255, 0.015);
+  background: rgba(255, 255, 255, 0.015);
 
   text-decoration: none;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 13px;
 
@@ -213,14 +175,11 @@
 .tabs a:hover {
   color: #f2eee4;
 
-  border-color:
-    rgba(242, 238, 228, 0.24);
+  border-color: rgba(242, 238, 228, 0.24);
 
-  background:
-    rgba(255, 255, 255, 0.045);
+  background: rgba(255, 255, 255, 0.045);
 
-  transform:
-    translateY(-1px);
+  transform: translateY(-1px);
 }
 
 .tabs a span {
@@ -230,19 +189,13 @@
   display: grid;
   place-items: center;
 
-  padding:
-    0
-    6px;
+  padding: 0 6px;
 
   border-radius: 999px;
 
-  background:
-    rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08);
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 10px;
   font-weight: 800;
@@ -275,17 +228,13 @@
 
   overflow: hidden;
 
-  border:
-    1px solid
-    rgba(242, 238, 228, 0.13);
+  border: 1px solid rgba(242, 238, 228, 0.13);
 
   border-radius: 9px;
 
   background: #101d13;
 
-  box-shadow:
-    0 18px 40px
-    rgba(0, 0, 0, 0.12);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
 }
 
 /* =========================================================
@@ -303,9 +252,7 @@
 
   overflow: hidden;
 
-  border-right:
-    1px solid
-    rgba(242, 238, 228, 0.12);
+  border-right: 1px solid rgba(242, 238, 228, 0.12);
 
   background: #101d13;
 }
@@ -315,23 +262,15 @@
 
   gap: 5px;
 
-  padding:
-    17px
-    18px;
+  padding: 17px 18px;
 
-  border-bottom:
-    1px solid
-    rgba(242, 238, 228, 0.09);
+  border-bottom: 1px solid rgba(242, 238, 228, 0.09);
 }
 
 .inboxHeading span {
-  color:
-    rgba(242, 238, 228, 0.5);
+  color: rgba(242, 238, 228, 0.5);
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 9px;
   font-weight: 800;
@@ -340,10 +279,7 @@
 }
 
 .inboxHeading strong {
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 16px;
   font-weight: 400;
@@ -366,16 +302,11 @@
 
   gap: 5px;
 
-  padding:
-    16px
-    17px;
+  padding: 16px 17px;
 
-  border-bottom:
-    1px solid
-    rgba(242, 238, 228, 0.075);
+  border-bottom: 1px solid rgba(242, 238, 228, 0.075);
 
-  color:
-    rgba(242, 238, 228, 0.84);
+  color: rgba(242, 238, 228, 0.84);
 
   text-decoration: none;
 
@@ -385,8 +316,7 @@
 }
 
 .conversationItem:hover {
-  background:
-    rgba(255, 255, 255, 0.045);
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .activeConversation {
@@ -404,10 +334,7 @@
 }
 
 .conversationItem > div > span {
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 9px;
   font-weight: 800;
@@ -416,19 +343,14 @@
 }
 
 .conversationItem > div > small {
-  padding:
-    4px
-    7px;
+  padding: 4px 7px;
 
   border-radius: 999px;
 
   color: #f2eee4;
   background: #52664a;
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 8px;
   font-weight: 800;
@@ -437,10 +359,7 @@
 .conversationItem strong {
   overflow: hidden;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 16px;
   font-weight: 400;
@@ -472,15 +391,11 @@
 
   padding: 34px;
 
-  color:
-    rgba(242, 238, 228, 0.56);
+  color: rgba(242, 238, 228, 0.56);
 
   text-align: center;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
 }
@@ -507,12 +422,7 @@
 
   color: #273125;
 
-  background:
-    linear-gradient(
-      180deg,
-      #f4f0e7,
-      #f0ece2
-    );
+  background: linear-gradient(180deg, #f4f0e7, #f0ece2);
 }
 
 /* =========================================================
@@ -528,22 +438,15 @@
 
   gap: 22px;
 
-  padding:
-    14px
-    21px;
+  padding: 14px 21px;
 
-  border-bottom:
-    1px solid
-    rgba(39, 49, 37, 0.11);
+  border-bottom: 1px solid rgba(39, 49, 37, 0.11);
 }
 
 .chatHeader > div:first-child > span {
   color: #707b6c;
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 9px;
   font-weight: 800;
@@ -552,15 +455,9 @@
 }
 
 .chatHeader h2 {
-  margin:
-    5px
-    0
-    2px;
+  margin: 5px 0 2px;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 24px;
   font-weight: 400;
@@ -590,10 +487,7 @@
 .customerBar span {
   color: #747e70;
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 8px;
   font-weight: 800;
@@ -602,10 +496,7 @@
 }
 
 .orderFacts strong {
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 13px;
   font-weight: 400;
@@ -624,13 +515,9 @@
 
   gap: 16px;
 
-  padding:
-    9px
-    21px;
+  padding: 9px 21px;
 
-  border-bottom:
-    1px solid
-    rgba(39, 49, 37, 0.09);
+  border-bottom: 1px solid rgba(39, 49, 37, 0.09);
 
   background: #e9e5da;
 }
@@ -679,13 +566,9 @@
 
   gap: 16px;
 
-  padding:
-    9px
-    21px;
+  padding: 9px 21px;
 
-  border-bottom:
-    1px solid
-    rgba(39, 49, 37, 0.09);
+  border-bottom: 1px solid rgba(39, 49, 37, 0.09);
 
   background: #f7f3ea;
 }
@@ -700,10 +583,7 @@
 .paymentBarInfo > span {
   color: #75806f;
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 9px;
   font-weight: 800;
@@ -712,10 +592,7 @@
 }
 
 .paymentBarInfo strong {
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
   font-weight: 400;
@@ -730,13 +607,9 @@
 .paymentBar button {
   min-height: 34px;
 
-  padding:
-    0
-    12px;
+  padding: 0 12px;
 
-  border:
-    1px solid
-    rgba(61, 76, 56, 0.2);
+  border: 1px solid rgba(61, 76, 56, 0.2);
 
   border-radius: 4px;
 
@@ -745,10 +618,7 @@
 
   cursor: pointer;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 11px;
 }
@@ -758,13 +628,9 @@
 
   overflow-y: auto;
 
-  padding:
-    15px
-    21px;
+  padding: 15px 21px;
 
-  border-bottom:
-    1px solid
-    rgba(39, 49, 37, 0.09);
+  border-bottom: 1px solid rgba(39, 49, 37, 0.09);
 
   background: #ece8de;
 }
@@ -785,9 +651,7 @@
 
   overscroll-behavior: contain;
 
-  padding:
-    20px
-    23px;
+  padding: 20px 23px;
 
   scroll-behavior: auto;
 
@@ -799,15 +663,9 @@
 .systemMessage {
   width: fit-content;
 
-  max-width:
-    min(
-      680px,
-      78%
-    );
+  max-width: min(680px, 78%);
 
-  padding:
-    12px
-    14px;
+  padding: 12px 14px;
 
   border-radius: 8px;
 }
@@ -815,9 +673,7 @@
 .customerMessage {
   align-self: flex-start;
 
-  border:
-    1px solid
-    rgba(39, 49, 37, 0.13);
+  border: 1px solid rgba(39, 49, 37, 0.13);
 
   background: #e7e3d8;
 }
@@ -827,12 +683,7 @@
 
   color: #f3eee5;
 
-  background:
-    linear-gradient(
-      145deg,
-      #52644c,
-      #46583f
-    );
+  background: linear-gradient(145deg, #52644c, #46583f);
 }
 
 .systemMessage {
@@ -840,9 +691,7 @@
 
   max-width: 72%;
 
-  padding:
-    7px
-    11px;
+  padding: 7px 11px;
 
   color: #747d70;
 
@@ -863,10 +712,7 @@
 .customerMessage strong,
 .adminMessage strong,
 .systemMessage strong {
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 10px;
   font-weight: 700;
@@ -875,10 +721,7 @@
 .customerMessage span,
 .adminMessage span,
 .systemMessage span {
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 9px;
 
@@ -888,17 +731,11 @@
 .customerMessage p,
 .adminMessage p,
 .systemMessage p {
-  margin:
-    7px
-    0
-    0;
+  margin: 7px 0 0;
 
   white-space: pre-wrap;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 15px;
   line-height: 1.5;
@@ -909,13 +746,9 @@
 ========================================================= */
 
 .composer {
-  padding:
-    11px
-    14px;
+  padding: 11px 14px;
 
-  border-top:
-    1px solid
-    rgba(39, 49, 37, 0.11);
+  border-top: 1px solid rgba(39, 49, 37, 0.11);
 
   background: #ece7dc;
 }
@@ -928,13 +761,9 @@
   min-height: 58px;
   max-height: 115px;
 
-  padding:
-    11px
-    12px;
+  padding: 11px 12px;
 
-  border:
-    1px solid
-    rgba(39, 49, 37, 0.17);
+  border: 1px solid rgba(39, 49, 37, 0.17);
 
   border-radius: 6px;
 
@@ -943,10 +772,7 @@
   color: #2d372b;
   background: #fbf8f0;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 14px;
   line-height: 1.45;
@@ -955,9 +781,7 @@
 .composer textarea:focus {
   border-color: #607258;
 
-  box-shadow:
-    0 0 0 3px
-    rgba(86, 108, 77, 0.08);
+  box-shadow: 0 0 0 3px rgba(86, 108, 77, 0.08);
 }
 
 .composer > div {
@@ -982,18 +806,13 @@
 .restoreButton {
   min-height: 36px;
 
-  padding:
-    0
-    13px;
+  padding: 0 13px;
 
   border-radius: 4px;
 
   cursor: pointer;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 11px;
 }
@@ -1001,9 +820,7 @@
 .composer button,
 .chatFooter button,
 .restoreButton {
-  border:
-    1px solid
-    #4b5b45;
+  border: 1px solid #4b5b45;
 
   color: #f3eee5;
   background: #4b5b45;
@@ -1022,13 +839,9 @@
 
   gap: 12px;
 
-  padding:
-    7px
-    14px;
+  padding: 7px 14px;
 
-  border-top:
-    1px solid
-    rgba(39, 49, 37, 0.11);
+  border-top: 1px solid rgba(39, 49, 37, 0.11);
 
   background: #e7e2d7;
 }
@@ -1041,9 +854,7 @@
 }
 
 .dangerButton {
-  border:
-    1px solid
-    rgba(131, 73, 57, 0.27);
+  border: 1px solid rgba(131, 73, 57, 0.27);
 
   color: #795347;
   background: #f1e4de;
@@ -1056,19 +867,14 @@
 .closed {
   padding: 12px;
 
-  border-top:
-    1px solid
-    rgba(39, 49, 37, 0.11);
+  border-top: 1px solid rgba(39, 49, 37, 0.11);
 
   color: #737d70;
   background: #e9e5da;
 
   text-align: center;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 12px;
 }
@@ -1086,12 +892,7 @@
 
   color: #283226;
 
-  background:
-    linear-gradient(
-      180deg,
-      #f3efe6,
-      #eeeae0
-    );
+  background: linear-gradient(180deg, #f3efe6, #eeeae0);
 }
 
 .compactCard {
@@ -1104,21 +905,15 @@
 
   gap: 24px;
 
-  padding:
-    17px
-    19px;
+  padding: 17px 19px;
 
-  border:
-    1px solid
-    rgba(39, 49, 37, 0.13);
+  border: 1px solid rgba(39, 49, 37, 0.13);
 
   border-radius: 7px;
 
   background: #faf7ef;
 
-  box-shadow:
-    0 8px 24px
-    rgba(32, 42, 30, 0.035);
+  box-shadow: 0 8px 24px rgba(32, 42, 30, 0.035);
 }
 
 .compactCard + .compactCard {
@@ -1134,10 +929,7 @@
 .compactCard span {
   color: #737d70;
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 
   font-size: 9px;
   font-weight: 800;
@@ -1146,10 +938,7 @@
 }
 
 .compactCard strong {
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 20px;
   font-weight: 400;
@@ -1177,13 +966,9 @@
   display: inline-flex;
   align-items: center;
 
-  padding:
-    0
-    12px;
+  padding: 0 12px;
 
-  border:
-    1px solid
-    rgba(49, 62, 45, 0.17);
+  border: 1px solid rgba(49, 62, 45, 0.17);
 
   border-radius: 4px;
 
@@ -1194,10 +979,7 @@
 
   text-decoration: none;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  font-family: Georgia, "Times New Roman", serif;
 
   font-size: 11px;
 }
@@ -1210,8 +992,7 @@
 .compactActions .dangerButton {
   color: #795347;
 
-  border-color:
-    rgba(131, 73, 57, 0.25);
+  border-color: rgba(131, 73, 57, 0.25);
 
   background: #f1e4de;
 }
@@ -1248,10 +1029,7 @@
 
     overflow: visible;
 
-    padding:
-      25px
-      18px
-      44px;
+    padding: 25px 18px 44px;
   }
 
   .workspace {
@@ -1265,9 +1043,7 @@
 
     border-right: 0;
 
-    border-bottom:
-      1px solid
-      rgba(242, 238, 228, 0.12);
+    border-bottom: 1px solid rgba(242, 238, 228, 0.12);
   }
 
   .chatHeader {
@@ -1333,5 +1109,47 @@
     width: 100%;
 
     justify-content: center;
+  }
+}
+.mobileBack {
+  display: none;
+}
+@media (max-width: 767px) {
+  .workspace {
+    display: block;
+    min-height: 0;
+    height: auto;
+  }
+  .workspace[data-mobile-detail="true"] .inbox {
+    display: none;
+  }
+  .workspace[data-mobile-detail="false"] .chat {
+    display: none;
+  }
+  .inbox {
+    height: calc(100dvh - 220px);
+    overflow: auto;
+  }
+  .chat {
+    min-height: calc(100dvh - 120px);
+  }
+  .mobileBack {
+    display: block;
+    padding: 14px;
+    min-height: 44px;
+    color: #eee8d8;
+    background: #1b2b1e;
+  }
+  .composer {
+    position: sticky;
+    bottom: 0;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    background: #122017;
+  }
+  .composer textarea {
+    font-size: 16px;
+  }
+  .chatHeader {
+    flex-wrap: wrap;
   }
 }

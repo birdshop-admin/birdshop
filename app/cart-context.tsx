@@ -59,23 +59,16 @@ type DatabaseProduct = {
   sort_order: number;
 };
 
-const CartContext =
-  createContext<CartContextValue | null>(null);
+const CartContext = createContext<CartContextValue | null>(null);
 
-const STORAGE_KEY =
-  "birdshop-cart";
+const STORAGE_KEY = "birdshop-cart";
 
 /* =========================================================
    PRODUCT HELPERS
 ========================================================= */
 
-function normalizeGallery(
-  row: DatabaseProduct
-): Product["gallery"] {
-  if (
-    Array.isArray(row.gallery) &&
-    row.gallery.length > 0
-  ) {
+function normalizeGallery(row: DatabaseProduct): Product["gallery"] {
+  if (Array.isArray(row.gallery) && row.gallery.length > 0) {
     return row.gallery as Product["gallery"];
   }
 
@@ -85,9 +78,7 @@ function normalizeGallery(
       .split(/\s+/)
       .filter(Boolean)
       .slice(0, 2)
-      .map((word) =>
-        word.charAt(0).toUpperCase()
-      )
+      .map((word) => word.charAt(0).toUpperCase())
       .join("") ||
     "BS";
 
@@ -100,16 +91,10 @@ function normalizeGallery(
   ] as Product["gallery"];
 }
 
-function mapDatabaseProduct(
-  row: DatabaseProduct
-): Product {
-  const price =
-    Number(row.price);
+function mapDatabaseProduct(row: DatabaseProduct): Product {
+  const price = Number(row.price);
 
-  const oldPrice =
-    row.old_price === null
-      ? undefined
-      : Number(row.old_price);
+  const oldPrice = row.old_price === null ? undefined : Number(row.old_price);
 
   return {
     slug: row.slug,
@@ -117,81 +102,42 @@ function mapDatabaseProduct(
     category: row.category,
     platform: row.platform,
     region: row.region,
-    price:
-      Number.isFinite(price)
-        ? price
-        : 0,
+    price: Number.isFinite(price) ? price : 0,
     oldPrice:
-      oldPrice !== undefined &&
-      Number.isFinite(oldPrice)
+      oldPrice !== undefined && Number.isFinite(oldPrice)
         ? oldPrice
         : undefined,
-    badge:
-      row.badge ?? undefined,
-    stock: Math.max(
-      0,
-      Math.floor(
-        Number(row.stock) || 0
-      )
-    ),
+    badge: row.badge ?? undefined,
+    stock: Math.max(0, Math.floor(Number(row.stock) || 0)),
     delivery: row.delivery,
     description: row.description,
-    shortDescription:
-      row.short_description,
+    shortDescription: row.short_description,
     codeFormat: row.code_format,
-    initials:
-      row.initials ||
-      row.name
-        .slice(0, 2)
-        .toUpperCase(),
-    gallery:
-      normalizeGallery(row),
+    initials: row.initials || row.name.slice(0, 2).toUpperCase(),
+    gallery: normalizeGallery(row),
   };
 }
 
-function createProductMap(
-  productList: Product[]
-) {
-  return productList.reduce<ProductMap>(
-    (
-      catalog,
-      product
-    ) => {
-      catalog[product.slug] =
-        product;
+function createProductMap(productList: Product[]) {
+  return productList.reduce<ProductMap>((catalog, product) => {
+    catalog[product.slug] = product;
 
-      return catalog;
-    },
-    {}
-  );
+    return catalog;
+  }, {});
 }
 
-function getMaximumQuantity(
-  slug: string,
-  catalog: ProductMap
-) {
-  const stock =
-    catalog[slug]?.stock ?? 0;
+function getMaximumQuantity(slug: string, catalog: ProductMap) {
+  const stock = catalog[slug]?.stock ?? 0;
 
-  return Math.max(
-    0,
-    Math.min(
-      99,
-      Math.floor(stock)
-    )
-  );
+  return Math.max(0, Math.min(99, Math.floor(stock)));
 }
 
-function sanitizeCartItems(
-  value: unknown,
-  catalog: ProductMap
-): CartItem[] {
+function sanitizeCartItems(value: unknown, catalog: ProductMap): CartItem[] {
   if (!Array.isArray(value)) {
     return [];
   }
 
-  const quantities =
-    new Map<string, number>();
+  const quantities = new Map<string, number>();
 
   for (const entry of value) {
     if (
@@ -203,262 +149,124 @@ function sanitizeCartItems(
       continue;
     }
 
-    const slug =
-      String(entry.slug);
+    const slug = String(entry.slug);
 
-    const rawQuantity =
-      Number(entry.quantity);
+    const rawQuantity = Number(entry.quantity);
 
-    const maximum =
-      getMaximumQuantity(
-        slug,
-        catalog
-      );
+    const maximum = getMaximumQuantity(slug, catalog);
 
-    if (
-      !catalog[slug] ||
-      !Number.isFinite(
-        rawQuantity
-      ) ||
-      maximum <= 0
-    ) {
+    if (!catalog[slug] || !Number.isFinite(rawQuantity) || maximum <= 0) {
       continue;
     }
 
-    const quantity =
-      Math.max(
-        1,
-        Math.min(
-          maximum,
-          Math.floor(
-            rawQuantity
-          )
-        )
-      );
+    const quantity = Math.max(1, Math.min(maximum, Math.floor(rawQuantity)));
 
     quantities.set(
       slug,
-      Math.min(
-        maximum,
-        (
-          quantities.get(
-            slug
-          ) ?? 0
-        ) + quantity
-      )
+      Math.min(maximum, (quantities.get(slug) ?? 0) + quantity),
     );
   }
 
-  return Array.from(
-    quantities,
-    (
-      [
-        slug,
-        quantity,
-      ]
-    ) => ({
-      slug,
-      quantity,
-    })
-  );
+  return Array.from(quantities, ([slug, quantity]) => ({
+    slug,
+    quantity,
+  }));
 }
 
 /* =========================================================
    PROVIDER
 ========================================================= */
 
-export function CartProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const pathname =
-    usePathname();
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
 
-  const supabase =
-    useMemo(
-      () => createClient(),
-      []
+  const supabase = useMemo(() => createClient(), []);
+
+  const [items, setItems] = useState<CartItem[]>([]);
+
+  const [productList, setProductList] = useState<Product[]>([]);
+
+  const [products, setProducts] = useState<ProductMap>({});
+
+  const [productsLoaded, setProductsLoaded] = useState(false);
+
+  const [productsError, setProductsError] = useState<string | null>(null);
+
+  const cartHydrated = useRef(false);
+
+  const refreshProducts = useCallback(async () => {
+    setProductsError(null);
+
+    const { data, error } = await supabase
+      .from("products")
+      .select(
+        [
+          "id",
+          "slug",
+          "name",
+          "category",
+          "platform",
+          "region",
+          "price",
+          "old_price",
+          "badge",
+          "stock",
+          "delivery",
+          "description",
+          "short_description",
+          "code_format",
+          "initials",
+          "gallery",
+          "is_visible",
+          "sort_order",
+        ].join(","),
+      )
+      .eq("is_visible", true)
+      .order("sort_order", {
+        ascending: true,
+      })
+      .order("name", {
+        ascending: true,
+      });
+
+    if (error) {
+      setProductsError(
+        "The product catalog could not load. Please refresh and retry.",
+      );
+
+      setProductsLoaded(true);
+
+      return;
+    }
+
+    const nextProductList = ((data ?? []) as unknown as DatabaseProduct[]).map(
+      mapDatabaseProduct,
     );
 
-  const [
-    items,
-    setItems,
-  ] =
-    useState<CartItem[]>(
-      []
-    );
+    const nextProducts = createProductMap(nextProductList);
 
-  const [
-    productList,
-    setProductList,
-  ] =
-    useState<Product[]>(
-      []
-    );
+    setProductList(nextProductList);
 
-  const [
-    products,
-    setProducts,
-  ] =
-    useState<ProductMap>(
-      {}
-    );
+    setProducts(nextProducts);
 
-  const [
-    productsLoaded,
-    setProductsLoaded,
-  ] =
-    useState(false);
+    if (!cartHydrated.current) {
+      try {
+        const savedCart = window.localStorage.getItem(STORAGE_KEY);
 
-  const [
-    productsError,
-    setProductsError,
-  ] =
-    useState<
-      string | null
-    >(null);
+        const parsed = savedCart ? JSON.parse(savedCart) : [];
 
-  const cartHydrated =
-    useRef(false);
+        setItems(sanitizeCartItems(parsed, nextProducts));
+      } catch {
+        setItems([]);
+      }
 
-  const refreshProducts =
-    useCallback(
-      async () => {
-        setProductsError(
-          null
-        );
+      cartHydrated.current = true;
+    } else {
+      setItems((current) => sanitizeCartItems(current, nextProducts));
+    }
 
-        const {
-          data,
-          error,
-        } =
-          await supabase
-            .from(
-              "products"
-            )
-            .select(
-              [
-                "id",
-                "slug",
-                "name",
-                "category",
-                "platform",
-                "region",
-                "price",
-                "old_price",
-                "badge",
-                "stock",
-                "delivery",
-                "description",
-                "short_description",
-                "code_format",
-                "initials",
-                "gallery",
-                "is_visible",
-                "sort_order",
-              ].join(",")
-            )
-            .eq(
-              "is_visible",
-              true
-            )
-            .order(
-              "sort_order",
-              {
-                ascending:
-                  true,
-              }
-            )
-            .order(
-              "name",
-              {
-                ascending:
-                  true,
-              }
-            );
-
-        if (error) {
-          setProductsError(
-            error.message
-          );
-
-          setProductsLoaded(
-            true
-          );
-
-          return;
-        }
-
-        const nextProductList =
-          (
-            (
-              data ??
-              []
-            ) as unknown as DatabaseProduct[]
-          ).map(
-            mapDatabaseProduct
-          );
-
-        const nextProducts =
-          createProductMap(
-            nextProductList
-          );
-
-        setProductList(
-          nextProductList
-        );
-
-        setProducts(
-          nextProducts
-        );
-
-        if (
-          !cartHydrated.current
-        ) {
-          try {
-            const savedCart =
-              window.localStorage.getItem(
-                STORAGE_KEY
-              );
-
-            const parsed =
-              savedCart
-                ? JSON.parse(
-                    savedCart
-                  )
-                : [];
-
-            setItems(
-              sanitizeCartItems(
-                parsed,
-                nextProducts
-              )
-            );
-          } catch {
-            setItems([]);
-          }
-
-          cartHydrated.current =
-            true;
-        } else {
-          setItems(
-            (
-              current
-            ) =>
-              sanitizeCartItems(
-                current,
-                nextProducts
-              )
-          );
-        }
-
-        setProductsLoaded(
-          true
-        );
-      },
-      [supabase]
-    );
+    setProductsLoaded(true);
+  }, [supabase]);
 
   /*
    * Fetch products whenever the route changes.
@@ -469,23 +277,14 @@ export function CartProvider({
    * catalog is refreshed from Supabase.
    */
   useEffect(() => {
-    const timer =
-      window.setTimeout(
-        () => {
-          void refreshProducts();
-        },
-        0
-      );
+    const timer = window.setTimeout(() => {
+      void refreshProducts();
+    }, 0);
 
     return () => {
-      window.clearTimeout(
-        timer
-      );
+      window.clearTimeout(timer);
     };
-  }, [
-    pathname,
-    refreshProducts,
-  ]);
+  }, [pathname, refreshProducts]);
 
   /*
    * Save the cart only after the product catalog
@@ -493,275 +292,139 @@ export function CartProvider({
    * validated against current Supabase stock.
    */
   useEffect(() => {
-    if (
-      !productsLoaded ||
-      !cartHydrated.current
-    ) {
+    if (!productsLoaded || !cartHydrated.current) {
       return;
     }
 
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(items)
-    );
-  }, [
-    items,
-    productsLoaded,
-  ]);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    } catch {
+      /* The in-memory cart remains usable when storage is unavailable. */
+    }
+  }, [items, productsLoaded]);
 
-  const addToCart =
-    useCallback(
-      (
-        slug: string,
-        quantity = 1
-      ) => {
-        const maximum =
-          getMaximumQuantity(
-            slug,
-            products
-          );
+  const addToCart = useCallback(
+    (slug: string, quantity = 1) => {
+      const maximum = getMaximumQuantity(slug, products);
 
-        if (
-          maximum <= 0
-        ) {
-          return;
+      if (maximum <= 0) {
+        return;
+      }
+
+      const safeQuantity = Math.max(1, Math.min(maximum, Math.floor(quantity)));
+
+      setItems((current) => {
+        const existing = current.find((item) => item.slug === slug);
+
+        if (!existing) {
+          return [
+            ...current,
+            {
+              slug,
+              quantity: safeQuantity,
+            },
+          ];
         }
 
-        const safeQuantity =
-          Math.max(
-            1,
-            Math.min(
-              maximum,
-              Math.floor(
-                quantity
-              )
-            )
-          );
-
-        setItems(
-          (
-            current
-          ) => {
-            const existing =
-              current.find(
-                (
-                  item
-                ) =>
-                  item.slug ===
-                  slug
-              );
-
-            if (!existing) {
-              return [
-                ...current,
-                {
-                  slug,
-                  quantity:
-                    safeQuantity,
-                },
-              ];
-            }
-
-            return current.map(
-              (
-                item
-              ) =>
-                item.slug ===
-                slug
-                  ? {
-                      ...item,
-                      quantity:
-                        Math.min(
-                          maximum,
-                          item.quantity +
-                            safeQuantity
-                        ),
-                    }
-                  : item
-            );
-          }
+        return current.map((item) =>
+          item.slug === slug
+            ? {
+                ...item,
+                quantity: Math.min(maximum, item.quantity + safeQuantity),
+              }
+            : item,
         );
-      },
-      [products]
-    );
-
-  const removeFromCart =
-    useCallback(
-      (
-        slug: string
-      ) => {
-        setItems(
-          (
-            current
-          ) =>
-            current.filter(
-              (
-                item
-              ) =>
-                item.slug !==
-                slug
-            )
-        );
-      },
-      []
-    );
-
-  const updateQuantity =
-    useCallback(
-      (
-        slug: string,
-        quantity: number
-      ) => {
-        if (
-          quantity <= 0
-        ) {
-          setItems(
-            (
-              current
-            ) =>
-              current.filter(
-                (
-                  item
-                ) =>
-                  item.slug !==
-                  slug
-              )
-          );
-
-          return;
-        }
-
-        const maximum =
-          getMaximumQuantity(
-            slug,
-            products
-          );
-
-        if (
-          maximum <= 0
-        ) {
-          setItems(
-            (
-              current
-            ) =>
-              current.filter(
-                (
-                  item
-                ) =>
-                  item.slug !==
-                  slug
-              )
-          );
-
-          return;
-        }
-
-        const safeQuantity =
-          Math.max(
-            1,
-            Math.min(
-              maximum,
-              Math.floor(
-                quantity
-              )
-            )
-          );
-
-        setItems(
-          (
-            current
-          ) =>
-            current.map(
-              (
-                item
-              ) =>
-                item.slug ===
-                slug
-                  ? {
-                      ...item,
-                      quantity:
-                        safeQuantity,
-                    }
-                  : item
-            )
-        );
-      },
-      [products]
-    );
-
-  const clearCart =
-    useCallback(() => {
-      setItems([]);
-    }, []);
-
-  const totalItems =
-    useMemo(
-      () =>
-        items.reduce(
-          (
-            total,
-            item
-          ) =>
-            total +
-            item.quantity,
-          0
-        ),
-      [items]
-    );
-
-  const value =
-    useMemo(
-      () => ({
-        items,
-        totalItems,
-
-        productList,
-        products,
-        productsLoaded,
-        productsError,
-
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        refreshProducts,
-      }),
-      [
-        items,
-        totalItems,
-
-        productList,
-        products,
-        productsLoaded,
-        productsError,
-
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        refreshProducts,
-      ]
-    );
-
-  return (
-    <CartContext.Provider
-      value={value}
-    >
-      {children}
-    </CartContext.Provider>
+      });
+    },
+    [products],
   );
+
+  const removeFromCart = useCallback((slug: string) => {
+    setItems((current) => current.filter((item) => item.slug !== slug));
+  }, []);
+
+  const updateQuantity = useCallback(
+    (slug: string, quantity: number) => {
+      if (quantity <= 0) {
+        setItems((current) => current.filter((item) => item.slug !== slug));
+
+        return;
+      }
+
+      const maximum = getMaximumQuantity(slug, products);
+
+      if (maximum <= 0) {
+        setItems((current) => current.filter((item) => item.slug !== slug));
+
+        return;
+      }
+
+      const safeQuantity = Math.max(1, Math.min(maximum, Math.floor(quantity)));
+
+      setItems((current) =>
+        current.map((item) =>
+          item.slug === slug
+            ? {
+                ...item,
+                quantity: safeQuantity,
+              }
+            : item,
+        ),
+      );
+    },
+    [products],
+  );
+
+  const clearCart = useCallback(() => {
+    setItems([]);
+  }, []);
+
+  const totalItems = useMemo(
+    () => items.reduce((total, item) => total + item.quantity, 0),
+    [items],
+  );
+
+  const value = useMemo(
+    () => ({
+      items,
+      totalItems,
+
+      productList,
+      products,
+      productsLoaded,
+      productsError,
+
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart,
+      refreshProducts,
+    }),
+    [
+      items,
+      totalItems,
+
+      productList,
+      products,
+      productsLoaded,
+      productsError,
+
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart,
+      refreshProducts,
+    ],
+  );
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {
-  const context =
-    useContext(
-      CartContext
-    );
+  const context = useContext(CartContext);
 
   if (!context) {
-    throw new Error(
-      "useCart must be used inside CartProvider"
-    );
+    throw new Error("useCart must be used inside CartProvider");
   }
 
   return context;

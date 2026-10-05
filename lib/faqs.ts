@@ -1,9 +1,5 @@
 export type FAQCategory =
-  | "Products"
-  | "Services"
-  | "Orders & Payments"
-  | "Delivery"
-  | "Support";
+  "Products" | "Services" | "Orders & Payments" | "Delivery" | "Support";
 
 export type FAQ = {
   id: string;
@@ -28,8 +24,7 @@ export const faqCategories = [
   "Support",
 ] as const;
 
-export type FAQFilter =
-  (typeof faqCategories)[number];
+export type FAQFilter = (typeof faqCategories)[number];
 
 export const faqs: FAQ[] = [
   /* =======================================================
@@ -37,57 +32,37 @@ export const faqs: FAQ[] = [
   ======================================================= */
 
   {
-    id:
-      "what-is-birdshop",
+    id: "what-is-birdshop",
 
-    category:
-      "Products",
+    category: "Products",
 
-    question:
-      "What is BirdShop?",
+    question: "What is BirdShop?",
 
     answer:
       "BirdShop is a digital storefront and game-service marketplace built around straightforward purchasing, clear service options, and direct community support. The store includes digital products such as game keys, gift cards, subscriptions, and add-ons alongside supported game services.",
 
-    tags: [
-      "birdshop",
-      "store",
-      "products",
-      "services",
-      "digital",
-    ],
+    tags: ["birdshop", "store", "products", "services", "digital"],
 
     featured: true,
   },
 
   {
-    id:
-      "digital-products",
+    id: "digital-products",
 
-    category:
-      "Products",
+    category: "Products",
 
-    question:
-      "What kinds of digital products does BirdShop sell?",
+    question: "What kinds of digital products does BirdShop sell?",
 
     answer:
       "BirdShop can list digital game keys, gift cards, subscriptions, add-ons, and other supported digital items. Every product page is designed to show important information such as platform, region, delivery type, price, and availability before you continue.",
 
-    tags: [
-      "keys",
-      "gift cards",
-      "subscriptions",
-      "addons",
-      "products",
-    ],
+    tags: ["keys", "gift cards", "subscriptions", "addons", "products"],
   },
 
   {
-    id:
-      "platform-region",
+    id: "platform-region",
 
-    category:
-      "Products",
+    category: "Products",
 
     question:
       "How do I know whether a product works for my platform or region?",
@@ -95,57 +70,35 @@ export const faqs: FAQ[] = [
     answer:
       "Check the platform and region shown directly on the product page before purchasing. BirdShop keeps those details visible so you can confirm compatibility before continuing. If anything is unclear, contact support before placing the order.",
 
-    tags: [
-      "platform",
-      "region",
-      "compatibility",
-      "pc",
-      "xbox",
-      "playstation",
-    ],
+    tags: ["platform", "region", "compatibility", "pc", "xbox", "playstation"],
 
     featured: true,
   },
 
   {
-    id:
-      "product-stock",
+    id: "product-stock",
 
-    category:
-      "Products",
+    category: "Products",
 
-    question:
-      "Can digital products go out of stock?",
+    question: "Can digital products go out of stock?",
 
     answer:
       "Yes. Some products may have limited availability. BirdShop tracks available quantity in the store and prevents the cart from exceeding the current stock amount. Products can also become unavailable temporarily while inventory is being replenished.",
 
-    tags: [
-      "stock",
-      "inventory",
-      "availability",
-      "cart",
-    ],
+    tags: ["stock", "inventory", "availability", "cart"],
   },
 
   {
-    id:
-      "product-details",
+    id: "product-details",
 
-    category:
-      "Products",
+    category: "Products",
 
-    question:
-      "Where can I see everything included with a product?",
+    question: "Where can I see everything included with a product?",
 
     answer:
       "Open the individual product page. It includes the product description, platform, region, delivery information, pricing, availability, and any additional information needed before purchasing.",
 
-    tags: [
-      "product page",
-      "details",
-      "information",
-    ],
+    tags: ["product page", "details", "information"],
   },
 
   /* =======================================================
@@ -153,133 +106,70 @@ export const faqs: FAQ[] = [
   ======================================================= */
 
   {
-    id:
-      "how-services-work",
+    id: "how-services-work",
 
-    category:
-      "Services",
+    category: "Services",
 
-    question:
-      "How do BirdShop game services work?",
+    question: "How do BirdShop game services work?",
 
     answer:
-      "Choose a supported service, review the available package options, and select the tier that best matches what you need. You can then start a request through the Contact page, explain your goals and requirements, and confirm the final scope before the service begins.",
+      "Choose a service and open a Custom request through Contact. Discuss the scope in your private on-site chat. If payment is needed, BirdShop sends a payment request in that chat. Pay securely through Stripe; work stays open until it is completed.",
 
-    tags: [
-      "service",
-      "request",
-      "game service",
-      "process",
-    ],
+    tags: ["service", "request", "game service", "process"],
 
     featured: true,
   },
 
   {
-    id:
-      "service-packages",
+    id: "service-packages",
 
-    category:
-      "Services",
+    category: "Services",
 
-    question:
-      "What is the difference between Basic, Standard, and Premium?",
+    question: "What does a Custom service include?",
 
     answer:
-      "Basic is the entry package for smaller or more focused requests. Standard expands the available scope and includes additional service benefits. Premium is intended for the largest or highest-priority version of a supported service. Each service page shows exactly what every tier includes before you choose.",
+      "Every service is Custom. The scope, timing, and price are agreed in your private chat before you pay. Starting a conversation does not create an order or charge you.",
 
-    tags: [
-      "basic",
-      "standard",
-      "premium",
-      "packages",
-      "tiers",
-    ],
+    tags: ["custom", "service", "chat"],
   },
 
   {
-    id:
-      "previous-tier",
+    id: "custom-service",
 
-    category:
-      "Services",
+    category: "Services",
 
-    question:
-      "Does Standard or Premium include the lower package?",
-
-    answer:
-      "When a service is structured with multiple tiers, the higher package can include the previous tier along with its own additional benefits. Standard includes the Basic package when shown that way on the service page, while Premium can include both Basic and Standard benefits. The service page separates inherited features from the new upgrades so you can clearly see what each tier adds.",
-
-    tags: [
-      "included",
-      "upgrade",
-      "basic",
-      "standard",
-      "premium",
-    ],
-  },
-
-  {
-    id:
-      "custom-service",
-
-    category:
-      "Services",
-
-    question:
-      "What if the service I need is not listed?",
+    question: "What if the service I need is not listed?",
 
     answer:
       "Use the Custom Game Service option or open a general service request through Contact. Explain the game, what you need, your goals, and any relevant details. BirdShop can then determine whether the request can be supported and discuss the scope with you.",
 
-    tags: [
-      "custom",
-      "request",
-      "unlisted",
-      "service",
-    ],
+    tags: ["custom", "request", "unlisted", "service"],
   },
 
   {
-    id:
-      "service-turnaround",
+    id: "service-turnaround",
 
-    category:
-      "Services",
+    category: "Services",
 
-    question:
-      "How long does a service take?",
+    question: "How long does a service take?",
 
     answer:
       "Turnaround depends on the game, package, scope, and current request. Each service shows an estimated turnaround, but the final timing should be confirmed before work begins. Larger or highly customized requests may take longer.",
 
-    tags: [
-      "time",
-      "turnaround",
-      "days",
-      "service",
-    ],
+    tags: ["time", "turnaround", "days", "service"],
   },
 
   {
-    id:
-      "service-changes",
+    id: "service-changes",
 
-    category:
-      "Services",
+    category: "Services",
 
-    question:
-      "Can I change the request after a service has started?",
+    question: "Can I change the request after a service has started?",
 
     answer:
       "Small changes may be possible depending on the service and progress already completed. Larger changes can alter the scope, timing, or price. Discuss any requested changes with BirdShop before assuming they are included.",
 
-    tags: [
-      "changes",
-      "scope",
-      "service",
-      "upgrade",
-    ],
+    tags: ["changes", "scope", "service", "upgrade"],
   },
 
   /* =======================================================
@@ -287,111 +177,68 @@ export const faqs: FAQ[] = [
   ======================================================= */
 
   {
-    id:
-      "payment-methods",
+    id: "payment-methods",
 
-    category:
-      "Orders & Payments",
+    category: "Orders & Payments",
 
-    question:
-      "What payment methods does BirdShop accept?",
+    question: "What payment methods does BirdShop accept?",
 
     answer:
-      "BirdShop's final checkout integration is still being connected. Once checkout is live, the supported payment methods will be displayed directly during checkout before any payment is submitted.",
+      "Payments are handled securely by Stripe. The available methods appear in Stripe Checkout before you submit payment.",
 
-    tags: [
-      "payment",
-      "card",
-      "checkout",
-      "pay",
-    ],
+    tags: ["payment", "card", "checkout", "pay"],
   },
 
   {
-    id:
-      "checkout-not-live",
+    id: "checkout-not-live",
 
-    category:
-      "Orders & Payments",
+    category: "Orders & Payments",
 
-    question:
-      "Why does checkout currently say payment integration will be connected later?",
+    question: "Why does my payment say confirming?",
 
     answer:
-      "The storefront and cart experience are already being built, but the final payment provider has not yet been connected. BirdShop intentionally keeps the checkout button non-functional until the real payment and order-processing system is ready.",
+      "BirdShop waits for verified confirmation from Stripe. Returning from checkout alone does not prove payment. Keep your private status link and check your email. Contact support with your reference if confirmation is delayed.",
 
-    tags: [
-      "checkout",
-      "payment",
-      "integration",
-      "cart",
-    ],
+    tags: ["checkout", "payment", "integration", "cart"],
   },
 
   {
-    id:
-      "price-differences",
+    id: "price-differences",
 
-    category:
-      "Orders & Payments",
+    category: "Orders & Payments",
 
-    question:
-      "Why do different service packages have different prices?",
+    question: "How is a service priced?",
 
     answer:
-      "Higher service tiers are designed to support a larger scope or additional benefits. Basic begins with the smallest supported package, Standard expands on it, and Premium provides the largest available package. The exact pricing and included features are shown before you begin a request.",
+      "Custom service pricing depends on the scope agreed in your private chat. Review the payment request amount and description before opening Stripe Checkout.",
 
-    tags: [
-      "price",
-      "pricing",
-      "basic",
-      "standard",
-      "premium",
-      "packages",
-      "service",
-    ],
+    tags: ["custom", "service", "chat"],
   },
 
   {
-    id:
-      "service-final-price",
+    id: "service-final-price",
 
-    category:
-      "Orders & Payments",
+    category: "Orders & Payments",
 
-    question:
-      "Is a custom service quote final immediately?",
+    question: "Is a custom service quote final immediately?",
 
     answer:
       "Custom requests need to be reviewed first. BirdShop can confirm the scope, requirements, timing, and price before the service begins. A request should not be treated as confirmed until those details have been agreed upon.",
 
-    tags: [
-      "quote",
-      "custom",
-      "price",
-      "service",
-    ],
+    tags: ["quote", "custom", "price", "service"],
   },
 
   {
-    id:
-      "refund-policy",
+    id: "refund-policy",
 
-    category:
-      "Orders & Payments",
+    category: "Orders & Payments",
 
-    question:
-      "What is the refund policy?",
+    question: "How do I ask about a refund?",
 
     answer:
-      "The final BirdShop refund and return policy will be published before live checkout is enabled. Because digital products and completed services can have different refund conditions, customers should review the final policy before purchasing once payments are available.",
+      "Contact BirdShop in your private chat or choose Product Support with your order reference. Eligibility depends on the product or service and its delivery or progress. Ask about the applicable terms before paying.",
 
-    tags: [
-      "refund",
-      "return",
-      "money",
-      "policy",
-    ],
+    tags: ["refund", "return", "money", "policy"],
   },
 
   /* =======================================================
@@ -399,87 +246,56 @@ export const faqs: FAQ[] = [
   ======================================================= */
 
   {
-    id:
-      "digital-delivery",
+    id: "digital-delivery",
 
-    category:
-      "Delivery",
+    category: "Delivery",
 
-    question:
-      "How are digital products delivered?",
+    question: "How are digital products delivered?",
 
     answer:
-      "BirdShop products are designed for digital delivery rather than physical shipping. The exact delivery format is shown on the product page. Once the final checkout and order system is connected, delivery instructions will be provided as part of the completed order.",
+      "Select a product, add it to your cart, and pay through Stripe. After verified payment, BirdShop assigns the purchased quantity of codes and emails them to your checkout email address. Your private status page shows payment and delivery progress.",
 
-    tags: [
-      "delivery",
-      "digital",
-      "code",
-      "key",
-    ],
+    tags: ["delivery", "digital", "code", "key"],
   },
 
   {
-    id:
-      "physical-shipping",
+    id: "physical-shipping",
 
-    category:
-      "Delivery",
+    category: "Delivery",
 
-    question:
-      "Does BirdShop ship physical products?",
+    question: "Does BirdShop ship physical products?",
 
     answer:
       "The current BirdShop storefront is focused on digital products and game-related services. Products listed as digital do not require physical shipping.",
 
-    tags: [
-      "shipping",
-      "physical",
-      "digital",
-    ],
+    tags: ["shipping", "physical", "digital"],
   },
 
   {
-    id:
-      "delivery-time",
+    id: "delivery-time",
 
-    category:
-      "Delivery",
+    category: "Delivery",
 
-    question:
-      "How quickly will I receive a digital product?",
+    question: "How quickly will I receive a digital product?",
 
     answer:
-      "Delivery timing depends on the final order system and the specific product. Product pages show the intended delivery type, and BirdShop will provide the final delivery process once checkout is fully connected.",
+      "Delivery is queued after verified payment. Processing or email delays can occur. Check your inbox and spam folder, then your private order status. If delivery needs attention, contact Product Support; you do not need to pay again.",
 
-    tags: [
-      "fast",
-      "delivery",
-      "time",
-      "digital",
-    ],
+    tags: ["fast", "delivery", "time", "digital"],
   },
 
   {
-    id:
-      "wrong-code",
+    id: "wrong-code",
 
-    category:
-      "Delivery",
+    category: "Delivery",
 
     question:
       "What should I do if there is a problem with a delivered digital item?",
 
     answer:
-      "Do not discard any order information. Open Product Help from the Contact page and include the product, order or reference information, and a clear description of the issue. Avoid publicly posting any product code or private order information.",
+      "Do not discard any order information. Open Product Support from the Contact page and include the product, order or reference information, and a clear description of the issue. Avoid publicly posting any product code or private order information.",
 
-    tags: [
-      "code",
-      "problem",
-      "issue",
-      "support",
-      "delivery",
-    ],
+    tags: ["code", "problem", "issue", "support", "delivery"],
   },
 
   /* =======================================================
@@ -487,105 +303,67 @@ export const faqs: FAQ[] = [
   ======================================================= */
 
   {
-    id:
-      "contact-support",
+    id: "contact-support",
 
-    category:
-      "Support",
+    category: "Support",
 
-    question:
-      "How do I contact BirdShop?",
+    question: "How do I contact BirdShop?",
 
     answer:
-      "Use the Contact page to choose Service Request, Product Help, Leave Feedback, or General Support. Support requests are saved directly to BirdShop with a reference number, while reviews are submitted to moderation before they can appear publicly. Discord remains available as an alternate support channel, and live chat can later continue with the same request context.",
+      "Choose Services, Product Support, or General Support on Contact to start a private on-site conversation. Keep your private link. Reviews are submitted separately for moderation.",
 
-    tags: [
-      "contact",
-      "support",
-      "discord",
-      "help",
-    ],
+    tags: ["contact", "support", "discord", "help"],
   },
 
   {
-    id:
-      "discord-support",
+    id: "discord-support",
 
-    category:
-      "Support",
+    category: "Support",
 
-    question:
-      "Does BirdShop use Discord for support?",
+    question: "Does BirdShop use Discord for support?",
 
     answer:
-      "Discord is available as an alternate BirdShop support channel alongside the website request system. Product Help, Service Requests, and General Support can be submitted through the site first, then continued through Discord when useful. The final BirdShop Discord invite should be connected before launch.",
+      "Your private on-site chat is the main support channel. When a community invite is available, Discord is an optional backup. Never post codes or private chat links publicly.",
 
-    tags: [
-      "discord",
-      "support",
-      "community",
-    ],
+    tags: ["discord", "support", "community"],
   },
 
   {
-    id:
-      "what-to-include",
+    id: "what-to-include",
 
-    category:
-      "Support",
+    category: "Support",
 
-    question:
-      "What information should I include when asking for help?",
+    question: "What information should I include when asking for help?",
 
     answer:
       "Include the product or service involved, your platform when relevant, any order or request reference you have, and a clear explanation of what happened or what you need. For services, include your goals and any important requirements.",
 
-    tags: [
-      "help",
-      "information",
-      "support",
-      "order",
-    ],
+    tags: ["help", "information", "support", "order"],
   },
 
   {
-    id:
-      "reviews",
+    id: "reviews",
 
-    category:
-      "Support",
+    category: "Support",
 
-    question:
-      "How can I leave a review or feedback?",
+    question: "How can I leave a review?",
 
     answer:
-      "Open the Reviews page and choose Leave a Review, or select Leave Feedback directly from Contact. Choose whether the experience was for a product or service, select what you are reviewing, add a 1–5 rating, headline, and written feedback, then submit it. New reviews remain pending until a BirdShop admin approves them for the public Reviews page.",
+      "Open Reviews and choose Leave a Review. Submit your rating and feedback for moderation; approved reviews appear publicly.",
 
-    tags: [
-      "review",
-      "feedback",
-      "rating",
-    ],
+    tags: ["review", "feedback", "rating"],
   },
 
   {
-    id:
-      "response-time",
+    id: "response-time",
 
-    category:
-      "Support",
+    category: "Support",
 
-    question:
-      "How long does support take to respond?",
+    question: "How long does support take to respond?",
 
     answer:
-      "Response time can vary depending on request volume and the type of question. BirdShop should avoid promising an exact response time unless one can reliably be maintained. Service turnaround and support response time are separate.",
+      "Response times vary with request volume. Keep your private chat link to check for replies. Service turnaround is agreed separately in the conversation.",
 
-    tags: [
-      "response",
-      "support",
-      "time",
-      "wait",
-    ],
+    tags: ["response", "support", "time", "wait"],
   },
 ];

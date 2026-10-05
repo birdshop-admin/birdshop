@@ -1,203 +1,87 @@
 import Image from "next/image";
 
-import {
-  redirect,
-} from "next/navigation";
+import { redirect } from "next/navigation";
 
-import {
-  cookies,
-} from "next/headers";
+import { cookies } from "next/headers";
 
-import {
-  createClient,
-} from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
-import {
-  ADMIN_ACTIVITY_COOKIE,
-  ADMIN_IDLE_TIMEOUT_MS,
-  ADMIN_SESSION_COOKIE,
-} from "@/lib/admin-session";
+import { ADMIN_SESSION_COOKIE } from "@/lib/admin-session";
 
 import LoginForm from "./LoginForm";
 
 import styles from "./login.module.css";
 
-export const dynamic =
-  "force-dynamic";
+export const dynamic = "force-dynamic";
 
 /* =========================================================
    TYPES
 ========================================================= */
 
 type LoginPageProps = {
-  searchParams:
-    Promise<{
-      reason?:
-        string;
-    }>;
+  searchParams: Promise<{
+    reason?: string;
+  }>;
 };
 
 type StaffProfile = {
-  user_id:
-    string;
+  user_id: string;
 
-  role:
-    | "owner"
-    | "service_agent";
+  role: "owner" | "service_agent";
 
-  display_name:
-    | string
-    | null;
+  display_name: string | null;
 
-  is_active:
-    boolean;
+  is_active: boolean;
 };
 
 /* =========================================================
    PAGE
 ========================================================= */
 
-export default async function AdminLoginPage({
-  searchParams,
-}: LoginPageProps) {
-  const params =
-    await searchParams;
+export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
 
-  const cookieStore =
-    await cookies();
+  const cookieStore = await cookies();
 
-  const adminSession =
-    cookieStore.get(
-      ADMIN_SESSION_COOKIE
-    )?.value;
+  const adminSession = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
 
-  const activityRaw =
-    cookieStore.get(
-      ADMIN_ACTIVITY_COOKIE
-    )?.value;
+  const sessionStillActive = Boolean(adminSession);
 
-  const lastActive =
-    Number(
-      activityRaw
-    );
+  if (sessionStillActive) {
+    const supabase = await createClient();
 
-  const sessionStillActive =
-    Boolean(
-      adminSession
-    ) &&
-    Boolean(
-      activityRaw
-    ) &&
-    Number.isFinite(
-      lastActive
-    ) &&
-    Date.now() -
-      lastActive <
-      ADMIN_IDLE_TIMEOUT_MS;
+    const { data: claimsData } = await supabase.auth.getClaims();
 
-  /* =======================================================
-     ONLY AUTO-ENTER IF BOTH:
+    const userId = claimsData?.claims?.sub;
 
-       Supabase auth exists
-       BirdShop browser session exists
+    if (userId) {
+      const { data: profileData } = await supabase.rpc(
+        "birdshop_get_my_staff_profile",
+      );
 
-     An old Supabase login by itself no longer redirects.
-  ======================================================= */
+      const profile = profileData as StaffProfile | null;
 
-  if (
-    sessionStillActive
-  ) {
-    const supabase =
-      await createClient();
-
-    const {
-      data:
-        claimsData,
-    } =
-      await supabase.auth
-        .getClaims();
-
-    const userId =
-      claimsData
-        ?.claims
-        ?.sub;
-
-    if (
-      userId
-    ) {
-      const {
-        data:
-          profileData,
-      } =
-        await supabase.rpc(
-          "birdshop_get_my_staff_profile"
-        );
-
-      const profile =
-        profileData as
-          StaffProfile | null;
-
-      if (
-        profile &&
-        profile.user_id ===
-          userId &&
-        profile.is_active ===
-          true
-      ) {
-        if (
-          profile.role ===
-          "service_agent"
-        ) {
-          redirect(
-            "/admin/chat?view=active&type=service"
-          );
+      if (profile && profile.user_id === userId && profile.is_active === true) {
+        if (profile.role === "service_agent") {
+          redirect("/admin/chat?view=active&type=service");
         }
 
-        if (
-          profile.role ===
-          "owner"
-        ) {
-          redirect(
-            "/admin"
-          );
+        if (profile.role === "owner") {
+          redirect("/admin");
         }
       }
     }
   }
 
   return (
-    <main
-      className={
-        styles.page
-      }
-    >
-      <div
-        className={
-          styles.grid
-        }
-      />
+    <main className={styles.page}>
+      <div className={styles.grid} />
 
-      <div
-        className={
-          styles.glow
-        }
-      />
+      <div className={styles.glow} />
 
-      <section
-        className={
-          styles.loginCard
-        }
-      >
-        <div
-          className={
-            styles.brandSide
-          }
-        >
-          <div
-            className={
-              styles.logoWrap
-            }
-          >
+      <section className={styles.loginCard}>
+        <div className={styles.brandSide}>
+          <div className={styles.logoWrap}>
             <Image
               src="/cremebs.png"
               alt="BirdShop"
@@ -207,89 +91,36 @@ export default async function AdminLoginPage({
             />
           </div>
 
-          <span
-            className={
-              styles.brandEyebrow
-            }
-          >
-            BIRDSHOP
-          </span>
+          <span className={styles.brandEyebrow}>BIRDSHOP</span>
 
-          <h1>
-            Administration.
-          </h1>
+          <h1>Administration.</h1>
 
-          <p>
-            Secure access for
-            authorized BirdShop
-            staff.
-          </p>
+          <p>Secure access for authorized BirdShop staff.</p>
 
-          <div
-            className={
-              styles.brandLine
-            }
-          />
+          <div className={styles.brandLine} />
 
-          <small>
-            PRODUCTS · SERVICES
-            · ORDERS · SUPPORT
-          </small>
+          <small>PRODUCTS · SERVICES · ORDERS · SUPPORT</small>
         </div>
 
-        <div
-          className={
-            styles.formSide
-          }
-        >
-          <div
-            className={
-              styles.formHeading
-            }
-          >
-            <span>
-              STAFF ACCESS
-            </span>
+        <div className={styles.formSide}>
+          <div className={styles.formHeading}>
+            <span>STAFF ACCESS</span>
 
-            <h2>
-              Welcome back.
-            </h2>
+            <h2>Welcome back.</h2>
 
-            <p>
-              Sign in using your
-              authorized BirdShop
-              account.
-            </p>
+            <p>Sign in using your authorized BirdShop account.</p>
           </div>
 
-          {params.reason ===
-            "inactive" && (
-            <div
-              className={
-                styles.sessionNotice
-              }
-            >
-              Your BirdShop admin session
-              ended after 15 minutes of
-              inactivity. Sign in again to
-              continue.
+          {params.reason === "inactive" && (
+            <div className={styles.sessionNotice}>
+              Your previous session ended. Sign in again to continue.
             </div>
           )}
 
-          {(
-            params.reason ===
-              "session" ||
-            params.reason ===
-              "closed"
-          ) && (
-            <div
-              className={
-                styles.sessionNotice
-              }
-            >
-              Your previous BirdShop admin
-              browser session has ended.
-              Sign in again to continue.
+          {(params.reason === "session" || params.reason === "closed") && (
+            <div className={styles.sessionNotice}>
+              Your previous BirdShop admin browser session has ended. Sign in
+              again to continue.
             </div>
           )}
 
@@ -297,14 +128,7 @@ export default async function AdminLoginPage({
         </div>
       </section>
 
-      <p
-        className={
-          styles.bottomText
-        }
-      >
-        BIRDSHOP SECURE
-        ADMINISTRATION
-      </p>
+      <p className={styles.bottomText}>BIRDSHOP SECURE ADMINISTRATION</p>
     </main>
   );
 }

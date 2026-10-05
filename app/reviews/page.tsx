@@ -2,11 +2,7 @@
 
 import Link from "next/link";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -20,15 +16,9 @@ import {
   ShieldIcon,
 } from "@/components/SiteIcons";
 
-import {
-  reviewTypes,
-  type Review,
-  type ReviewFilter,
-} from "@/lib/reviews";
+import { reviewTypes, type Review, type ReviewFilter } from "@/lib/reviews";
 
-import {
-  createClient,
-} from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 import styles from "./reviews.module.css";
 
@@ -49,51 +39,34 @@ type DatabaseReview = {
   created_at: string;
 };
 
-function formatReviewDate(
-  value: string
-) {
+function formatReviewDate(value: string) {
   const date = new Date(value);
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return "Recent";
   }
 
-  return new Intl.DateTimeFormat(
-    "en-US",
-    {
-      month: "short",
-      year: "numeric",
-    }
-  ).format(date);
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }
 
-function mapDatabaseReview(
-  review: DatabaseReview
-): Review {
+function mapDatabaseReview(review: DatabaseReview): Review {
   return {
     id: review.id,
     type: review.type,
     reviewer: review.reviewer,
-    initials:
-      review.initials ||
-      "AN",
+    initials: review.initials || "AN",
     rating: review.rating,
     title: review.title,
     body: review.body,
     subject: review.subject,
     meta:
       review.meta ||
-      (review.type === "Product"
-        ? "Digital Product"
-        : "Service Experience"),
+      (review.type === "Product" ? "Digital Product" : "Service Experience"),
     featured: review.featured,
-    date: formatReviewDate(
-      review.created_at
-    ),
+    date: formatReviewDate(review.created_at),
   };
 }
 
@@ -101,26 +74,15 @@ function mapDatabaseReview(
    STARS
 ========================================================= */
 
-function Stars({
-  rating,
-}: {
-  rating: number;
-}) {
+function Stars({ rating }: { rating: number }) {
   return (
-    <div
-      className={styles.stars}
-      aria-label={`${rating} out of 5 stars`}
-    >
+    <div className={styles.stars} aria-label={`${rating} out of 5 stars`}>
       {Array.from({
         length: 5,
       }).map((_, index) => (
         <span
           key={index}
-          className={
-            index < rating
-              ? styles.starActive
-              : styles.starEmpty
-          }
+          className={index < rating ? styles.starActive : styles.starEmpty}
           aria-hidden="true"
         >
           ★
@@ -143,31 +105,22 @@ function ReviewCard({
   expanded: boolean;
   onToggle: () => void;
 }) {
-  const longReview =
-    review.body.length > 185;
+  const longReview = review.body.length > 185;
 
   return (
     <article className={styles.reviewCard}>
       <div className={styles.reviewCardTop}>
         <div className={styles.reviewIdentity}>
-          <div className={styles.reviewAvatar}>
-            {review.initials}
-          </div>
+          <div className={styles.reviewAvatar}>{review.initials}</div>
 
           <div>
-            <strong>
-              {review.reviewer}
-            </strong>
+            <strong>{review.reviewer}</strong>
 
-            <span>
-              COMMUNITY REVIEW
-            </span>
+            <span>COMMUNITY REVIEW</span>
           </div>
         </div>
 
-        <div className={styles.reviewDate}>
-          {review.date}
-        </div>
+        <div className={styles.reviewDate}>{review.date}</div>
       </div>
 
       <div className={styles.reviewRatingRow}>
@@ -179,9 +132,7 @@ function ReviewCard({
 
       <p
         className={`${styles.reviewBody} ${
-          !expanded && longReview
-            ? styles.reviewBodyCollapsed
-            : ""
+          !expanded && longReview ? styles.reviewBodyCollapsed : ""
         }`}
       >
         {review.body}
@@ -193,13 +144,9 @@ function ReviewCard({
           className={styles.readMoreButton}
           onClick={onToggle}
         >
-          {expanded
-            ? "Show Less"
-            : "Read Full Review"}
+          {expanded ? "Show Less" : "Read Full Review"}
 
-          <span aria-hidden="true">
-            {expanded ? "−" : "+"}
-          </span>
+          <span aria-hidden="true">{expanded ? "−" : "+"}</span>
         </button>
       )}
 
@@ -223,33 +170,21 @@ function ReviewCard({
 ========================================================= */
 
 export default function ReviewsPage() {
-  const supabase =
-    useMemo(
-      () => createClient(),
-      []
-    );
+  const supabase = useMemo(() => createClient(), []);
 
-  const [approvedReviews, setApprovedReviews] =
-    useState<Review[]>([]);
+  const [approvedReviews, setApprovedReviews] = useState<Review[]>([]);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [loadError, setLoadError] =
-    useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const [filter, setFilter] =
-    useState<ReviewFilter>(
-      "All Reviews"
-    );
+  const [filter, setFilter] = useState<ReviewFilter>("All Reviews");
 
-  const [visibleCount, setVisibleCount] =
-    useState(INITIAL_VISIBLE);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
 
-  const [expandedReviews, setExpandedReviews] =
-    useState<Set<string>>(
-      new Set()
-    );
+  const [expandedReviews, setExpandedReviews] = useState<Set<string>>(
+    new Set(),
+  );
 
   useEffect(() => {
     let active = true;
@@ -258,33 +193,22 @@ export default function ReviewsPage() {
       setLoading(true);
       setLoadError(null);
 
-      const {
-        data,
-        error,
-      } =
-        await supabase.rpc(
-          "get_approved_reviews"
-        );
+      const { data, error } = await supabase.rpc("get_approved_reviews");
 
       if (!active) {
         return;
       }
 
       if (error) {
-        setLoadError(
-          error.message
-        );
+        setLoadError("Reviews could not load. Please refresh and retry.");
         setApprovedReviews([]);
         setLoading(false);
         return;
       }
 
-      const mapped =
-        (
-          (data ?? []) as unknown as DatabaseReview[]
-        ).map(
-          mapDatabaseReview
-        );
+      const mapped = ((data ?? []) as unknown as DatabaseReview[]).map(
+        mapDatabaseReview,
+      );
 
       setApprovedReviews(mapped);
       setLoading(false);
@@ -297,86 +221,52 @@ export default function ReviewsPage() {
     };
   }, [supabase]);
 
-  const allReviews =
-    approvedReviews;
+  const allReviews = approvedReviews;
 
   const featuredReview =
-    approvedReviews.find(
-      (review) =>
-        review.featured
-    ) ??
-    approvedReviews[0];
+    approvedReviews.find((review) => review.featured) ?? approvedReviews[0];
 
-  const filteredReviews =
-    useMemo(() => {
-      if (filter === "Products") {
-        return allReviews.filter(
-          (review) =>
-            review.type === "Product"
-        );
-      }
+  const filteredReviews = useMemo(() => {
+    if (filter === "Products") {
+      return allReviews.filter((review) => review.type === "Product");
+    }
 
-      if (filter === "Services") {
-        return allReviews.filter(
-          (review) =>
-            review.type === "Service"
-        );
-      }
+    if (filter === "Services") {
+      return allReviews.filter((review) => review.type === "Service");
+    }
 
-      return allReviews;
-    }, [
-      filter,
-      allReviews,
-    ]);
+    return allReviews;
+  }, [filter, allReviews]);
 
-  const displayedReviews =
-    filteredReviews.slice(
-      0,
-      visibleCount
-    );
+  const displayedReviews = filteredReviews.slice(0, visibleCount);
 
-  const hasMore =
-    visibleCount <
-    filteredReviews.length;
+  const hasMore = visibleCount < filteredReviews.length;
 
-  const productCount =
-    allReviews.filter(
-      (review) =>
-        review.type === "Product"
-    ).length;
+  const productCount = allReviews.filter(
+    (review) => review.type === "Product",
+  ).length;
 
-  const serviceCount =
-    allReviews.filter(
-      (review) =>
-        review.type === "Service"
-    ).length;
+  const serviceCount = allReviews.filter(
+    (review) => review.type === "Service",
+  ).length;
 
-  function changeFilter(
-    nextFilter: ReviewFilter
-  ) {
+  function changeFilter(nextFilter: ReviewFilter) {
     setFilter(nextFilter);
-    setVisibleCount(
-      INITIAL_VISIBLE
-    );
+    setVisibleCount(INITIAL_VISIBLE);
   }
 
-  function toggleReview(
-    id: string
-  ) {
-    setExpandedReviews(
-      (current) => {
-        const next =
-          new Set(current);
+  function toggleReview(id: string) {
+    setExpandedReviews((current) => {
+      const next = new Set(current);
 
-        if (next.has(id)) {
-          next.delete(id);
-        } else {
-          next.add(id);
-        }
-
-        return next;
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
       }
-    );
+
+      return next;
+    });
   }
 
   return (
@@ -388,9 +278,7 @@ export default function ReviewsPage() {
 
         <div className={styles.heroLayout}>
           <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>
-              BIRDSHOP / COMMUNITY
-            </p>
+            <p className={styles.eyebrow}>BIRDSHOP / COMMUNITY</p>
 
             <h1>
               What people
@@ -399,16 +287,12 @@ export default function ReviewsPage() {
             </h1>
 
             <p className={styles.heroDescription}>
-              Product experiences, service feedback,
-              and stories from the BirdShop community —
-              presented clearly and without the noise.
+              Product experiences, service feedback, and stories from the
+              BirdShop community — presented clearly and without the noise.
             </p>
 
             <div className={styles.heroActions}>
-              <a
-                href="#reviews"
-                className={styles.heroPrimary}
-              >
+              <a href="#reviews" className={styles.heroPrimary}>
                 Browse Reviews
                 <ArrowIcon />
               </a>
@@ -485,22 +369,16 @@ export default function ReviewsPage() {
               <h2>From the community.</h2>
             </div>
 
-            <p>
-              A closer look at one BirdShop experience.
-            </p>
+            <p>A closer look at one BirdShop experience.</p>
           </div>
 
           <article className={styles.featuredReview}>
             <div className={styles.featuredDark}>
-              <div className={styles.featuredQuoteMark}>
-                “
-              </div>
+              <div className={styles.featuredQuoteMark}>“</div>
 
               <Stars rating={featuredReview.rating} />
 
-              <blockquote>
-                {featuredReview.title}
-              </blockquote>
+              <blockquote>{featuredReview.title}</blockquote>
 
               <p>{featuredReview.body}</p>
 
@@ -514,49 +392,36 @@ export default function ReviewsPage() {
                 <div>{featuredReview.initials}</div>
 
                 <span>
-                  <strong>
-                    {featuredReview.reviewer}
-                  </strong>
-                  <small>
-                    {featuredReview.date}
-                  </small>
+                  <strong>{featuredReview.reviewer}</strong>
+                  <small>{featuredReview.date}</small>
                 </span>
               </div>
 
               <div className={styles.featuredMeta}>
                 <div>
                   <span>EXPERIENCE</span>
-                  <strong>
-                    {featuredReview.type}
-                  </strong>
+                  <strong>{featuredReview.type}</strong>
                 </div>
 
                 <div>
                   <span>REVIEWED</span>
-                  <strong>
-                    {featuredReview.subject}
-                  </strong>
+                  <strong>{featuredReview.subject}</strong>
                 </div>
 
                 <div>
                   <span>DETAILS</span>
-                  <strong>
-                    {featuredReview.meta}
-                  </strong>
+                  <strong>{featuredReview.meta}</strong>
                 </div>
               </div>
 
               <Link
                 href={
-                  featuredReview.type === "Service"
-                    ? "/services"
-                    : "/products"
+                  featuredReview.type === "Service" ? "/services" : "/products"
                 }
                 className={styles.featuredLink}
               >
-                Browse {featuredReview.type === "Service"
-                  ? "Services"
-                  : "Products"}
+                Browse{" "}
+                {featuredReview.type === "Service" ? "Services" : "Products"}
                 <ArrowIcon />
               </Link>
             </div>
@@ -564,10 +429,7 @@ export default function ReviewsPage() {
         </section>
       )}
 
-      <section
-        id="reviews"
-        className={styles.reviewSection}
-      >
+      <section id="reviews" className={styles.reviewSection}>
         <div className={styles.reviewHeading}>
           <div>
             <span>COMMUNITY REVIEWS</span>
@@ -575,16 +437,14 @@ export default function ReviewsPage() {
           </div>
 
           <p>
-            {filteredReviews.length} {filteredReviews.length === 1
-              ? "review"
-              : "reviews"}
+            {filteredReviews.length}{" "}
+            {filteredReviews.length === 1 ? "review" : "reviews"}
           </p>
         </div>
 
         <div className={styles.filters}>
           {reviewTypes.map((item) => {
-            let count =
-              allReviews.length;
+            let count = allReviews.length;
 
             if (item === "Products") {
               count = productCount;
@@ -598,14 +458,8 @@ export default function ReviewsPage() {
               <button
                 key={item}
                 type="button"
-                className={
-                  filter === item
-                    ? styles.activeFilter
-                    : ""
-                }
-                onClick={() =>
-                  changeFilter(item)
-                }
+                className={filter === item ? styles.activeFilter : ""}
+                onClick={() => changeFilter(item)}
               >
                 <span>{item}</span>
                 <small>{count}</small>
@@ -645,16 +499,8 @@ export default function ReviewsPage() {
                 <ReviewCard
                   key={review.id}
                   review={review}
-                  expanded={
-                    expandedReviews.has(
-                      review.id
-                    )
-                  }
-                  onToggle={() =>
-                    toggleReview(
-                      review.id
-                    )
-                  }
+                  expanded={expandedReviews.has(review.id)}
+                  onToggle={() => toggleReview(review.id)}
                 />
               ))}
             </div>
@@ -669,12 +515,11 @@ export default function ReviewsPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    setVisibleCount(
-                      (current) =>
-                        Math.min(
-                          current + LOAD_MORE_AMOUNT,
-                          filteredReviews.length
-                        )
+                    setVisibleCount((current) =>
+                      Math.min(
+                        current + LOAD_MORE_AMOUNT,
+                        filteredReviews.length,
+                      ),
                     )
                   }
                 >
@@ -732,9 +577,8 @@ export default function ReviewsPage() {
           </h2>
 
           <p>
-            Purchased a product or completed a BirdShop
-            service? Submit a rating and written review.
-            New reviews enter moderation before they can
+            Purchased a product or completed a BirdShop service? Submit a rating
+            and written review. New reviews enter moderation before they can
             appear publicly.
           </p>
         </div>
@@ -746,8 +590,8 @@ export default function ReviewsPage() {
           </Link>
 
           <small>
-            Your contact information is used for follow-up
-            and is never shown publicly with the review.
+            Your contact information is used for follow-up and is never shown
+            publicly with the review.
           </small>
         </div>
       </section>
@@ -756,28 +600,22 @@ export default function ReviewsPage() {
         <div>
           <MessageIcon />
           <h3>Useful Feedback</h3>
-          <p>
-            Positive or negative, specific feedback helps
-            BirdShop improve.
-          </p>
+          <p>Positive or negative, specific feedback helps BirdShop improve.</p>
         </div>
 
         <div>
           <ShieldIcon />
           <h3>Moderated Publishing</h3>
           <p>
-            Reviews are checked before publishing while the
-            customer&apos;s written feedback remains intact.
+            Reviews are checked before publishing while the customer&apos;s
+            written feedback remains intact.
           </p>
         </div>
 
         <div>
           <PeopleIcon />
           <h3>Community First</h3>
-          <p>
-            BirdShop is built around people, not just
-            transactions.
-          </p>
+          <p>BirdShop is built around people, not just transactions.</p>
         </div>
       </section>
 

@@ -1,41 +1,30 @@
-import {
-  redirect,
-} from "next/navigation";
+import { requireStaff } from "@/lib/staff-auth";
+import { redirect } from "next/navigation";
 
-import {
-  createClient,
-} from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 import AdminGlobalChatNotifier from "@/components/AdminGlobalChatNotifier";
-
+import AdminIdentityCard from "@/components/AdminIdentityCard";
 import AdminSessionHeartbeat from "@/components/AdminSessionHeartbeat";
 
 import styles from "./admin-shell.module.css";
 
-export const dynamic =
-  "force-dynamic";
+export const dynamic = "force-dynamic";
 
 /* =========================================================
    TYPES
 ========================================================= */
 
-type StaffRole =
-  | "owner"
-  | "service_agent";
+type StaffRole = "owner" | "service_agent";
 
 type StaffProfile = {
-  user_id:
-    string;
+  user_id: string;
 
-  role:
-    StaffRole;
+  role: StaffRole;
 
-  display_name:
-    | string
-    | null;
+  display_name: string | null;
 
-  is_active:
-    boolean;
+  is_active: boolean;
 };
 
 /* =========================================================
@@ -45,256 +34,79 @@ type StaffProfile = {
 export default async function ProtectedAdminLayout({
   children,
 }: Readonly<{
-  children:
-    React.ReactNode;
+  children: React.ReactNode;
 }>) {
-  const supabase =
-    await createClient();
+  await requireStaff();
+
+  const supabase = await createClient();
 
   /* =======================================================
      AUTH
   ======================================================= */
 
   const {
-    data:
-      claimsData,
+    data: claimsData,
 
-    error:
-      claimsError,
-  } =
-    await supabase.auth
-      .getClaims();
+    error: claimsError,
+  } = await supabase.auth.getClaims();
 
-  const userId =
-    claimsData
-      ?.claims
-      ?.sub;
+  const userId = claimsData?.claims?.sub;
 
   const email =
-    typeof claimsData
-      ?.claims
-      ?.email ===
-    "string"
-      ? claimsData
-          .claims
-          .email
+    typeof claimsData?.claims?.email === "string"
+      ? claimsData.claims.email
       : null;
 
-  if (
-    claimsError ||
-    !userId
-  ) {
-    redirect(
-      "/admin/login"
-    );
+  if (claimsError || !userId) {
+    redirect("/admin/login");
   }
 
   /* =======================================================
-     STAFF
+     STAFF PROFILE
   ======================================================= */
 
   const {
-    data:
-      profileData,
+    data: profileData,
 
-    error:
-      profileError,
-  } =
-    await supabase.rpc(
-      "birdshop_get_my_staff_profile"
-    );
+    error: profileError,
+  } = await supabase.rpc("birdshop_get_my_staff_profile");
 
-  if (
-    profileError ||
-    !profileData
-  ) {
-    redirect(
-      "/admin/login"
-    );
+  if (profileError || !profileData) {
+    redirect("/admin/login");
   }
 
-  const profile =
-    profileData as
-      StaffProfile;
+  const profile = profileData as StaffProfile;
 
   if (
-    profile.user_id !==
-      userId ||
-    profile.is_active !==
-      true ||
-    ![
-      "owner",
-      "service_agent",
-    ].includes(
-      profile.role
-    )
+    profile.user_id !== userId ||
+    profile.is_active !== true ||
+    !["owner", "service_agent"].includes(profile.role)
   ) {
-    redirect(
-      "/admin/login"
-    );
+    redirect("/admin/login");
   }
 
-  const isOwner =
-    profile.role ===
-    "owner";
+  const isOwner = profile.role === "owner";
 
   const displayName =
-    profile.display_name
-      ?.trim() ||
-    email ||
-    (isOwner
-      ? "BirdShop Owner"
-      : "Service Staff");
+    profile.display_name?.trim() || (isOwner ? "Owner" : "Service Staff");
 
   /* =======================================================
      PROTECTED ADMIN
   ======================================================= */
 
   return (
-    <div
-      className={
-        styles.shell
-      }
-    >
-      {/* ===============================================
-          REAL USER ACTIVITY / SESSION TIMEOUT
-      =============================================== */}
-
+    <div className={styles.shell}>
       <AdminSessionHeartbeat />
 
-      {/* ===============================================
-          OWNER GLOBAL CHAT NOTIFICATIONS
-      =============================================== */}
+      {isOwner && <AdminGlobalChatNotifier />}
 
-      {isOwner && (
-        <AdminGlobalChatNotifier />
-      )}
+      <AdminIdentityCard
+        role={profile.role}
+        displayName={displayName}
+        email={email}
+      />
 
-      {/* ===============================================
-          CURRENT STAFF
-
-          Temporary functional design.
-          We can integrate this beautifully into the
-          sidebar during the full redesign.
-      =============================================== */}
-
-      <div
-        style={{
-          position:
-            "fixed",
-
-          top:
-            "14px",
-
-          right:
-            "18px",
-
-          zIndex:
-            999,
-
-          display:
-            "flex",
-
-          alignItems:
-            "center",
-
-          gap:
-            "11px",
-
-          padding:
-            "8px 12px",
-
-          border:
-            "1px solid rgba(83, 101, 77, 0.2)",
-
-          borderRadius:
-            "7px",
-
-          background:
-            "rgba(241, 238, 228, 0.96)",
-
-          boxShadow:
-            "0 8px 25px rgba(15, 25, 17, 0.08)",
-
-          backdropFilter:
-            "blur(12px)",
-
-          color:
-            "#263126",
-        }}
-      >
-        <div>
-          <div
-            style={{
-              fontSize:
-                "7px",
-
-              fontWeight:
-                700,
-
-              letterSpacing:
-                "0.18em",
-
-              color:
-                "#768173",
-            }}
-          >
-            SIGNED IN AS
-          </div>
-
-          <div
-            style={{
-              marginTop:
-                "2px",
-
-              fontFamily:
-                "Georgia, 'Times New Roman', serif",
-
-              fontSize:
-                "12px",
-            }}
-          >
-            {
-              displayName
-            }
-          </div>
-        </div>
-
-        <span
-          style={{
-            padding:
-              "5px 7px",
-
-            borderRadius:
-              "999px",
-
-            background:
-              isOwner
-                ? "#263b2c"
-                : "#596b51",
-
-            color:
-              "#f0ece2",
-
-            fontSize:
-              "7px",
-
-            fontWeight:
-              700,
-
-            letterSpacing:
-              "0.14em",
-          }}
-        >
-          {isOwner
-            ? "OWNER"
-            : "SERVICE AGENT"}
-        </span>
-      </div>
-
-      {
-        children
-      }
+      {children}
     </div>
   );
 }

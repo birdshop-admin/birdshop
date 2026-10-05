@@ -1,0 +1,115 @@
+.button {
+  min-height: 38px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding:
+    0
+    14px;
+
+  border:
+    1px solid
+    rgba(
+      220,
+      226,
+      211,
+      0.16
+    );
+
+  border-radius: 7px;
+
+  color:
+    #e8e4d8;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.045
+    );
+
+  box-shadow:
+    inset
+    0
+    1px
+    0
+    rgba(
+      255,
+      255,
+      255,
+      0.04
+    );
+
+  cursor: pointer;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 11px;
+
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.button:hover:not(:disabled) {
+  border-color:
+    rgba(
+      196,
+      207,
+      185,
+      0.34
+    );
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.085
+    );
+
+  transform:
+    translateY(-1px);
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.62;
+}
+
+.icon,
+.iconRefreshing {
+  display: inline-block;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 16px;
+  line-height: 1;
+}
+
+.iconRefreshing {
+  animation:
+    adminRefreshSpin
+    700ms
+    linear
+    infinite;
+}
+
+@keyframes adminRefreshSpin {
+  to {
+    transform:
+      rotate(360deg);
+  }
+}

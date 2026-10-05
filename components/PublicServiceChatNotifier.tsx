@@ -1,23 +1,12 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
+import { useEffect, useMemo, useRef } from "react";
 
-import {
-  usePathname,
-} from "next/navigation";
+import { usePathname } from "next/navigation";
 
-import {
-  createClient,
-} from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
-import {
-  playChatChime,
-  unlockChatSound,
-} from "@/lib/chat-sound";
+import { playChatChime, unlockChatSound } from "@/lib/chat-sound";
 
 import {
   readServiceChatToken,
@@ -35,17 +24,13 @@ import {
 type NotificationMessage = {
   id: string;
 
-  sender_type:
-    | "customer"
-    | "admin"
-    | "system";
+  sender_type: "customer" | "admin" | "system";
 
   created_at: string;
 };
 
 type ChatResponse = {
-  messages?:
-    NotificationMessage[];
+  messages?: NotificationMessage[];
 };
 
 /* =========================================================
@@ -53,69 +38,45 @@ type ChatResponse = {
 
    Realtime is the normal notification path.
 
-   This direct protected-chat check runs once per second only
+   This direct protected-chat check runs every thirty seconds only
    as insurance if the websocket misses an event.
 ========================================================= */
 
-const FALLBACK_POLL_MS =
-  1000;
+const FALLBACK_POLL_MS = 30_000;
 
 /* =========================================================
    PUBLIC BIRDSHOP SERVICE NOTIFIER
 ========================================================= */
 
 export default function PublicServiceChatNotifier() {
-  const pathname =
-    usePathname();
+  const pathname = usePathname();
 
-  const supabase =
-    useMemo(
-      () =>
-        createClient(),
-      []
-    );
+  const supabase = useMemo(() => createClient(), []);
 
-  const pathnameRef =
-    useRef(
-      pathname
-    );
+  const pathnameRef = useRef(pathname);
 
-  const pendingSoundRef =
-    useRef(false);
+  const pendingSoundRef = useRef(false);
 
-  const checkingRef =
-    useRef(false);
+  const checkingRef = useRef(false);
 
-  const monitoredTokenRef =
-    useRef<
-      string | null
-    >(null);
+  const monitoredTokenRef = useRef<string | null>(null);
 
   /* =======================================================
      CURRENT PAGE
   ======================================================= */
 
   useEffect(() => {
-    pathnameRef.current =
-      pathname;
-  }, [
-    pathname,
-  ]);
+    pathnameRef.current = pathname;
+  }, [pathname]);
 
   /* =======================================================
      NOTIFICATION SYSTEM
   ======================================================= */
 
   useEffect(() => {
-    let cancelled =
-      false;
+    let cancelled = false;
 
-    let realtimeChannel:
-      ReturnType<
-        typeof supabase.channel
-      >
-      | null =
-      null;
+    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
 
     /* =====================================================
        AUDIO
@@ -127,16 +88,12 @@ export default function PublicServiceChatNotifier() {
 
         if (
           pendingSoundRef.current &&
-          !pathnameRef.current.startsWith(
-            "/service-chat"
-          )
+          !pathnameRef.current.startsWith("/service-chat")
         ) {
-          const played =
-            playChatChime();
+          const played = playChatChime();
 
           if (played) {
-            pendingSoundRef.current =
-              false;
+            pendingSoundRef.current = false;
           }
         }
       } catch {
@@ -157,16 +114,8 @@ export default function PublicServiceChatNotifier() {
        * global notification sound.
        */
 
-      if (
-        pathnameRef.current.startsWith(
-          "/service-chat"
-        )
-      ) {
-        window.dispatchEvent(
-          new CustomEvent(
-            SERVICE_CHAT_LIVE_EVENT
-          )
-        );
+      if (pathnameRef.current.startsWith("/service-chat")) {
+        window.dispatchEvent(new CustomEvent(SERVICE_CHAT_LIVE_EVENT));
 
         return;
       }
@@ -175,12 +124,10 @@ export default function PublicServiceChatNotifier() {
        * Customer is elsewhere on BirdShop.
        */
 
-      const played =
-        playChatChime();
+      const played = playChatChime();
 
       if (!played) {
-        pendingSoundRef.current =
-          true;
+        pendingSoundRef.current = true;
       }
     }
 
@@ -188,96 +135,66 @@ export default function PublicServiceChatNotifier() {
        SECURE CHAT CHECK
     ===================================================== */
 
-    async function checkChat(
-      source:
-        | "baseline"
-        | "live"
-        | "fallback"
-    ) {
+    async function checkChat(source: "baseline" | "live" | "fallback") {
       if (
         cancelled ||
+        document.visibilityState !== "visible" ||
+        pathnameRef.current.startsWith("/service-chat") ||
         checkingRef.current
       ) {
         return;
       }
 
-      const token =
-        readServiceChatToken();
+      const token = readServiceChatToken();
 
       if (!token) {
         return;
       }
 
-      if (
-        monitoredTokenRef.current !==
-        token
-      ) {
-        monitoredTokenRef.current =
-          token;
+      if (monitoredTokenRef.current !== token) {
+        monitoredTokenRef.current = token;
 
         window.sessionStorage.removeItem(
-          SERVICE_CHAT_LAST_INCOMING_STORAGE_KEY
+          SERVICE_CHAT_LAST_INCOMING_STORAGE_KEY,
         );
       }
 
-      checkingRef.current =
-        true;
+      checkingRef.current = true;
 
       try {
-        const response =
-          await fetch(
-            `/api/service-chat/${encodeURIComponent(
-              token
-            )}`,
-            {
-              cache:
-                "no-store",
-            }
-          );
+        const response = await fetch(
+          `/api/service-chat/${encodeURIComponent(token)}?notify=1`,
+          {
+            cache: "no-store",
+          },
+        );
 
-        if (
-          !response.ok
-        ) {
+        if (!response.ok) {
           return;
         }
 
-        const result =
-          await response.json() as ChatResponse;
+        const result = (await response.json()) as ChatResponse;
 
-        const messages =
-          Array.isArray(
-            result.messages
-          )
-            ? result.messages
-            : [];
+        const messages = Array.isArray(result.messages) ? result.messages : [];
 
         /*
          * We only care about messages coming TO the customer.
          */
 
-        const latestIncoming =
-          [...messages]
-            .reverse()
-            .find(
-              (
-                item
-              ) =>
-                item.sender_type ===
-                  "admin" ||
-                item.sender_type ===
-                  "system"
-            );
+        const latestIncoming = [...messages]
+          .reverse()
+          .find(
+            (item) =>
+              item.sender_type === "admin" || item.sender_type === "system",
+          );
 
-        if (
-          !latestIncoming
-        ) {
+        if (!latestIncoming) {
           return;
         }
 
-        const previousId =
-          window.sessionStorage.getItem(
-            SERVICE_CHAT_LAST_INCOMING_STORAGE_KEY
-          );
+        const previousId = window.sessionStorage.getItem(
+          SERVICE_CHAT_LAST_INCOMING_STORAGE_KEY,
+        );
 
         /* =================================================
            FIRST LOAD
@@ -286,7 +203,7 @@ export default function PublicServiceChatNotifier() {
         if (!previousId) {
           window.sessionStorage.setItem(
             SERVICE_CHAT_LAST_INCOMING_STORAGE_KEY,
-            latestIncoming.id
+            latestIncoming.id,
           );
 
           /*
@@ -295,10 +212,7 @@ export default function PublicServiceChatNotifier() {
            * message ID.
            */
 
-          if (
-            source ===
-            "live"
-          ) {
+          if (source === "live") {
             deliverNotification();
           }
 
@@ -309,10 +223,7 @@ export default function PublicServiceChatNotifier() {
            SAME MESSAGE
         ================================================= */
 
-        if (
-          previousId ===
-          latestIncoming.id
-        ) {
+        if (previousId === latestIncoming.id) {
           return;
         }
 
@@ -322,7 +233,7 @@ export default function PublicServiceChatNotifier() {
 
         window.sessionStorage.setItem(
           SERVICE_CHAT_LAST_INCOMING_STORAGE_KEY,
-          latestIncoming.id
+          latestIncoming.id,
         );
 
         deliverNotification();
@@ -331,8 +242,7 @@ export default function PublicServiceChatNotifier() {
          * Never allow notification failure to break shop UI.
          */
       } finally {
-        checkingRef.current =
-          false;
+        checkingRef.current = false;
       }
     }
 
@@ -341,71 +251,49 @@ export default function PublicServiceChatNotifier() {
     ===================================================== */
 
     function subscribeToCurrentChat() {
-      const token =
-        readServiceChatToken();
+      const token = readServiceChatToken();
 
-      if (
-        realtimeChannel
-      ) {
-        void supabase.removeChannel(
-          realtimeChannel
-        );
+      if (realtimeChannel) {
+        void supabase.removeChannel(realtimeChannel);
 
-        realtimeChannel =
-          null;
+        realtimeChannel = null;
       }
 
       if (!token) {
         return;
       }
 
-      realtimeChannel =
-        supabase
-          .channel(
-            serviceChatChannelName(
-              token
-            )
-          )
-          .on(
-            "broadcast",
-            {
-              event:
-                SERVICE_CHAT_BROADCAST_EVENT,
-            },
-            () => {
-              /*
-               * If the customer is actively looking at their
-               * Service Chat, wake that page immediately.
-               *
-               * This avoids doing one notifier fetch and THEN
-               * a second ServiceChatClient fetch.
-               */
+      realtimeChannel = supabase
+        .channel(serviceChatChannelName(token))
+        .on(
+          "broadcast",
+          {
+            event: SERVICE_CHAT_BROADCAST_EVENT,
+          },
+          () => {
+            /*
+             * If the customer is actively looking at their
+             * Service Chat, wake that page immediately.
+             *
+             * This avoids doing one notifier fetch and THEN
+             * a second ServiceChatClient fetch.
+             */
 
-              if (
-                pathnameRef.current.startsWith(
-                  "/service-chat"
-                )
-              ) {
-                window.dispatchEvent(
-                  new CustomEvent(
-                    SERVICE_CHAT_LIVE_EVENT
-                  )
-                );
+            if (pathnameRef.current.startsWith("/service-chat")) {
+              window.dispatchEvent(new CustomEvent(SERVICE_CHAT_LIVE_EVENT));
 
-                return;
-              }
-
-              /*
-               * Elsewhere on BirdShop, securely verify the
-               * private chat and then play the notification.
-               */
-
-              void checkChat(
-                "live"
-              );
+              return;
             }
-          )
-          .subscribe();
+
+            /*
+             * Elsewhere on BirdShop, securely verify the
+             * private chat and then play the notification.
+             */
+
+            void checkChat("live");
+          },
+        )
+        .subscribe();
     }
 
     /* =====================================================
@@ -415,125 +303,69 @@ export default function PublicServiceChatNotifier() {
     function handleTokenChange() {
       subscribeToCurrentChat();
 
-      void checkChat(
-        "baseline"
-      );
+      void checkChat("baseline");
     }
 
     /* =====================================================
        EVENTS
     ===================================================== */
 
-    window.addEventListener(
-      "pointerdown",
-      unlock
-    );
+    window.addEventListener("pointerdown", unlock);
 
-    window.addEventListener(
-      "keydown",
-      unlock
-    );
+    window.addEventListener("keydown", unlock);
 
-    window.addEventListener(
-      SERVICE_CHAT_TOKEN_EVENT,
-      handleTokenChange
-    );
+    window.addEventListener(SERVICE_CHAT_TOKEN_EVENT, handleTokenChange);
 
     subscribeToCurrentChat();
 
-    void checkChat(
-      "baseline"
-    );
+    void checkChat("baseline");
 
     /* =====================================================
        SAFETY CHECK
     ===================================================== */
 
-    const fallbackInterval =
-      window.setInterval(
-        () => {
-          void checkChat(
-            "fallback"
-          );
-        },
-        FALLBACK_POLL_MS
-      );
+    const fallbackInterval = window.setInterval(() => {
+      void checkChat("fallback");
+    }, FALLBACK_POLL_MS);
 
     function handleFocus() {
-      void checkChat(
-        "fallback"
-      );
+      void checkChat("fallback");
     }
 
     function handleVisibility() {
-      if (
-        document.visibilityState ===
-        "visible"
-      ) {
-        void checkChat(
-          "fallback"
-        );
+      if (document.visibilityState === "visible") {
+        void checkChat("fallback");
       }
     }
 
-    window.addEventListener(
-      "focus",
-      handleFocus
-    );
+    window.addEventListener("focus", handleFocus);
 
-    document.addEventListener(
-      "visibilitychange",
-      handleVisibility
-    );
+    document.addEventListener("visibilitychange", handleVisibility);
 
     /* =====================================================
        CLEANUP
     ===================================================== */
 
     return () => {
-      cancelled =
-        true;
+      cancelled = true;
 
-      window.clearInterval(
-        fallbackInterval
-      );
+      window.clearInterval(fallbackInterval);
 
-      window.removeEventListener(
-        "pointerdown",
-        unlock
-      );
+      window.removeEventListener("pointerdown", unlock);
 
-      window.removeEventListener(
-        "keydown",
-        unlock
-      );
+      window.removeEventListener("keydown", unlock);
 
-      window.removeEventListener(
-        SERVICE_CHAT_TOKEN_EVENT,
-        handleTokenChange
-      );
+      window.removeEventListener(SERVICE_CHAT_TOKEN_EVENT, handleTokenChange);
 
-      window.removeEventListener(
-        "focus",
-        handleFocus
-      );
+      window.removeEventListener("focus", handleFocus);
 
-      document.removeEventListener(
-        "visibilitychange",
-        handleVisibility
-      );
+      document.removeEventListener("visibilitychange", handleVisibility);
 
-      if (
-        realtimeChannel
-      ) {
-        void supabase.removeChannel(
-          realtimeChannel
-        );
+      if (realtimeChannel) {
+        void supabase.removeChannel(realtimeChannel);
       }
     };
-  }, [
-    supabase,
-  ]);
+  }, [supabase]);
 
   return null;
 }

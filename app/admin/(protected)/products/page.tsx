@@ -1,8 +1,8 @@
+import SubmitButton from "@/components/SubmitButton";
+import { requireOwner } from "@/lib/staff-auth";
 import Image from "next/image";
 
-import {
-  createClient,
-} from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 import AdminSidebar from "@/components/AdminSidebar";
 
@@ -15,8 +15,7 @@ import {
 
 import styles from "./products.module.css";
 
-export const dynamic =
-  "force-dynamic";
+export const dynamic = "force-dynamic";
 
 /* =========================================================
    TYPES
@@ -42,18 +41,11 @@ type DatabaseProduct = {
 
   region: string;
 
-  price:
-    | number
-    | string;
+  price: number | string;
 
-  old_price:
-    | number
-    | string
-    | null;
+  old_price: number | string | null;
 
-  badge:
-    | string
-    | null;
+  badge: string | null;
 
   stock: number;
 
@@ -84,103 +76,56 @@ type DatabaseProduct = {
 
 function normalizeGallery(
   gallery: unknown,
-  initials: string
+  initials: string,
 ): ProductGalleryItem[] {
-  const safeInitials =
-    initials.trim() ||
-    "BS";
+  const safeInitials = initials.trim() || "BS";
 
-  const source =
-    Array.isArray(
-      gallery
-    )
-      ? gallery
-      : [];
+  const source = Array.isArray(gallery) ? gallery : [];
 
-  const defaults:
-    ProductGalleryItem[] =
-    [
-      {
-        id: "main",
-        label: "Main",
-        display:
-          safeInitials,
-      },
+  const defaults: ProductGalleryItem[] = [
+    {
+      id: "main",
+      label: "Main",
+      display: safeInitials,
+    },
 
-      {
-        id: "tile-2",
-        label: "Details",
-        display: "INFO",
-      },
+    {
+      id: "tile-2",
+      label: "Details",
+      display: "INFO",
+    },
 
-      {
-        id: "tile-3",
-        label: "Platform",
-        display:
-          "PLATFORM",
-      },
+    {
+      id: "tile-3",
+      label: "Platform",
+      display: "PLATFORM",
+    },
 
-      {
-        id: "tile-4",
-        label: "Code",
-        display: "CODE",
-      },
-    ];
+    {
+      id: "tile-4",
+      label: "Code",
+      display: "CODE",
+    },
+  ];
 
   return Array.from(
     {
       length: 4,
     },
-    (
-      _,
-      index
-    ) => {
-      const item =
-        source[
-          index
-        ];
+    (_, index) => {
+      const item = source[index];
 
-      if (
-        item &&
-        typeof item ===
-          "object"
-      ) {
-        const record =
-          item as Record<
-            string,
-            unknown
-          >;
+      if (item && typeof item === "object") {
+        const record = item as Record<string, unknown>;
 
-        const src =
-          typeof record.src ===
-            "string"
-            ? record.src.trim()
-            : "";
+        const src = typeof record.src === "string" ? record.src.trim() : "";
 
         return {
-          id:
-            String(
-              record.id ??
-                defaults[
-                  index
-                ].id
-            ),
+          id: String(record.id ?? defaults[index].id),
 
-          label:
-            String(
-              record.label ??
-                defaults[
-                  index
-                ].label
-            ),
+          label: String(record.label ?? defaults[index].label),
 
-          display:
-            String(
-              record.display ??
-                defaults[
-                  index
-                ].display
-            ),
+          display: String(record.display ?? defaults[index].display),
 
           ...(src
             ? {
@@ -190,10 +135,8 @@ function normalizeGallery(
         };
       }
 
-      return defaults[
-        index
-      ];
-    }
+      return defaults[index];
+    },
   );
 }
 
@@ -210,11 +153,7 @@ function GalleryEditor({
   initials: string;
   createMode?: boolean;
 }) {
-  const items =
-    normalizeGallery(
-      gallery,
-      initials
-    );
+  const items = normalizeGallery(gallery, initials);
 
   /*
    * When creating a product we leave the first display
@@ -230,223 +169,127 @@ function GalleryEditor({
   }
 
   return (
-    <section
-      className={
-        styles.galleryEditor
-      }
-    >
-      <div
-        className={
-          styles.galleryEditorHeading
-        }
-      >
+    <section className={styles.galleryEditor}>
+      <div className={styles.galleryEditorHeading}>
         <div>
-          <span>
-            PRODUCT GALLERY
-          </span>
+          <span>PRODUCT GALLERY</span>
 
-          <strong>
-            Storefront artwork tiles
-          </strong>
+          <strong>Storefront artwork tiles</strong>
         </div>
 
         <p>
-          Upload up to four product images. Saved artwork remains stored in BirdShop even though your browser resets the file chooser after saving or refreshing.
+          Upload up to four product images. Saved artwork remains stored in
+          BirdShop even though your browser resets the file chooser after saving
+          or refreshing.
         </p>
       </div>
 
-      <div
-        className={
-          styles.galleryGrid
-        }
-      >
-        {items.map(
-          (
-            item,
-            index
-          ) => (
-            <article
-              key={
-                `${item.id}-${index}`
-              }
-              className={
-                styles.galleryTile
-              }
-            >
-              {/* ===========================================
+      <div className={styles.galleryGrid}>
+        {items.map((item, index) => (
+          <article key={`${item.id}-${index}`} className={styles.galleryTile}>
+            {/* ===========================================
                   SAVED PREVIEW
               =========================================== */}
 
-              <div
-                className={
-                  styles.galleryPreview
-                }
-              >
-                {item.src ? (
-                  <>
-                    <Image
-                      src={
-                        item.src
-                      }
-                      alt={`${
-                        item.label ||
-                        `Tile ${index + 1}`
-                      } saved artwork`}
-                      fill
-                      sizes="132px"
-                      className={
-                        styles.galleryPreviewImage
-                      }
-                    />
+            <div className={styles.galleryPreview}>
+              {item.src ? (
+                <>
+                  <Image
+                    src={item.src}
+                    alt={`${item.label || `Tile ${index + 1}`} saved artwork`}
+                    fill
+                    sizes="132px"
+                    className={styles.galleryPreviewImage}
+                  />
 
-                    <span
-                      className={
-                        styles.gallerySavedBadge
-                      }
-                    >
-                      SAVED
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <strong>
-                      {item.display ||
-                        (
-                          index ===
-                          0
-                            ? initials ||
-                              "BS"
-                            : "—"
-                        )}
-                    </strong>
+                  <span className={styles.gallerySavedBadge}>SAVED</span>
+                </>
+              ) : (
+                <>
+                  <strong>
+                    {item.display || (index === 0 ? initials || "BS" : "—")}
+                  </strong>
 
-                    <span>
-                      {item.label ||
-                        `Tile ${index + 1}`}
-                    </span>
-                  </>
-                )}
-              </div>
+                  <span>{item.label || `Tile ${index + 1}`}</span>
+                </>
+              )}
+            </div>
 
-              {/* ===========================================
+            {/* ===========================================
                   FIELDS
               =========================================== */}
 
-              <div
-                className={
-                  styles.galleryFields
-                }
-              >
-                <label>
-                  <span>
-                    LARGE TEXT
-                  </span>
+            <div className={styles.galleryFields}>
+              <label>
+                <span>LARGE TEXT</span>
 
-                  <input
-                    name={`gallery_${index + 1}_display`}
-                    type="text"
-                    defaultValue={
-                      item.display
-                    }
-                    maxLength={
-                      16
-                    }
-                    placeholder={
-                      index ===
-                      0
-                        ? initials ||
-                          "BS"
-                        : "INFO"
-                    }
-                  />
-                </label>
+                <input
+                  name={`gallery_${index + 1}_display`}
+                  type="text"
+                  defaultValue={item.display}
+                  maxLength={16}
+                  placeholder={index === 0 ? initials || "BS" : "INFO"}
+                />
+              </label>
 
-                <label>
-                  <span>
-                    SMALL TEXT
-                  </span>
+              <label>
+                <span>SMALL TEXT</span>
 
-                  <input
-                    name={`gallery_${index + 1}_label`}
-                    type="text"
-                    defaultValue={
-                      item.label
-                    }
-                    maxLength={
-                      28
-                    }
-                    placeholder={`Tile ${index + 1}`}
-                  />
-                </label>
+                <input
+                  name={`gallery_${index + 1}_label`}
+                  type="text"
+                  defaultValue={item.label}
+                  maxLength={28}
+                  placeholder={`Tile ${index + 1}`}
+                />
+              </label>
 
-                <div
-                  className={
-                    styles.galleryUploadField
-                  }
-                >
-                  {/*
+              <div className={styles.galleryUploadField}>
+                {/*
                     Keep the currently stored URL in the form.
 
                     This is NOT the file input.
                     This is the permanent Supabase image URL.
                   */}
 
+                <input
+                  type="hidden"
+                  name={`gallery_${index + 1}_src`}
+                  value={item.src ?? ""}
+                />
+
+                <label>
+                  <span>PRODUCT IMAGE · OPTIONAL</span>
+
                   <input
-                    type="hidden"
-                    name={`gallery_${index + 1}_src`}
-                    value={
-                      item.src ??
-                      ""
-                    }
+                    className={styles.galleryFileInput}
+                    name={`gallery_${index + 1}_file`}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
                   />
+                </label>
 
-                  <label>
-                    <span>
-                      PRODUCT IMAGE · OPTIONAL
-                    </span>
+                <small className={styles.galleryUploadHelp}>
+                  {item.src
+                    ? "Current image is saved in BirdShop. The file selector resets after save or refresh; leave it empty to keep this saved image."
+                    : "Choose a PNG, JPG, or WEBP image up to 8 MB. Leave it empty to use the text tile."}
+                </small>
 
+                {item.src && (
+                  <label className={styles.galleryRemoveImage}>
                     <input
-                      className={
-                        styles.galleryFileInput
-                      }
-                      name={`gallery_${index + 1}_file`}
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
+                      name={`gallery_${index + 1}_remove`}
+                      type="checkbox"
+                      value="true"
                     />
+
+                    <span>Remove current image and use the text tile</span>
                   </label>
-
-                  <small
-                    className={
-                      styles.galleryUploadHelp
-                    }
-                  >
-                    {item.src
-                      ? "Current image is saved in BirdShop. The file selector resets after save or refresh; leave it empty to keep this saved image."
-                      : "Choose a PNG, JPG, or WEBP image up to 8 MB. Leave it empty to use the text tile."}
-                  </small>
-
-                  {item.src && (
-                    <label
-                      className={
-                        styles.galleryRemoveImage
-                      }
-                    >
-                      <input
-                        name={`gallery_${index + 1}_remove`}
-                        type="checkbox"
-                        value="true"
-                      />
-
-                      <span>
-                        Remove current image and use the text tile
-                      </span>
-                    </label>
-                  )}
-                </div>
+                )}
               </div>
-            </article>
-          )
-        )}
+            </div>
+          </article>
+        ))}
       </div>
     </section>
   );
@@ -457,142 +300,73 @@ function GalleryEditor({
 ========================================================= */
 
 export default async function AdminProductsPage() {
-  const supabase =
-    await createClient();
+  await requireOwner();
 
-  const {
-    data,
-    error,
-  } =
-    await supabase
-      .from(
-        "products"
-      )
-      .select("*")
-      .order(
-        "sort_order",
-        {
-          ascending: true,
-        }
-      )
-      .order(
-        "name",
-        {
-          ascending: true,
-        }
-      );
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .order("sort_order", {
+      ascending: true,
+    })
+    .order("name", {
+      ascending: true,
+    });
 
   if (error) {
     throw new Error(
-      `Unable to load products: ${error.message}`
+      `Unable to load products: Please retry or contact the owner.`,
     );
   }
 
-  const products =
-    (
-      data ??
-      []
-    ) as DatabaseProduct[];
+  const products = (data ?? []) as DatabaseProduct[];
 
-  const visibleCount =
-    products.filter(
-      (
-        product
-      ) =>
-        product.is_visible
-    ).length;
+  const visibleCount = products.filter((product) => product.is_visible).length;
 
-  const totalStock =
-    products.reduce(
-      (
-        total,
-        product
-      ) =>
-        total +
-        product.stock,
-      0
-    );
+  const totalStock = products.reduce(
+    (total, product) => total + product.stock,
+    0,
+  );
 
-  const inventoryValue =
-    products.reduce(
-      (
-        total,
-        product
-      ) =>
-        total +
-        Number(
-          product.price
-        ) *
-          product.stock,
-      0
-    );
+  const inventoryValue = products.reduce(
+    (total, product) => total + Number(product.price) * product.stock,
+    0,
+  );
 
   return (
-    <main
-      className={
-        styles.page
-      }
-    >
+    <main className={styles.page}>
       <AdminSidebar />
 
       {/* ===================================================
           CONTENT
       =================================================== */}
 
-      <section
-        className={
-          styles.content
-        }
-      >
+      <section className={styles.content}>
         {/* =================================================
             HEADER
         ================================================= */}
 
-        <header
-          className={
-            styles.header
-          }
-        >
+        <header className={styles.header}>
           <div>
-            <span>
-              BIRDSHOP / ADMIN
-            </span>
+            <span>BIRDSHOP / ADMIN</span>
 
-            <h1>
-              Products
-            </h1>
+            <h1>Products</h1>
 
             <p>
-              Manage the BirdShop digital catalog, pricing, stock, storefront details, and artwork from one place.
+              Manage the BirdShop digital catalog, pricing, stock, storefront
+              details, and artwork from one place.
             </p>
           </div>
 
-          <div
-            className={
-              styles.headerActions
-            }
-          >
-            <form
-              action={
-                syncLocalProducts
-              }
-            >
-              <button
-                type="submit"
-                className={
-                  styles.secondaryButton
-                }
-              >
+          <div className={styles.headerActions}>
+            <form action={syncLocalProducts}>
+              <SubmitButton type="submit" className={styles.secondaryButton}>
                 Import Current Catalog
-              </button>
+              </SubmitButton>
             </form>
 
-            <a
-              href="#create-product"
-              className={
-                styles.primaryButton
-              }
-            >
+            <a href="#create-product" className={styles.primaryButton}>
               + Add Product
             </a>
           </div>
@@ -602,81 +376,44 @@ export default async function AdminProductsPage() {
             STATS
         ================================================= */}
 
-        <section
-          className={
-            styles.stats
-          }
-        >
+        <section className={styles.stats}>
           <article>
-            <span>
-              PRODUCTS
-            </span>
+            <span>PRODUCTS</span>
 
-            <strong>
-              {
-                products.length
-              }
-            </strong>
+            <strong>{products.length}</strong>
 
-            <small>
-              IN DATABASE
-            </small>
+            <small>IN DATABASE</small>
           </article>
 
           <article>
-            <span>
-              VISIBLE
-            </span>
+            <span>VISIBLE</span>
 
-            <strong>
-              {
-                visibleCount
-              }
-            </strong>
+            <strong>{visibleCount}</strong>
 
-            <small>
-              PUBLICLY ENABLED
-            </small>
+            <small>PUBLICLY ENABLED</small>
           </article>
 
           <article>
-            <span>
-              TOTAL STOCK
-            </span>
+            <span>TOTAL STOCK</span>
 
-            <strong>
-              {
-                totalStock
-              }
-            </strong>
+            <strong>{totalStock}</strong>
 
-            <small>
-              AVAILABLE UNITS
-            </small>
+            <small>AVAILABLE UNITS</small>
           </article>
 
           <article>
-            <span>
-              INVENTORY VALUE
-            </span>
+            <span>INVENTORY VALUE</span>
 
             <strong>
               $
-              {inventoryValue.toLocaleString(
-                "en-US",
-                {
-                  minimumFractionDigits:
-                    2,
+              {inventoryValue.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
 
-                  maximumFractionDigits:
-                    2,
-                }
-              )}
+                maximumFractionDigits: 2,
+              })}
             </strong>
 
-            <small>
-              LISTED VALUE
-            </small>
+            <small>LISTED VALUE</small>
           </article>
         </section>
 
@@ -684,45 +421,21 @@ export default async function AdminProductsPage() {
             CREATE PRODUCT
         ================================================= */}
 
-        <details
-          id="create-product"
-          className={
-            styles.createPanel
-          }
-        >
+        <details id="create-product" className={styles.createPanel}>
           <summary>
             <div>
-              <span>
-                NEW PRODUCT
-              </span>
+              <span>NEW PRODUCT</span>
 
-              <strong>
-                Create a product
-              </strong>
+              <strong>Create a product</strong>
             </div>
 
-            <span>
-              +
-            </span>
+            <span>+</span>
           </summary>
 
-          <form
-            action={
-              createProduct
-            }
-            className={
-              styles.editorForm
-            }
-          >
-            <div
-              className={
-                styles.formGrid
-              }
-            >
+          <form action={createProduct} className={styles.editorForm}>
+            <div className={styles.formGrid}>
               <label>
-                <span>
-                  PRODUCT NAME
-                </span>
+                <span>PRODUCT NAME</span>
 
                 <input
                   name="name"
@@ -733,9 +446,7 @@ export default async function AdminProductsPage() {
               </label>
 
               <label>
-                <span>
-                  SLUG
-                </span>
+                <span>SLUG</span>
 
                 <input
                   name="slug"
@@ -745,36 +456,21 @@ export default async function AdminProductsPage() {
               </label>
 
               <label>
-                <span>
-                  CATEGORY
-                </span>
+                <span>CATEGORY</span>
 
-                <select
-                  name="category"
-                  defaultValue="Game Keys"
-                >
-                  <option>
-                    Game Keys
-                  </option>
+                <select name="category" defaultValue="Game Keys">
+                  <option>Game Keys</option>
 
-                  <option>
-                    Gift Cards
-                  </option>
+                  <option>Gift Cards</option>
 
-                  <option>
-                    Subscriptions
-                  </option>
+                  <option>Subscriptions</option>
 
-                  <option>
-                    Add-ons
-                  </option>
+                  <option>Add-ons</option>
                 </select>
               </label>
 
               <label>
-                <span>
-                  PLATFORM
-                </span>
+                <span>PLATFORM</span>
 
                 <input
                   name="platform"
@@ -785,22 +481,13 @@ export default async function AdminProductsPage() {
               </label>
 
               <label>
-                <span>
-                  REGION
-                </span>
+                <span>REGION</span>
 
-                <input
-                  name="region"
-                  type="text"
-                  defaultValue="US"
-                  required
-                />
+                <input name="region" type="text" defaultValue="US" required />
               </label>
 
               <label>
-                <span>
-                  DELIVERY
-                </span>
+                <span>DELIVERY</span>
 
                 <input
                   name="delivery"
@@ -811,9 +498,7 @@ export default async function AdminProductsPage() {
               </label>
 
               <label>
-                <span>
-                  PRICE
-                </span>
+                <span>PRICE</span>
 
                 <input
                   name="price"
@@ -826,22 +511,13 @@ export default async function AdminProductsPage() {
               </label>
 
               <label>
-                <span>
-                  OLD PRICE
-                </span>
+                <span>OLD PRICE</span>
 
-                <input
-                  name="old_price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                />
+                <input name="old_price" type="number" min="0" step="0.01" />
               </label>
 
               <label>
-                <span>
-                  STOCK
-                </span>
+                <span>STOCK</span>
 
                 <input
                   name="stock"
@@ -854,21 +530,13 @@ export default async function AdminProductsPage() {
               </label>
 
               <label>
-                <span>
-                  BADGE
-                </span>
+                <span>BADGE</span>
 
-                <input
-                  name="badge"
-                  type="text"
-                  placeholder="Best Seller"
-                />
+                <input name="badge" type="text" placeholder="Best Seller" />
               </label>
 
               <label>
-                <span>
-                  CODE FORMAT
-                </span>
+                <span>CODE FORMAT</span>
 
                 <input
                   name="code_format"
@@ -878,24 +546,18 @@ export default async function AdminProductsPage() {
               </label>
 
               <label>
-                <span>
-                  INITIALS
-                </span>
+                <span>INITIALS</span>
 
                 <input
                   name="initials"
                   type="text"
                   placeholder="MC"
-                  maxLength={
-                    4
-                  }
+                  maxLength={4}
                 />
               </label>
 
               <label>
-                <span>
-                  SORT ORDER
-                </span>
+                <span>SORT ORDER</span>
 
                 <input
                   name="sort_order"
@@ -907,14 +569,8 @@ export default async function AdminProductsPage() {
               </label>
             </div>
 
-            <label
-              className={
-                styles.fullField
-              }
-            >
-              <span>
-                SHORT DESCRIPTION
-              </span>
+            <label className={styles.fullField}>
+              <span>SHORT DESCRIPTION</span>
 
               <textarea
                 name="short_description"
@@ -923,14 +579,8 @@ export default async function AdminProductsPage() {
               />
             </label>
 
-            <label
-              className={
-                styles.fullField
-              }
-            >
-              <span>
-                FULL DESCRIPTION
-              </span>
+            <label className={styles.fullField}>
+              <span>FULL DESCRIPTION</span>
 
               <textarea
                 name="description"
@@ -939,16 +589,9 @@ export default async function AdminProductsPage() {
               />
             </label>
 
-            <GalleryEditor
-              initials="BS"
-              createMode
-            />
+            <GalleryEditor initials="BS" createMode />
 
-            <label
-              className={
-                styles.visibilityToggle
-              }
-            >
+            <label className={styles.visibilityToggle}>
               <input
                 name="is_visible"
                 type="checkbox"
@@ -957,24 +600,15 @@ export default async function AdminProductsPage() {
               />
 
               <span>
-                <strong>
-                  Visible on Store
-                </strong>
+                <strong>Visible on Store</strong>
 
-                <small>
-                  Customers will be able to see this product.
-                </small>
+                <small>Customers will be able to see this product.</small>
               </span>
             </label>
 
-            <button
-              type="submit"
-              className={
-                styles.saveButton
-              }
-            >
+            <SubmitButton type="submit" className={styles.saveButton}>
               Create Product
-            </button>
+            </SubmitButton>
           </form>
         </details>
 
@@ -982,579 +616,330 @@ export default async function AdminProductsPage() {
             PRODUCT CATALOG
         ================================================= */}
 
-        <section
-          className={
-            styles.catalog
-          }
-        >
-          <div
-            className={
-              styles.catalogHeading
-            }
-          >
+        <section className={styles.catalog}>
+          <div className={styles.catalogHeading}>
             <div>
-              <span>
-                DATABASE CATALOG
-              </span>
+              <span>DATABASE CATALOG</span>
 
-              <h2>
-                Manage products.
-              </h2>
+              <h2>Manage products.</h2>
             </div>
 
             <p>
-              {
-                products.length
-              }{" "}
-              {products.length ===
-              1
-                ? "product"
-                : "products"}
+              {products.length} {products.length === 1 ? "product" : "products"}
             </p>
           </div>
 
-          {products.length ===
-          0 ? (
-            <div
-              className={
-                styles.emptyState
-              }
-            >
-              <span>
-                NO PRODUCTS
-              </span>
+          {products.length === 0 ? (
+            <div className={styles.emptyState}>
+              <span>NO PRODUCTS</span>
 
-              <h3>
-                Your Supabase catalog is empty.
-              </h3>
+              <h3>Your Supabase catalog is empty.</h3>
 
               <p>
-                Click Import Current Catalog to copy your existing BirdShop products into the database.
+                Click Import Current Catalog to copy your existing BirdShop
+                products into the database.
               </p>
 
-              <form
-                action={
-                  syncLocalProducts
-                }
-              >
-                <button
-                  type="submit"
-                  className={
-                    styles.primaryButton
-                  }
-                >
+              <form action={syncLocalProducts}>
+                <SubmitButton type="submit" className={styles.primaryButton}>
                   Import Current Catalog
-                </button>
+                </SubmitButton>
               </form>
             </div>
           ) : (
-            <div
-              className={
-                styles.productList
-              }
-            >
-              {products.map(
-                (
-                  product
-                ) => (
-                  <details
-                    key={
-                      product.id
-                    }
-                    className={
-                      styles.productCard
-                    }
-                  >
-                    {/* =====================================
+            <div className={styles.productList}>
+              {products.map((product) => (
+                <details key={product.id} className={styles.productCard}>
+                  {/* =====================================
                         PRODUCT SUMMARY
                     ===================================== */}
 
-                    <summary>
-                      <div
-                        className={
-                          styles.productIdentity
-                        }
-                      >
-                        <div
-                          className={
-                            styles.initials
-                          }
-                        >
-                          {
-                            product.initials ||
-                            "BS"
-                          }
-                        </div>
-
-                        <div>
-                          <span>
-                            {
-                              product.category
-                            }{" "}
-                            ·{" "}
-                            {
-                              product.platform
-                            }
-                          </span>
-
-                          <strong>
-                            {
-                              product.name
-                            }
-                          </strong>
-
-                          <small>
-                            /
-                            {
-                              product.slug
-                            }
-                          </small>
-                        </div>
+                  <summary>
+                    <div className={styles.productIdentity}>
+                      <div className={styles.initials}>
+                        {product.initials || "BS"}
                       </div>
 
-                      <div
-                        className={
-                          styles.productStatus
-                        }
-                      >
-                        <div>
-                          <span>
-                            PRICE
-                          </span>
-
-                          <strong>
-                            $
-                            {Number(
-                              product.price
-                            ).toFixed(
-                              2
-                            )}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            STOCK
-                          </span>
-
-                          <strong>
-                            {
-                              product.stock
-                            }
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            STATUS
-                          </span>
-
-                          <strong
-                            className={
-                              product.is_visible
-                                ? styles.visible
-                                : styles.hidden
-                            }
-                          >
-                            {product.is_visible
-                              ? "Visible"
-                              : "Hidden"}
-                          </strong>
-                        </div>
-
-                        <span
-                          className={
-                            styles.expand
-                          }
-                        >
-                          +
+                      <div>
+                        <span>
+                          {product.category} · {product.platform}
                         </span>
-                      </div>
-                    </summary>
 
-                    {/* =====================================
+                        <strong>{product.name}</strong>
+
+                        <small>/{product.slug}</small>
+                      </div>
+                    </div>
+
+                    <div className={styles.productStatus}>
+                      <div>
+                        <span>PRICE</span>
+
+                        <strong>${Number(product.price).toFixed(2)}</strong>
+                      </div>
+
+                      <div>
+                        <span>STOCK</span>
+
+                        <strong>{product.stock}</strong>
+                      </div>
+
+                      <div>
+                        <span>STATUS</span>
+
+                        <strong
+                          className={
+                            product.is_visible ? styles.visible : styles.hidden
+                          }
+                        >
+                          {product.is_visible ? "Visible" : "Hidden"}
+                        </strong>
+                      </div>
+
+                      <span className={styles.expand}>+</span>
+                    </div>
+                  </summary>
+
+                  {/* =====================================
                         EDIT PRODUCT
                     ===================================== */}
 
-                    <form
-                      action={
-                        updateProduct
-                      }
-                      className={
-                        styles.editorForm
-                      }
-                    >
-                      <input
-                        type="hidden"
-                        name="id"
-                        value={
-                          product.id
-                        }
-                      />
+                  <form action={updateProduct} className={styles.editorForm}>
+                    <input type="hidden" name="id" value={product.id} />
 
-                      <input
-                        type="hidden"
-                        name="previous_initials"
-                        value={
-                          product.initials
-                        }
-                      />
+                    <input
+                      type="hidden"
+                      name="previous_initials"
+                      value={product.initials}
+                    />
 
-                      <div
-                        className={
-                          styles.formGrid
-                        }
-                      >
-                        <label>
-                          <span>
-                            PRODUCT NAME
-                          </span>
+                    <div className={styles.formGrid}>
+                      <label>
+                        <span>PRODUCT NAME</span>
 
-                          <input
-                            name="name"
-                            type="text"
-                            defaultValue={
-                              product.name
-                            }
-                            required
-                          />
-                        </label>
-
-                        <label>
-                          <span>
-                            SLUG
-                          </span>
-
-                          <input
-                            name="slug"
-                            type="text"
-                            defaultValue={
-                              product.slug
-                            }
-                            required
-                          />
-                        </label>
-
-                        <label>
-                          <span>
-                            CATEGORY
-                          </span>
-
-                          <select
-                            name="category"
-                            defaultValue={
-                              product.category
-                            }
-                          >
-                            <option>
-                              Game Keys
-                            </option>
-
-                            <option>
-                              Gift Cards
-                            </option>
-
-                            <option>
-                              Subscriptions
-                            </option>
-
-                            <option>
-                              Add-ons
-                            </option>
-                          </select>
-                        </label>
-
-                        <label>
-                          <span>
-                            PLATFORM
-                          </span>
-
-                          <input
-                            name="platform"
-                            type="text"
-                            defaultValue={
-                              product.platform
-                            }
-                            required
-                          />
-                        </label>
-
-                        <label>
-                          <span>
-                            REGION
-                          </span>
-
-                          <input
-                            name="region"
-                            type="text"
-                            defaultValue={
-                              product.region
-                            }
-                            required
-                          />
-                        </label>
-
-                        <label>
-                          <span>
-                            DELIVERY
-                          </span>
-
-                          <input
-                            name="delivery"
-                            type="text"
-                            defaultValue={
-                              product.delivery
-                            }
-                            required
-                          />
-                        </label>
-
-                        <label>
-                          <span>
-                            PRICE
-                          </span>
-
-                          <input
-                            name="price"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            defaultValue={
-                              Number(
-                                product.price
-                              )
-                            }
-                            required
-                          />
-                        </label>
-
-                        <label>
-                          <span>
-                            OLD PRICE
-                          </span>
-
-                          <input
-                            name="old_price"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            defaultValue={
-                              product.old_price ===
-                              null
-                                ? ""
-                                : Number(
-                                    product.old_price
-                                  )
-                            }
-                          />
-                        </label>
-
-                        <label>
-                          <span>
-                            STOCK
-                          </span>
-
-                          <input
-                            name="stock"
-                            type="number"
-                            min="0"
-                            step="1"
-                            defaultValue={
-                              product.stock
-                            }
-                            required
-                          />
-                        </label>
-
-                        <label>
-                          <span>
-                            BADGE
-                          </span>
-
-                          <input
-                            name="badge"
-                            type="text"
-                            defaultValue={
-                              product.badge ??
-                              ""
-                            }
-                          />
-                        </label>
-
-                        <label>
-                          <span>
-                            CODE FORMAT
-                          </span>
-
-                          <input
-                            name="code_format"
-                            type="text"
-                            defaultValue={
-                              product.code_format
-                            }
-                          />
-                        </label>
-
-                        <label>
-                          <span>
-                            INITIALS
-                          </span>
-
-                          <input
-                            name="initials"
-                            type="text"
-                            maxLength={
-                              4
-                            }
-                            defaultValue={
-                              product.initials
-                            }
-                          />
-                        </label>
-
-                        <label>
-                          <span>
-                            SORT ORDER
-                          </span>
-
-                          <input
-                            name="sort_order"
-                            type="number"
-                            min="0"
-                            step="1"
-                            defaultValue={
-                              product.sort_order
-                            }
-                          />
-                        </label>
-                      </div>
-
-                      <label
-                        className={
-                          styles.fullField
-                        }
-                      >
-                        <span>
-                          SHORT DESCRIPTION
-                        </span>
-
-                        <textarea
-                          name="short_description"
-                          rows={3}
-                          defaultValue={
-                            product.short_description
-                          }
-                        />
-                      </label>
-
-                      <label
-                        className={
-                          styles.fullField
-                        }
-                      >
-                        <span>
-                          FULL DESCRIPTION
-                        </span>
-
-                        <textarea
-                          name="description"
-                          rows={6}
-                          defaultValue={
-                            product.description
-                          }
-                        />
-                      </label>
-
-                      <GalleryEditor
-                        gallery={
-                          product.gallery
-                        }
-                        initials={
-                          product.initials
-                        }
-                      />
-
-                      <label
-                        className={
-                          styles.visibilityToggle
-                        }
-                      >
                         <input
-                          name="is_visible"
-                          type="checkbox"
-                          value="true"
-                          defaultChecked={
-                            product.is_visible
-                          }
+                          name="name"
+                          type="text"
+                          defaultValue={product.name}
+                          required
                         />
-
-                        <span>
-                          <strong>
-                            Visible on Store
-                          </strong>
-
-                          <small>
-                            Turn this off to hide the product without deleting it.
-                          </small>
-                        </span>
                       </label>
 
-                      <div
-                        className={
-                          styles.editorActions
-                        }
-                      >
-                        <button
-                          type="submit"
-                          className={
-                            styles.saveButton
-                          }
-                        >
-                          Save Changes
-                        </button>
-                      </div>
-                    </form>
+                      <label>
+                        <span>SLUG</span>
 
-                    {/* =====================================
+                        <input
+                          name="slug"
+                          type="text"
+                          defaultValue={product.slug}
+                          required
+                        />
+                      </label>
+
+                      <label>
+                        <span>CATEGORY</span>
+
+                        <select name="category" defaultValue={product.category}>
+                          <option>Game Keys</option>
+
+                          <option>Gift Cards</option>
+
+                          <option>Subscriptions</option>
+
+                          <option>Add-ons</option>
+                        </select>
+                      </label>
+
+                      <label>
+                        <span>PLATFORM</span>
+
+                        <input
+                          name="platform"
+                          type="text"
+                          defaultValue={product.platform}
+                          required
+                        />
+                      </label>
+
+                      <label>
+                        <span>REGION</span>
+
+                        <input
+                          name="region"
+                          type="text"
+                          defaultValue={product.region}
+                          required
+                        />
+                      </label>
+
+                      <label>
+                        <span>DELIVERY</span>
+
+                        <input
+                          name="delivery"
+                          type="text"
+                          defaultValue={product.delivery}
+                          required
+                        />
+                      </label>
+
+                      <label>
+                        <span>PRICE</span>
+
+                        <input
+                          name="price"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          defaultValue={Number(product.price)}
+                          required
+                        />
+                      </label>
+
+                      <label>
+                        <span>OLD PRICE</span>
+
+                        <input
+                          name="old_price"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          defaultValue={
+                            product.old_price === null
+                              ? ""
+                              : Number(product.old_price)
+                          }
+                        />
+                      </label>
+
+                      <label>
+                        <span>STOCK</span>
+
+                        <input
+                          name="stock"
+                          type="number"
+                          min="0"
+                          step="1"
+                          defaultValue={product.stock}
+                          required
+                        />
+                      </label>
+
+                      <label>
+                        <span>BADGE</span>
+
+                        <input
+                          name="badge"
+                          type="text"
+                          defaultValue={product.badge ?? ""}
+                        />
+                      </label>
+
+                      <label>
+                        <span>CODE FORMAT</span>
+
+                        <input
+                          name="code_format"
+                          type="text"
+                          defaultValue={product.code_format}
+                        />
+                      </label>
+
+                      <label>
+                        <span>INITIALS</span>
+
+                        <input
+                          name="initials"
+                          type="text"
+                          maxLength={4}
+                          defaultValue={product.initials}
+                        />
+                      </label>
+
+                      <label>
+                        <span>SORT ORDER</span>
+
+                        <input
+                          name="sort_order"
+                          type="number"
+                          min="0"
+                          step="1"
+                          defaultValue={product.sort_order}
+                        />
+                      </label>
+                    </div>
+
+                    <label className={styles.fullField}>
+                      <span>SHORT DESCRIPTION</span>
+
+                      <textarea
+                        name="short_description"
+                        rows={3}
+                        defaultValue={product.short_description}
+                      />
+                    </label>
+
+                    <label className={styles.fullField}>
+                      <span>FULL DESCRIPTION</span>
+
+                      <textarea
+                        name="description"
+                        rows={6}
+                        defaultValue={product.description}
+                      />
+                    </label>
+
+                    <GalleryEditor
+                      gallery={product.gallery}
+                      initials={product.initials}
+                    />
+
+                    <label className={styles.visibilityToggle}>
+                      <input
+                        name="is_visible"
+                        type="checkbox"
+                        value="true"
+                        defaultChecked={product.is_visible}
+                      />
+
+                      <span>
+                        <strong>Visible on Store</strong>
+
+                        <small>
+                          Turn this off to hide the product without deleting it.
+                        </small>
+                      </span>
+                    </label>
+
+                    <div className={styles.editorActions}>
+                      <SubmitButton type="submit" className={styles.saveButton}>
+                        Save Changes
+                      </SubmitButton>
+                    </div>
+                  </form>
+
+                  {/* =====================================
                         DELETE PRODUCT
                     ===================================== */}
 
-                    <div
-                      className={
-                        styles.dangerZone
-                      }
-                    >
-                      <div>
-                        <strong>
-                          Delete Product
-                        </strong>
+                  <div className={styles.dangerZone}>
+                    <div>
+                      <strong>Delete Product</strong>
 
-                        <p>
-                          This removes the product from the Supabase catalog.
-                        </p>
-                      </div>
-
-                      <form
-                        action={
-                          deleteProduct.bind(
-                            null,
-                            product.id
-                          )
-                        }
-                      >
-                        <button
-                          type="submit"
-                          className={
-                            styles.deleteButton
-                          }
-                        >
-                          Delete
-                        </button>
-                      </form>
+                      <p>This removes the product from the Supabase catalog.</p>
                     </div>
-                  </details>
-                )
-              )}
+
+                    <form action={deleteProduct.bind(null, product.id)}>
+                      <SubmitButton
+                        type="submit"
+                        className={styles.deleteButton}
+                      >
+                        Delete
+                      </SubmitButton>
+                    </form>
+                  </div>
+                </details>
+              ))}
             </div>
           )}
         </section>

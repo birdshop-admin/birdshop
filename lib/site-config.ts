@@ -1,93 +1,76 @@
+const invite = process.env.NEXT_PUBLIC_DISCORD_INVITE_URL?.trim() ?? "";
 const discordUrl =
-  "https://discord.com";
+  /^https:\/\/(discord\.gg\/[A-Za-z0-9-]+|discord\.com\/invite\/[A-Za-z0-9-]+)$/.test(
+    invite,
+  )
+    ? invite
+    : "/contact?topic=general";
 
 export const siteConfig = {
-  name:
-    "BirdShop",
+  name: "BirdShop",
 
-  displayName:
-    "BIRDSHOP",
+  displayName: "BIRDSHOP",
 
-  description:
-    "Digital products, game services, and community.",
+  description: "Digital products, game services, and community.",
 
-  established:
-    "2024",
+  established: "2024",
 
   discordUrl,
 
-  supportEmail:
-    "",
+  supportEmail: "",
 
   navigation: [
+    { label: "How to Order", href: "/how-to-order" },
     {
-      label:
-        "Home",
+      label: "Home",
 
-      href:
-        "/",
+      href: "/",
     },
 
     {
-      label:
-        "Products",
+      label: "Products",
 
-      href:
-        "/products",
+      href: "/products",
     },
 
     {
-      label:
-        "Services",
+      label: "Services",
 
-      href:
-        "/services",
+      href: "/services",
     },
 
     {
-      label:
-        "My Service",
+      label: "My Service",
 
-      href:
-        "/service-chat",
+      href: "/service-chat",
     },
 
     {
-      label:
-        "Reviews",
+      label: "Reviews",
 
-      href:
-        "/reviews",
+      href: "/reviews",
     },
 
     {
-      label:
-        "Contact",
+      label: "Contact",
 
-      href:
-        "/contact",
+      href: "/contact",
     },
 
     {
-      label:
-        "FAQs",
+      label: "FAQs",
 
-      href:
-        "/faqs",
+      href: "/faqs",
     },
   ],
 
   socials: {
-    discord:
-      discordUrl,
+    discord: discordUrl,
 
-    instagram:
-      null,
+    instagram: null,
 
-    youtube:
-      null,
+    youtube: null,
 
-    x:
-      null,
+    x: null,
   },
 } as const;

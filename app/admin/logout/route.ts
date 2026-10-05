@@ -1,15 +1,9 @@
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { assertSameOrigin } from "@/lib/server-config";
+import { NextRequest, NextResponse } from "next/server";
 
-import {
-  cookies,
-} from "next/headers";
+import { cookies } from "next/headers";
 
-import {
-  createClient,
-} from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 import {
   ADMIN_ACTIVITY_COOKIE,
@@ -22,11 +16,9 @@ import {
 
 function deleteCookieOptions() {
   return {
-    path:
-      "/admin",
+    path: "/admin",
 
-    maxAge:
-      0,
+    maxAge: 0,
   };
 }
 
@@ -35,12 +27,10 @@ function deleteCookieOptions() {
 ========================================================= */
 
 async function endSession() {
-  const supabase =
-    await createClient();
+  const supabase = await createClient();
 
   try {
-    await supabase.auth
-      .signOut();
+    await supabase.auth.signOut({ scope: "local" });
   } catch {
     /*
      * BirdShop cookies are still cleared even if the
@@ -48,55 +38,27 @@ async function endSession() {
      */
   }
 
-  const cookieStore =
-    await cookies();
+  const cookieStore = await cookies();
 
-  cookieStore.set(
-    ADMIN_SESSION_COOKIE,
-    "",
-    deleteCookieOptions()
-  );
+  cookieStore.set(ADMIN_SESSION_COOKIE, "", deleteCookieOptions());
 
-  cookieStore.set(
-    ADMIN_ACTIVITY_COOKIE,
-    "",
-    deleteCookieOptions()
-  );
+  cookieStore.set(ADMIN_ACTIVITY_COOKIE, "", deleteCookieOptions());
 
   /*
    * Legacy session cookies.
    */
 
-  cookieStore.set(
-    "birdshop_admin_exit",
-    "",
-    deleteCookieOptions()
-  );
+  cookieStore.set("birdshop_admin_exit", "", deleteCookieOptions());
 }
 
 /* =========================================================
    REASON
 ========================================================= */
 
-function reasonFromRequest(
-  request:
-    NextRequest
-) {
-  const reason =
-    request.nextUrl
-      .searchParams
-      .get(
-        "reason"
-      );
+function reasonFromRequest(request: NextRequest) {
+  const reason = request.nextUrl.searchParams.get("reason");
 
-  if (
-    reason ===
-      "inactive" ||
-    reason ===
-      "session" ||
-    reason ===
-      "closed"
-  ) {
+  if (reason === "inactive" || reason === "session" || reason === "closed") {
     return reason;
   }
 
@@ -107,20 +69,18 @@ function reasonFromRequest(
    POST
 ========================================================= */
 
-export async function POST(
-  request:
-    NextRequest
-) {
+export async function POST(request: NextRequest) {
+  try {
+    assertSameOrigin(request);
+  } catch {
+    return NextResponse.json({ error: "Invalid origin." }, { status: 403 });
+  }
   await endSession();
 
   return NextResponse.json({
-    ok:
-      true,
+    ok: true,
 
-    reason:
-      reasonFromRequest(
-        request
-      ),
+    reason: reasonFromRequest(request),
   });
 }
 
@@ -128,33 +88,16 @@ export async function POST(
    GET
 ========================================================= */
 
-export async function GET(
-  request:
-    NextRequest
-) {
-  await endSession();
+export async function GET(request: NextRequest) {
+  // GET never changes authentication state. Use the sign-out button to POST.
 
-  const loginUrl =
-    new URL(
-      "/admin/login",
-      request.url
-    );
+  const loginUrl = new URL("/admin/login", request.url);
 
-  const reason =
-    reasonFromRequest(
-      request
-    );
+  const reason = reasonFromRequest(request);
 
-  if (
-    reason
-  ) {
-    loginUrl.searchParams.set(
-      "reason",
-      reason
-    );
+  if (reason) {
+    loginUrl.searchParams.set("reason", reason);
   }
 
-  return NextResponse.redirect(
-    loginUrl
-  );
+  return NextResponse.redirect(loginUrl);
 }

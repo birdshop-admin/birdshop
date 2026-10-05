@@ -547,3 +547,80 @@
     font-size: 17px !important;
   }
 }
+
+/* Inline actions preserve the conversation instead of navigating after submit. */
+.paymentFields {
+  display: contents;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.actionStatus {
+  display: block;
+  margin-top: 8px;
+  color: #617056;
+  font:
+    400 12px/1.5 Arial,
+    sans-serif;
+}
+.actionError {
+  margin: 8px 0 0;
+  color: #894633;
+  font:
+    400 12px/1.5 Arial,
+    sans-serif;
+}
+.emptyFeedback {
+  display: none;
+}
+.paymentToast {
+  position: fixed;
+  z-index: 100;
+  right: 24px;
+  bottom: 24px;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 14px 18px;
+  border: 1px solid #b9c5ab;
+  border-radius: 10px;
+  background: #fffdf7;
+  color: #3f5834;
+  box-shadow: 0 8px 30px #2535201a;
+  font:
+    400 13px/1.5 Arial,
+    sans-serif;
+  pointer-events: none;
+  animation: paymentNoticeIn 160ms ease-out;
+}
+.button,
+.secondaryButton,
+.input,
+.textarea,
+.toggle > span {
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+@keyframes paymentNoticeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .paymentToast {
+    animation: none;
+  }
+  .button,
+  .secondaryButton,
+  .input,
+  .textarea,
+  .toggle > span {
+    transition: none;
+  }
+}

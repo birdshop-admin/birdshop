@@ -1,4 +1,5 @@
 "use client";
+import PaymentActionForm from "./PaymentActionForm";
 import ChatHistory from "./ChatHistory";
 
 import {
@@ -657,7 +658,7 @@ export default function AdminLiveThread({
                 {money(request.amount, request.currency)}
               </strong>
               {request.status === "pending" && (
-                <form action={cancelPaymentRequest}>
+                <PaymentActionForm action={cancelPaymentRequest}>
                   <input
                     type="hidden"
                     name="conversation_id"
@@ -671,7 +672,7 @@ export default function AdminLiveThread({
                   <SubmitButton className={paymentStyles.secondaryButton}>
                     Cancel request
                   </SubmitButton>
-                </form>
+                </PaymentActionForm>
               )}
             </div>
 

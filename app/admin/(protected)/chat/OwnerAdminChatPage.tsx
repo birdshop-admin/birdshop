@@ -1,3 +1,4 @@
+import PaymentActionForm, { PaymentFeedback } from "./PaymentActionForm";
 import SubmitButton from "@/components/SubmitButton";
 import Link from "next/link";
 
@@ -1328,202 +1329,208 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                 =========================================== */}
 
                 {selected.conversation_type === "service" && (
-                  <details
-                    className={paymentStyles.paymentDrawer}
-                    key={selected.id}
-                  >
-                    <summary>
-                      <div>
-                        <span>PAYMENT CENTER</span>
+                  <>
+                    <PaymentFeedback
+                      key={selected.id}
+                      conversationId={selected.id}
+                    />
+                    <details
+                      className={paymentStyles.paymentDrawer}
+                      key={selected.id}
+                    >
+                      <summary>
+                        <div>
+                          <span>PAYMENT CENTER</span>
 
-                        <strong>
-                          {paidPayment
-                            ? `Paid · ${money(
-                                paidPayment.amount,
-                                paidPayment.currency,
-                              )}`
-                            : pendingPayment
-                              ? `Pending · ${money(
-                                  pendingPayment.amount,
-                                  pendingPayment.currency,
+                          <strong>
+                            {paidPayment
+                              ? `Paid · ${money(
+                                  paidPayment.amount,
+                                  paidPayment.currency,
                                 )}`
-                              : latestPayment
-                                ? statusLabel(latestPayment.status)
-                                : "No payment request"}
-                        </strong>
-                      </div>
+                              : pendingPayment
+                                ? `Pending · ${money(
+                                    pendingPayment.amount,
+                                    pendingPayment.currency,
+                                  )}`
+                                : latestPayment
+                                  ? statusLabel(latestPayment.status)
+                                  : "No payment request"}
+                          </strong>
+                        </div>
 
-                      <span className={paymentStyles.toggle}>
-                        {paidPayment || pendingPayment || selectedOrder
-                          ? "View details"
-                          : "Create request"}
-                        <span aria-hidden="true">
-                          <svg viewBox="0 0 24 24" fill="none">
-                            <path d="m6 9 6 6 6-6" />
-                          </svg>
+                        <span className={paymentStyles.toggle}>
+                          {paidPayment || pendingPayment || selectedOrder
+                            ? "View details"
+                            : "Create request"}
+                          <span aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <path d="m6 9 6 6 6-6" />
+                            </svg>
+                          </span>
                         </span>
-                      </span>
-                    </summary>
+                      </summary>
 
-                    <div className={paymentStyles.paymentBody}>
-                      {paidPayment ? (
-                        <article className={paymentStyles.paidSummary}>
-                          <div>
-                            <span>PAYMENT RECEIVED</span>
-
-                            <strong>{paidPayment.title}</strong>
-
-                            <p>
-                              The payment is verified and the linked service
-                              order has been created.
-                            </p>
-                          </div>
-
-                          <b>
-                            {money(paidPayment.amount, paidPayment.currency)}
-                          </b>
-                        </article>
-                      ) : pendingPayment ? (
-                        <article
-                          className={paymentStyles.request}
-                          data-status="pending"
-                        >
-                          <div className={paymentStyles.requestTop}>
+                      <div className={paymentStyles.paymentBody}>
+                        {paidPayment ? (
+                          <article className={paymentStyles.paidSummary}>
                             <div>
-                              <span className={paymentStyles.requestEyebrow}>
-                                CURRENT PAYMENT REQUEST
-                              </span>
+                              <span>PAYMENT RECEIVED</span>
 
-                              <strong className={paymentStyles.requestTitle}>
-                                {pendingPayment.title}
-                              </strong>
+                              <strong>{paidPayment.title}</strong>
+
+                              <p>
+                                The payment is verified and the linked service
+                                order has been created.
+                              </p>
                             </div>
 
-                            <span className={paymentStyles.requestStatus}>
-                              Pending
-                            </span>
-                          </div>
+                            <b>
+                              {money(paidPayment.amount, paidPayment.currency)}
+                            </b>
+                          </article>
+                        ) : pendingPayment ? (
+                          <article
+                            className={paymentStyles.request}
+                            data-status="pending"
+                          >
+                            <div className={paymentStyles.requestTop}>
+                              <div>
+                                <span className={paymentStyles.requestEyebrow}>
+                                  CURRENT PAYMENT REQUEST
+                                </span>
 
-                          {pendingPayment.description && (
-                            <p className={paymentStyles.requestDescription}>
-                              {pendingPayment.description}
-                            </p>
-                          )}
+                                <strong className={paymentStyles.requestTitle}>
+                                  {pendingPayment.title}
+                                </strong>
+                              </div>
 
-                          <strong className={paymentStyles.requestAmount}>
-                            {money(
-                              pendingPayment.amount,
-                              pendingPayment.currency,
+                              <span className={paymentStyles.requestStatus}>
+                                Pending
+                              </span>
+                            </div>
+
+                            {pendingPayment.description && (
+                              <p className={paymentStyles.requestDescription}>
+                                {pendingPayment.description}
+                              </p>
                             )}
-                          </strong>
 
-                          <div className={paymentStyles.requestFooter}>
-                            <span>Waiting for customer payment.</span>
+                            <strong className={paymentStyles.requestAmount}>
+                              {money(
+                                pendingPayment.amount,
+                                pendingPayment.currency,
+                              )}
+                            </strong>
 
-                            <form action={cancelPaymentRequest}>
-                              <input
-                                type="hidden"
-                                name="conversation_id"
-                                value={selected.id}
+                            <div className={paymentStyles.requestFooter}>
+                              <span>Waiting for customer payment.</span>
+
+                              <PaymentActionForm action={cancelPaymentRequest}>
+                                <input
+                                  type="hidden"
+                                  name="conversation_id"
+                                  value={selected.id}
+                                />
+
+                                <input
+                                  type="hidden"
+                                  name="payment_request_id"
+                                  value={pendingPayment.id}
+                                />
+
+                                <SubmitButton
+                                  type="submit"
+                                  className={paymentStyles.secondaryButton}
+                                >
+                                  Cancel Request
+                                </SubmitButton>
+                              </PaymentActionForm>
+                            </div>
+                          </article>
+                        ) : selectedOrder ? (
+                          <div className={paymentStyles.noPaymentAction}>
+                            This conversation already has a linked order.
+                          </div>
+                        ) : (
+                          <PaymentActionForm
+                            action={createPaymentRequest}
+                            className={paymentStyles.form}
+                          >
+                            <input
+                              type="hidden"
+                              name="conversation_id"
+                              value={selected.id}
+                            />
+
+                            <div className={paymentStyles.fields}>
+                              <label className={paymentStyles.field}>
+                                <span className={paymentStyles.fieldLabel}>
+                                  TITLE
+                                </span>
+
+                                <input
+                                  className={paymentStyles.input}
+                                  name="title"
+                                  defaultValue={`${selectedTitle}${
+                                    selectedSubtitle
+                                      ? ` — ${selectedSubtitle}`
+                                      : ""
+                                  }`}
+                                  maxLength={180}
+                                  required
+                                />
+                              </label>
+
+                              <label className={paymentStyles.field}>
+                                <span className={paymentStyles.fieldLabel}>
+                                  AMOUNT
+                                </span>
+
+                                <input
+                                  className={paymentStyles.input}
+                                  name="amount"
+                                  type="number"
+                                  min="0.50"
+                                  step="0.01"
+                                  placeholder="24.99"
+                                  required
+                                />
+                              </label>
+                            </div>
+
+                            <label className={paymentStyles.field}>
+                              <span className={paymentStyles.fieldLabel}>
+                                DESCRIPTION · OPTIONAL
+                              </span>
+
+                              <textarea
+                                className={paymentStyles.textarea}
+                                name="description"
+                                rows={2}
+                                maxLength={2000}
+                                placeholder="What is included in this service?"
                               />
+                            </label>
 
-                              <input
-                                type="hidden"
-                                name="payment_request_id"
-                                value={pendingPayment.id}
-                              />
+                            <div className={paymentStyles.actions}>
+                              <span>
+                                A fixed-amount checkout appears in the
+                                customer’s chat.
+                              </span>
 
                               <SubmitButton
                                 type="submit"
-                                className={paymentStyles.secondaryButton}
+                                className={paymentStyles.button}
                               >
-                                Cancel Request
+                                Send Payment Request
                               </SubmitButton>
-                            </form>
-                          </div>
-                        </article>
-                      ) : selectedOrder ? (
-                        <div className={paymentStyles.noPaymentAction}>
-                          This conversation already has a linked order.
-                        </div>
-                      ) : (
-                        <form
-                          action={createPaymentRequest}
-                          className={paymentStyles.form}
-                        >
-                          <input
-                            type="hidden"
-                            name="conversation_id"
-                            value={selected.id}
-                          />
-
-                          <div className={paymentStyles.fields}>
-                            <label className={paymentStyles.field}>
-                              <span className={paymentStyles.fieldLabel}>
-                                TITLE
-                              </span>
-
-                              <input
-                                className={paymentStyles.input}
-                                name="title"
-                                defaultValue={`${selectedTitle}${
-                                  selectedSubtitle
-                                    ? ` — ${selectedSubtitle}`
-                                    : ""
-                                }`}
-                                maxLength={180}
-                                required
-                              />
-                            </label>
-
-                            <label className={paymentStyles.field}>
-                              <span className={paymentStyles.fieldLabel}>
-                                AMOUNT
-                              </span>
-
-                              <input
-                                className={paymentStyles.input}
-                                name="amount"
-                                type="number"
-                                min="0.50"
-                                step="0.01"
-                                placeholder="24.99"
-                                required
-                              />
-                            </label>
-                          </div>
-
-                          <label className={paymentStyles.field}>
-                            <span className={paymentStyles.fieldLabel}>
-                              DESCRIPTION · OPTIONAL
-                            </span>
-
-                            <textarea
-                              className={paymentStyles.textarea}
-                              name="description"
-                              rows={2}
-                              maxLength={2000}
-                              placeholder="What is included in this service?"
-                            />
-                          </label>
-
-                          <div className={paymentStyles.actions}>
-                            <span>
-                              A fixed-amount checkout appears in the customer’s
-                              chat.
-                            </span>
-
-                            <SubmitButton
-                              type="submit"
-                              className={paymentStyles.button}
-                            >
-                              Send Payment Request
-                            </SubmitButton>
-                          </div>
-                        </form>
-                      )}
-                    </div>
-                  </details>
+                            </div>
+                          </PaymentActionForm>
+                        )}
+                      </div>
+                    </details>
+                  </>
                 )}
 
                 {/* ===========================================

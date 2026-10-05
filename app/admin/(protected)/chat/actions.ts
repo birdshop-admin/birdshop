@@ -130,65 +130,52 @@ export async function sendAdminChatMessage(
    CREATE PAYMENT REQUEST
 ========================================================= */
 
-export async function createPaymentRequest(formData: FormData) {
+export type PaymentActionResult =
+  { ok: true; message: string } | { ok: false; error: string };
+
+export async function createPaymentRequest(
+  formData: FormData,
+): Promise<PaymentActionResult> {
   const supabase = await requireAdmin();
-
   const conversationId = String(formData.get("conversation_id") ?? "").trim();
-
   const amount = Number(formData.get("amount") ?? 0);
-
   const title = String(formData.get("title") ?? "").trim();
-
   const description = String(formData.get("description") ?? "").trim();
 
-  if (!conversationId) {
-    throw new Error("Conversation ID missing.");
-  }
+  if (!conversationId)
+    return { ok: false, error: "Choose a conversation first." };
+  if (!Number.isFinite(amount) || amount < 0.5)
+    return { ok: false, error: "Enter an amount of at least 0.50." };
+  if (!title || title.length > 180)
+    return { ok: false, error: "Enter a title of up to 180 characters." };
+  if (description.length > 2000)
+    return { ok: false, error: "Keep the description under 2,000 characters." };
 
-  if (!Number.isFinite(amount) || amount < 0.5) {
-    redirect(
-      chatUrl(
-        "active",
-        conversationId,
-        "Enter a valid payment amount.",
-        "error",
-      ),
+  try {
+    const { error } = await supabase.rpc(
+      "birdshop_admin_create_payment_request",
+      {
+        p_conversation_id: conversationId,
+        p_amount: amount,
+        p_title: title,
+        p_description: description || null,
+      },
     );
+    if (error)
+      return {
+        ok: false,
+        error:
+          "Could not create the request. Check the current payment status before retrying.",
+      };
+  } catch {
+    return {
+      ok: false,
+      error: "Unable to confirm the request. Check the chat before retrying.",
+    };
   }
-
-  if (!title) {
-    redirect(
-      chatUrl("active", conversationId, "Enter a payment title.", "error"),
-    );
-  }
-
-  const { error } = await supabase.rpc(
-    "birdshop_admin_create_payment_request",
-    {
-      p_conversation_id: conversationId,
-
-      p_amount: amount,
-
-      p_title: title,
-
-      p_description: description || null,
-    },
-  );
-
-  if (error) {
-    redirect(
-      chatUrl(
-        "active",
-        conversationId,
-        "This action could not be completed. Refresh and retry. Financial history is protected.",
-        "error",
-      ),
-    );
-  }
-
+  // Merge fresh server data without navigating away from the conversation.
   refreshAdmin();
-
-  redirect(chatUrl("active", conversationId, "Payment request sent."));
+  return { ok: true, message: "Payment request sent." };
 }
 
 /* =========================================================
@@ -208,19 +195,26 @@ export async function createPaymentRequest(formData: FormData) {
    Stripe   = still payable
 ========================================================= */
 
-export async function cancelPaymentRequest(formData: FormData) {
+export async function cancelPaymentRequest(
+  formData: FormData,
+): Promise<PaymentActionResult> {
   const { user } = await authenticatePaymentStaff();
-  const conversationId = String(formData.get("conversation_id") ?? "");
-  const requestId = String(formData.get("payment_request_id") ?? "");
+  const conversationId = String(formData.get("conversation_id") ?? "").trim();
+  const requestId = String(formData.get("payment_request_id") ?? "").trim();
   if (!conversationId || !requestId)
-    throw new Error("Choose a payment request.");
-  await cancelQuote(requestId, conversationId, user.id);
+    return { ok: false, error: "Choose a payment request first." };
+  try {
+    await cancelQuote(requestId, conversationId, user.id);
+  } catch {
+    return {
+      ok: false,
+      error:
+        "Could not cancel this request. It may already be paid or inactive. Check its status before retrying.",
+    };
+  }
   revalidatePath("/admin/chat");
   revalidatePath("/admin/orders");
-  redirect(
-    "/admin/chat?view=active&type=service&conversation=" +
-      encodeURIComponent(conversationId),
-  );
+  return { ok: true, message: "Payment request cancelled." };
 }
 
 /* =========================================================

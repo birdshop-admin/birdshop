@@ -28,6 +28,7 @@ const ownerNavigation = [
   { label: "Chat", href: "/admin/chat" },
   { label: "Orders", href: "/admin/orders" },
   { label: "Products", href: "/admin/products" },
+  { label: "Services", href: "/admin/services" },
   { label: "Inventory", href: "/admin/inventory" },
   { label: "Analytics", href: "/admin/analytics" },
   { label: "Reviews", href: "/admin/reviews" },

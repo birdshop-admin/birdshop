@@ -6,7 +6,7 @@ import { assertSameOrigin, privateHeaders } from "@/lib/server-config";
 import { limitRequest, rateLimit } from "@/lib/rate-limit";
 import { serverRpc } from "@/lib/payment-service";
 import { drainEmailJobs } from "@/lib/email-jobs";
-import { services } from "@/lib/services";
+import { getService } from "@/lib/service-catalog";
 import { createAdminClient } from "@/lib/supabase/admin";
 export async function POST(request: Request) {
   try {
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       throw new Error("Choose a request type and enter a valid email.");
     await rateLimit("new-chat-email", email, 5, 1800);
     const service =
-      type === "service" ? services[String(body.p_service_slug)] : null;
+      type === "service" ? await getService(String(body.p_service_slug)) : null;
     if (type === "service" && (!service || !service.available))
       throw new Error("Choose an available service.");
     let product: {

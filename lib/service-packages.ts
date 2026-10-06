@@ -110,9 +110,26 @@ function buildCustomPackage(
 ========================================================= */
 
 export function buildServicePackages(service: Service): ServicePackageOption[] {
-  return [buildCustomPackage(service, true)];
+  return [
+    ...(service.packages ?? [])
+      .filter((p) => p.enabled && p.cents !== null)
+      .map((p) => ({
+        id: p.id,
+        tier: p.id,
+        name: p.name,
+        label: p.name.toUpperCase() + " PACKAGE",
+        subtitle: p.scope,
+        price: p.cents! / 100,
+        scope: p.scope,
+        directLabel: "WHAT IS INCLUDED",
+        directIncludes: p.includes,
+        allIncludes: p.includes,
+        recommended: p.id === "standard",
+      })),
+    buildCustomPackage(service),
+  ];
 }
 
 export function getDefaultServicePackageId(_packages: ServicePackageOption[]) {
-  return _packages.find((option) => option.id === "custom")?.id ?? "custom";
+  return _packages.find((option) => option.id !== "custom")?.id ?? "custom";
 }

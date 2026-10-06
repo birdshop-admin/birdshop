@@ -166,7 +166,7 @@
 
   border-radius: 6px;
 
-  color: #eee9dc;
+  color: #263423;
 
   background:
     radial-gradient(
@@ -578,14 +578,14 @@
   display: grid;
   gap: 8px;
   font-size: 12px;
-  color: #d7ddcd;
+  color: #58634e;
 }
 .checkoutForm input {
-  background: #102017;
-  border: 1px solid #697f5c;
+  background: #fffdf7;
+  border: 1px solid #c6ccbd;
   border-radius: 8px;
   padding: 13px;
-  color: #eee9dc;
+  color: #263423;
   font: inherit;
   font-size: 16px;
   width: 100%;
@@ -602,4 +602,9 @@
   color: #ffded1;
   font-size: 12px;
   line-height: 1.6;
+}
+
+.checkoutForm input:focus-visible {
+  outline: 2px solid #667958;
+  outline-offset: 2px;
 }

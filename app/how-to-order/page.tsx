@@ -5,7 +5,7 @@ import styles from "@/app/service-chat/service-chat.module.css";
 export const metadata = {
   title: "How to Order",
   description:
-    "How to order digital products and request Custom services from BirdShop.",
+    "How to buy service packages, request custom work and order digital products from BirdShop.",
 };
 export default function HowToOrder() {
   return (
@@ -17,6 +17,21 @@ export default function HowToOrder() {
       >
         <span className={styles.eyebrow}>BIRDSHOP / HOW TO ORDER</span>
         <h1>From your first message to delivery.</h1>
+        <h2>Ready-to-buy service packages</h2>
+        <ol>
+          <li>
+            Choose a service and review its Basic, Standard or Premium package.
+          </li>
+          <li>Enter your name and email, then pay securely through Stripe.</li>
+          <li>
+            Return directly to your private BirdShop chat. Once payment is
+            verified, your order is linked there.
+          </li>
+          <li>
+            Share your requirements and arrange the next steps in that chat.
+          </li>
+        </ol>
+        <Link href="/services">Browse service packages →</Link>
         <h2>Custom services</h2>
         <ol>
           <li>

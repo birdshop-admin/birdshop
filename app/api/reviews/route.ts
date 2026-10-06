@@ -7,7 +7,7 @@ import {
 import { limitRequest, rateLimit } from "@/lib/rate-limit";
 import { serverRpc } from "@/lib/payment-service";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { services } from "@/lib/services";
+import { getService } from "@/lib/service-catalog";
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     await rateLimit("review-contact", contact.toLowerCase(), 3, 3600);
     let subject: string;
     if (type === "Service") {
-      const service = services[slug];
+      const service = await getService(slug);
       if (!service) throw new Error("Choose a service to review.");
       subject = service.name;
     } else {

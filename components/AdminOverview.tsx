@@ -50,6 +50,19 @@ export default function AdminOverview() {
   ].filter((x) => Number(x.count) > 0);
   return (
     <div className={s.report}>
+      <section className={s.panel}>
+        <div className={s.heading}>
+          <div>
+            <span className={s.eyebrow}>RUN YOUR STORE</span>
+            <h2>Quick actions</h2>
+          </div>
+        </div>
+        <div className={s.stock}>
+          <Link href="/admin/services">Manage service packages →</Link>
+          <Link href="/admin/products">Manage products →</Link>
+          <Link href="/admin/reviews">Moderate reviews →</Link>
+        </div>
+      </section>
       {error && (
         <p className={s.error} role="alert">
           {error} Last successful figures remain visible.

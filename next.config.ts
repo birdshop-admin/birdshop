@@ -22,6 +22,8 @@ const nextConfig: NextConfig = {
         "/api/service-chat/:path*",
         "/api/orders/:path*",
         "/api/checkout/:path*",
+        "/api/services/purchase",
+        "/services/:slug/purchase",
       ].map((source) => ({
         source,
         headers: [

@@ -19,7 +19,7 @@ import {
   ShieldIcon,
 } from "@/components/SiteIcons";
 
-import { serviceList } from "@/lib/services";
+import type { Service } from "@/lib/services";
 
 import { siteConfig } from "@/lib/site-config";
 
@@ -40,6 +40,7 @@ type SelectedContactTopic = ContactTopic | null;
 type ReviewKind = "Product" | "Service";
 
 type ContactClientProps = {
+  serviceList: Service[];
   initialTopic?: string;
 
   initialService?: string;
@@ -218,6 +219,7 @@ function normalizeCreatedConversation(
 ========================================================= */
 
 export default function ContactClient(props: ContactClientProps) {
+  const { serviceList } = props;
   const router = useRouter();
   const submissionKey = useRef<string | null>(null);
 
@@ -337,7 +339,7 @@ export default function ContactClient(props: ContactClientProps) {
     () =>
       serviceList.find((service) => service.slug === serviceSlug) ??
       serviceList[0],
-    [serviceSlug],
+    [serviceSlug, serviceList],
   );
 
   /* =======================================================
@@ -1244,38 +1246,36 @@ export default function ContactClient(props: ContactClientProps) {
         =============================================== */}
 
         <div className={styles.topicGrid}>
-          {topics
-            .filter((item) => item.id !== "review")
-            .map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`${styles.topicCard} ${
-                  topic === item.id ? styles.topicActive : ""
-                }`}
-                onClick={() => {
-                  setTopic(item.id);
+          {topics.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`${styles.topicCard} ${
+                topic === item.id ? styles.topicActive : ""
+              }`}
+              onClick={() => {
+                setTopic(item.id);
 
-                  setSubmitError(null);
+                setSubmitError(null);
 
-                  setReviewSubmission(null);
+                setReviewSubmission(null);
 
-                  setCopied(false);
-                }}
-              >
-                <span className={styles.topicNumber}>{item.number}</span>
+                setCopied(false);
+              }}
+            >
+              <span className={styles.topicNumber}>{item.number}</span>
 
-                <div>
-                  <strong>{item.label}</strong>
+              <div>
+                <strong>{item.label}</strong>
 
-                  <p>{item.description}</p>
-                </div>
+                <p>{item.description}</p>
+              </div>
 
-                <span className={styles.topicStatus}>
-                  {topic === item.id ? <CheckIcon /> : <ArrowIcon />}
-                </span>
-              </button>
-            ))}
+              <span className={styles.topicStatus}>
+                {topic === item.id ? <CheckIcon /> : <ArrowIcon />}
+              </span>
+            </button>
+          ))}
         </div>
 
         {topic && (

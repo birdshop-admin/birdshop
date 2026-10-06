@@ -285,6 +285,19 @@ export default function ReviewsPage() {
               <br />
               say.
             </h1>
+            <Link
+              href="/contact?topic=review"
+              style={{
+                display: "inline-flex",
+                padding: "13px 22px",
+                marginTop: 18,
+                borderRadius: 8,
+                background: "#455a3e",
+                color: "#fffdf1",
+              }}
+            >
+              Leave a review →
+            </Link>
 
             <p className={styles.heroDescription}>
               Product experiences, service feedback, and stories from the

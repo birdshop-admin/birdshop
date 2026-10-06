@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import ProductThumbnail from "@/components/ProductThumbnail";
 import ProductCheckout from "@/components/ProductCheckout";
 
 import SiteHeader from "@/components/SiteHeader";
@@ -216,7 +217,7 @@ export default function CartPage() {
                       href={`/products/${slug}`}
                       className={styles.itemVisual}
                     >
-                      <span>{product.initials}</span>
+                      <ProductThumbnail product={product} />
                     </Link>
 
                     {/* ===================================

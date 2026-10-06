@@ -1,0 +1,8 @@
+BirdShop design update validation - 2026-10-06 UTC
+
+PASS npm run check (ESLint and TypeScript)
+PASS production Next.js build with placeholder public Supabase configuration
+PASS package-state checks: all three tiers shown; draft prices/details hidden; enabled prices preserved; paused services cannot be purchased; public minimum price uses published tiers only
+PASS 12 local production HTTP checks with fixture Supabase catalog (including all three tier labels, direct purchase link, unavailable tier 404, dedicated How to Order CSS, and existing auth/origin guards)
+
+Limits: no real Supabase credentials, Stripe payment, Resend delivery, authenticated admin browser, phone, or visual browser screenshot test was performed. The payment backend is unchanged from the preceding tested service package update. Complete the live checks listed in DESIGN-UPDATE-README.md after deployment.

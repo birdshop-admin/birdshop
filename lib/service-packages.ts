@@ -17,6 +17,8 @@ export type InheritedPackageGroup = {
 export type ServicePackageOption = {
   id: string;
 
+  purchasable?: boolean;
+
   tier: ServicePackageTier;
 
   name: string;
@@ -110,26 +112,27 @@ function buildCustomPackage(
 ========================================================= */
 
 export function buildServicePackages(service: Service): ServicePackageOption[] {
+  const tiers = ["starter", "standard", "premium"] as const;
   return [
-    ...(service.packages ?? [])
-      .filter((p) => p.enabled && p.cents !== null)
-      .map((p) => ({
-        id: p.id,
-        tier: p.id,
-        name: p.name,
-        label: p.name.toUpperCase() + " PACKAGE",
-        subtitle: p.scope,
-        price: p.cents! / 100,
-        scope: p.scope,
+    ...tiers.map((id, index) => {
+      const p = service.packages?.find((plan) => plan.id === id);
+      const ready = !!(service.available && p?.enabled && p.cents !== null);
+      const name = ["Basic", "Standard", "Premium"][index];
+      return {
+        id, tier: id, name, label: name.toUpperCase() + " PACKAGE",
+        subtitle: ready ? p!.scope : "This package is not currently available to purchase.",
+        price: ready ? p!.cents! / 100 : null,
+        scope: ready ? p!.scope : "Package details coming soon",
         directLabel: "WHAT IS INCLUDED",
-        directIncludes: p.includes,
-        allIncludes: p.includes,
-        recommended: p.id === "standard",
-      })),
+        directIncludes: ready ? p!.includes : [],
+        allIncludes: ready ? p!.includes : [],
+        purchasable: ready,
+      };
+    }),
     buildCustomPackage(service),
   ];
 }
 
-export function getDefaultServicePackageId(_packages: ServicePackageOption[]) {
-  return _packages.find((option) => option.id !== "custom")?.id ?? "custom";
+export function getDefaultServicePackageId(packages: ServicePackageOption[]) {
+  return packages.find((option) => option.purchasable)?.id ?? "starter";
 }

@@ -1,7 +1,7 @@
 import { requireOwner } from "@/lib/staff-auth";
 import AdminSidebar from "@/components/AdminSidebar";
 import type { Service } from "@/lib/services";
-import ServiceEditor from "./ServiceEditor";
+import ServiceCatalog from "./ServiceCatalog";
 import shell from "../admin.module.css";
 export const dynamic = "force-dynamic";
 export default async function Page() {
@@ -26,27 +26,7 @@ export default async function Page() {
             </p>
           </div>
         </header>
-        <details>
-          <summary>Add a new service</summary>
-          <ServiceEditor />
-        </details>
-        {(data ?? []).map((row) => (
-          <details key={row.slug}>
-            <summary style={{ padding: "20px 0", cursor: "pointer" }}>
-              {row.data.name} · {row.is_visible ? "Visible" : "Hidden"}
-            </summary>
-            <ServiceEditor
-              service={
-                {
-                  ...row.data,
-                  slug: row.slug,
-                  packages: row.packages,
-                } as Service
-              }
-              visible={row.is_visible}
-            />
-          </details>
-        ))}
+        <ServiceCatalog services={(data ?? []).map(row => ({service: {...row.data, slug: row.slug, packages: row.packages} as Service, visible: row.is_visible}))} />
       </section>
     </main>
   );

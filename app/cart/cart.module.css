@@ -608,3 +608,5 @@
   outline: 2px solid #667958;
   outline-offset: 2px;
 }
+
+.itemVisual { position: relative; overflow: hidden; background: #e4e6dc; color: #46573e; }

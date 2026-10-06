@@ -3556,3 +3556,18 @@
     font-size: 28px;
   }
 }
+.tierOverview {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:26px 0 18px;}
+.tierOverview article {display:flex;flex-direction:column;min-width:0;padding:24px 20px;background:#faf7ef;border:1px solid #bfc8b6;border-radius:9px;border-top:4px solid #91a184;}
+.tierOverview article:nth-child(2) {border-top-color:#647755;}.tierOverview article:nth-child(3) {border-top-color:#3b5138;}
+.tierOverview article.selectedOverview {outline:2px solid #6c7c5f;outline-offset:2px;}
+.tierOverview article>span {font:9px var(--sans);letter-spacing:.14em;color:#657359;}
+.tierOverview h3 {font:32px var(--serif);color:#2e4129;margin:18px 0 12px;}
+.tierOverview article>strong {font:24px var(--serif);color:#4f6345;}
+.tierOverview p {font:12px/1.7 var(--sans);color:#626c59;margin:15px 0;overflow-wrap:anywhere;}
+.tierOverview ul {list-style:none;padding:0;margin:0 0 22px;flex:1;}.tierOverview li {display:flex;align-items:flex-start;gap:8px;font:11px/1.6 var(--sans);color:#4f6047;margin:10px 0;}.tierOverview svg {width:15px;height:15px;flex-shrink:0;}
+.tierOverview button,.tierOverview a {min-height:44px;display:flex;align-items:center;justify-content:center;gap:12px;padding:10px;border-radius:4px;font:12px var(--sans);text-align:center;}
+.tierOverview button {border:1px solid #c0c8b7;background:transparent;color:#43563c;cursor:pointer;margin-bottom:9px;}.tierOverview a {background:#4d6044;color:#fffdf2;}.tierOverview button:disabled,.unavailable {background:#e3e6dc;color:#65705e;border:1px solid #c3cbb9;cursor:not-allowed;min-height:46px;padding:12px 18px;border-radius:5px;font-size:12px;}
+.purchaseHint {font:13px/1.7 var(--sans);color:#56674a;margin:0 0 28px;}
+@media(max-width:1050px) {.tierOverview{grid-template-columns:1fr;}.tierOverview h3{margin-top:12px;}.tierOverview ul:empty{display:none;}}
+
+.customOption {display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 24px;border:1px solid #c2cbb6;background:#e6eadd;border-radius:7px;margin-bottom:28px;}.customOption strong{font:21px var(--serif);color:#3f5335;}.customOption p{font:12px/1.7 var(--sans);color:#607053;margin-top:5px;}.customOption button{display:flex;align-items:center;gap:14px;border:1px solid #97a889;border-radius:4px;min-height:44px;padding:10px 15px;font-size:12px;color:#405737;background:transparent;cursor:pointer;white-space:nowrap;}.customOption svg{width:16px;height:16px;}@media(max-width:550px){.customOption{align-items:flex-start;flex-direction:column;}}

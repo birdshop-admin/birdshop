@@ -686,3 +686,9 @@
     justify-content: space-between;
   }
 }
+.getStarted:disabled {
+  background: #dfe4d6;
+  color: #637158;
+  border: 1px solid #bec8b2;
+  cursor: not-allowed;
+}

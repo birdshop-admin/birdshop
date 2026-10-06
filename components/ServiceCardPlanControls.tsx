@@ -73,7 +73,7 @@ export default function ServiceCardPlanControls({
       {/* HEADER */}
 
       <div className={styles.heading}>
-        <span>AVAILABLE PLANS</span>
+        <span>SERVICE PACKAGES</span>
 
         <small>Select to preview price</small>
       </div>
@@ -90,6 +90,7 @@ export default function ServiceCardPlanControls({
             <button
               key={option.id}
               type="button"
+              aria-pressed={active}
               className={`${styles.tierButton} ${tierClass(option.tier)} ${
                 active ? styles.active : ""
               }`}
@@ -132,7 +133,7 @@ export default function ServiceCardPlanControls({
         <strong>
           {currentPackage.price !== null
             ? `$${currentPackage.price.toFixed(2)}`
-            : "Custom Quote"}
+            : currentPackage.tier === "custom" ? "Custom Quote" : "Coming soon"}
         </strong>
       </div>
 
@@ -146,9 +147,9 @@ export default function ServiceCardPlanControls({
           <ArrowIcon />
         </Link>
 
-        <Link href={requestUrl} className={styles.getStarted}>
-          {currentPackage.tier === "custom" ? "Get Started" : "Buy Package"}
-        </Link>
+        {service.available && (currentPackage.tier === "custom" || currentPackage.purchasable) ? <Link href={requestUrl} className={styles.getStarted}>
+          {currentPackage.tier === "custom" ? "Custom Request" : "Buy Package"}
+        </Link> : <button className={styles.getStarted} disabled>Currently unavailable</button>}
       </div>
     </div>
   );

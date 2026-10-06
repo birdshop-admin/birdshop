@@ -72,7 +72,7 @@ function RelatedServiceCard({ service }: { service: Service }) {
           <strong>
             {service.startingPrice !== null
               ? `From $${service.startingPrice.toFixed(2)}`
-              : "Custom Quote"}
+              : "View packages"}
           </strong>
 
           <ArrowIcon />
@@ -212,6 +212,7 @@ export default function ServicePageContent({
   ======================================================= */
 
   const isCustomPackage = currentPackage.tier === "custom";
+  const canContinue = service.available && (isCustomPackage || currentPackage.purchasable);
 
   const requestUrl = isCustomPackage
     ? `/contact?topic=service&service=${encodeURIComponent(service.slug)}`
@@ -219,11 +220,11 @@ export default function ServicePageContent({
 
   const primaryActionLabel = isCustomPackage
     ? "Build Custom Request"
-    : `Continue With ${currentPackage.name}`;
+    : `Buy ${currentPackage.name}`;
 
   const stickyActionLabel = isCustomPackage
     ? "Start Custom Request"
-    : `Continue With ${currentPackage.name}`;
+    : `Buy ${currentPackage.name}`;
 
   return (
     <main className="page-shell">
@@ -349,6 +350,17 @@ export default function ServicePageContent({
                 </p>
               </div>
 
+              <div className={styles.tierOverview}>
+                {packages.filter(p => p.tier !== "custom").map(p => <article key={p.id} className={p.id === currentPackage.id ? styles.selectedOverview : undefined}>
+                  <span>{p.label}</span><h3>{p.name}</h3><strong>{p.price !== null ? `$${p.price.toFixed(2)}` : "Coming soon"}</strong>
+                  <p>{p.subtitle}</p>
+                  <ul>{p.allIncludes.slice(0, 4).map(item => <li key={item}><CheckIcon />{item}</li>)}</ul>
+                  <button type="button" aria-pressed={p.id === currentPackage.id} onClick={() => {setSelectedPackage(p.id); setInheritanceOpen(false);}}>View package details</button>
+                  {p.purchasable ? <Link href={`/services/${service.slug}/purchase?package=${p.id}`}>Buy {p.name}<ArrowIcon /></Link> : <button type="button" disabled>Currently unavailable</button>}
+                </article>)}
+              </div>
+              <p className={styles.purchaseHint}>Choose a package, pay securely, and open your private chat after checkout. No ticket needed.</p>
+              <div className={styles.customOption}><div><strong>Need something different?</strong><p>Discuss a tailored scope with BirdShop.</p></div><button type="button" aria-pressed={isCustomPackage} onClick={() => setSelectedPackage("custom")}>Explore Custom <ArrowIcon /></button></div>
               <div className={styles.packageExperience}>
                 {/* ===========================================
                     LARGE CURRENT PACKAGE
@@ -377,7 +389,7 @@ export default function ServicePageContent({
                       <strong>
                         {currentPackage.price !== null
                           ? `$${currentPackage.price.toFixed(2)}`
-                          : "CUSTOM QUOTE"}
+                          : isCustomPackage ? "CUSTOM QUOTE" : "COMING SOON"}
                       </strong>
                     </div>
                   </div>
@@ -557,15 +569,11 @@ export default function ServicePageContent({
                       <strong>
                         {currentPackage.price !== null
                           ? `$${currentPackage.price.toFixed(2)}`
-                          : "Custom Quote"}
+                          : isCustomPackage ? "Custom Quote" : "Coming soon"}
                       </strong>
                     </div>
 
-                    <Link href={requestUrl}>
-                      {primaryActionLabel}
-
-                      <ArrowIcon />
-                    </Link>
+                    {canContinue ? <Link href={requestUrl}>{primaryActionLabel}<ArrowIcon /></Link> : <button className={styles.unavailable} disabled>Currently unavailable</button>}
                   </div>
                 </div>
 
@@ -576,67 +584,7 @@ export default function ServicePageContent({
                     Custom scope, reviewed with you
                 =========================================== */}
 
-                {packages.length > 1 && (
-                  <div className={styles.packageSelectors}>
-                    {packages.map((option) => {
-                      const active = option.id === currentPackage.id;
 
-                      return (
-                        <button
-                          key={option.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedPackage(option.id);
-                            setInheritanceOpen(false);
-                          }}
-                          className={`${styles.packageSelector} ${tierClass(
-                            option.tier,
-                          )} ${active ? styles.activeSelector : ""}`}
-                        >
-                          <div className={styles.selectorAccent} />
-
-                          <div className={styles.selectorTop}>
-                            <div>
-                              <span>{option.label}</span>
-
-                              <strong>{option.name}</strong>
-                            </div>
-
-                            {option.recommended && (
-                              <span className={styles.selectorRecommended}>
-                                POPULAR
-                              </span>
-                            )}
-                          </div>
-
-                          <p>{option.subtitle}</p>
-
-                          <div className={styles.selectorStats}>
-                            <span>{option.allIncludes.length} total</span>
-
-                            {option.inheritedGroups && (
-                              <span>Includes previous tier</span>
-                            )}
-                          </div>
-
-                          <div className={styles.selectorBottom}>
-                            <strong>
-                              {option.price !== null
-                                ? `$${option.price.toFixed(2)}`
-                                : "Custom Quote"}
-                            </strong>
-
-                            <span>
-                              {active ? "Viewing" : "View Package"}
-
-                              {active ? <CheckIcon /> : <ArrowIcon />}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
 
               <p className={styles.packageNotice}>
@@ -772,8 +720,7 @@ export default function ServicePageContent({
                   </summary>
 
                   <p>
-                    Custom requests are quoted after BirdShop reviews the
-                    requested scope.
+                    Fixed packages show the price for their listed scope before checkout. Custom requests are quoted after BirdShop reviews your requirements.
                   </p>
                 </details>
 
@@ -825,7 +772,7 @@ export default function ServicePageContent({
                 <strong className={styles.requestSelectedPrice}>
                   {currentPackage.price !== null
                     ? `$${currentPackage.price.toFixed(2)}`
-                    : "Custom Quote"}
+                    : isCustomPackage ? "Custom Quote" : "Coming soon"}
                 </strong>
               </div>
             </div>
@@ -856,16 +803,10 @@ export default function ServicePageContent({
               </div>
             </div>
 
-            <Link href={requestUrl} className={styles.requestButton}>
-              <MessageIcon />
-
-              {stickyActionLabel}
-
-              <ArrowIcon />
-            </Link>
+            {canContinue ? <Link href={requestUrl} className={styles.requestButton}><MessageIcon />{stickyActionLabel}<ArrowIcon /></Link> : <button className={styles.unavailable} disabled>Currently unavailable</button>}
 
             <p className={styles.requestNote}>
-              {isCustomPackage
+              {!canContinue ? "This package is not open for purchases yet. Please check back for availability." : isCustomPackage
                 ? "Custom scope and pricing are confirmed before work begins."
                 : "Pay securely, then continue directly into your private BirdShop chat."}
             </p>

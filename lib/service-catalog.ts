@@ -10,15 +10,16 @@ export async function getServices(): Promise<Service[]> {
     .order("slug");
   if (error) throw new Error("Services could not be loaded. Please retry.");
   return (data ?? []).map((row) => {
-    const packages = (row.packages as NonNullable<Service["packages"]>).filter(
-      (p) => p.enabled && p.cents !== null,
+    const packages = (row.packages as NonNullable<Service["packages"]>).map(
+      (p) => p.enabled && p.cents !== null ? p : { id: p.id, name: p.name, enabled: false, cents: null, scope: "", includes: [] },
     );
+    const published = packages.filter((p) => p.enabled && p.cents !== null);
     return {
       ...row.data,
       slug: row.slug,
       packages,
-      startingPrice: packages.length
-        ? Math.min(...packages.map((p) => p.cents! / 100))
+      startingPrice: published.length
+        ? Math.min(...published.map((p) => p.cents! / 100))
         : null,
     } as Service;
   });

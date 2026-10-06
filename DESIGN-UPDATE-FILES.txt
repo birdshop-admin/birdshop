@@ -1,0 +1,17 @@
+app/admin/(protected)/services/ServiceCatalog.tsx
+app/admin/(protected)/services/page.tsx
+app/admin/(protected)/services/services.module.css
+app/cart/cart.module.css
+app/cart/page.tsx
+app/how-to-order/how-to-order.module.css
+app/how-to-order/page.tsx
+app/services/[slug]/ServiceClient.tsx
+app/services/[slug]/service.module.css
+components/ProductThumbnail.tsx
+components/ServiceCardPlanControls.module.css
+components/ServiceCardPlanControls.tsx
+lib/service-catalog.ts
+lib/service-packages.ts
+DESIGN-UPDATE-README.md
+DESIGN-UPDATE-TESTS.txt
+DESIGN-UPDATE-FILES.txt

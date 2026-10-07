@@ -14,7 +14,6 @@ import { createClient } from "@/lib/supabase/server";
 import {
   cancelPaymentRequest,
   createPaymentRequest,
-  deleteConversation,
   restoreConversation,
   setConversationStatus,
 } from "./actions";
@@ -37,7 +36,7 @@ export const dynamic = "force-dynamic";
    TYPES
 ========================================================= */
 
-type ChatView = "new" | "progress" | "completed" | "closed" | "deleted";
+type ChatView = "new" | "progress" | "completed" | "closed";
 
 type ConversationType = "service" | "product" | "general";
 
@@ -135,11 +134,11 @@ type PageProps = {
 ========================================================= */
 
 function normalizeView(value: string | undefined): ChatView {
+  if (value === "deleted") return "closed";
   if (
     value === "progress" ||
     value === "completed" ||
-    value === "closed" ||
-    value === "deleted"
+    value === "closed"
   ) {
     return value;
   }
@@ -238,10 +237,6 @@ function viewLabel(view: ChatView) {
 
   if (view === "closed") {
     return "Closed";
-  }
-
-  if (view === "deleted") {
-    return "Deleted";
   }
 
   return "New";
@@ -390,7 +385,7 @@ function getConversationView(
   order: Order | undefined,
 ): ChatView {
   if (conversation.deleted_at) {
-    return "deleted";
+    return "closed";
   }
 
   if (conversation.status !== "open") {
@@ -632,7 +627,6 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
 
     closed: [],
 
-    deleted: [],
   };
 
   for (const conversation of allConversations) {
@@ -651,7 +645,6 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
 
   groups.closed = sortQueue(groups.closed);
 
-  groups.deleted = sortQueue(groups.deleted);
 
   /* =======================================================
      KEEP SELECTED CHAT WITH USER WHEN ITS STATUS CHANGES
@@ -719,7 +712,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
 
   let paymentRequests: AdminLivePaymentRequest[] = [];
 
-  if (selected && view !== "deleted") {
+  if (selected && view !== "closed") {
     const [messageResult, paymentResult] = await Promise.all([
       supabase
         .from("service_messages")
@@ -844,7 +837,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
      ARCHIVE VIEWS
   ======================================================= */
 
-  const isArchiveView = view === "closed" || view === "deleted";
+  const isArchiveView = view === "closed";
 
   /* =======================================================
      UI
@@ -914,7 +907,6 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
               ["progress", "In Progress"],
               ["completed", "Completed"],
               ["closed", "Closed"],
-              ["deleted", "Deleted"],
             ] as Array<[ChatView, string]>
           ).map(([target, label]) => (
             <Link
@@ -995,9 +987,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
               </div>
 
               <p>
-                {view === "deleted"
-                  ? "Deleted conversations remain recoverable until permanently removed."
-                  : "Closed conversations are retained for reference and can be reopened."}
+                Closed conversations stay here until reopened or permanently removed. Only the owner can permanently delete a chat.
               </p>
             </div>
 
@@ -1027,6 +1017,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
 
                       <h3>{getTitle(conversation, order)}</h3>
 
+                      {conversation.deleted_at && <p>Previously deleted · restore to reopen, or remove permanently.</p>}
                       <p>
                         {getCustomerName(conversation, order)}
                         {" · "}
@@ -1034,7 +1025,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                       </p>
 
                       <div className={styles.archiveActions}>
-                        {view === "closed" ? (
+                        {!conversation.deleted_at ? (
                           <>
                             <form action={setConversationStatus}>
                               <input
@@ -1052,23 +1043,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                               </SubmitButton>
                             </form>
 
-                            <form action={deleteConversation}>
-                              <input type="hidden" name="return_view" value={view} />
-                              <input type="hidden" name="return_type" value={filter} />
-                              <input type="hidden" name="return_page" value={page} />
-                              <input
-                                type="hidden"
-                                name="conversation_id"
-                                value={conversation.id}
-                              />
 
-                              <SubmitButton
-                                type="submit"
-                                className={styles.dangerButton}
-                              >
-                                Delete
-                              </SubmitButton>
-                            </form>
                           </>
                         ) : (
                           <>
@@ -1082,7 +1057,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                                 value={conversation.id}
                               />
 
-                              <SubmitButton type="submit">Restore</SubmitButton>
+                              <SubmitButton type="submit">Restore to Closed</SubmitButton>
                             </form>
 
 

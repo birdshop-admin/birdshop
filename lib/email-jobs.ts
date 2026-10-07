@@ -1,17 +1,21 @@
 import "server-only";
+
 import {
   decryptInventoryCode,
   encryptInventoryCode,
 } from "@/lib/inventory-crypto";
+
 import { orderToken } from "@/lib/order-access";
 import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { env, siteUrl } from "@/lib/server-config";
 import { serverRpc } from "@/lib/payment-service";
+
 import {
   conversationCreatedCustomerEmail,
   conversationCreatedAdminEmail,
 } from "@/lib/email/service-created";
+
 import {
   paymentConfirmedCustomerEmail,
   paymentConfirmedAdminEmail,
@@ -24,6 +28,7 @@ type Envelope = {
   html: string;
   text: string;
 };
+
 type EmailJob = {
   id: string;
   kind: string;
@@ -33,14 +38,26 @@ type EmailJob = {
   lease_id: string;
   attempts: number;
 };
+
+const conversationKinds = [
+  "conversation_customer",
+  "conversation_admin",
+  "recovery",
+];
+
 const escape = (text: string) =>
   text.replace(
     /[&<>"']/g,
     (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        c
-      ]!,
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[c]!,
   );
+
 function simpleEmail(
   subject: string,
   text: string,
@@ -54,24 +71,129 @@ function simpleEmail(
   };
 }
 
+async function holdJob(
+  job: EmailJob,
+  status: "cancelled" | "attention",
+  reason: string,
+) {
+  const { error } = await createAdminClient()
+    .from("birdshop_email_jobs")
+    .update({
+      status,
+      lease_id: null,
+      lease_until: null,
+      last_error: reason,
+    })
+    .eq("id", job.id)
+    .eq("lease_id", job.lease_id)
+    .select("id")
+    .single();
+
+  if (error) throw new Error("Email lease changed.");
+}
+
+async function maySend(job: EmailJob): Promise<boolean> {
+  const db = createAdminClient();
+
+  if (conversationKinds.includes(job.kind)) {
+    const { data: chat, error } = await db
+      .from("service_conversations")
+      .select("id,purged_at,deleted_at")
+      .eq("id", job.entity_id)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error("Conversation availability could not be checked.");
+    }
+
+    if (!chat || chat.purged_at || chat.deleted_at) {
+      await holdJob(
+        job,
+        "cancelled",
+        "Conversation removed; chat email cancelled.",
+      );
+
+      return false;
+    }
+  } else if (
+    job.kind !== "product_delivery" &&
+    (job.payload || job.encrypted_payload)
+  ) {
+    const prepared: Envelope =
+      job.payload ??
+      JSON.parse(decryptInventoryCode(job.encrypted_payload!));
+
+    const hasPrivateChatLink =
+      /\/(?:service-chat\?token=|admin\/chat\?conversation=)/.test(
+        prepared.html + prepared.text,
+      );
+
+    if (!hasPrivateChatLink) return true;
+
+    const { data: order, error } = await db
+      .from("orders")
+      .select("order_type")
+      .eq("id", job.entity_id)
+      .single();
+
+    if (error) {
+      throw new Error("Receipt availability could not be checked.");
+    }
+
+    if (order.order_type === "service") {
+      const { data: chat, error: chatError } = await db
+        .from("service_conversations")
+        .select("id,purged_at,deleted_at")
+        .eq("order_id", job.entity_id)
+        .maybeSingle();
+
+      if (chatError) {
+        throw new Error("Receipt conversation could not be checked.");
+      }
+
+      if (!chat || chat.purged_at || chat.deleted_at) {
+        // The provider may already have accepted this exact envelope.
+        // Changing it during a retry could break duplicate-send protection.
+        await holdJob(
+          job,
+          "attention",
+          "Chat removed after receipt preparation. Check provider history before sending a replacement receipt without its private chat link.",
+        );
+
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 async function renderJob(job: EmailJob): Promise<Envelope> {
   const db = createAdminClient();
   const from = env("BIRDSHOP_EMAIL_FROM");
   const base = siteUrl();
-  if (
-    ["conversation_customer", "conversation_admin", "recovery"].includes(
-      job.kind,
-    )
-  ) {
+
+  if (conversationKinds.includes(job.kind)) {
     const { data: c, error } = await db
       .from("service_conversations")
       .select("*")
       .eq("id", job.entity_id)
       .single();
-    if (error || !c?.customer_email)
+
+    if (
+      error ||
+      !c?.customer_email ||
+      c.purged_at ||
+      c.deleted_at
+    ) {
       throw new Error("Conversation email record is unavailable.");
-    const chatUrl = `${base}/service-chat?token=${encodeURIComponent(c.public_token)}`;
-    if (job.kind === "recovery")
+    }
+
+    const chatUrl =
+      `${base}/service-chat?token=` +
+      encodeURIComponent(c.public_token);
+
+    if (job.kind === "recovery") {
       return {
         from,
         to: c.customer_email,
@@ -82,6 +204,8 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
           "Open private chat",
         ),
       };
+    }
+
     const data = {
       reference: c.reference,
       conversationType: c.conversation_type,
@@ -99,6 +223,7 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
       recoveryUrl: `${base}/service-chat`,
       adminUrl: `${base}/admin/chat?conversation=${c.id}`,
     };
+
     return {
       from,
       to:
@@ -110,26 +235,39 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
         : conversationCreatedCustomerEmail(data)),
     };
   }
+
   const { data: order, error } = await db
     .from("orders")
     .select("*")
     .eq("id", job.entity_id)
     .single();
-  if (error || !order?.paid_at)
+
+  if (error || !order?.paid_at) {
     throw new Error("A verified paid order is required for this email.");
+  }
+
   if (job.kind === "product_delivery") {
     const { data: items, error: itemError } = await db
       .from("order_items")
       .select("id,product_name,quantity")
       .eq("order_id", order.id)
       .order("id");
+
     const { data: allocations, error: allocationError } = await db
       .from("order_fulfillments")
       .select("order_item_id,product_inventory_id")
       .eq("order_id", order.id)
       .order("product_inventory_id");
-    if (itemError || allocationError || !items?.length || !allocations?.length)
+
+    if (
+      itemError ||
+      allocationError ||
+      !items?.length ||
+      !allocations?.length
+    ) {
       throw new Error("Delivery assignment is incomplete.");
+    }
+
     const { data: inventory, error: inventoryError } = await db
       .from("product_inventory")
       .select("id,code_ciphertext")
@@ -137,25 +275,43 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
         "id",
         allocations.map((a) => a.product_inventory_id),
       );
+
     const { data: attempt, error: attemptError } = await db
       .from("birdshop_checkout_attempts")
       .select("id")
       .eq("order_id", order.id)
       .single();
-    if (inventoryError || attemptError || !inventory)
+
+    if (inventoryError || attemptError || !inventory) {
       throw new Error("Delivery records are unavailable.");
+    }
+
     const lines = items.map((item) => {
       const codes = allocations
         .filter((a) => a.order_item_id === item.id)
         .map((a) => {
-          const code = inventory.find((i) => i.id === a.product_inventory_id);
+          const code = inventory.find(
+            (i) => i.id === a.product_inventory_id,
+          );
+
           if (!code) throw new Error("Missing assigned code.");
+
           return decryptInventoryCode(code.code_ciphertext);
         });
-      if (codes.length !== item.quantity)
+
+      if (codes.length !== item.quantity) {
         throw new Error("Delivery assignment is incomplete.");
-      return item.product_name + " ×" + item.quantity + "\n" + codes.join("\n");
+      }
+
+      return (
+        item.product_name +
+        " ×" +
+        item.quantity +
+        "\n" +
+        codes.join("\n")
+      );
     });
+
     return {
       from,
       to: order.customer_email,
@@ -171,7 +327,8 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
       ),
     };
   }
-  if (job.kind === "admin_payment" && order.order_type === "product")
+
+  if (job.kind === "admin_payment" && order.order_type === "product") {
     return {
       from,
       to: env("BIRDSHOP_ADMIN_EMAIL"),
@@ -182,18 +339,41 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
         "View order",
       ),
     };
+  }
+
   const { data: c, error: conversationError } = await db
     .from("service_conversations")
     .select("*")
     .eq("order_id", order.id)
     .single();
+
   const { data: payment, error: paymentError } = await db
     .from("service_payment_requests")
     .select("id,stripe_checkout_session_id")
     .eq("order_id", order.id)
     .single();
-  if (conversationError || paymentError || !c || !payment)
+
+  if (conversationError || paymentError || !c || !payment) {
     throw new Error("Receipt records are unavailable.");
+  }
+
+  if (c.purged_at || c.deleted_at) {
+    const admin = job.kind === "admin_payment";
+
+    return {
+      from,
+      to: admin
+        ? env("BIRDSHOP_ADMIN_EMAIL")
+        : order.customer_email,
+      ...simpleEmail(
+        `Payment record · ${order.reference}`,
+        `Order: ${order.reference}\nOriginal payment: ${Number(order.total).toFixed(2)} ${order.currency}.\nRefunded: ${Number(order.refunded_amount ?? 0).toFixed(2)} ${order.currency}.\nPayment status: ${order.payment_status}.\nThe original conversation is no longer available. Keep this order reference for support.`,
+        base + (admin ? "/admin/orders" : "/contact"),
+        admin ? "View orders" : "Contact BirdShop",
+      ),
+    };
+  }
+
   const data = {
     reference: c.reference,
     orderReference: order.reference,
@@ -210,7 +390,9 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
     orderId: order.id,
     stripeSessionId: payment.stripe_checkout_session_id,
   };
+
   const admin = job.kind === "admin_payment";
+
   const template =
     order.payment_status === "paid"
       ? admin
@@ -222,33 +404,50 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
           admin ? data.adminUrl : data.chatUrl,
           "View current status",
         );
+
   return {
     from,
-    to: admin ? env("BIRDSHOP_ADMIN_EMAIL") : order.customer_email,
+    to: admin
+      ? env("BIRDSHOP_ADMIN_EMAIL")
+      : order.customer_email,
     ...template,
   };
 }
 
-export async function drainEmailJobs(limit = 4, jobId: string | null = null) {
+export async function drainEmailJobs(
+  limit = 4,
+  jobId: string | null = null,
+) {
   const db = createAdminClient();
   let sent = 0;
+
   for (let n = 0; n < limit; n++) {
-    const job = await serverRpc<EmailJob | null>("birdshop_v2_claim_email", {
-      p_job_id: jobId,
-    });
+    const job = await serverRpc<EmailJob | null>(
+      "birdshop_v2_claim_email",
+      {
+        p_job_id: jobId,
+      },
+    );
+
     if (!job) break;
+
     try {
+      if (!(await maySend(job))) continue;
+
       if (
         job.kind === "product_delivery" &&
         !(await serverRpc<boolean>("birdshop_v2_prepare_delivery", {
           p_job_id: job.id,
           p_lease_id: job.lease_id,
         }))
-      )
+      ) {
         continue;
+      }
+
       const envelope: Envelope = job.encrypted_payload
         ? JSON.parse(decryptInventoryCode(job.encrypted_payload))
         : (job.payload ?? (await renderJob(job)));
+
       if (!job.payload && !job.encrypted_payload) {
         const { error } = await db
           .from("birdshop_email_jobs")
@@ -260,30 +459,62 @@ export async function drainEmailJobs(limit = 4, jobId: string | null = null) {
                   ),
                   payload: null,
                 }
-              : { payload: envelope },
+              : {
+                  payload: envelope,
+                },
           )
           .eq("id", job.id)
           .eq("lease_id", job.lease_id)
           .select("id")
           .single();
-        if (error) throw new Error("Email lease changed before delivery.");
+
+        if (error) {
+          throw new Error("Email lease changed before delivery.");
+        }
       }
+
+      // Check again after preparation, including previously cached content.
+      if (!(await maySend({ ...job, payload: envelope }))) {
+        continue;
+      }
+
+      const { data: lease, error: leaseError } = await db
+        .from("birdshop_email_jobs")
+        .select("id")
+        .eq("id", job.id)
+        .eq("lease_id", job.lease_id)
+        .eq("status", "sending")
+        .maybeSingle();
+
+      if (leaseError) {
+        throw new Error("Email lease could not be checked.");
+      }
+
+      if (!lease) continue;
+
       const { data, error } = await new Resend(
         env("RESEND_API_KEY"),
-      ).emails.send(envelope, { idempotencyKey: `birdshop-job-${job.id}` });
-      if (error || !data?.id)
+      ).emails.send(envelope, {
+        idempotencyKey: `birdshop-job-${job.id}`,
+      });
+
+      if (error || !data?.id) {
         throw new Error(
           error?.message ?? "Email provider did not return a message ID.",
         );
+      }
+
       if (job.kind === "product_delivery") {
         await serverRpc("birdshop_v2_finish_delivery", {
           p_job_id: job.id,
           p_lease_id: job.lease_id,
           p_provider_id: data.id,
         });
+
         sent++;
         continue;
       }
+
       const { error: saveError } = await db
         .from("birdshop_email_jobs")
         .update({
@@ -298,8 +529,13 @@ export async function drainEmailJobs(limit = 4, jobId: string | null = null) {
         .eq("lease_id", job.lease_id)
         .select("id")
         .single();
-      if (saveError)
-        throw new Error("Email accepted; delivery state needs reconciliation.");
+
+      if (saveError) {
+        throw new Error(
+          "Email accepted; delivery state needs reconciliation.",
+        );
+      }
+
       sent++;
     } catch {
       const { error: saveError } = await db
@@ -312,20 +548,35 @@ export async function drainEmailJobs(limit = 4, jobId: string | null = null) {
             "Provider delivery or state update failed. Retry with the same delivery identity.",
           next_attempt_at: new Date(
             Date.now() +
-              Math.min(3600, 30 * 2 ** Math.min(job.attempts, 7)) * 1000,
+              Math.min(
+                3600,
+                30 * 2 ** Math.min(job.attempts, 7),
+              ) *
+                1000,
           ).toISOString(),
         })
         .eq("id", job.id)
         .eq("lease_id", job.lease_id);
-      if (saveError) throw new Error("Email retry state could not be stored.");
-      if (job.kind === "product_delivery")
+
+      if (saveError) {
+        throw new Error("Email retry state could not be stored.");
+      }
+
+      if (job.kind === "product_delivery") {
         await db
           .from("orders")
-          .update({ delivery_status: "failed" })
+          .update({
+            delivery_status: "failed",
+          })
           .eq("id", job.entity_id)
           .in("delivery_status", ["sending", "ready"]);
+      }
     }
-    if (n < limit - 1) await new Promise((resolve) => setTimeout(resolve, 600));
+
+    if (n < limit - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    }
   }
+
   return { sent };
 }

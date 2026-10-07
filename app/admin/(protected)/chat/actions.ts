@@ -56,6 +56,17 @@ function chatUrl(
   return `/admin/chat?${params.toString()}`;
 }
 
+function returnChatUrl(formData: FormData, fallback: string, message: string, tone: "success" | "error" = "success") {
+  const requested = String(formData.get("return_view") ?? fallback);
+  const view = ["new", "progress", "completed", "closed", "deleted"].includes(requested) ? requested : fallback;
+  const type = String(formData.get("return_type") ?? "all");
+  const params = new URLSearchParams({ view, message, tone });
+  if (["all", "service", "product", "general"].includes(type)) params.set("type", type);
+  const page = Number(formData.get("return_page"));
+  if (Number.isSafeInteger(page) && page > 1) params.set("page", String(page));
+  return `/admin/chat?${params.toString()}`;
+}
+
 /* =========================================================
    REFRESH
 ========================================================= */
@@ -271,104 +282,30 @@ export async function setConversationStatus(formData: FormData) {
 
 export async function deleteConversation(formData: FormData) {
   const supabase = await requireAdmin();
-
   const conversationId = String(formData.get("conversation_id") ?? "").trim();
-
-  if (!conversationId) {
-    return;
-  }
-
-  const { error } = await supabase.rpc(
-    "birdshop_admin_delete_service_conversation",
-    {
-      p_conversation_id: conversationId,
-    },
-  );
-
-  if (error) {
-    redirect(
-      chatUrl(
-        "closed",
-        conversationId,
-        "This action could not be completed. Refresh and retry. Financial history is protected.",
-        "error",
-      ),
-    );
-  }
-
+  if (!conversationId) return;
+  const { error } = await supabase.rpc("birdshop_admin_delete_service_conversation", { p_conversation_id: conversationId });
+  if (error) redirect(returnChatUrl(formData, "closed", "Could not move this conversation to Deleted. Refresh and retry.", "error"));
   refreshAdmin();
-
-  redirect(chatUrl("deleted", undefined, "Conversation moved to Deleted."));
+  redirect(returnChatUrl(formData, "closed", "Conversation moved to Deleted."));
 }
-
-/* =========================================================
-   RESTORE
-========================================================= */
 
 export async function restoreConversation(formData: FormData) {
   const supabase = await requireAdmin();
-
   const conversationId = String(formData.get("conversation_id") ?? "").trim();
-
-  if (!conversationId) {
-    return;
-  }
-
-  const { error } = await supabase.rpc(
-    "birdshop_admin_restore_service_conversation",
-    {
-      p_conversation_id: conversationId,
-    },
-  );
-
-  if (error) {
-    redirect(
-      chatUrl(
-        "deleted",
-        undefined,
-        "This action could not be completed. Refresh and retry. Financial history is protected.",
-        "error",
-      ),
-    );
-  }
-
+  if (!conversationId) return;
+  const { error } = await supabase.rpc("birdshop_admin_restore_service_conversation", { p_conversation_id: conversationId });
+  if (error) redirect(returnChatUrl(formData, "deleted", "This conversation is unavailable or permanently removed.", "error"));
   refreshAdmin();
-
-  redirect(chatUrl("closed", conversationId, "Conversation restored."));
+  redirect(returnChatUrl(formData, "deleted", "Conversation restored to Closed."));
 }
-
-/* =========================================================
-   PERMANENT DELETE
-========================================================= */
 
 export async function permanentlyDeleteConversation(formData: FormData) {
   const supabase = await requireAdmin();
-
   const conversationId = String(formData.get("conversation_id") ?? "").trim();
-
-  if (!conversationId) {
-    return;
-  }
-
-  const { error } = await supabase.rpc(
-    "birdshop_admin_permanently_delete_service_conversation",
-    {
-      p_conversation_id: conversationId,
-    },
-  );
-
-  if (error) {
-    redirect(
-      chatUrl(
-        "deleted",
-        undefined,
-        "This action could not be completed. Refresh and retry. Financial history is protected.",
-        "error",
-      ),
-    );
-  }
-
+  if (!conversationId) return;
+  const { error } = await supabase.rpc("birdshop_admin_permanently_delete_service_conversation", { p_conversation_id: conversationId });
+  if (error) redirect(returnChatUrl(formData, "deleted", "Could not remove this chat. Confirm the owner chat cleanup migration is installed, then retry.", "error"));
   refreshAdmin();
-
-  redirect(chatUrl("deleted", undefined, "Conversation permanently deleted."));
+  redirect(returnChatUrl(formData, "deleted", "Chat permanently removed. Linked payment records were retained."));
 }

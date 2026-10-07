@@ -1,3 +1,4 @@
+import PermanentChatDelete from "./PermanentChatDelete";
 import { paymentLabel } from "@/lib/payment-display";
 import PaymentActionForm, { PaymentFeedback } from "./PaymentActionForm";
 import SubmitButton from "@/components/SubmitButton";
@@ -14,7 +15,6 @@ import {
   cancelPaymentRequest,
   createPaymentRequest,
   deleteConversation,
-  permanentlyDeleteConversation,
   restoreConversation,
   setConversationStatus,
 } from "./actions";
@@ -545,6 +545,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
           assigned_at
         `,
     )
+    .is("purged_at", null)
     .order("last_message_at", {
       ascending: false,
     })
@@ -567,6 +568,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
       .from("service_conversations")
       .select("*")
       .eq("id", params.conversation)
+      .is("purged_at", null)
       .maybeSingle();
     if (detailResult.error) throw new Error("Conversation could not load.");
     if (detailResult.data)
@@ -1021,7 +1023,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                         <time>{formatDate(conversation.last_message_at)}</time>
                       </div>
 
-                      <small>{getReference(conversation, order)}</small>
+                      <strong className={styles.chatReference}>{getReference(conversation, order)}</strong>
 
                       <h3>{getTitle(conversation, order)}</h3>
 
@@ -1051,6 +1053,9 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                             </form>
 
                             <form action={deleteConversation}>
+                              <input type="hidden" name="return_view" value={view} />
+                              <input type="hidden" name="return_type" value={filter} />
+                              <input type="hidden" name="return_page" value={page} />
                               <input
                                 type="hidden"
                                 name="conversation_id"
@@ -1068,6 +1073,9 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                         ) : (
                           <>
                             <form action={restoreConversation}>
+                              <input type="hidden" name="return_view" value={view} />
+                              <input type="hidden" name="return_type" value={filter} />
+                              <input type="hidden" name="return_page" value={page} />
                               <input
                                 type="hidden"
                                 name="conversation_id"
@@ -1077,22 +1085,10 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                               <SubmitButton type="submit">Restore</SubmitButton>
                             </form>
 
-                            <form action={permanentlyDeleteConversation}>
-                              <input
-                                type="hidden"
-                                name="conversation_id"
-                                value={conversation.id}
-                              />
 
-                              <SubmitButton
-                                type="submit"
-                                className={styles.dangerButton}
-                              >
-                                Delete Permanently
-                              </SubmitButton>
-                            </form>
                           </>
                         )}
+                        <PermanentChatDelete id={conversation.id} reference={getReference(conversation, order)} view={view} type={filter} page={page} />
                       </div>
                     </article>
                   );
@@ -1163,8 +1159,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                             {conversationTypeLabel(
                               conversation.conversation_type,
                             )}
-                            {" · "}
-                            {getReference(conversation, order)}
+
                           </span>
 
                           <div className={styles.cardBadges}>
@@ -1180,6 +1175,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                           </div>
                         </div>
 
+                        <span className={styles.chatReference}>{getReference(conversation, order)}</span>
                         <strong>{getTitle(conversation, order)}</strong>
 
                         <p>
@@ -1235,10 +1231,10 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                   <div className={styles.chatIdentity}>
                     <span>
                       {conversationTypeLabel(selected.conversation_type)}
-                      {" · "}
-                      {selectedReference}
+
                     </span>
 
+                    <strong className={styles.chatReference}>{selectedReference}</strong>
                     <h2>{selectedTitle}</h2>
 
                     <p>{selectedSubtitle}</p>
@@ -1283,6 +1279,7 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                   </div>
 
                   <div className={styles.customerActions}>
+                    <PermanentChatDelete id={selected.id} reference={selectedReference} view={view} type={filter} page={page} />
                     {selected.assigned_to && (
                       <span
                         className={styles.assignedChip}

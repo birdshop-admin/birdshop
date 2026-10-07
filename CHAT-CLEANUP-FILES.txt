@@ -1,0 +1,13 @@
+app/admin/(protected)/chat/OwnerAdminChatPage.module.css
+app/admin/(protected)/chat/OwnerAdminChatPage.tsx
+app/admin/(protected)/chat/PermanentChatDelete.tsx
+app/admin/(protected)/chat/actions.ts
+app/admin/(protected)/inventory/actions.ts
+app/products/page.tsx
+app/products/products.module.css
+components/ProductThumbnail.tsx
+supabase/migrations/20261006030000_owner_chat_cleanup.sql
+supabase/verify-owner-chat-cleanup.sql
+CHAT-CLEANUP-README.md
+CHAT-CLEANUP-TESTS.txt
+CHAT-CLEANUP-FILES.txt

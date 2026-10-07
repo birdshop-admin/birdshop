@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import ProductThumbnail from "@/components/ProductThumbnail";
 
 import {
   useMemo,
@@ -107,15 +108,7 @@ function ProductCard({
           </span>
         )}
 
-        <div
-          className={
-            styles.productMonogram
-          }
-        >
-          {
-            product.initials
-          }
-        </div>
+        <div className={styles.productMonogram}><ProductThumbnail product={product} /></div>
 
         <span
           className={

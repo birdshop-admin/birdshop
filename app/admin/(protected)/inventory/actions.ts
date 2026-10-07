@@ -280,58 +280,22 @@ export async function setInventoryCodeStatus(formData: FormData) {
 }
 
 export async function deleteInventoryCode(formData: FormData) {
-  const { supabase, user } = await requireAdmin();
-
+  const { supabase } = await requireOwner();
   const id = stringValue(formData, "id");
-  await auditInventory(user.id, "inventory_delete_requested", id);
-
-  if (!id) {
-    redirect(inventoryUrl("Missing inventory code ID.", "error"));
-  }
-
-  const { data: current, error: currentError } = await supabase
-    .from("product_inventory")
-    .select("id, status")
-    .eq("id", id)
-    .maybeSingle();
-
-  if (currentError || !current) {
-    redirect(inventoryUrl("Inventory code could not be found.", "error"));
-  }
-
-  if (!["available", "disabled"].includes(current.status)) {
-    redirect(
-      inventoryUrl(
-        "Reserved or sold codes are kept as fulfillment history and cannot be deleted here.",
-        "error",
-      ),
-    );
-  }
-
-  const { error } = await supabase
-    .from("product_inventory")
-    .delete()
-    .eq("id", id)
-    .in("status", ["available", "disabled"])
-    .select("id")
-    .single();
-
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))
+    redirect(inventoryUrl("Invalid inventory code ID. Refresh and retry.", "error"));
+  const { error } = await supabase.rpc("birdshop_owner_remove_inventory_code", { p_inventory_id: id });
   if (error) {
-    redirect(
-      inventoryUrl(
-        "Code could not be deleted. It may now belong to a checkout or order.",
-        "error",
-      ),
-    );
+    const allowed = ["Inventory code already removed or not found.", "Inventory changed. Refresh and retry.", "Reserved or sold codes cannot be removed. Release a reservation or use test-sale cleanup where applicable."];
+    const message = allowed.includes(error.message) ? error.message : error.code === "PGRST202" ? "Install the owner chat cleanup migration in Supabase, then retry." : "Inventory removal failed. Refresh and retry, and confirm the cleanup migration is installed.";
+    redirect(inventoryUrl(message, "error"));
   }
-
   refreshInventory();
-
   redirect(inventoryUrl("Inventory code permanently deleted."));
 }
 
 export async function resetTestInventorySale(formData: FormData) {
-  const { supabase, user } = await requireAdmin();
+  const { supabase, user } = await requireOwner();
 
   const id = stringValue(formData, "id");
   await auditInventory(user.id, "test_inventory_reset_requested", id);
@@ -363,7 +327,7 @@ export async function resetTestInventorySale(formData: FormData) {
 }
 
 export async function deleteTestFulfilledInventory(formData: FormData) {
-  const { supabase, user } = await requireAdmin();
+  const { supabase, user } = await requireOwner();
 
   const id = stringValue(formData, "id");
   await auditInventory(user.id, "test_inventory_delete_requested", id);

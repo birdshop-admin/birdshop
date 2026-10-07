@@ -2110,3 +2110,4 @@ p {
     transform: none;
   }
 }
+.productMonogram {position: absolute; inset: 0; display: grid; place-items: center;}.productMonogram img {object-fit:contain;}.productVisual::after {pointer-events:none;}.productBadge,.platformBadge {z-index:3;}

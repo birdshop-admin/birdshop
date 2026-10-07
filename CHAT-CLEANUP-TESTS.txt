@@ -1,0 +1,18 @@
+BirdShop cleanup validation - 2026-10-06 UTC
+
+PASS ESLint and TypeScript check
+PASS Next.js production build with placeholder public Supabase configuration
+PASS existing database fixture suite plus owner cleanup tests:
+- owner can remove paid chat transcript; receipt unchanged and duplicate finalization works
+- customer private token cannot reopen removed chat
+- late updates/messages cannot revive a purged chat
+- service agent cannot use any lifecycle or inventory removal RPC
+- anonymous callers lack cleanup EXECUTE privileges
+- owner removes available inventory through RPC; reserved code is protected
+- checkout completed after chat removal creates its paid order without restoring chat
+- initial request text is erased; owner list query remains authorized
+- unlinked chat is physically removed
+- all six cleanup verification checks pass
+PASS server action checks: Delete, Restore and Permanent Delete preserve tab/category/page, clear selected conversation, and require owner authentication
+
+Limitations: fixture database checks were local (PGlite), not your live Supabase. No real Stripe payment, authenticated live browser, image network request or phone visual inspection was performed. Follow the deployment checks in CHAT-CLEANUP-README.md.

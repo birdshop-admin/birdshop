@@ -1,0 +1,111 @@
+.card {
+  margin-top: 24px;
+  padding: 22px;
+  border: 1px solid #cbd1c1;
+  border-radius: 14px;
+  background: #f5f3e9;
+  color: #293b29;
+  text-align: left;
+}
+
+.eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: #58694d;
+}
+
+.card h3 {
+  margin: 10px 0;
+  font-family: Georgia, serif;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.card p {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #52604b;
+  overflow-wrap: anywhere;
+}
+
+.card ul {
+  list-style: none;
+  padding: 12px 0;
+  margin: 14px 0;
+  border-block: 1px solid #d4d8c9;
+}
+
+.card li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.card li span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.card li strong {
+  white-space: nowrap;
+}
+
+.card .total {
+  font-size: 22px;
+  color: #293b29;
+}
+
+.actions {
+  display: grid;
+  gap: 9px;
+  margin-top: 16px;
+}
+
+.actions button,
+.actions a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 44px;
+  padding: 11px 16px;
+  border: 1px solid #bac4ae;
+  border-radius: 8px;
+  background: transparent;
+  color: #344b30;
+  font: inherit;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.actions > :first-child {
+  background: #475b3c;
+  color: #fffdf5;
+  border-color: #475b3c;
+}
+
+.actions > :hover {
+  filter: brightness(0.95);
+}
+
+.actions > :focus-visible {
+  outline: 2px solid #475b3c;
+  outline-offset: 3px;
+}
+
+.actions button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.card p[role="alert"] {
+  color: #ffded1;
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 17px;
+  }
+}

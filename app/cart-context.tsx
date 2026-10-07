@@ -11,7 +11,6 @@ import {
 } from "react";
 
 import { usePathname } from "next/navigation";
-
 import { createClient } from "@/lib/supabase/client";
 import type { Product } from "@/lib/products";
 
@@ -25,12 +24,10 @@ type ProductMap = Record<string, Product>;
 type CartContextValue = {
   items: CartItem[];
   totalItems: number;
-
   productList: Product[];
   products: ProductMap;
   productsLoaded: boolean;
   productsError: string | null;
-
   addToCart: (slug: string, quantity?: number) => void;
   removeFromCart: (slug: string) => void;
   updateQuantity: (slug: string, quantity: number) => void;
@@ -60,12 +57,7 @@ type DatabaseProduct = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
-
 const STORAGE_KEY = "birdshop-cart";
-
-/* =========================================================
-   PRODUCT HELPERS
-========================================================= */
 
 function normalizeGallery(row: DatabaseProduct): Product["gallery"] {
   if (Array.isArray(row.gallery) && row.gallery.length > 0) {
@@ -93,7 +85,6 @@ function normalizeGallery(row: DatabaseProduct): Product["gallery"] {
 
 function mapDatabaseProduct(row: DatabaseProduct): Product {
   const price = Number(row.price);
-
   const oldPrice = row.old_price === null ? undefined : Number(row.old_price);
 
   return {
@@ -121,21 +112,17 @@ function mapDatabaseProduct(row: DatabaseProduct): Product {
 function createProductMap(productList: Product[]) {
   return productList.reduce<ProductMap>((catalog, product) => {
     catalog[product.slug] = product;
-
     return catalog;
   }, {});
 }
 
 function getMaximumQuantity(slug: string, catalog: ProductMap) {
   const stock = catalog[slug]?.stock ?? 0;
-
-  return Math.max(0, Math.min(99, Math.floor(stock)));
+  return Math.max(0, Math.min(10, Math.floor(stock)));
 }
 
 function sanitizeCartItems(value: unknown, catalog: ProductMap): CartItem[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
+  if (!Array.isArray(value)) return [];
 
   const quantities = new Map<string, number>();
 
@@ -150,16 +137,23 @@ function sanitizeCartItems(value: unknown, catalog: ProductMap): CartItem[] {
     }
 
     const slug = String(entry.slug);
-
     const rawQuantity = Number(entry.quantity);
 
-    const maximum = getMaximumQuantity(slug, catalog);
+    // Available stock may exclude this customer's reserved items.
+    const maximum = 10;
 
-    if (!catalog[slug] || !Number.isFinite(rawQuantity) || maximum <= 0) {
+    if (
+      !catalog[slug] ||
+      !Number.isFinite(rawQuantity) ||
+      rawQuantity < 1
+    ) {
       continue;
     }
 
-    const quantity = Math.max(1, Math.min(maximum, Math.floor(rawQuantity)));
+    const quantity = Math.max(
+      1,
+      Math.min(maximum, Math.floor(rawQuantity)),
+    );
 
     quantities.set(
       slug,
@@ -173,23 +167,14 @@ function sanitizeCartItems(value: unknown, catalog: ProductMap): CartItem[] {
   }));
 }
 
-/* =========================================================
-   PROVIDER
-========================================================= */
-
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-
   const supabase = useMemo(() => createClient(), []);
 
   const [items, setItems] = useState<CartItem[]>([]);
-
   const [productList, setProductList] = useState<Product[]>([]);
-
   const [products, setProducts] = useState<ProductMap>({});
-
   const [productsLoaded, setProductsLoaded] = useState(false);
-
   const [productsError, setProductsError] = useState<string | null>(null);
 
   const cartHydrated = useRef(false);
@@ -222,37 +207,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         ].join(","),
       )
       .eq("is_visible", true)
-      .order("sort_order", {
-        ascending: true,
-      })
-      .order("name", {
-        ascending: true,
-      });
+      .order("sort_order", { ascending: true })
+      .order("name", { ascending: true });
 
     if (error) {
       setProductsError(
         "The product catalog could not load. Please refresh and retry.",
       );
-
       setProductsLoaded(true);
-
       return;
     }
 
-    const nextProductList = ((data ?? []) as unknown as DatabaseProduct[]).map(
-      mapDatabaseProduct,
-    );
+    const nextProductList = (
+      (data ?? []) as unknown as DatabaseProduct[]
+    ).map(mapDatabaseProduct);
 
     const nextProducts = createProductMap(nextProductList);
 
     setProductList(nextProductList);
-
     setProducts(nextProducts);
 
     if (!cartHydrated.current) {
       try {
         const savedCart = window.localStorage.getItem(STORAGE_KEY);
-
         const parsed = savedCart ? JSON.parse(savedCart) : [];
 
         setItems(sanitizeCartItems(parsed, nextProducts));
@@ -268,38 +245,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setProductsLoaded(true);
   }, [supabase]);
 
-  /*
-   * Fetch products whenever the route changes.
-   *
-   * This matters for the admin flow:
-   * edit a product in /admin/products,
-   * return to the store, and the customer-facing
-   * catalog is refreshed from Supabase.
-   */
   useEffect(() => {
     const timer = window.setTimeout(() => {
       void refreshProducts();
     }, 0);
 
-    return () => {
-      window.clearTimeout(timer);
-    };
+    return () => window.clearTimeout(timer);
   }, [pathname, refreshProducts]);
 
-  /*
-   * Save the cart only after the product catalog
-   * has loaded and the saved cart has been
-   * validated against current Supabase stock.
-   */
   useEffect(() => {
-    if (!productsLoaded || !cartHydrated.current) {
-      return;
-    }
+    if (!productsLoaded || !cartHydrated.current) return;
 
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch {
-      /* The in-memory cart remains usable when storage is unavailable. */
+      // The in-memory cart remains usable.
     }
   }, [items, productsLoaded]);
 
@@ -307,30 +267,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     (slug: string, quantity = 1) => {
       const maximum = getMaximumQuantity(slug, products);
 
-      if (maximum <= 0) {
-        return;
-      }
+      if (maximum <= 0) return;
 
-      const safeQuantity = Math.max(1, Math.min(maximum, Math.floor(quantity)));
+      const safeQuantity = Math.max(
+        1,
+        Math.min(maximum, Math.floor(quantity)),
+      );
 
       setItems((current) => {
         const existing = current.find((item) => item.slug === slug);
 
         if (!existing) {
-          return [
-            ...current,
-            {
-              slug,
-              quantity: safeQuantity,
-            },
-          ];
+          return [...current, { slug, quantity: safeQuantity }];
         }
 
         return current.map((item) =>
           item.slug === slug
             ? {
                 ...item,
-                quantity: Math.min(maximum, item.quantity + safeQuantity),
+                quantity: Math.max(
+                  item.quantity,
+                  Math.min(maximum, item.quantity + safeQuantity),
+                ),
               }
             : item,
         );
@@ -347,26 +305,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     (slug: string, quantity: number) => {
       if (quantity <= 0) {
         setItems((current) => current.filter((item) => item.slug !== slug));
-
         return;
       }
+
+      if (!Number.isFinite(quantity)) return;
 
       const maximum = getMaximumQuantity(slug, products);
-
-      if (maximum <= 0) {
-        setItems((current) => current.filter((item) => item.slug !== slug));
-
-        return;
-      }
-
-      const safeQuantity = Math.max(1, Math.min(maximum, Math.floor(quantity)));
 
       setItems((current) =>
         current.map((item) =>
           item.slug === slug
             ? {
                 ...item,
-                quantity: safeQuantity,
+                quantity: Math.max(
+                  1,
+                  Math.min(
+                    Math.floor(quantity),
+                    Math.max(item.quantity, maximum),
+                  ),
+                ),
               }
             : item,
         ),
@@ -388,12 +345,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     () => ({
       items,
       totalItems,
-
       productList,
       products,
       productsLoaded,
       productsError,
-
       addToCart,
       removeFromCart,
       updateQuantity,
@@ -403,12 +358,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [
       items,
       totalItems,
-
       productList,
       products,
       productsLoaded,
       productsError,
-
       addToCart,
       removeFromCart,
       updateQuantity,
@@ -417,7 +370,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     ],
   );
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+    </CartContext.Provider>
+  );
 }
 
 export function useCart() {

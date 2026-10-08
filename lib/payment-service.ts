@@ -7,7 +7,7 @@ import { objectId, siteUrl } from "@/lib/server-config";
 
 export type CheckoutAttempt = {
   id: string;
-  kind: "service" | "product";
+  kind: "service" | "product" | "package";
   cart:
     | {
         id: string;
@@ -143,7 +143,17 @@ export async function finalizeCheckout(
   if (!intent) throw new Error("Paid checkout has no PaymentIntent.");
   await observeCheckout(session, attempt);
   const orderId =
-    attempt.kind === "product"
+    attempt.kind === "package"
+      ? await serverRpc<string>("birdshop_finalize_package_payment", {
+          p_attempt_id: attempt.id,
+          p_session_id: session.id,
+          p_intent_id: intent,
+          p_customer_id: objectId(session.customer),
+          p_amount: session.amount_total,
+          p_currency: session.currency,
+          p_email: session.customer_details?.email ?? session.customer_email,
+        })
+      : attempt.kind === "product"
       ? await serverRpc<string>("birdshop_v2_finalize_product_payment", {
           p_attempt_id: attempt.id,
           p_session_id: session.id,
@@ -238,7 +248,7 @@ export async function synchronizeRefundFailure(
   let known = false;
   for (const session of sessions.data) {
     if (
-      ["service", "product"].includes(session.metadata?.birdshop_type ?? "") ||
+      ["service", "product", "package"].includes(session.metadata?.birdshop_type ?? "") ||
       session.metadata?.birdshop_payment_request_id
     ) {
       known = true;
@@ -295,7 +305,9 @@ function buildStripeParams(
 ): Stripe.Checkout.SessionCreateParams {
   const base = siteUrl();
   const returnPath =
-    a.kind === "product"
+    a.kind === "package"
+      ? `/services/checkout?token=${orderToken(a.id)}`
+      : a.kind === "product"
       ? `/checkout/return?token=${orderToken(a.id)}`
       : `/service-chat?token=${encodeURIComponent(a.public_token!)}`;
   const metadata = {
@@ -319,7 +331,7 @@ function buildStripeParams(
     metadata,
     payment_intent_data: { metadata },
     line_items:
-      a.kind === "product"
+      a.kind !== "service"
         ? (a.cart ?? []).map((item) => ({
             quantity: item.quantity,
             price_data: {

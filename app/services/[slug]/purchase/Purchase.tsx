@@ -97,7 +97,7 @@ export default function Purchase({
       const result = await response.json();
 
       if (!response.ok) {
-        if (result.chatUrl) setChat(result.chatUrl);
+        // Unpaid failures must never expose a private chat.
         throw Error(result.error ?? "Please retry.");
       }
 

@@ -37,6 +37,14 @@ export const siteConfig = {
     { label: "Contact", href: "/contact" },
   ],
 
+  // Policy pages: linked from the footer, the mobile menu, FAQs and the
+  // policy pages themselves.
+  policies: [
+    { label: "Terms of Service", href: "/terms" },
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Refund Policy", href: "/refunds" },
+  ],
+
   socials: {
     discord: discordUrl,
 

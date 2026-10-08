@@ -245,6 +245,20 @@ export default function SiteHeader() {
           })}
 
           <ThemeToggle placement="menu" />
+
+          <div className="site-header-mobile-policies">
+            <span>Policies</span>
+            {siteConfig.policies.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                onClick={() => setMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </nav>
       </header>
 

@@ -574,7 +574,63 @@
     outline-offset: -2px;
   }
 
+  /* Policies: a quiet text row under the menu tiles, not three more tiles. */
+  .site-header-mobile-policies {
+    grid-column: 1 / -1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0 16px;
+
+    padding: 8px 4px 2px;
+  }
+
+  .site-header-mobile-policies span {
+    width: 100%;
+
+    color: rgba(240, 236, 226, 0.5);
+
+    text-align: center;
+
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .site-header-mobile-nav .site-header-mobile-policies a {
+    min-height: 44px;
+
+    padding: 0 2px;
+
+    border: 0;
+
+    color: rgba(244, 240, 229, 0.78);
+    background: none;
+
+    font-family: var(--sans);
+    font-size: 13px;
+
+    text-decoration: underline;
+    text-decoration-color: rgba(244, 240, 229, 0.3);
+    text-underline-offset: 3px;
+  }
+
+  .site-header-mobile-nav .site-header-mobile-policies a[aria-current="page"] {
+    color: #ffffff;
+    text-decoration-color: currentColor;
+  }
+
   @media (hover: hover) and (pointer: fine) {
+    .site-header-mobile-nav .site-header-mobile-policies a:hover {
+      border: 0;
+      background: none;
+      text-decoration-color: currentColor;
+    }
+
     .site-header-menu-toggle:hover {
       border-color: rgba(240, 236, 226, 0.3);
       background: rgba(255, 255, 255, 0.08);
@@ -770,6 +826,54 @@ html[data-theme="dark"] .site-header-mobile-nav .site-header-mobile-active {
   gap: 4px 24px;
 }
 
+/* Main links with the labelled policies row underneath. */
+.footer-links {
+  min-width: 0;
+
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.footer-policies {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  gap: 2px 20px;
+
+  padding-top: 12px;
+
+  border-top: 1px solid rgba(240, 236, 226, 0.12);
+
+  font-family: var(--sans);
+  font-size: 12.5px;
+}
+
+.footer-policies span {
+  color: rgba(239, 235, 225, 0.55);
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.footer-policies a {
+  padding: 4px 0;
+
+  color: rgba(243, 239, 228, 0.8);
+
+  text-decoration: underline;
+  text-decoration-color: rgba(243, 239, 228, 0.3);
+  text-underline-offset: 3px;
+
+  transition:
+    color 160ms ease,
+    text-decoration-color 160ms ease;
+}
+
 .footer-nav a {
   position: relative;
 
@@ -829,13 +933,6 @@ html[data-theme="dark"] .site-header-mobile-nav .site-header-mobile-active {
   text-align: left;
 }
 
-.footer-legal {
-  display: inline-flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0 18px;
-}
-
 .footer-bottom a {
   display: inline-flex;
   align-items: center;
@@ -859,8 +956,13 @@ html[data-theme="dark"] .site-header-mobile-nav .site-header-mobile-active {
 
 @media (hover: hover) and (pointer: fine) {
   .footer-nav a:hover,
-  .footer-bottom a:hover {
+  .footer-bottom a:hover,
+  .footer-policies a:hover {
     color: #ffffff;
+  }
+
+  .footer-policies a:hover {
+    text-decoration-color: currentColor;
   }
 
   .footer-nav a:hover::after {
@@ -879,7 +981,19 @@ html[data-theme="dark"] .site-header-mobile-nav .site-header-mobile-active {
     gap: 2px 20px;
   }
 
+  .footer-policies {
+    gap: 0 18px;
+  }
+
+  /* The label takes its own line so the three links wrap evenly. */
+  .footer-policies span {
+    width: 100%;
+
+    text-align: center;
+  }
+
   .footer-nav a,
+  .footer-policies a,
   .footer-bottom a {
     min-height: 44px;
 
@@ -936,6 +1050,7 @@ html[data-theme="dark"] .footer-overlay {
   .footer-nav a,
   .footer-nav a::after,
   .footer-socials a,
+  .footer-policies a,
   .footer-bottom a {
     transition: none;
   }

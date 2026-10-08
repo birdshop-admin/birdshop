@@ -22,6 +22,7 @@ import {
   type FAQ,
   type FAQFilter,
 } from "@/lib/faqs";
+import { siteConfig } from "@/lib/site-config";
 
 import styles from "./faqs.module.css";
 
@@ -356,6 +357,17 @@ export default function FAQsPage() {
                 <ArrowIcon />
               </Link>
             </div>
+
+            <nav className={styles.policyCard} aria-label="Store policies">
+              <span>Store policies</span>
+
+              {siteConfig.policies.map((item) => (
+                <Link key={item.href} href={item.href}>
+                  {item.label}
+                  <ArrowIcon />
+                </Link>
+              ))}
+            </nav>
           </aside>
 
           <div className={styles.faqArea}>

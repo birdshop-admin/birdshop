@@ -592,6 +592,48 @@
   margin-left: auto;
 }
 
+/* --- Store policies (Terms, Privacy, Refunds) --- */
+
+.policyCard {
+  display: grid;
+  margin-top: 18px;
+  padding: 16px 18px 8px;
+  border: 1px solid var(--bs-line);
+  border-radius: var(--bs-r-card);
+  background: var(--bs-card);
+}
+
+.policyCard > span {
+  margin-bottom: 4px;
+  color: var(--bs-faint);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.policyCard a {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--bs-ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+}
+
+.policyCard a + a {
+  border-top: 1px solid var(--bs-line);
+}
+
+.policyCard a svg {
+  width: 14px;
+  height: 14px;
+  margin-left: auto;
+  color: var(--bs-faint);
+  transition: transform var(--bs-dur-fast) ease;
+}
+
 /* =========================================================
    RESULTS
 ========================================================= */
@@ -1070,6 +1112,11 @@
     background: var(--bs-line);
   }
 
+  .policyCard a:hover svg {
+    transform: translateX(3px);
+    color: var(--bs-ink);
+  }
+
   .helpCard a:hover,
   .contactActions a:hover {
     transform: translateY(-1px);
@@ -1180,8 +1227,14 @@
   }
 
   .categoryBlock,
-  .helpCard {
+  .helpCard,
+  .policyCard {
     margin-top: 0;
+  }
+
+  /* Two columns here: the policies card gets its own full row. */
+  .policyCard {
+    grid-column: 1 / -1;
   }
 
   .contactCta {
@@ -1343,7 +1396,8 @@
   .emptyState button,
   .contactActions a,
   .quickLinks > a,
-  .quickLinks > a > svg:last-child {
+  .quickLinks > a > svg:last-child,
+  .policyCard a svg {
     transition: none;
   }
 
@@ -1362,7 +1416,8 @@
   .contactActions a:hover,
   .contactActions a:active,
   .quickLinks > a:hover,
-  .quickLinks > a:hover > svg:last-child {
+  .quickLinks > a:hover > svg:last-child,
+  .policyCard a:hover svg {
     transform: none;
   }
 }

@@ -63,16 +63,28 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <nav
-          className="footer-nav"
-          aria-label="Footer navigation"
-        >
-          {siteConfig.navigation.map((item) => (
-            <Link key={item.href} href={item.href}>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="footer-links">
+          <nav
+            className="footer-nav"
+            aria-label="Footer navigation"
+          >
+            {siteConfig.navigation.map((item) => (
+              <Link key={item.href} href={item.href}>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* A labelled row, not tiny bottom-bar text, so policies are easy to find. */}
+          <nav className="footer-policies" aria-label="Store policies">
+            <span aria-hidden="true">Policies</span>
+            {siteConfig.policies.map((item) => (
+              <Link key={item.href} href={item.href}>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
 
         {socialLinks.length > 0 && (
           <div className="footer-socials">
@@ -103,12 +115,6 @@ export default function SiteFooter() {
         </span>
 
         <span>Payments secured by Stripe · Private digital delivery</span>
-
-        <nav className="footer-legal" aria-label="Policies">
-          <Link href="/terms">Terms</Link>
-          <Link href="/privacy">Privacy</Link>
-          <Link href="/refunds">Refunds</Link>
-        </nav>
 
         {/* "#top" scrolls to the very top; the sticky header is always in view,
             so linking to it would only nudge the page. */}

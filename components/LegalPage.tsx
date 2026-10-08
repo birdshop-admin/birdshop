@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
+import { siteConfig } from "@/lib/site-config";
 
 import s from "./LegalPage.module.css";
 
@@ -12,11 +13,7 @@ export type LegalSection = {
   body: ReactNode;
 };
 
-const LEGAL_LINKS = [
-  { href: "/terms", label: "Terms of Service" },
-  { href: "/privacy", label: "Privacy Policy" },
-  { href: "/refunds", label: "Refund Policy" },
-] as const;
+const LEGAL_LINKS = siteConfig.policies;
 
 // Shared layout for the Terms, Privacy and Refund pages: a short summary,
 // an on-page contents list, and numbered sections.

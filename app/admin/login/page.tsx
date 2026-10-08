@@ -50,9 +50,14 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
   if (sessionStillActive) {
     const supabase = await createClient();
 
-    const { data: claimsData } = await supabase.auth.getClaims();
+    // Same server-verified check as requireStaff: a locally valid JWT for a
+    // session revoked in Supabase must show the form, not bounce back to /admin.
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    const userId = claimsData?.claims?.sub;
+    const userId = userError ? undefined : user?.id;
 
     if (userId) {
       const { data: profileData } = await supabase.rpc(
@@ -87,7 +92,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
               alt="BirdShop"
               width={110}
               height={110}
-              priority
+              loading="eager"
             />
           </div>
 

@@ -30,34 +30,61 @@ export function CheckoutReturn() {
   const router = useRouter();
   const token = query.get("token") ?? "";
 
-  const { items, clearCart } = useCart();
+  const { clearCart } = useCart();
   const [status, setStatus] = useState("Checking your payment…");
 
   useEffect(() => {
     if (!token) return;
 
+    let polls = 0;
+
     return startVisiblePoll(async (signal) => {
       try {
-        const response = await fetch(
-          `/api/checkout/status?token=${encodeURIComponent(token)}`,
-          { cache: "no-store", signal },
-        );
+        polls += 1;
 
-        const data = await response.json();
+        // Usually the webhook confirms first. Every fifth check asks the server to
+        // verify directly with Stripe, so a delayed webhook cannot stall this page.
+        const response =
+          polls % 5 === 0
+            ? await fetch("/api/checkout/manage", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, action: "check" }),
+                cache: "no-store",
+                signal,
+              })
+            : await fetch(
+                `/api/checkout/status?token=${encodeURIComponent(token)}`,
+                { cache: "no-store", signal },
+              );
 
-        if (!response.ok) throw new Error(data.error);
+        const data = await response.json().catch(() => ({}));
+
+        if (response.status === 404) {
+          setStatus(
+            "This checkout link is invalid or no longer available. Return to your cart or contact BirdShop.",
+          );
+          return false;
+        }
+
+        if (!response.ok)
+          throw new Error(
+            data.error || "Payment confirmation is temporarily unavailable.",
+          );
         if (signal.aborted) return false;
 
         if (data.orderToken) {
           try {
+            // Clear the cart only if it still holds exactly what was purchased.
             if (
               sessionStorage.getItem("birdshop-checkout-cart") ===
-              JSON.stringify(items)
+              localStorage.getItem("birdshop-cart")
             ) {
               clearCart();
             }
 
             sessionStorage.removeItem("birdshop-checkout-attempt");
+            sessionStorage.removeItem("birdshop-checkout-cart");
           } catch {
             // Delivery does not depend on cart storage.
           }
@@ -92,7 +119,7 @@ export function CheckoutReturn() {
         }
       }
     }, 4000);
-  }, [token, router, query, items, clearCart]);
+  }, [token, router, query, clearCart]);
 
   return (
     <section className={styles.page}>
@@ -144,14 +171,23 @@ export function OrderAccess() {
 function OrderDetails({ token }: { token: string }) {
   const [data, setData] = useState<Delivery | null>(null);
   const [error, setError] = useState("");
+  const [invalid, setInvalid] = useState(!/^[a-f0-9]{64}$/.test(token));
 
   useEffect(() => {
+    if (!/^[a-f0-9]{64}$/.test(token)) return;
+
     return startVisiblePoll(async (signal) => {
       try {
         const response = await fetch(
           `/api/orders/access?token=${encodeURIComponent(token)}`,
           { cache: "no-store", signal },
         );
+
+        // A wrong or removed link will not start working by retrying.
+        if (response.status === 404) {
+          setInvalid(true);
+          return false;
+        }
 
         const result = await response.json();
 
@@ -214,10 +250,22 @@ function OrderDetails({ token }: { token: string }) {
         {!data && (
           <div className={styles.card}>
             <p role="status">
-              {error
-                ? "Your order details will appear when the connection returns."
-                : "Opening your private order…"}
+              {invalid
+                ? "This order link is invalid or no longer available. Use the link in your BirdShop email, or contact Product Support with your order reference."
+                : error
+                  ? "Your order details will appear when the connection returns."
+                  : "Opening your private order…"}
             </p>
+            {invalid && (
+              <div className={styles.actions}>
+                <Link
+                  className={styles.secondary}
+                  href="/contact?topic=product"
+                >
+                  Product support
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
@@ -342,7 +390,7 @@ function OrderDetails({ token }: { token: string }) {
             <span aria-hidden="true">↗</span>
           </Link>
 
-          <Link className={styles.secondary} href="/how-to-order">
+          <Link className={styles.secondary} href="/how-to-order#products">
             How delivery works
           </Link>
         </nav>

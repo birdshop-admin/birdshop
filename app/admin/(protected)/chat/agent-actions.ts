@@ -54,7 +54,6 @@ function serviceChatUrl(conversationId?: string) {
 function refreshChat() {
   revalidatePath("/admin/chat");
 
-  revalidatePath("/admin/orders");
 
   revalidatePath("/admin");
 }
@@ -189,8 +188,8 @@ export async function createServiceAgentPaymentRequest(
 
   if (!conversationId)
     return { ok: false, error: "Choose a conversation first." };
-  if (!Number.isFinite(amount) || amount < 0.5)
-    return { ok: false, error: "Enter an amount of at least 0.50." };
+  if (!Number.isFinite(amount) || amount < 0.5 || amount > 999999.99)
+    return { ok: false, error: "Enter an amount between 0.50 and 999,999.99." };
   if (!title || title.length > 180)
     return { ok: false, error: "Enter a title of up to 180 characters." };
   if (description.length > 2000)
@@ -258,6 +257,5 @@ export async function cancelServiceAgentPaymentRequest(
     };
   }
   revalidatePath("/admin/chat");
-  revalidatePath("/admin/orders");
   return { ok: true, message: "Payment request cancelled." };
 }

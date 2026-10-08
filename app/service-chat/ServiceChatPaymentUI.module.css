@@ -1,338 +1,376 @@
 /* =========================================================
-   CUSTOMER SERVICE CHAT PAYMENT CARD
+   MY SERVICE: PAYMENT RETURN NOTICES AND PAYMENT REQUEST CARD
+
+   One tokenized layer. Colours come from chat-ui.module.css
+   (`ui.tokens` on the conversation page), so light and dark
+   follow the --bs-* palette with no per-theme rules here.
+========================================================= */
+
+/* =========================================================
+   RETURN NOTICES (full-width banner under the chat header)
 ========================================================= */
 
 .notice {
-  flex: 0 0 auto;
-
-  margin: 10px 16px 0;
-
-  padding: 10px 13px;
-
-  border-radius: 5px;
-
-  font-family: Georgia, "Times New Roman", serif;
-
-  font-size: 12px;
-  line-height: 1.45;
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--tone-waiting-line);
+  background: var(--tone-waiting-bg);
+  color: var(--tone-waiting-ink);
+  font: 13px/1.5 var(--sc-sans);
 }
 
 .notice[data-tone="success"] {
-  color: var(--theme-text-184-196-170-1, #486041);
-
-  border: 1px solid var(--theme-border-207-215-196-0_18, rgba(75, 106, 66, 0.18));
-
-  background: var(--theme-surface-24-28-24-1, #e7ede3);
+  border-bottom-color: var(--tone-progress-line);
+  background: var(--tone-progress-bg);
+  color: var(--tone-progress-ink);
 }
 
-.notice[data-tone="neutral"] {
-  color: var(--theme-text-184-196-170-1, #697266);
-
-  border: 1px solid var(--theme-border-207-215-196-0_15, rgba(88, 94, 82, 0.15));
-
-  background: var(--theme-surface-24-28-24-1, #ece9e0);
+.notice > svg,
+.notice > span:first-child:not(:last-child) {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 1.5px;
 }
 
-/* =========================================================
-   REQUEST
-========================================================= */
-
-.request {
-  width: min(560px, 86%);
-
-  align-self: flex-start;
-
-  display: grid;
-
-  gap: 0;
-
-  padding: 17px 18px;
-
-  border: 1px solid var(--theme-border-207-215-196-0_16, rgba(55, 71, 50, 0.16));
-
-  border-radius: 9px;
-
-  color: var(--theme-text-240-236-226-1, #293327);
-
-  background: linear-gradient(145deg, var(--theme-surface-37-42-35-1, #faf7ef), var(--theme-surface-24-28-24-1, #eeeade));
-
-  box-shadow: 0 10px 26px rgba(30, 41, 28, 0.055);
-}
-
-.request[data-status="paid"] {
-  border-color: var(--theme-border-207-215-196-0_25, rgba(78, 107, 69, 0.25));
-
-  background: linear-gradient(145deg, var(--theme-surface-24-28-24-1, #f2f6ef), var(--theme-surface-48-54-44-1, #e4eadf));
-}
-
-.request[data-status="cancelled"],
-.request[data-status="expired"] {
-  opacity: 0.7;
-}
-
-.requestTop {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-
-  gap: 18px;
-}
-
-.requestTop > div {
-  display: grid;
-
-  gap: 5px;
-}
-
-.requestEyebrow {
-  color: var(--theme-text-184-196-170-1, #707b6c);
-
-  font-family: Arial, Helvetica, sans-serif;
-
-  font-size: 9px;
-  font-weight: 800;
-
-  letter-spacing: 0.15em;
-}
-
-.requestTitle {
-  color: var(--theme-text-240-236-226-1, #2b3629);
-
-  font-family: Georgia, "Times New Roman", serif;
-
-  font-size: 19px;
-  font-weight: 400;
-
-  line-height: 1.25;
-}
-
-.requestStatus {
-  flex: 0 0 auto;
-
-  padding: 6px 9px;
-
-  border: 1px solid var(--theme-border-207-215-196-0_16, rgba(67, 85, 61, 0.16));
-
-  border-radius: 999px;
-
-  color: var(--theme-text-184-196-170-1, #596653);
-
-  background: rgba(83, 103, 76, 0.08);
-
-  font-family: Arial, Helvetica, sans-serif;
-
-  font-size: 8px;
-  font-weight: 800;
-
-  letter-spacing: 0.1em;
-
-  text-transform: uppercase;
-}
-
-.requestDescription {
-  margin: 11px 0 0;
-
-  color: var(--theme-text-184-196-170-1, #687365);
-
-  font-family: Georgia, "Times New Roman", serif;
-
-  font-size: 13px;
-  line-height: 1.5;
-
+.notice > span:last-child {
+  min-width: 0;
   overflow-wrap: anywhere;
 }
 
 /* =========================================================
-   PAYMENT ROW
+   REQUEST CARD (receipt style)
+========================================================= */
+
+.request {
+  --rail: var(--tone-waiting-dot);
+
+  box-sizing: border-box;
+  position: relative;
+  display: grid;
+  flex: none;
+  align-self: flex-start;
+  width: min(520px, 100%);
+  margin: 10px 0 6px;
+  padding: 20px 20px 16px;
+  overflow: hidden;
+  border: 1px solid var(--sc-line);
+  border-radius: var(--sc-r-card);
+  background: var(--bs-raised);
+  box-shadow: var(--sc-shadow-1);
+  color: var(--sc-ink);
+}
+
+.request::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--rail);
+  pointer-events: none;
+}
+
+.request[data-status="pending"] {
+  --rail: linear-gradient(
+    90deg,
+    var(--tone-payment-dot),
+    color-mix(in srgb, var(--tone-payment-dot) 45%, var(--bs-raised))
+  );
+
+  border-color: var(--tone-payment-line);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--tone-payment-dot) 10%, transparent),
+    var(--sc-shadow-2);
+}
+
+.request[data-status="paid"] {
+  --rail: var(--tone-progress-dot);
+}
+
+.request[data-status="cancelled"],
+.request[data-status="expired"] {
+  --rail: var(--tone-done-line);
+
+  background: var(--sc-shell);
+  box-shadow: none;
+}
+
+.requestTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.requestEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--sc-faint);
+  font: 700 10px/1.2 var(--sc-sans);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.requestEyebrow svg {
+  flex: none;
+  width: 13px;
+  height: 13px;
+}
+
+.request[data-status="pending"] .requestEyebrow {
+  color: var(--sc-gold);
+}
+
+/* Status chip: waiting by default, then by request state. */
+.requestStatus {
+  --chip-bg: var(--tone-waiting-bg);
+  --chip-ink: var(--tone-waiting-ink);
+  --chip-line: var(--tone-waiting-line);
+
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 10px;
+  border: 1px solid var(--chip-line);
+  border-radius: var(--bs-r-pill, 999px);
+  background: var(--chip-bg);
+  color: var(--chip-ink);
+  font: 700 10.5px/1.2 var(--sc-sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.request[data-status="pending"] .requestStatus {
+  --chip-bg: var(--tone-payment-bg);
+  --chip-ink: var(--tone-payment-ink);
+  --chip-line: var(--tone-payment-line);
+}
+
+.request[data-status="paid"] .requestStatus {
+  --chip-bg: var(--tone-progress-bg);
+  --chip-ink: var(--tone-progress-ink);
+  --chip-line: var(--tone-progress-line);
+}
+
+.request[data-status="cancelled"] .requestStatus,
+.request[data-status="expired"] .requestStatus,
+.request[data-refunded] .requestStatus {
+  --chip-bg: var(--tone-done-bg);
+  --chip-ink: var(--tone-done-ink);
+  --chip-line: var(--tone-done-line);
+}
+
+.requestTitle {
+  display: block;
+  margin-top: 12px;
+  color: var(--sc-ink);
+  font: 400 21px/1.25 var(--sc-serif);
+  letter-spacing: -0.015em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.requestDescription {
+  margin: 6px 0 0;
+  color: var(--sc-muted);
+  font: 15px/1.55 var(--sc-serif);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* =========================================================
+   AMOUNT AND ACTION
 ========================================================= */
 
 .paymentLine {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-end;
   justify-content: space-between;
-
-  gap: 18px;
-
-  margin-top: 14px;
-
-  padding-top: 13px;
-
-  border-top: 1px solid var(--theme-border-207-215-196-0_11, rgba(43, 56, 40, 0.11));
+  gap: 14px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--sc-line-strong);
 }
 
-.requestAmount {
-  color: var(--theme-text-240-236-226-1, #293327);
-
-  font-family: Georgia, "Times New Roman", serif;
-
-  font-size: 31px;
-  font-weight: 400;
-
-  letter-spacing: -0.03em;
+.amountBlock {
+  min-width: 0;
 }
 
-.button {
-  min-height: 41px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0 15px;
-
-  border: 1px solid var(--theme-border-207-215-196-1, #485942);
-
-  border-radius: 5px;
-
-  color: #f5f0e6;
-
-  background: #485942;
-
-  cursor: pointer;
-
-  font-family: Georgia, "Times New Roman", serif;
-
-  font-size: 12px;
-}
-
-.button:hover:not(:disabled) {
-  background: #576851;
-}
-
-.button:disabled {
-  cursor: not-allowed;
-
-  opacity: 0.55;
-}
-
-.paidLabel {
-  color: var(--theme-text-184-196-170-1, #4d6647);
-
-  font-family: Arial, Helvetica, sans-serif;
-
-  font-size: 10px;
-  font-weight: 800;
-
-  letter-spacing: 0.08em;
-
+.amountLabel {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--sc-faint);
+  font: 700 10px/1.2 var(--sc-sans);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
-.requestFooter {
-  margin-top: 10px;
+.requestAmount {
+  display: block;
+  color: var(--sc-ink);
+  font: 400 34px/1 var(--sc-serif);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
-.requestFooter span {
-  color: var(--theme-text-184-196-170-1, #798274);
+.request[data-status="cancelled"] .requestAmount,
+.request[data-status="expired"] .requestAmount {
+  color: var(--sc-faint);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
 
-  font-size: 10px;
+/* Primary action: always the --bs-btn-* pair (cream on dark). */
+.button {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--sc-r-control);
+  background: var(--sc-accent);
+  box-shadow: 0 8px 20px rgba(16, 23, 15, 0.16);
+  color: var(--sc-on-accent);
+  font: 400 15px/1.2 var(--sc-serif);
+  cursor: pointer;
+  transition:
+    background-color var(--sc-fast) ease,
+    transform var(--sc-fast) var(--sc-ease);
+}
+
+.button svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--sc-focus);
+  outline-offset: 3px;
+}
+
+.button:disabled {
+  background: var(--sc-accent-disabled);
+  box-shadow: none;
+  color: var(--sc-on-accent-disabled);
+  cursor: not-allowed;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .button:not(:disabled):hover {
+    background: var(--sc-accent-hover);
+    transform: translateY(-1px);
+  }
+}
+
+.button:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+/* Settled state label: neutral unless this request is the paid one. */
+.paidLabel {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--tone-done-line);
+  border-radius: var(--bs-r-pill, 999px);
+  background: var(--tone-done-bg);
+  color: var(--tone-done-ink);
+  font: 700 11px/1.2 var(--sc-sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.request[data-status="paid"] .paidLabel {
+  border-color: var(--tone-progress-line);
+  background: var(--tone-progress-bg);
+  color: var(--tone-progress-ink);
+}
+
+.paidLabel svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.requestFooter {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  color: var(--sc-muted);
+  font: 12.5px/1.5 var(--sc-sans);
+}
+
+.requestFooter p {
+  margin: 0;
 }
 
 .safeNote {
   display: block;
-
-  margin-top: 7px;
-
-  color: var(--theme-text-184-196-170-1, #838b80);
-
-  font-size: 9px;
-  line-height: 1.4;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--sc-line);
+  color: var(--sc-faint);
+  font: 12px/1.5 var(--sc-sans);
 }
 
-@media (max-width: 650px) {
+/* =========================================================
+   PHONE (≤620px)
+========================================================= */
+
+@media (max-width: 620px) {
   .request {
     width: 100%;
+    padding: 18px 16px 14px;
   }
 
-  .requestTop,
   .paymentLine {
-    align-items: stretch;
-
     flex-direction: column;
+    align-items: stretch;
   }
 
   .button {
     width: 100%;
   }
+
+  .paidLabel {
+    align-self: flex-start;
+  }
+
+  .requestAmount {
+    font-size: 30px;
+  }
 }
-/* Light payment card with forest-green text and an outlined checkout button. */
-.request.request {
-  box-sizing: border-box;
-  flex-shrink: 0;
-  max-width: 100%;
-  background: var(--theme-surface-37-42-35-1, #fffdf7);
-  border: 1px solid #d4d8c8;
-  border-left: 3px solid var(--theme-border-207-215-196-1, #657654);
-  border-radius: 10px;
-  box-shadow: 0 3px 12px #29372b06;
-  color: var(--theme-text-240-236-226-1, #34472e);
-}
-.request.request .requestTitle {
-  color: var(--theme-text-240-236-226-1, #30442b);
-  overflow-wrap: anywhere;
-}
-.request.request .requestEyebrow {
-  color: var(--theme-text-184-196-170-1, #64715b);
-  font-size: 10px;
-  font-weight: 600;
-}
-.request.request .requestAmount {
-  color: var(--theme-text-240-236-226-1, #344c2c);
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
-}
-.request.request .requestStatus {
-  font-size: 10px;
-  letter-spacing: 0.03em;
-  background: var(--theme-surface-24-28-24-1, #f2ecd9);
-  color: var(--theme-text-184-196-170-1, #6c592a);
-  border-color: #e5dcc1;
-}
-.request.request .button {
-  min-height: 44px;
-  padding: 10px 17px;
-  border: 1px solid #aaba99;
-  border-radius: 7px;
-  background: var(--theme-surface-37-42-35-1, #fffefb);
-  color: var(--theme-text-184-196-170-1, #3f5834);
-  font-size: 13px;
-}
-.request.request .button:hover:not(:disabled) {
-  background: var(--theme-surface-24-28-24-1, #edf1e5);
-  border-color: var(--theme-border-207-215-196-1, #6c805b);
-}
-.request.request .button:focus-visible {
-  outline: 2px solid #526a48;
-  outline-offset: 3px;
-}
-.request.request .requestFooter span {
-  color: var(--theme-text-184-196-170-1, #65705e);
-  font-size: 11px;
-}
-.request.request .safeNote {
-  color: var(--theme-text-184-196-170-1, #707868);
-  font-size: 10px;
-}
-.request.request[data-status="paid"] {
-  background: var(--theme-surface-37-42-35-1, #fffdf7);
-}
-.request.request[data-status="paid"] .requestStatus {
-  background: var(--theme-surface-24-28-24-1, #eaf0e1);
-  color: var(--theme-text-184-196-170-1, #445e37);
-  border-color: #d6dfc8;
-}
-.request.request[data-status="cancelled"],
-.request.request[data-status="expired"] {
-  opacity: 1;
-  background: var(--theme-surface-24-28-24-1, #f5f4ed);
-  border-left-color: var(--theme-border-207-215-196-1, #a1a697);
-}
-.request.request[data-status="cancelled"] .requestStatus,
-.request.request[data-status="expired"] .requestStatus {
-  background: var(--theme-surface-24-28-24-1, #e9e9e1);
-  color: var(--theme-text-184-196-170-1, #606858);
-  border-color: #dbded1;
-}
-.paymentLine {
-  flex-wrap: wrap;
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+
+  .button:not(:disabled):hover,
+  .button:not(:disabled):active {
+    transform: none;
+  }
 }

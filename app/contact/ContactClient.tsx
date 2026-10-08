@@ -1,4 +1,5 @@
 "use client";
+import { formatUSD } from "@/lib/money";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,7 +22,7 @@ import {
 
 import type { Service } from "@/lib/services";
 
-import { siteConfig } from "@/lib/site-config";
+import { discordLinkProps, hasDiscordInvite, siteConfig } from "@/lib/site-config";
 
 import { useCart } from "@/app/cart-context";
 
@@ -128,7 +129,7 @@ const topics: Array<{
   {
     id: "general",
 
-    number: "03",
+    number: "04",
 
     label: "General Support",
 
@@ -170,7 +171,7 @@ function formatPrice(value: number | null | undefined) {
     return "Custom Quote";
   }
 
-  return `$${Number(value).toFixed(2)}`;
+  return formatUSD(Number(value));
 }
 
 function cleanErrorMessage(value: string) {
@@ -231,9 +232,13 @@ export default function ContactClient(props: ContactClientProps) {
 
   const initialTopic = resolveTopic(props);
 
+  // Paused services cannot take new requests (the server refuses them too);
+  // reviews below still list every service.
+  const requestServices = serviceList.filter((service) => service.available);
+
   const initialServiceObject =
-    serviceList.find((service) => service.slug === props.initialService) ??
-    serviceList[0];
+    requestServices.find((service) => service.slug === props.initialService) ??
+    requestServices[0];
 
   /* =======================================================
      STATE
@@ -337,9 +342,9 @@ export default function ContactClient(props: ContactClientProps) {
 
   const selectedService = useMemo(
     () =>
-      serviceList.find((service) => service.slug === serviceSlug) ??
-      serviceList[0],
-    [serviceSlug, serviceList],
+      requestServices.find((service) => service.slug === serviceSlug) ??
+      requestServices[0],
+    [serviceSlug, requestServices],
   );
 
   /* =======================================================
@@ -576,7 +581,9 @@ export default function ContactClient(props: ContactClientProps) {
             : null,
       }),
     });
-    const result = await response.json();
+    const result = await response.json().catch(() => ({
+      error: "BirdShop is temporarily unavailable. Please retry in a moment.",
+    }));
     if (!response.ok)
       throw new Error(result.error || "Unable to create conversation.");
     const data = result.data;
@@ -612,6 +619,9 @@ export default function ContactClient(props: ContactClientProps) {
 
       detail = parts.length > 0 ? parts.join(" · ") : "Product Support";
     }
+
+    // A later request must get its own identity instead of replaying this chat.
+    submissionKey.current = null;
 
     setConversationSuccess({
       reference,
@@ -850,6 +860,7 @@ export default function ContactClient(props: ContactClientProps) {
   ======================================================= */
 
   function startAnotherRequest() {
+    submissionKey.current = null;
     setConversationSuccess(null);
 
     resetContactFields();
@@ -1091,16 +1102,17 @@ export default function ContactClient(props: ContactClientProps) {
                     Start Another Request
                   </button>
 
-                  <a
-                    href={siteConfig.discordUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={styles.successDiscordButton}
-                  >
-                    <DiscordIcon />
-                    Open BirdShop Discord
-                    <ArrowIcon />
-                  </a>
+                  {hasDiscordInvite && (
+                    <a
+                      href={siteConfig.discordUrl}
+                      {...discordLinkProps}
+                      className={styles.successDiscordButton}
+                    >
+                      <DiscordIcon />
+                      Open BirdShop Discord
+                      <ArrowIcon />
+                    </a>
+                  )}
                 </div>
               </aside>
             </div>
@@ -1305,7 +1317,7 @@ export default function ContactClient(props: ContactClientProps) {
                       value={serviceSlug}
                       onChange={(event) => setServiceSlug(event.target.value)}
                     >
-                      {serviceList.map((service) => (
+                      {requestServices.map((service) => (
                         <option key={service.slug} value={service.slug}>
                           {service.name}
                         </option>
@@ -1892,16 +1904,17 @@ export default function ContactClient(props: ContactClientProps) {
                 </div>
               </div>
 
-              <a
-                href={siteConfig.discordUrl}
-                target="_blank"
-                rel="noreferrer"
-                className={styles.discordLink}
-              >
-                <DiscordIcon />
-                Open BirdShop Discord
-                <ArrowIcon />
-              </a>
+              {hasDiscordInvite && (
+                <a
+                  href={siteConfig.discordUrl}
+                  {...discordLinkProps}
+                  className={styles.discordLink}
+                >
+                  <DiscordIcon />
+                  Open BirdShop Discord
+                  <ArrowIcon />
+                </a>
+              )}
 
               <small className={styles.discordNote}>
                 BirdShop Chat is the primary private support workspace. Discord
@@ -1951,11 +1964,13 @@ export default function ContactClient(props: ContactClientProps) {
                 {copied ? "Copied" : "Copy Summary"}
               </button>
 
-              <a href={siteConfig.discordUrl} target="_blank" rel="noreferrer">
-                <DiscordIcon />
-                Continue on Discord
-                <ArrowIcon />
-              </a>
+              {hasDiscordInvite && (
+                <a href={siteConfig.discordUrl} {...discordLinkProps}>
+                  <DiscordIcon />
+                  Continue on Discord
+                  <ArrowIcon />
+                </a>
+              )}
             </div>
           </div>
         </section>

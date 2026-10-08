@@ -1,3 +1,9 @@
+> **Historical notes.** Every SQL instruction below is obsolete. Those files now live in
+> `supabase/legacy/` and must **not** be run: they would downgrade hardened functions and
+> permissions. Deploy the database with every file in `supabase/migrations/` in filename order
+> (see START-HERE.txt), then run `supabase/verify-production-readiness.sql`. Current status and
+> launch checks are in PRODUCTION-READINESS.md.
+
 # BirdShop polish handoff
 
 ## What changed
@@ -9,7 +15,6 @@
 - Added safe test-order deletion and archive/restore behavior for real orders.
 - Added first-party anonymous website activity tracking for online-now, 7-day, 30-day, and all-time views/visitors.
 - Added a public verified Products Delivered counter based only on completed, paid, non-test digital orders.
-- Kept real checkout/payment integration intentionally unconfigured. The current cart still needs a payment provider before launch.
 
 ## Required database migration
 
@@ -65,7 +70,7 @@ Public pages create an anonymous random browser ID in localStorage. Admin pages 
 
 ## Admin security + test inventory cleanup
 
-- Admin sessions now expire after 3 minutes of inactivity. Activity is refreshed only while the protected admin UI is actively used; closing or leaving the admin page causes the server-side activity timestamp to become stale and the next admin request signs out.
+- Admin sessions stay signed in during normal use. There is no inactivity timeout: a visible-tab heartbeat refreshes the Supabase session, and every protected request re-verifies the active staff role server-side. (Superseded the earlier 3-minute inactivity expiry.)
 - Manual Sign Out now uses the same server-side logout route.
 - Run `supabase/admin-test-inventory-cleanup.sql` to enable the Inventory Vault test-sale cleanup controls.
 - Sold/reserved keys tied to real orders remain locked fulfillment history.

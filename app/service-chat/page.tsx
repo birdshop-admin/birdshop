@@ -13,7 +13,7 @@ import ServiceChatClient from "./ServiceChatClient";
 
 export const metadata: Metadata = {
   title:
-    "Service Chat | BirdShop",
+    "My Service",
 
   robots: {
     index: false,

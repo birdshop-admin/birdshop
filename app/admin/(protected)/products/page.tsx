@@ -1,3 +1,4 @@
+import { formatUSD } from "@/lib/money";
 import SubmitButton from "@/components/SubmitButton";
 import { requireOwner } from "@/lib/staff-auth";
 import Image from "next/image";
@@ -299,8 +300,15 @@ function GalleryEditor({
    ADMIN PRODUCTS PAGE
 ========================================================= */
 
-export default async function AdminProductsPage() {
+export default async function AdminProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ notice?: string }>;
+}) {
   await requireOwner();
+
+  // Validation messages from the product actions (shown, never trusted as HTML).
+  const notice = String((await searchParams).notice ?? "").slice(0, 200);
 
   const supabase = await createClient();
 
@@ -357,12 +365,18 @@ export default async function AdminProductsPage() {
               Manage the BirdShop digital catalog, pricing, stock, storefront
               details, and artwork from one place.
             </p>
+
+            {notice && (
+              <p className={styles.formNotice} role="alert">
+                {notice}
+              </p>
+            )}
           </div>
 
           <div className={styles.headerActions}>
             <form action={syncLocalProducts}>
               <SubmitButton type="submit" className={styles.secondaryButton}>
-                Import Current Catalog
+                Import Missing Products
               </SubmitButton>
             </form>
 
@@ -503,9 +517,10 @@ export default async function AdminProductsPage() {
                 <input
                   name="price"
                   type="number"
-                  min="0"
+                  min="0.50"
+                  max="999999.99"
                   step="0.01"
-                  defaultValue="0"
+                  placeholder="4.99"
                   required
                 />
               </label>
@@ -513,7 +528,14 @@ export default async function AdminProductsPage() {
               <label>
                 <span>OLD PRICE</span>
 
-                <input name="old_price" type="number" min="0" step="0.01" />
+                <input
+                  name="old_price"
+                  type="number"
+                  min="0.50"
+                  max="999999.99"
+                  step="0.01"
+                  placeholder="Optional"
+                />
               </label>
 
               <label>
@@ -675,7 +697,7 @@ export default async function AdminProductsPage() {
                       <div>
                         <span>PRICE</span>
 
-                        <strong>${Number(product.price).toFixed(2)}</strong>
+                        <strong>{formatUSD(Number(product.price))}</strong>
                       </div>
 
                       <div>
@@ -789,7 +811,8 @@ export default async function AdminProductsPage() {
                         <input
                           name="price"
                           type="number"
-                          min="0"
+                          min="0.50"
+                          max="999999.99"
                           step="0.01"
                           defaultValue={Number(product.price)}
                           required
@@ -802,7 +825,8 @@ export default async function AdminProductsPage() {
                         <input
                           name="old_price"
                           type="number"
-                          min="0"
+                          min="0.50"
+                          max="999999.99"
                           step="0.01"
                           defaultValue={
                             product.old_price === null

@@ -24,6 +24,7 @@ const nextConfig: NextConfig = {
         "/api/checkout/:path*",
         "/api/services/purchase",
         "/services/:slug/purchase",
+        "/services/checkout",
       ].map((source) => ({
         source,
         headers: [
@@ -42,6 +43,9 @@ const nextConfig: NextConfig = {
   },
 
   images: {
+    formats: ["image/avif", "image/webp"],
+    // Every admin upload gets a unique storage path, so optimized variants can be cached for 31 days.
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: "https",

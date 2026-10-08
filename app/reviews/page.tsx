@@ -24,6 +24,8 @@ import styles from "./reviews.module.css";
 
 const INITIAL_VISIBLE = 6;
 const LOAD_MORE_AMOUNT = 4;
+const FEED_ERROR =
+  "The review feed is temporarily unavailable. Please refresh in a moment.";
 
 type DatabaseReview = {
   id: string;
@@ -74,12 +76,22 @@ function mapDatabaseReview(review: DatabaseReview): Review {
    STARS
 ========================================================= */
 
-function Stars({ rating }: { rating: number }) {
+function Stars({
+  rating,
+  decorative = false,
+}: {
+  rating: number;
+  /** Hide from assistive tech when nearby text already states the rating. */
+  decorative?: boolean;
+}) {
   return (
-    <div className={styles.stars} aria-label={`${rating} out of 5 stars`}>
-      {Array.from({
-        length: 5,
-      }).map((_, index) => (
+    <div
+      className={styles.stars}
+      {...(decorative
+        ? { "aria-hidden": true }
+        : { role: "img", "aria-label": `${rating} out of 5 stars` })}
+    >
+      {Array.from({ length: 5 }).map((_, index) => (
         <span
           key={index}
           className={index < rating ? styles.starActive : styles.starEmpty}
@@ -106,17 +118,20 @@ function ReviewCard({
   onToggle: () => void;
 }) {
   const longReview = review.body.length > 185;
+  const bodyId = `review-${review.id}-body`;
 
   return (
     <article className={styles.reviewCard}>
       <div className={styles.reviewCardTop}>
         <div className={styles.reviewIdentity}>
-          <div className={styles.reviewAvatar}>{review.initials}</div>
+          <div className={styles.reviewAvatar} aria-hidden="true">
+            {review.initials}
+          </div>
 
           <div>
             <strong>{review.reviewer}</strong>
 
-            <span>COMMUNITY REVIEW</span>
+            <span>Community review</span>
           </div>
         </div>
 
@@ -125,12 +140,13 @@ function ReviewCard({
 
       <div className={styles.reviewRatingRow}>
         <Stars rating={review.rating} />
-        <span>{review.rating}.0</span>
+        <span aria-hidden="true">{review.rating}.0</span>
       </div>
 
       <h3>{review.title}</h3>
 
       <p
+        id={bodyId}
         className={`${styles.reviewBody} ${
           !expanded && longReview ? styles.reviewBodyCollapsed : ""
         }`}
@@ -142,6 +158,8 @@ function ReviewCard({
         <button
           type="button"
           className={styles.readMoreButton}
+          aria-expanded={expanded}
+          aria-controls={bodyId}
           onClick={onToggle}
         >
           {expanded ? "Show Less" : "Read Full Review"}
@@ -157,11 +175,36 @@ function ReviewCard({
         </div>
 
         <div>
-          <span>DETAILS</span>
+          <span>Details</span>
           <strong>{review.meta}</strong>
         </div>
       </div>
     </article>
+  );
+}
+
+/* Same footprint as a review card while the feed loads. */
+function ReviewCardSkeleton() {
+  return (
+    <div
+      className={`${styles.reviewCard} ${styles.skeletonCard}`}
+      aria-hidden="true"
+    >
+      <div className={styles.skeletonIdentity}>
+        <span className={`${styles.skeleton} ${styles.skeletonAvatar}`} />
+
+        <div>
+          <span className={`${styles.skeleton} ${styles.skeletonLine} ${styles.skeletonName}`} />
+          <span className={`${styles.skeleton} ${styles.skeletonLine} ${styles.skeletonShort}`} />
+        </div>
+      </div>
+
+      <span className={`${styles.skeleton} ${styles.skeletonTitle}`} />
+      <span className={`${styles.skeleton} ${styles.skeletonLine}`} />
+      <span className={`${styles.skeleton} ${styles.skeletonLine}`} />
+      <span className={`${styles.skeleton} ${styles.skeletonLine}`} />
+      <span className={`${styles.skeleton} ${styles.skeletonLine} ${styles.skeletonMid}`} />
+    </div>
   );
 }
 
@@ -173,45 +216,41 @@ export default function ReviewsPage() {
   const supabase = useMemo(() => createClient(), []);
 
   const [approvedReviews, setApprovedReviews] = useState<Review[]>([]);
-
   const [loading, setLoading] = useState(true);
-
   const [loadError, setLoadError] = useState<string | null>(null);
+  // Bumped by Try Again; the effect refetches when it changes.
+  const [reloadKey, setReloadKey] = useState(0);
 
   const [filter, setFilter] = useState<ReviewFilter>("All Reviews");
-
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
-
   const [expandedReviews, setExpandedReviews] = useState<Set<string>>(
-    new Set(),
+    () => new Set(),
   );
 
+  // Every state update here happens after the request resolves; the initial
+  // state already reads "loading", so nothing is set synchronously.
   useEffect(() => {
     let active = true;
 
     async function loadReviews() {
-      setLoading(true);
-      setLoadError(null);
+      try {
+        const { data, error } = await supabase.rpc("get_approved_reviews");
 
-      const { data, error } = await supabase.rpc("get_approved_reviews");
+        if (!active) return;
+        if (error) throw error;
 
-      if (!active) {
-        return;
-      }
+        setApprovedReviews(
+          ((data ?? []) as unknown as DatabaseReview[]).map(mapDatabaseReview),
+        );
+        setLoadError(null);
+      } catch {
+        if (!active) return;
 
-      if (error) {
-        setLoadError("Reviews could not load. Please refresh and retry.");
         setApprovedReviews([]);
-        setLoading(false);
-        return;
+        setLoadError(FEED_ERROR);
+      } finally {
+        if (active) setLoading(false);
       }
-
-      const mapped = ((data ?? []) as unknown as DatabaseReview[]).map(
-        mapDatabaseReview,
-      );
-
-      setApprovedReviews(mapped);
-      setLoading(false);
     }
 
     void loadReviews();
@@ -219,34 +258,52 @@ export default function ReviewsPage() {
     return () => {
       active = false;
     };
-  }, [supabase]);
+  }, [supabase, reloadKey]);
 
-  const allReviews = approvedReviews;
+  function retryReviews() {
+    setLoading(true);
+    setLoadError(null);
+    setReloadKey((key) => key + 1);
+  }
 
   const featuredReview =
     approvedReviews.find((review) => review.featured) ?? approvedReviews[0];
 
   const filteredReviews = useMemo(() => {
     if (filter === "Products") {
-      return allReviews.filter((review) => review.type === "Product");
+      return approvedReviews.filter((review) => review.type === "Product");
     }
 
     if (filter === "Services") {
-      return allReviews.filter((review) => review.type === "Service");
+      return approvedReviews.filter((review) => review.type === "Service");
     }
 
-    return allReviews;
-  }, [filter, allReviews]);
+    return approvedReviews;
+  }, [filter, approvedReviews]);
+
+  // Aggregate rating from the approved reviews actually loaded; hidden at 0.
+  const ratingSummary = useMemo(() => {
+    const ratings = approvedReviews
+      .map((review) => Number(review.rating))
+      .filter((rating) => Number.isFinite(rating) && rating >= 1 && rating <= 5);
+
+    if (ratings.length === 0) return null;
+
+    return {
+      average: ratings.reduce((total, rating) => total + rating, 0) / ratings.length,
+      count: ratings.length,
+    };
+  }, [approvedReviews]);
 
   const displayedReviews = filteredReviews.slice(0, visibleCount);
 
   const hasMore = visibleCount < filteredReviews.length;
 
-  const productCount = allReviews.filter(
+  const productCount = approvedReviews.filter(
     (review) => review.type === "Product",
   ).length;
 
-  const serviceCount = allReviews.filter(
+  const serviceCount = approvedReviews.filter(
     (review) => review.type === "Service",
   ).length;
 
@@ -278,26 +335,13 @@ export default function ReviewsPage() {
 
         <div className={styles.heroLayout}>
           <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>BIRDSHOP / COMMUNITY</p>
+            <p className={styles.eyebrow}>BirdShop / Community</p>
 
             <h1>
               What people
               <br />
               say.
             </h1>
-            <Link
-              href="/contact?topic=review"
-              style={{
-                display: "inline-flex",
-                padding: "13px 22px",
-                marginTop: 18,
-                borderRadius: 8,
-                background: "#455a3e",
-                color: "#fffdf1",
-              }}
-            >
-              Leave a review →
-            </Link>
 
             <p className={styles.heroDescription}>
               Product experiences, service feedback, and stories from the
@@ -319,22 +363,22 @@ export default function ReviewsPage() {
             </div>
           </div>
 
-          <div className={styles.heroEditorial}>
+          <div className={styles.heroEditorial} aria-hidden="true">
             <div className={styles.heroMark}>
               <span>BS</span>
               <div />
-              <strong>COMMUNITY</strong>
+              <strong>Community</strong>
               <small>
-                EXPERIENCES
+                Experiences
                 <br />
-                WORTH SHARING
+                worth sharing
               </small>
             </div>
 
             <div className={styles.heroSideCopy}>
-              <span>REAL</span>
-              <span>SIMPLE</span>
-              <span>CLEAR</span>
+              <span>Real</span>
+              <span>Simple</span>
+              <span>Clear</span>
             </div>
           </div>
         </div>
@@ -344,16 +388,16 @@ export default function ReviewsPage() {
         <div>
           <MessageIcon />
           <div>
-            <strong>Clear Feedback</strong>
-            <span>PRODUCT & SERVICE EXPERIENCES</span>
+            <strong>Clear feedback</strong>
+            <span>Product &amp; service experiences</span>
           </div>
         </div>
 
         <div>
           <PeopleIcon />
           <div>
-            <strong>Community Led</strong>
-            <span>APPROVED CUSTOMER SUBMISSIONS</span>
+            <strong>Community led</strong>
+            <span>Approved customer submissions</span>
           </div>
         </div>
 
@@ -361,24 +405,38 @@ export default function ReviewsPage() {
           <ShieldIcon />
           <div>
             <strong>Moderated</strong>
-            <span>REVIEWS CHECKED BEFORE PUBLISHING</span>
+            <span>Checked before publishing</span>
           </div>
         </div>
 
         <div>
           <HeartIcon />
           <div>
-            <strong>More Than Sales</strong>
-            <span>COMMUNITY COMES FIRST</span>
+            <strong>More than sales</strong>
+            <span>Community comes first</span>
           </div>
         </div>
       </section>
 
-      {featuredReview && (
+      {/* Holds the featured slot while loading, so the page does not jump. */}
+      {loading && (
+        <section className={styles.featuredSection} aria-hidden="true">
+          <div className={styles.featuredHeading}>
+            <div>
+              <span className={`${styles.skeleton} ${styles.skeletonLine} ${styles.skeletonEyebrow}`} />
+              <span className={`${styles.skeleton} ${styles.skeletonHeading}`} />
+            </div>
+          </div>
+
+          <div className={`${styles.skeleton} ${styles.featuredSkeleton}`} />
+        </section>
+      )}
+
+      {!loading && featuredReview && (
         <section className={styles.featuredSection}>
           <div className={styles.featuredHeading}>
             <div>
-              <span>FEATURED EXPERIENCE</span>
+              <span>Featured experience</span>
               <h2>From the community.</h2>
             </div>
 
@@ -387,7 +445,9 @@ export default function ReviewsPage() {
 
           <article className={styles.featuredReview}>
             <div className={styles.featuredDark}>
-              <div className={styles.featuredQuoteMark}>“</div>
+              <div className={styles.featuredQuoteMark} aria-hidden="true">
+                “
+              </div>
 
               <Stars rating={featuredReview.rating} />
 
@@ -396,13 +456,13 @@ export default function ReviewsPage() {
               <p>{featuredReview.body}</p>
 
               <span className={styles.sampleNotice}>
-                APPROVED COMMUNITY REVIEW
+                Approved community review
               </span>
             </div>
 
             <div className={styles.featuredDetails}>
               <div className={styles.featuredPerson}>
-                <div>{featuredReview.initials}</div>
+                <div aria-hidden="true">{featuredReview.initials}</div>
 
                 <span>
                   <strong>{featuredReview.reviewer}</strong>
@@ -412,17 +472,17 @@ export default function ReviewsPage() {
 
               <div className={styles.featuredMeta}>
                 <div>
-                  <span>EXPERIENCE</span>
+                  <span>Experience</span>
                   <strong>{featuredReview.type}</strong>
                 </div>
 
                 <div>
-                  <span>REVIEWED</span>
+                  <span>Reviewed</span>
                   <strong>{featuredReview.subject}</strong>
                 </div>
 
                 <div>
-                  <span>DETAILS</span>
+                  <span>Details</span>
                   <strong>{featuredReview.meta}</strong>
                 </div>
               </div>
@@ -445,37 +505,40 @@ export default function ReviewsPage() {
       <section id="reviews" className={styles.reviewSection}>
         <div className={styles.reviewHeading}>
           <div>
-            <span>COMMUNITY REVIEWS</span>
-            <h2>Recent Experiences</h2>
+            <span>Community reviews</span>
+            <h2>Recent experiences</h2>
           </div>
 
           <p>
-            {filteredReviews.length}{" "}
-            {filteredReviews.length === 1 ? "review" : "reviews"}
+            {loading
+              ? "Loading…"
+              : `${filteredReviews.length} ${
+                  filteredReviews.length === 1 ? "review" : "reviews"
+                }`}
           </p>
         </div>
 
         <div className={styles.filters}>
           {reviewTypes.map((item) => {
-            let count = allReviews.length;
+            const count =
+              item === "Products"
+                ? productCount
+                : item === "Services"
+                  ? serviceCount
+                  : approvedReviews.length;
 
-            if (item === "Products") {
-              count = productCount;
-            }
-
-            if (item === "Services") {
-              count = serviceCount;
-            }
+            const active = filter === item;
 
             return (
               <button
                 key={item}
                 type="button"
-                className={filter === item ? styles.activeFilter : ""}
+                className={active ? styles.activeFilter : ""}
+                aria-pressed={active}
                 onClick={() => changeFilter(item)}
               >
                 <span>{item}</span>
-                <small>{count}</small>
+                <small>{loading ? "—" : count}</small>
               </button>
             );
           })}
@@ -487,25 +550,45 @@ export default function ReviewsPage() {
           </div>
 
           <div>
-            <strong>
-              {loading
-                ? "Loading community reviews"
-                : loadError
-                  ? "Unable to load community reviews"
-                  : approvedReviews.length > 0
-                    ? `${approvedReviews.length} approved community ${approvedReviews.length === 1 ? "review" : "reviews"}`
-                    : "No approved reviews yet"}
-            </strong>
+            {!loading && !loadError && ratingSummary ? (
+              <div className={styles.ratingSummary}>
+                <Stars rating={Math.round(ratingSummary.average)} decorative />
+
+                <strong>
+                  {ratingSummary.average.toFixed(1)} average ·{" "}
+                  {ratingSummary.count} approved{" "}
+                  {ratingSummary.count === 1 ? "review" : "reviews"}
+                </strong>
+              </div>
+            ) : (
+              <strong>
+                {loading
+                  ? "Loading community reviews"
+                  : loadError
+                    ? "Unable to load community reviews"
+                    : "Moderated community feed"}
+              </strong>
+            )}
 
             <p>
               {loadError
-                ? "The review feed could not be loaded. No sample or filler reviews are shown as a fallback."
+                ? FEED_ERROR
                 : "Only reviews approved by BirdShop moderation appear here. Contact details are never included in the public review feed."}
             </p>
           </div>
         </div>
 
-        {displayedReviews.length > 0 ? (
+        {loading ? (
+          <div className={styles.reviewGrid} aria-busy="true">
+            <p className="visually-hidden" role="status">
+              Loading reviews…
+            </p>
+
+            {[0, 1, 2].map((card) => (
+              <ReviewCardSkeleton key={card} />
+            ))}
+          </div>
+        ) : displayedReviews.length > 0 ? (
           <>
             <div className={styles.reviewGrid}>
               {displayedReviews.map((review) => (
@@ -537,22 +620,23 @@ export default function ReviewsPage() {
                   }
                 >
                   Show More Reviews
-                  <span>↓</span>
+                  <span aria-hidden="true">↓</span>
                 </button>
               ) : (
                 <div className={styles.allShown}>
                   <CheckIcon />
-                  All Reviews Shown
+                  All reviews shown
                 </div>
               )}
             </div>
           </>
         ) : (
-          <div className={styles.reviewEmpty}>
+          <div
+            className={styles.reviewEmpty}
+            role={loadError ? "alert" : undefined}
+          >
             <span>
-              {loadError
-                ? "REVIEW FEED UNAVAILABLE"
-                : "NO APPROVED REVIEWS YET"}
+              {loadError ? "Review feed unavailable" : "No approved reviews yet"}
             </span>
 
             <h3>
@@ -563,11 +647,15 @@ export default function ReviewsPage() {
 
             <p>
               {loadError
-                ? "Try refreshing the page in a moment."
+                ? "Nothing about your own submission has changed. Please try again in a moment."
                 : "New submissions stay private until a BirdShop admin approves them."}
             </p>
 
-            {!loadError && (
+            {loadError ? (
+              <button type="button" onClick={retryReviews}>
+                Try Again
+              </button>
+            ) : (
               <Link href="/contact?topic=review">
                 Leave a Review
                 <ArrowIcon />
@@ -581,7 +669,7 @@ export default function ReviewsPage() {
         <div className={styles.feedbackOverlay} />
 
         <div className={styles.feedbackCopy}>
-          <span>YOUR EXPERIENCE MATTERS</span>
+          <span>Your experience matters</span>
 
           <h2>
             Have something
@@ -612,13 +700,13 @@ export default function ReviewsPage() {
       <section className={styles.values}>
         <div>
           <MessageIcon />
-          <h3>Useful Feedback</h3>
+          <h3>Useful feedback</h3>
           <p>Positive or negative, specific feedback helps BirdShop improve.</p>
         </div>
 
         <div>
           <ShieldIcon />
-          <h3>Moderated Publishing</h3>
+          <h3>Moderated publishing</h3>
           <p>
             Reviews are checked before publishing while the customer&apos;s
             written feedback remains intact.
@@ -627,7 +715,7 @@ export default function ReviewsPage() {
 
         <div>
           <PeopleIcon />
-          <h3>Community First</h3>
+          <h3>Community first</h3>
           <p>BirdShop is built around people, not just transactions.</p>
         </div>
       </section>

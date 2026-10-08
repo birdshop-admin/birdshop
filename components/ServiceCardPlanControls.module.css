@@ -1,671 +1,405 @@
 /* =========================================================
-   BIRDSHOP
-   SERVICE CATALOG PACKAGE CONTROLS
+   BIRDSHOP · SERVICE CARD PACKAGE CONTROLS
 
-   Palette:
-   Starter  = soft sage
-   Standard = BirdShop olive
-   Premium  = deep forest
-   Custom   = muted forest-grey
-
-   Everything stays inside the main BirdShop palette.
-========================================================= */
-
-.controls {
-  position: relative;
-  z-index: 5;
-
-  margin-top: 20px;
-  padding-top: 17px;
-
-  border-top:
-    1px solid
-    var(--theme-border-207-215-196-0_11, rgba(45, 56, 41, 0.11));
-}
-
-/* =========================================================
-   SECTION HEADER
-========================================================= */
-
-.heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-
-  gap: 14px;
-
-  margin-bottom: 11px;
-}
-
-.heading > span {
-  color: var(--theme-text-184-196-170-1, #63705c);
-
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
-  font-size: 9px;
-  font-weight: 700;
-
-  letter-spacing: 0.19em;
-}
-
-.heading small {
-  color: var(--theme-text-184-196-170-1, #7d8579);
-
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
-
-  font-size: 10px;
-  line-height: 1.3;
-}
-
-/* =========================================================
-   SHARED TIER VARIABLES
+   All colour comes from --bs-* tokens, so light and dark need no
+   separate blocks. Tier accents are mixed from the accent token and
+   flip with the theme: Basic is the softest, Premium the strongest.
 ========================================================= */
 
 .starter {
-  --tier-accent: #6e7f66;
-  --tier-accent-dark: #596b52;
-
-  --tier-border: #9eae97;
-
-  --tier-surface: var(--theme-surface-24-28-24-1, #e8ece4);
-  --tier-surface-light: var(--theme-surface-24-28-24-1, #f0f2ed);
-
-  --tier-text: var(--theme-text-184-196-170-1, #4e6048);
+  --tier-accent: color-mix(in srgb, var(--bs-accent) 55%, var(--bs-card));
 }
 
 .standard {
-  --tier-accent: #506348;
-  --tier-accent-dark: #40543a;
-
-  --tier-border: var(--theme-border-207-215-196-1, #809278);
-
-  --tier-surface: var(--theme-surface-48-54-44-1, #e1e6dd);
-  --tier-surface-light: var(--theme-surface-24-28-24-1, #ebeee8);
-
-  --tier-text: var(--theme-text-184-196-170-1, #3d5038);
+  --tier-accent: color-mix(in srgb, var(--bs-accent) 84%, var(--bs-card));
 }
 
 .premium {
-  --tier-accent: #314c38;
-  --tier-accent-dark: #253f2d;
-
-  --tier-border: var(--theme-border-207-215-196-1, #748a77);
-
-  --tier-surface: var(--theme-surface-48-54-44-1, #dce5dd);
-  --tier-surface-light: var(--theme-surface-24-28-24-1, #e8ede8);
-
-  --tier-text: var(--theme-text-240-236-226-1, #273f2e);
+  --tier-accent: color-mix(in srgb, var(--bs-accent) 72%, var(--bs-ink));
 }
 
 .custom {
-  --tier-accent: #59675a;
-  --tier-accent-dark: #465447;
-
-  --tier-border: var(--theme-border-207-215-196-1, #8f9b90);
-
-  --tier-surface: var(--theme-surface-48-54-44-1, #e4e8e3);
-  --tier-surface-light: var(--theme-surface-24-28-24-1, #eef0ed);
-
-  --tier-text: var(--theme-text-184-196-170-1, #455245);
+  --tier-accent: color-mix(in srgb, var(--bs-faint) 78%, var(--bs-card));
 }
 
-/* =========================================================
-   PLAN SELECTORS
+/* The card body is a flex column, so margin-top:auto lines the CTAs up
+   across a grid row. */
+.controls {
+  position: relative;
+  z-index: 3;
 
-   auto-fit fixes Custom Request:
-   1 plan  = full width
-   2 plans = 50 / 50
-   3 plans = thirds
-========================================================= */
+  margin-top: auto;
+  padding-top: 18px;
+
+  border-top: 1px solid var(--bs-line);
+}
+
+/* ---------------------------------------------------------
+   HEADING
+--------------------------------------------------------- */
+
+.heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+
+  margin-bottom: 12px;
+}
+
+.heading > span {
+  color: var(--bs-accent);
+
+  font: 700 10px/1.2 var(--sans);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.heading small {
+  color: var(--bs-faint);
+
+  font: 12px/1.3 var(--serif);
+}
+
+/* ---------------------------------------------------------
+   PACKAGE BUTTONS
+--------------------------------------------------------- */
 
 .tiers {
   display: grid;
-
-  grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(
-        105px,
-        1fr
-      )
-    );
-
-  gap: 7px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
 
-/* =========================================================
-   TIER BUTTON
-========================================================= */
+.tiers[data-count="1"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.tiers[data-count="2"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
 
 .tierButton {
   position: relative;
 
   min-width: 0;
-  min-height: 43px;
+  min-height: 44px;
 
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
 
-  gap: 7px;
+  padding: 0 10px;
 
-  padding:
-    0
-    10px;
+  border: 1px solid var(--bs-line);
+  border-radius: var(--bs-r-control);
 
-  border:
-    1px solid
-    var(--tier-border);
-
-  border-radius: 5px;
-
-  color:
-    var(--tier-text);
-
-  background:
-    linear-gradient(
-      180deg,
-      var(--tier-surface-light),
-      var(--tier-surface)
-    );
+  color: var(--bs-ink);
+  background: var(--bs-field);
 
   cursor: pointer;
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
-  font-size: 9px;
-  font-weight: 700;
-
-  letter-spacing: 0.08em;
-
-  box-shadow:
-    inset
-    0
-    1px
-    0
-    rgba(
-      255,
-      255,
-      255,
-      0.45
-    );
+  font: 700 11px/1.1 var(--sans);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 
   transition:
-    transform 150ms ease,
-    border-color 150ms ease,
-    background 150ms ease,
-    box-shadow 150ms ease,
-    color 150ms ease;
+    border-color var(--bs-dur-fast) ease,
+    background-color var(--bs-dur-fast) ease,
+    color var(--bs-dur-fast) ease;
 }
 
-.tierButton:hover {
-  transform:
-    translateY(-1px);
-
-  border-color:
-    var(--tier-accent);
-
-  box-shadow:
-    0
-    5px
-    13px
-    rgba(
-      25,
-      34,
-      24,
-      0.06
-    );
+/* Custom quote always sits on its own row under the fixed packages. */
+.tierButton.custom {
+  grid-column: 1 / -1;
 }
 
-/* =========================================================
-   SELECTED TIER
-========================================================= */
+.tierButton > i {
+  flex: none;
 
-.tierButton.active {
-  color: #f2eee4;
+  width: 7px;
+  height: 7px;
 
-  border-color:
-    var(--tier-accent-dark);
+  border-radius: 50%;
 
-  background:
-    linear-gradient(
-      135deg,
-      var(--tier-accent),
-      var(--tier-accent-dark)
-    );
-
-  box-shadow:
-    0
-    6px
-    15px
-    rgba(
-      23,
-      33,
-      23,
-      0.11
-    ),
-    inset
-    0
-    1px
-    0
-    rgba(
-      255,
-      255,
-      255,
-      0.12
-    );
+  background: var(--tier-accent);
 }
 
-.tierButton svg {
-  width: 12px;
-  height: 12px;
-
-  flex: 0 0 auto;
-}
-
-/* =========================================================
-   LIVE PRICE PREVIEW
-========================================================= */
-
-.pricePreview {
-  position: relative;
-
-  min-height: 72px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 20px;
-
-  margin-top: 9px;
-
-  padding:
-    12px
-    15px
-    12px
-    17px;
-
-  overflow: hidden;
-
-  border:
-    1px solid
-    var(--tier-border);
-
-  border-radius: 6px;
-
-  background:
-    linear-gradient(
-      90deg,
-      var(--tier-surface-light),
-      var(--theme-surface-24-28-24-1, #f7f4eb) 74%
-    );
-
-  box-shadow:
-    inset
-    0
-    1px
-    0
-    rgba(
-      255,
-      255,
-      255,
-      0.5
-    );
-
-  transition:
-    border-color 160ms ease,
-    background 160ms ease;
-}
-
-/* accent strip */
-
-.pricePreview::before {
-  content: "";
-
-  position: absolute;
-
-  top: 0;
-  bottom: 0;
-  left: 0;
-
-  width: 4px;
-
-  background:
-    var(--tier-accent);
-}
-
-.pricePreview > div {
+.tierButton > span {
   min-width: 0;
 
-  display: flex;
-  flex-direction: column;
-
-  gap: 5px;
-}
-
-.pricePreview span {
-  color:
-    var(--theme-readable-accent, var(--tier-accent-dark));
-
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
-  font-size: 9px;
-  font-weight: 700;
-
-  letter-spacing: 0.14em;
-
-  text-transform: uppercase;
-}
-
-.pricePreview small {
   overflow: hidden;
-
-  color: var(--theme-text-184-196-170-1, #647063);
-
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
-
-  font-size: 11px;
-  line-height: 1.35;
-
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.pricePreview strong {
-  flex: 0 0 auto;
+.tierButton svg {
+  flex: none;
 
-  color:
-    var(--tier-text);
-
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
-
-  font-size: 21px;
-  font-weight: 400;
-
-  letter-spacing: -0.02em;
+  width: 13px;
+  height: 13px;
 }
 
-/* =========================================================
-   ACTION ROW
-========================================================= */
-
-.actions {
-  display: grid;
-
-  grid-template-columns:
-    minmax(
-      0,
-      1fr
-    )
-    118px;
-
-  gap: 10px;
-
-  margin-top: 10px;
+.tierButton[aria-pressed="true"] {
+  color: var(--bs-selected-ink);
+  background: var(--bs-selected-bg);
+  border-color: var(--bs-selected-line);
 }
 
-/* =========================================================
-   VIEW PLAN — PRIMARY
-========================================================= */
+.tierButton[aria-pressed="true"] > i {
+  display: none;
+}
 
-.viewPlans {
-  min-height: 49px;
+.tierButton:focus-visible {
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------
+   PRICE PREVIEW + QUOTE PANEL
+--------------------------------------------------------- */
+
+.pricePreview,
+.quotePanel {
+  position: relative;
+
+  min-height: 76px;
 
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 
-  gap: 14px;
+  margin-top: 10px;
+  padding: 14px 16px 14px 20px;
 
-  padding:
-    0
-    15px;
+  overflow: hidden;
 
-  border:
-    1px solid
-    var(--theme-border-207-215-196-0_22, rgba(
-      52,
-      68,
-      46,
-      0.22
-    ));
+  border: 1px solid var(--bs-line);
+  border-radius: var(--bs-r-control);
 
-  border-radius: 5px;
+  background: var(--bs-raised);
+}
 
-  color: #f2eee4;
+.quotePanel {
+  margin-top: 0;
+}
 
-  background:
-    linear-gradient(
-      90deg,
-      #4d5d44,
-      #415139
-    );
+/* Accent strip in the tier colour. */
+.pricePreview::before,
+.quotePanel::before {
+  content: "";
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  position: absolute;
+  inset: 0 auto 0 0;
 
-  font-size: 13px;
+  width: 4px;
 
-  box-shadow:
-    inset
-    0
-    1px
-    0
-    rgba(
-      255,
-      255,
-      255,
-      0.08
-    );
+  background: var(--tier-accent);
+
+  transition: background-color var(--bs-dur-fast) ease;
+}
+
+.pricePreview > div,
+.quotePanel > div {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pricePreview span,
+.quotePanel span {
+  color: var(--bs-accent);
+
+  font: 700 10px/1.2 var(--sans);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.pricePreview small {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+
+  overflow: hidden;
+
+  color: var(--bs-muted);
+
+  font: 13px/1.4 var(--serif);
+  overflow-wrap: anywhere;
+}
+
+.quotePanel p {
+  margin: 0;
+
+  color: var(--bs-muted);
+
+  font: 13px/1.5 var(--serif);
+}
+
+.pricePreview strong,
+.quotePanel strong {
+  flex: none;
+
+  color: var(--bs-ink);
+
+  font: 400 22px/1 var(--serif);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.quotePanel strong {
+  font-size: 19px;
+}
+
+/* ---------------------------------------------------------
+   ACTIONS
+--------------------------------------------------------- */
+
+.actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+
+  margin-top: 12px;
+}
+
+.primary,
+.secondary {
+  min-width: 0;
+  min-height: 48px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 0 16px;
+
+  border-radius: var(--bs-r-control);
+
+  font: 15px/1.2 var(--serif);
+}
+
+.primary {
+  border: 1px solid transparent;
+
+  color: var(--bs-btn-ink);
+  background: var(--bs-btn-bg);
+
+  cursor: pointer;
 
   transition:
-    transform 150ms ease,
-    background 150ms ease,
-    box-shadow 150ms ease;
+    background-color var(--bs-dur-fast) ease,
+    transform var(--bs-dur-fast) var(--ease-standard);
 }
 
-.viewPlans:hover {
-  transform:
-    translateY(-1px);
+.primary svg {
+  flex: none;
 
-  background:
-    linear-gradient(
-      90deg,
-      #586a4e,
-      #495b41
-    );
-
-  box-shadow:
-    0
-    7px
-    16px
-    rgba(
-      27,
-      36,
-      25,
-      0.09
-    );
-}
-
-.viewPlans svg {
   width: 16px;
   height: 16px;
 
   margin-left: auto;
 }
 
-/* =========================================================
-   GET STARTED — SECONDARY
-========================================================= */
+.primary:disabled {
+  justify-content: center;
 
-.getStarted {
-  min-height: 49px;
+  color: var(--bs-btn-disabled-ink);
+  background: var(--bs-btn-disabled-bg);
 
-  display: grid;
-  place-items: center;
+  cursor: not-allowed;
+}
 
-  padding:
-    0
-    11px;
+.secondary {
+  justify-content: center;
 
-  border:
-    1px solid
-    var(--theme-border-207-215-196-0_18, rgba(
-      54,
-      66,
-      50,
-      0.18
-    ));
+  border: 1px solid var(--bs-line-strong);
 
-  border-radius: 5px;
+  color: var(--bs-ink);
+  background: transparent;
 
-  color: var(--theme-text-240-236-226-1, #424d40);
-
-  background:
-    var(--theme-surface-24-28-24-0_68, rgba(
-      248,
-      245,
-      237,
-      0.68
-    ));
-
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
-
-  font-size: 12px;
+  white-space: nowrap;
 
   transition:
-    transform 150ms ease,
-    border-color 150ms ease,
-    background 150ms ease;
+    background-color var(--bs-dur-fast) ease,
+    border-color var(--bs-dur-fast) ease;
 }
 
-.getStarted:hover {
-  transform:
-    translateY(-1px);
+.howLink {
+  align-self: flex-start;
 
-  border-color:
-    var(--theme-border-207-215-196-0_34, rgba(
-      74,
-      89,
-      66,
-      0.34
-    ));
+  display: inline-block;
 
-  background:
-    var(--theme-surface-48-54-44-0_7, rgba(
-      227,
-      233,
-      223,
-      0.7
-    ));
+  margin-top: 12px;
+
+  color: var(--bs-muted);
+
+  font: 13px/1.4 var(--serif);
+  text-decoration: underline;
+  text-decoration-color: var(--bs-line-strong);
+  text-underline-offset: 4px;
+
+  transition:
+    color var(--bs-dur-fast) ease,
+    text-decoration-color var(--bs-dur-fast) ease;
 }
 
-/* =========================================================
-   CUSTOM SERVICE
+@media (hover: hover) and (pointer: fine) {
+  .tierButton:not([aria-pressed="true"]):hover {
+    border-color: var(--bs-line-strong);
+    background: var(--bs-raised);
+  }
 
-   Keeps the one-plan version from feeling empty.
-========================================================= */
+  .primary:not(:disabled):hover {
+    background: var(--bs-btn-hover);
+  }
 
-.tiers:has(.tierButton:only-child)
-.tierButton {
-  justify-content: flex-start;
+  .secondary:hover {
+    border-color: var(--bs-line-strong);
+    background: var(--bs-line);
+  }
 
-  padding-left: 15px;
+  .howLink:hover {
+    color: var(--bs-ink);
+    text-decoration-color: currentColor;
+  }
 }
 
-.tiers:has(.tierButton:only-child)
-.tierButton::after {
-  content:
-    "PERSONALIZED QUOTE";
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .primary:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
 
-  margin-left: auto;
-
-  color:
-    currentColor;
-
-  opacity: 0.62;
-
-  font-size: 9px;
-  letter-spacing: 0.12em;
+  .primary:not(:disabled):active {
+    transform: translateY(1px);
+  }
 }
 
-/* =========================================================
+/* ---------------------------------------------------------
    MOBILE
-========================================================= */
+--------------------------------------------------------- */
 
 @media (max-width: 650px) {
-  .controls {
-    margin-top: 18px;
-
-    padding-top: 16px;
-  }
-
   .heading {
-    align-items: flex-start;
     flex-direction: column;
-
-    gap: 5px;
-  }
-
-  .heading > span {
-    font-size: 9px;
-  }
-
-  .heading small {
-    font-size: 10px;
-  }
-
-  .tiers {
-    grid-template-columns: 1fr;
+    align-items: flex-start;
+    gap: 4px;
   }
 
   .tierButton {
-    min-height: 44px;
+    padding: 0 6px;
 
-    justify-content: space-between;
-
-    padding:
-      0
-      13px;
-
-    font-size: 10px;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
   }
 
-  .pricePreview {
-    min-height: 74px;
-
-    padding:
-      13px
-      14px
-      13px
-      17px;
-  }
-
-  .pricePreview small {
-    max-width: 190px;
+  .tierButton:not(.custom) > i {
+    display: none;
   }
 
   .pricePreview strong {
@@ -673,22 +407,6 @@
   }
 
   .actions {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
-
-  .viewPlans,
-  .getStarted {
-    min-height: 49px;
-  }
-
-  .tiers:has(.tierButton:only-child)
-  .tierButton {
-    justify-content: space-between;
-  }
-}
-.getStarted:disabled {
-  background: var(--theme-surface-48-54-44-1, #dfe4d6);
-  color: var(--theme-text-184-196-170-1, #637158);
-  border: 1px solid #bec8b2;
-  cursor: not-allowed;
 }

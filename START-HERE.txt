@@ -19,6 +19,23 @@ WHAT I NEED TO DO NOW
    5. 20261005020000_digital_checkout_and_delivery.sql
    6. 20261005020100_analytics_and_admin_controls.sql
    7. 20261005030000_final_web_hardening.sql
+   8. 20261005080000_customer_inbox.sql
+   9. 20261005180000_remember_device_chats.sql
+   10. 20261005220000_owner_reporting.sql
+   11. 20261005230000_service_catalog.sql
+   12. 20261006030000_owner_chat_cleanup.sql
+   13. 20261007220000_cancel_removed_chat_emails.sql
+   14. 20261007223000_inventory_server_permissions.sql
+   15. 20261008013000_paid_service_packages.sql
+   16. 20261008090000_custom_only_services.sql
+   17. 20261008120000_production_readiness.sql
+   18. 20261009010000_service_custom_only_backfill.sql
+   19. 20261009020000_explicit_owner_checks.sql
+   20. 20261009030000_paid_chat_first_reply.sql
+
+   The authoritative list is every file in supabase/migrations in filename order. After the last
+   one, run supabase/verify-production-readiness.sql (read-only); every row should say PASS.
+   See PRODUCTION-READINESS.md for what 17 and 18 change and what to verify manually.
 
    The first migration is the access/request patch you already reported as successful. Confirm it is applied and SKIP rerunning it. If any of the other files have since been applied, skip those as well. Do not run supabase/legacy/*.sql, the older BirdShop-002-complete-update.sql draft, or any earlier combined installer. A migration failure rolls back that file: stop and resolve its reported constraint/compatibility issue; never delete paid history to make it pass. No earlier migration was edited in this final pass.
 

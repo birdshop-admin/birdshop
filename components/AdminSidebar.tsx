@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import AdminLogoutButton from "@/components/AdminLogoutButton";
+import ThemeToggle from "@/components/ThemeToggle";
 
 import styles from "./AdminSidebar.module.css";
 
@@ -26,7 +27,6 @@ type AdminSidebarProps = {
 const ownerNavigation = [
   { label: "Overview", href: "/admin" },
   { label: "Chat", href: "/admin/chat" },
-  { label: "Orders", href: "/admin/orders" },
   { label: "Products", href: "/admin/products" },
   { label: "Services", href: "/admin/services" },
   { label: "Inventory", href: "/admin/inventory" },
@@ -85,7 +85,7 @@ export default function AdminSidebar({ role = "owner" }: AdminSidebarProps) {
     : "/admin";
 
   return (
-    <aside className={styles.sidebar}>
+    <aside className={`${styles.sidebar} birdshop-admin-sidebar`}>
       {/* ===================================================
           BRAND
       =================================================== */}
@@ -96,7 +96,7 @@ export default function AdminSidebar({ role = "owner" }: AdminSidebarProps) {
           alt="BirdShop"
           width={46}
           height={46}
-          priority
+          loading="eager"
         />
 
         <div>
@@ -143,6 +143,7 @@ export default function AdminSidebar({ role = "owner" }: AdminSidebarProps) {
           </nav>
           <div className={styles.mobileActions}>
             <Link href="/">View store</Link>
+            <ThemeToggle placement="sidebar" />
             <AdminLogoutButton />
           </div>
         </div>
@@ -183,6 +184,8 @@ export default function AdminSidebar({ role = "owner" }: AdminSidebarProps) {
         {isServiceAgent && (
           <div className={styles.storeLink}>Service access only</div>
         )}
+
+        <ThemeToggle placement="sidebar" />
 
         <div className={styles.logout}>
           <AdminLogoutButton />

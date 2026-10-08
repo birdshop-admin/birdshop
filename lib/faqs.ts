@@ -113,7 +113,7 @@ export const faqs: FAQ[] = [
     question: "How do BirdShop game services work?",
 
     answer:
-      "Choose a service and open a Custom request through Contact. Discuss the scope in your private on-site chat. If payment is needed, BirdShop sends a payment request in that chat. Pay securely through Stripe; work stays open until it is completed.",
+      "There are two ways to order. Ready-made packages (Basic, Standard or Premium) show their price up front: choose one, pay securely through Stripe, and your private chat opens once payment is confirmed. Custom requests start with a free conversation: describe what you need, BirdShop replies with a quote and a secure payment request in your chat, and work begins after you pay. You receive an email when your order is completed.",
 
     tags: ["service", "request", "game service", "process"],
 
@@ -125,10 +125,10 @@ export const faqs: FAQ[] = [
 
     category: "Services",
 
-    question: "What does a Custom service include?",
+    question: "What is the difference between a package and a Custom request?",
 
     answer:
-      "Every service is Custom. The scope, timing, and price are agreed in your private chat before you pay. Starting a conversation does not create an order or charge you.",
+      "A package has a fixed price and a listed scope, so you pay first and arrange the details in your private chat. A Custom request has no fixed price: the scope, timing and price are agreed in your chat before you pay. Some services are offered as Custom requests only. Starting a conversation never creates an order or charges you.",
 
     tags: ["custom", "service", "chat"],
   },

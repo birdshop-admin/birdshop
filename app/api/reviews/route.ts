@@ -38,6 +38,7 @@ export async function POST(request: Request) {
         .from("products")
         .select("name")
         .eq("slug", slug)
+        .eq("is_visible", true)
         .maybeSingle();
       if (error || !data) throw new Error("Choose a product to review.");
       subject = data.name;

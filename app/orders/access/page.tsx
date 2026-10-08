@@ -3,7 +3,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { OrderAccess } from "@/components/PrivateOrder";
 export const metadata = {
-  title: "Private order · BirdShop",
+  title: "Private order",
   robots: { index: false, follow: false },
 };
 export default function Page() {

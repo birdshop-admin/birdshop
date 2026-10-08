@@ -93,6 +93,8 @@ function isProgressWorkflow(value: unknown) {
   if (
     !status ||
     status === "new" ||
+    // A paid package chat stays in New until staff reply to it.
+    status === "paid" ||
     status === "completed" ||
     status === "cancelled" ||
     status === "closed" ||

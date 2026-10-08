@@ -3,7 +3,7 @@ import { orderToken } from "@/lib/order-access";
 import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
-import { objectId, siteUrl } from "@/lib/server-config";
+import { objectId, PublicError, siteUrl } from "@/lib/server-config";
 
 export type CheckoutAttempt = {
   id: string;
@@ -42,9 +42,13 @@ export type CheckoutAttempt = {
 export async function serverRpc<T>(
   name: string,
   args: Record<string, unknown> = {},
+  // Database messages matching these are customer-safe and shown verbatim.
+  publicMessages: RegExp[] = [],
 ): Promise<T> {
   const { data, error } = await createAdminClient().rpc(name, args);
   if (error) {
+    if (publicMessages.some((pattern) => pattern.test(error.message)))
+      throw new PublicError(error.message, 409);
     console.error("BirdShop RPC failed", { rpc: name, code: error.code });
     throw new Error("Payment processing requires reconciliation.");
   }
@@ -232,6 +236,25 @@ export async function synchronizeRefund(
   });
   if (!id && (order || known || charge.metadata?.birdshop_type))
     throw new Error("Refund is waiting for its paid order.");
+  if (id && charge.amount_refunded > 0) await queueRefundEmails(id, charge.amount_refunded);
+}
+
+// One owner alert and one customer notice per refunded total. Stripe sends several
+// events for each refund; the dedupe key makes repeats harmless, while a later
+// second partial refund (a new total) notifies again.
+async function queueRefundEmails(orderId: string, refundedCents: number) {
+  const { error } = await createAdminClient()
+    .from("birdshop_email_jobs")
+    .upsert(
+      ["admin", "customer"].map((who) => ({
+        dedupe_key: `refund/${who}/${orderId}/${refundedCents}`,
+        kind: `${who}_refund`,
+        entity_id: orderId,
+      })),
+      { onConflict: "dedupe_key", ignoreDuplicates: true },
+    );
+  // The refund itself is already recorded; a failed notice must not fail the webhook.
+  if (error) console.error("BirdShop refund email could not be queued", { orderId });
 }
 
 export async function synchronizeRefundFailure(
@@ -380,6 +403,8 @@ export async function startCheckout(
     throw new Error(
       "This checkout needs review before another payment is started.",
     );
+  // The customer asked to cancel before a session existed: never open one now.
+  if (attempt.cancel_requested_at) return null;
   if (
     Date.now() - new Date(attempt.created_at).getTime() >=
     23 * 60 * 60 * 1000
@@ -389,11 +414,33 @@ export async function startCheckout(
     );
   const db = createAdminClient();
   let params = attempt.stripe_params;
+  let prepared = attempt;
+  // Stripe rejects sessions expiring in under 30 minutes. An unstarted attempt (its first
+  // Stripe call never happened) gets one fresh hour before its parameters are persisted,
+  // so a returning customer can pay instead of waiting for the old hold to lapse.
+  if (
+    !params &&
+    new Date(attempt.expires_at).getTime() - Date.now() < 31 * 60 * 1000
+  ) {
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    const { data: extended, error: extendError } = await db
+      .from("birdshop_checkout_attempts")
+      .update({ expires_at: expiresAt })
+      .eq("id", attempt.id)
+      .eq("status", "creating")
+      .is("stripe_params", null)
+      .is("stripe_session_id", null)
+      .select("id")
+      .maybeSingle();
+    if (extendError) throw new Error("Could not prepare checkout.");
+    if (!extended) throw new Error("Checkout state changed. Please retry.");
+    prepared = { ...attempt, expires_at: expiresAt };
+  }
   if (!params) {
     // Persist the exact Stripe request BEFORE the network call. Concurrent retries use identical parameters.
     const { error } = await db
       .from("birdshop_checkout_attempts")
-      .update({ stripe_params: buildStripeParams(attempt) })
+      .update({ stripe_params: buildStripeParams(prepared) })
       .eq("id", attempt.id)
       .eq("status", "creating")
       .is("stripe_params", null);

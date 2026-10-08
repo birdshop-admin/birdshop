@@ -1,4 +1,4 @@
-import { publicErrorResponse } from "@/lib/server-config";
+import { PublicError, publicErrorResponse } from "@/lib/server-config";
 import { rememberDeviceChat } from "@/lib/customer-device";
 import { isUuid, readBody } from "@/lib/server-config";
 import { after } from "next/server";
@@ -7,6 +7,7 @@ import { limitRequest, rateLimit } from "@/lib/rate-limit";
 import { serverRpc } from "@/lib/payment-service";
 import { drainEmailJobs } from "@/lib/email-jobs";
 import { getService } from "@/lib/service-catalog";
+import { isQuoteOnly } from "@/lib/service-packages";
 import { createAdminClient } from "@/lib/supabase/admin";
 export async function POST(request: Request) {
   try {
@@ -33,7 +34,10 @@ export async function POST(request: Request) {
     const service =
       type === "service" ? await getService(String(body.p_service_slug)) : null;
     if (type === "service" && (!service || !service.available))
-      throw new Error("Choose an available service.");
+      throw new PublicError(
+        "This service is currently paused. Choose another service.",
+        409,
+      );
     let product: {
       slug: string;
       name: string;
@@ -61,7 +65,13 @@ export async function POST(request: Request) {
         p_service_slug: service?.slug ?? null,
         p_service_name: service?.name ?? null,
         p_package_id: service ? "custom" : null,
-        p_package_name: service ? "Custom" : null,
+        // Same names as the storefront: "Custom quote" for a quote-only
+        // service, "Custom" beside fixed packages.
+        p_package_name: service
+          ? isQuoteOnly(service)
+            ? "Custom quote"
+            : "Custom"
+          : null,
         p_product_slug: product?.slug ?? null,
         p_product_name: product?.name ?? null,
         p_product_platform: product?.platform ?? null,

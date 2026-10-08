@@ -6,6 +6,12 @@ const discordUrl =
     ? invite
     : "/contact?topic=general";
 
+// A real invite opens in a new tab; the Contact fallback stays in this tab.
+export const hasDiscordInvite = discordUrl.startsWith("https://");
+export const discordLinkProps = hasDiscordInvite
+  ? ({ target: "_blank", rel: "noreferrer" } as const)
+  : {};
+
 export const siteConfig = {
   name: "BirdShop",
 
@@ -19,49 +25,16 @@ export const siteConfig = {
 
   supportEmail: "",
 
+  // One order for the header, the mobile menu and the footer.
   navigation: [
+    { label: "Home", href: "/" },
+    { label: "Products", href: "/products" },
+    { label: "Services", href: "/services" },
     { label: "How to Order", href: "/how-to-order" },
-    {
-      label: "Home",
-
-      href: "/",
-    },
-
-    {
-      label: "Products",
-
-      href: "/products",
-    },
-
-    {
-      label: "Services",
-
-      href: "/services",
-    },
-
-    {
-      label: "My Service",
-
-      href: "/service-chat",
-    },
-
-    {
-      label: "Reviews",
-
-      href: "/reviews",
-    },
-
-    {
-      label: "Contact",
-
-      href: "/contact",
-    },
-
-    {
-      label: "FAQs",
-
-      href: "/faqs",
-    },
+    { label: "My Service", href: "/service-chat" },
+    { label: "Reviews", href: "/reviews" },
+    { label: "FAQs", href: "/faqs" },
+    { label: "Contact", href: "/contact" },
   ],
 
   socials: {

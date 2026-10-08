@@ -1,6 +1,8 @@
 "use client";
+import { formatUSD } from "@/lib/money";
 
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import ProductThumbnail from "@/components/ProductThumbnail";
 import ProductCheckout from "@/components/ProductCheckout";
 import SiteHeader from "@/components/SiteHeader";
@@ -8,6 +10,56 @@ import SiteFooter from "@/components/SiteFooter";
 import { useCart } from "@/app/cart-context";
 
 import styles from "./cart.module.css";
+
+const CLEAR_CONFIRM_MS = 4000;
+
+function CartHero({ description }: { description: string }) {
+  return (
+    <section className={styles.topSection}>
+      <div className={styles.cartHero}>
+        <span>Your order</span>
+        <h1>Shopping Cart</h1>
+        <p>{description}</p>
+      </div>
+    </section>
+  );
+}
+
+function CartSkeleton() {
+  return (
+    <div className={styles.cartLayout} aria-hidden="true">
+      <div className={styles.cartItems}>
+        <div className={styles.cartHeading}>
+          <span className={`${styles.skeleton} ${styles.skeletonHeading}`} />
+        </div>
+
+        {[0, 1].map((row) => (
+          <div key={row} className={`${styles.cartItem} ${styles.skeletonRow}`}>
+            <span className={`${styles.skeleton} ${styles.skeletonVisual}`} />
+
+            <div className={styles.itemInfo}>
+              <span className={`${styles.skeleton} ${styles.skeletonLine} ${styles.skeletonShort}`} />
+              <span className={`${styles.skeleton} ${styles.skeletonTitle}`} />
+              <span className={`${styles.skeleton} ${styles.skeletonLine} ${styles.skeletonMid}`} />
+            </div>
+
+            <span className={`${styles.skeleton} ${styles.skeletonQty}`} />
+            <span className={`${styles.skeleton} ${styles.skeletonPrice}`} />
+          </div>
+        ))}
+      </div>
+
+      <div className={`${styles.summary} ${styles.summarySkeleton}`}>
+        <span className={`${styles.skeleton} ${styles.skeletonLine} ${styles.skeletonShort}`} />
+        <span className={`${styles.skeleton} ${styles.skeletonTitle}`} />
+        <span className={`${styles.skeleton} ${styles.skeletonLine}`} />
+        <span className={`${styles.skeleton} ${styles.skeletonLine}`} />
+        <span className={`${styles.skeleton} ${styles.skeletonLine} ${styles.skeletonMid}`} />
+        <span className={`${styles.skeleton} ${styles.skeletonButton}`} />
+      </div>
+    </div>
+  );
+}
 
 export default function CartPage() {
   const {
@@ -20,6 +72,37 @@ export default function CartPage() {
     clearCart,
     refreshProducts,
   } = useCart();
+
+  // Clear Cart asks for a second press within a few seconds.
+  const [confirmClear, setConfirmClear] = useState(false);
+  const clearTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (clearTimer.current !== null) {
+        window.clearTimeout(clearTimer.current);
+      }
+    };
+  }, []);
+
+  function handleClear() {
+    if (clearTimer.current !== null) {
+      window.clearTimeout(clearTimer.current);
+      clearTimer.current = null;
+    }
+
+    if (!confirmClear) {
+      setConfirmClear(true);
+      clearTimer.current = window.setTimeout(() => {
+        clearTimer.current = null;
+        setConfirmClear(false);
+      }, CLEAR_CONFIRM_MS);
+      return;
+    }
+
+    setConfirmClear(false);
+    clearCart();
+  }
 
   const validItems = items.flatMap((item) => {
     const product = products[item.slug];
@@ -39,23 +122,14 @@ export default function CartPage() {
       <main className="page-shell">
         <SiteHeader />
 
-        <section className={styles.topSection}>
-          <div className={styles.cartHero}>
-            <span>YOUR ORDER</span>
-            <h1>Shopping Cart</h1>
-            <p>Loading your BirdShop cart...</p>
-          </div>
-        </section>
+        <CartHero description="Loading your BirdShop cart…" />
 
-        <section className={styles.cartArea}>
-          <div className={styles.emptyCart}>
-            <span>LOADING CART</span>
-            <h2>Checking your products.</h2>
-            <p>
-              BirdShop is confirming the latest product information,
-              pricing, and stock.
-            </p>
-          </div>
+        <section className={styles.cartArea} aria-busy="true">
+          <p className="visually-hidden" role="status">
+            Loading your cart…
+          </p>
+
+          <CartSkeleton />
         </section>
 
         <SiteFooter />
@@ -68,25 +142,20 @@ export default function CartPage() {
       <main className="page-shell">
         <SiteHeader />
 
-        <section className={styles.topSection}>
-          <div className={styles.cartHero}>
-            <span>YOUR ORDER</span>
-            <h1>Shopping Cart</h1>
-            <p>We could not load the latest product information.</p>
-          </div>
-        </section>
+        <CartHero description="We could not load the latest product information." />
 
         <section className={styles.cartArea}>
-          <div className={styles.emptyCart}>
-            <span>CONNECTION ERROR</span>
-            <h2>Unable to load your cart.</h2>
-            <p>
+          <div className={styles.emptyCart} role="alert">
+            <span className={styles.emptyEyebrow}>Connection error</span>
+            <h2 className={styles.emptyTitle}>Unable to load your cart.</h2>
+            <p className={styles.emptyText}>
               BirdShop could not reach the product catalog. Your saved
               cart has not been intentionally cleared.
             </p>
 
             <button
               type="button"
+              className={styles.emptyAction}
               onClick={() => void refreshProducts()}
             >
               Try Again
@@ -103,25 +172,27 @@ export default function CartPage() {
     <main className="page-shell">
       <SiteHeader />
 
-      <section className={styles.topSection}>
-        <div className={styles.cartHero}>
-          <span>YOUR ORDER</span>
-          <h1>Shopping Cart</h1>
-          <p>
-            Review your BirdShop products before continuing to checkout.
-          </p>
-        </div>
-      </section>
+      <CartHero description="Review your BirdShop products before continuing to checkout." />
 
       <section className={styles.cartArea}>
         {validItems.length === 0 ? (
           <div className={styles.emptyCart}>
-            <span>YOUR CART IS EMPTY</span>
-            <h2>Nothing here yet.</h2>
-            <p>Browse BirdShop products and add something to your cart.</p>
+            <span className={styles.emptyEyebrow}>Your cart is empty</span>
+            <h2 className={styles.emptyTitle}>Nothing here yet.</h2>
+            <p className={styles.emptyText}>
+              Browse BirdShop products and add something to your cart.
+            </p>
 
-            <Link href="/products">Browse Products →</Link>
+            <Link href="/products" className={styles.emptyAction}>
+              Browse Products <span aria-hidden="true">→</span>
+            </Link>
 
+            <div className={styles.emptyLinks}>
+              <Link href="/services">Explore Services</Link>
+              <Link href="/how-to-order#products">How Ordering Works</Link>
+            </div>
+
+            {/* A saved checkout can still be recovered with an empty cart. */}
             <ProductCheckout />
           </div>
         ) : (
@@ -130,8 +201,14 @@ export default function CartPage() {
               <div className={styles.cartHeading}>
                 <h2>Your Items</h2>
 
-                <button type="button" onClick={clearCart}>
-                  Clear Cart
+                <button
+                  type="button"
+                  className={confirmClear ? styles.clearConfirm : undefined}
+                  onClick={handleClear}
+                >
+                  <span aria-live="polite">
+                    {confirmClear ? "Tap Again to Clear" : "Clear Cart"}
+                  </span>
                 </button>
               </div>
 
@@ -144,11 +221,18 @@ export default function CartPage() {
 
                 return (
                   <article key={slug} className={styles.cartItem}>
+                    {/* The name link below goes to the same page. */}
                     <Link
                       href={`/products/${slug}`}
                       className={styles.itemVisual}
+                      aria-hidden="true"
+                      tabIndex={-1}
                     >
-                      <ProductThumbnail product={product} />
+                      <ProductThumbnail
+                        product={product}
+                        alt=""
+                        sizes="(max-width: 700px) 84px, 130px"
+                      />
                     </Link>
 
                     <div className={styles.itemInfo}>
@@ -163,11 +247,14 @@ export default function CartPage() {
                       </p>
 
                       {lowStock && (
-                        <p>{product.stock} left in stock</p>
+                        <p className={styles.itemStock}>
+                          {product.stock} left in stock
+                        </p>
                       )}
 
                       <button
                         type="button"
+                        aria-label={`Remove ${product.name} from cart`}
                         onClick={() => removeFromCart(slug)}
                       >
                         Remove
@@ -185,7 +272,12 @@ export default function CartPage() {
                         −
                       </button>
 
-                      <span>{quantity}</span>
+                      <span aria-live="polite" aria-atomic="true">
+                        <span className="visually-hidden">
+                          {product.name} quantity{" "}
+                        </span>
+                        {quantity}
+                      </span>
 
                       <button
                         type="button"
@@ -200,7 +292,7 @@ export default function CartPage() {
                     </div>
 
                     <strong className={styles.itemPrice}>
-                      ${lineTotal.toFixed(2)}
+                      {formatUSD(lineTotal)}
                     </strong>
                   </article>
                 );
@@ -208,7 +300,7 @@ export default function CartPage() {
             </div>
 
             <aside className={styles.summary}>
-              <span>ORDER SUMMARY</span>
+              <span>Order summary</span>
               <h2>Summary</h2>
 
               <div className={styles.summaryLine}>
@@ -223,7 +315,7 @@ export default function CartPage() {
 
               <div className={styles.summaryLine}>
                 <span>Subtotal</span>
-                <strong>${subtotal.toFixed(2)}</strong>
+                <strong>{formatUSD(subtotal)}</strong>
               </div>
 
               <div className={styles.summaryLine}>
@@ -233,7 +325,7 @@ export default function CartPage() {
 
               <div className={styles.totalLine}>
                 <span>Total</span>
-                <strong>${subtotal.toFixed(2)}</strong>
+                <strong>{formatUSD(subtotal)}</strong>
               </div>
 
               <ProductCheckout />
@@ -242,7 +334,7 @@ export default function CartPage() {
                 href="/products"
                 className={styles.continueLink}
               >
-                ← Continue Shopping
+                <span aria-hidden="true">←</span> Continue Shopping
               </Link>
             </aside>
           </div>

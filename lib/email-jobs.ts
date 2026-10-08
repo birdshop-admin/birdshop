@@ -21,6 +21,8 @@ import {
   paymentConfirmedAdminEmail,
 } from "@/lib/email/payment-confirmed";
 
+import { orderCompletedCustomerEmail } from "@/lib/email/order-completed";
+
 type Envelope = {
   from: string;
   to: string;
@@ -44,6 +46,12 @@ const conversationKinds = [
   "conversation_admin",
   "recovery",
 ];
+
+const formatAmount = (value: unknown, currency: string) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: String(currency || "usd").toUpperCase(),
+  }).format(Number(value ?? 0));
 
 const escape = (text: string) =>
   text.replace(
@@ -94,6 +102,33 @@ async function holdJob(
 
 async function maySend(job: EmailJob): Promise<boolean> {
   const db = createAdminClient();
+
+  if (job.kind === "service_completed") {
+    const { data: order, error } = await db
+      .from("orders")
+      .select("service_status,payment_status")
+      .eq("id", job.entity_id)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error("Completion email order could not be checked.");
+    }
+
+    // Never announce a completion that was reversed or fully refunded.
+    if (
+      !order ||
+      order.service_status !== "completed" ||
+      !["paid", "partially_refunded"].includes(order.payment_status)
+    ) {
+      await holdJob(
+        job,
+        "cancelled",
+        "Order is no longer completed and paid; completion email cancelled.",
+      );
+
+      return false;
+    }
+  }
 
   if (conversationKinds.includes(job.kind)) {
     const { data: chat, error } = await db
@@ -317,8 +352,10 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
       to: order.customer_email,
       ...simpleEmail(
         "Your BirdShop codes · " + order.reference,
-        "Order " +
+        "Your order " +
           order.reference +
+          " has been completed and your codes are below.\nAmount paid: " +
+          formatAmount(order.total, order.currency) +
           "\n\n" +
           lines.join("\n\n") +
           "\n\nNeed help? Contact BirdShop Product Support with your order reference.",
@@ -328,14 +365,78 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
     };
   }
 
+  if (job.kind === "admin_refund" || job.kind === "customer_refund") {
+    const admin = job.kind === "admin_refund";
+    const refunded = Number(order.refunded_amount ?? 0);
+    const full = order.payment_status === "refunded";
+    const label = order.order_type === "product"
+      ? "digital order"
+      : `${order.service_name ?? "service"} order`;
+
+    return {
+      from,
+      to: admin ? env("BIRDSHOP_ADMIN_EMAIL") : order.customer_email,
+      ...simpleEmail(
+        admin
+          ? `Refund recorded · ${order.reference}`
+          : `Your BirdShop refund · ${order.reference}`,
+        (admin
+          ? `Stripe confirmed a ${full ? "full" : "partial"} refund for ${order.customer_name || "a customer"}'s ${label}.`
+          : `Hi ${order.customer_name || "there"}, your ${full ? "refund" : "partial refund"} for your BirdShop ${label} has been processed. Refunds usually reach your card within 5–10 business days, depending on your bank.`) +
+          `\n\nOrder: ${order.reference}\nOriginal payment: ${formatAmount(order.total, order.currency)}\nRefunded so far: ${formatAmount(refunded, order.currency)}`,
+        admin
+          ? `${base}${order.order_type === "product" ? "/admin/analytics" : "/admin/chat?type=service"}`
+          : `${base}/contact`,
+        admin ? "View orders" : "Contact BirdShop",
+      ),
+    };
+  }
+
+  if (job.kind === "service_completed") {
+    const { data: chat, error: chatError } = await db
+      .from("service_conversations")
+      .select("public_token,purged_at,deleted_at")
+      .eq("order_id", order.id)
+      // Prefer a live chat if an order was ever linked to more than one.
+      .order("deleted_at", { ascending: true, nullsFirst: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (chatError) {
+      throw new Error("Completion conversation could not be checked.");
+    }
+
+    const chatUrl =
+      chat && !chat.purged_at && !chat.deleted_at
+        ? `${base}/service-chat?token=${encodeURIComponent(chat.public_token)}`
+        : null;
+
+    return {
+      from,
+      to: order.customer_email,
+      ...orderCompletedCustomerEmail({
+        orderReference: order.reference,
+        customerName: order.customer_name,
+        serviceName: order.service_name ?? "Custom service",
+        packageName: order.package_name ?? "Custom",
+        amount: Number(order.total),
+        refunded: Number(order.refunded_amount ?? 0),
+        currency: order.currency,
+        completedAt: order.fulfilled_at ?? new Date().toISOString(),
+        chatUrl,
+        supportUrl: `${base}/contact`,
+      }),
+    };
+  }
+
   if (job.kind === "admin_payment" && order.order_type === "product") {
     return {
       from,
       to: env("BIRDSHOP_ADMIN_EMAIL"),
       ...simpleEmail(
         "Product payment · " + order.reference,
-        "Payment recorded. Delivery is tracked separately.",
-        base + "/admin/orders?view=products",
+        `Payment recorded: ${formatAmount(order.total, order.currency)}. Delivery is tracked separately.`,
+        base + "/admin/settings#deliveries",
         "View order",
       ),
     };
@@ -367,8 +468,8 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
         : order.customer_email,
       ...simpleEmail(
         `Payment record · ${order.reference}`,
-        `Order: ${order.reference}\nOriginal payment: ${Number(order.total).toFixed(2)} ${order.currency}.\nRefunded: ${Number(order.refunded_amount ?? 0).toFixed(2)} ${order.currency}.\nPayment status: ${order.payment_status}.\nThe original conversation is no longer available. Keep this order reference for support.`,
-        base + (admin ? "/admin/orders" : "/contact"),
+        `Order: ${order.reference}\nOriginal payment: ${formatAmount(order.total, order.currency)}.\nRefunded: ${formatAmount(order.refunded_amount ?? 0, order.currency)}.\nPayment status: ${order.payment_status}.\nThe original conversation is no longer available. Keep this order reference for support.`,
+        base + (admin ? "/admin/analytics" : "/contact"),
         admin ? "View orders" : "Contact BirdShop",
       ),
     };
@@ -384,7 +485,7 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
     amount: Number(order.total),
     currency: order.currency,
     paidAt: order.paid_at,
-    chatUrl: `${base}/service-chat?token=${c.public_token}`,
+    chatUrl: `${base}/service-chat?token=${encodeURIComponent(c.public_token)}`,
     adminUrl: `${base}/admin/chat?conversation=${c.id}`,
     paymentRequestId: payment.id,
     orderId: order.id,
@@ -400,7 +501,7 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
         : paymentConfirmedCustomerEmail(data)
       : simpleEmail(
           `Payment update · ${order.reference}`,
-          `Original payment: ${Number(order.total).toFixed(2)} ${order.currency}. Refunded: ${Number(order.refunded_amount).toFixed(2)} ${order.currency}.`,
+          `Original payment: ${formatAmount(order.total, order.currency)}. Refunded: ${formatAmount(order.refunded_amount ?? 0, order.currency)}.`,
           admin ? data.adminUrl : data.chatUrl,
           "View current status",
         );
@@ -430,6 +531,10 @@ export async function drainEmailJobs(
     );
 
     if (!job) break;
+
+    // Set once the provider accepts this envelope; later failures are bookkeeping only.
+    let accepted = false;
+    let providerCode: string | null = null;
 
     try {
       if (!(await maySend(job))) continue;
@@ -499,10 +604,12 @@ export async function drainEmailJobs(
       });
 
       if (error || !data?.id) {
-        throw new Error(
-          error?.message ?? "Email provider did not return a message ID.",
-        );
+        // Provider error codes (e.g. validation_error) contain no secrets or recipient data.
+        providerCode = error?.name ?? "missing_message_id";
+        throw new Error("Email provider rejected the message.");
       }
+
+      accepted = true;
 
       if (job.kind === "product_delivery") {
         await serverRpc("birdshop_v2_finish_delivery", {
@@ -544,8 +651,11 @@ export async function drainEmailJobs(
           status: "failed",
           lease_until: null,
           lease_id: null,
-          last_error:
-            "Provider delivery or state update failed. Retry with the same delivery identity.",
+          last_error: accepted
+            ? "Provider accepted the email; state update failed. Retry reuses the same delivery identity."
+            : providerCode
+              ? `Provider rejected the email (${providerCode}). Retry with the same delivery identity.`
+              : "Provider delivery or state update failed. Retry with the same delivery identity.",
           next_attempt_at: new Date(
             Date.now() +
               Math.min(
@@ -562,7 +672,8 @@ export async function drainEmailJobs(
         throw new Error("Email retry state could not be stored.");
       }
 
-      if (job.kind === "product_delivery") {
+      // Codes already accepted by the provider must not be shown to staff as a failed delivery.
+      if (job.kind === "product_delivery" && !accepted) {
         await db
           .from("orders")
           .update({

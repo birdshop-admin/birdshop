@@ -21,25 +21,16 @@ Open `http://localhost:3000`.
 
 Copy `.env.example` to `.env.local` and fill in your own values. Never commit `.env.local`, the Supabase service-role key, or the inventory encryption key.
 
-Required values:
-
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-- `INVENTORY_ENCRYPTION_KEY` (server-only)
+Required values: every name in `.env.example`. Only the two `NEXT_PUBLIC_SUPABASE_*` values and the
+optional `NEXT_PUBLIC_DISCORD_INVITE_URL` are browser-visible; every other value (Supabase secret key,
+Stripe keys and webhook secret, Resend key, inventory encryption key, token and cron secrets) is server-only.
 
 ## Supabase SQL
 
-The `supabase/` folder contains the database pieces used by the current codebase. For an existing BirdShop database, only run migrations you have not already applied.
-
-Typical order for a fresh BirdShop database after the products/admin setup:
-
-1. `supabase/support-reviews.sql`
-2. `supabase/support-assignment-migration.sql`
-3. `supabase/inventory.sql`
-4. `supabase/orders.sql`
-5. `supabase/admin-v2-analytics-orders.sql`
-
-The final migration adds the service-first order fields, test-order deletion/archive helpers, anonymous site activity tracking, and the verified public products-delivered counter.
+Apply every file in `supabase/migrations/` in filename order (the list is in START-HERE.txt),
+then run `supabase/verify-production-readiness.sql`; every row should say PASS. Never run
+`supabase/legacy/*.sql`: those historical scripts restore obsolete functions and permissions.
+Environment variables are listed in `.env.example`; deployment checks are in PRODUCTION-READINESS.md.
 
 ## Quality checks
 

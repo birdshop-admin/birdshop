@@ -1,5 +1,5 @@
 "use client";
-export default function ErrorPage({ reset }: { reset: () => void }) {
+export default function ErrorPage({ retry }: { retry: () => void }) {
   return (
     <section
       style={{
@@ -14,7 +14,7 @@ export default function ErrorPage({ reset }: { reset: () => void }) {
         Your records have not been replaced with zero values. Retry to load the
         current data.
       </p>
-      <button onClick={reset} style={{ padding: "14px 22px" }}>
+      <button type="button" onClick={() => retry()} style={{ padding: "14px 22px" }}>
         Try again
       </button>
     </section>

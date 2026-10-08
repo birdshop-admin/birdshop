@@ -1,35 +1,117 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import SiteHeader from "@/components/SiteHeader";
+
 import SiteFooter from "@/components/SiteFooter";
-import { ArrowIcon, ShieldIcon, MessageIcon, CheckIcon } from "@/components/SiteIcons";
+import SiteHeader from "@/components/SiteHeader";
+import {
+  ArrowIcon,
+  CheckIcon,
+  MessageIcon,
+  ShieldIcon,
+} from "@/components/SiteIcons";
+
+import { GOOD_TO_KNOW } from "./content";
+import OrderPaths from "./OrderPaths";
 import s from "./how-to-order.module.css";
-export const metadata = { title: "How to Order", description: "Choose your BirdShop package, pay securely and continue in your private chat. Digital products and custom requests explained." };
-const paths = [
-  { id: "services", number: "01", label: "READY-TO-BUY SERVICES", title: "Your package. Your next step.", intro: "Know what you need? Choose a defined package and go straight to checkout.", href: "/services", action: "Explore service packages", steps: [
-    ["Choose your tier", "Compare Basic, Standard and Premium. Review the price, included work and turnaround before you buy."],
-    ["Make it yours", "Enter your name and email, then complete secure payment through Stripe. No ticket or quote request is needed."],
-    ["Step into your private chat", "Checkout brings you back to BirdShop and opens your conversation. Your order appears once payment is confirmed."],
-    ["Plan the details together", "Share references, requirements and scheduling details. Keep the conversation and progress updates in one place."] ] },
-  { id: "products", number: "02", label: "DIGITAL PRODUCTS", title: "Find it. Order it. Enjoy it.", intro: "A simple checkout for game keys and other digital products.", href: "/products", action: "Browse digital products", steps: [
-    ["Find the right product", "Check the product description, platform, region and available stock."],
-    ["Review your cart", "Choose your quantity and enter the email address you want to use for your order."],
-    ["Complete secure checkout", "Pay through Stripe. BirdShop confirms payment before assigning your purchased codes."],
-    ["Receive your delivery", "Check your email for delivery and keep your private order link to follow its status."] ] },
-  { id: "custom", number: "03", label: "SOMETHING MORE PERSONAL", title: "Let’s shape it together.", intro: "For work beyond a listed package, start with a conversation.", href: "/contact?topic=service", action: "Discuss a custom service", steps: [
-    ["Tell us your idea", "Choose a service and describe what you have in mind through Contact."],
-    ["Agree on the details", "Discuss scope, timing and price in your private chat before committing."],
-    ["Pay the agreed quote", "When your payment request is ready, open it directly from the conversation."],
-    ["Keep everything together", "After payment is confirmed, your order and next steps stay connected to that same chat."] ] },
-];
+
+export const metadata: Metadata = {
+  title: "How to Order",
+  description:
+    "How to order from BirdShop: digital codes delivered by email, fixed-price service packages with a private chat, or a custom request priced in chat. Secure Stripe checkout.",
+};
+
+// Without JavaScript the tabs cannot switch, so show every path instead.
+const NO_JS_CSS =
+  "[data-hto-panel][hidden]{display:block!important;margin-top:16px}[data-hto-tablist]{display:none}";
+
 export default function HowToOrder() {
- return <main className="page-shell"><SiteHeader />
-  <section className={s.hero}>
-   <div><span className={s.eyebrow}>THE BIRDSHOP EXPERIENCE</span><h1>A clear path.<br /><em>From choice to delivery.</em></h1><p>Find what fits, checkout with confidence, and leave the next steps to a conversation.</p><div className={s.heroActions}><Link href="#services">Find your way <ArrowIcon /></Link><Link href="/service-chat">Return to your chat</Link></div></div>
-   <aside className={s.journey}><span>THOUGHTFULLY SIMPLE</span><h2>Good service starts<br />with clarity.</h2>{[["01", "Choose what fits", "Defined packages or something custom."], ["02", "Checkout securely", "A clear price before you commit."], ["03", "Keep in touch", "Your private space for the next steps."]].map(([n,t,d]) => <div key={n}><b>{n}</b><p><strong>{t}</strong><small>{d}</small></p></div>)}</aside>
-  </section>
-  <nav className={s.pathNav} aria-label="Order guides">{paths.map(p => <Link href={'#'+p.id} key={p.id}><span>{p.number}</span>{p.label}<ArrowIcon /></Link>)}</nav>
-  <div className={s.guides}>{paths.map(p => <section id={p.id} className={s.guide} key={p.id}><header><span className={s.eyebrow}>{p.label}</span><h2>{p.title}</h2><p>{p.intro}</p><Link href={p.href}>{p.action}<ArrowIcon /></Link></header><ol>{p.steps.map(([title,copy],i) => <li key={title}><span>{String(i+1).padStart(2,'0')}</span><div><h3>{title}</h3><p>{copy}</p></div></li>)}</ol></section>)}</div>
-  <section className={s.assurance}><div><ShieldIcon /><h3>Secure checkout</h3><p>Payments are handled through Stripe.</p></div><div><MessageIcon /><h3>A private conversation</h3><p>Service details and updates stay together.</p></div><div><CheckIcon /><h3>Here for the next step</h3><p>Need help with delivery? Contact us with your reference.</p></div></section>
-  <section className={s.help}><div><span className={s.eyebrow}>A LITTLE EXTRA GUIDANCE</span><h2>Still have a question?</h2><p>Payment confirmation and email delivery can take a moment. Check your order status and spam folder, or get in touch if you need a hand.</p></div><Link href="/contact">Talk to BirdShop <ArrowIcon /></Link></section>
-  <SiteFooter /></main>;
+  return (
+    <main className={`page-shell ${s.page}`}>
+      <SiteHeader />
+
+      <noscript>
+        <style>{NO_JS_CSS}</style>
+      </noscript>
+
+      <section className={s.hero} aria-labelledby="hto-title">
+        <div className={s.heroCopy}>
+          <span className={s.eyebrow}>How to order</span>
+          <h1 id="hto-title">
+            Ordering, <em>made simple.</em>
+          </h1>
+          <p className={s.lede}>
+            Pick what you’re buying and see every step, from checkout to
+            delivery.
+          </p>
+
+          <ul className={s.trust} aria-label="Every order includes">
+            <li>
+              <ShieldIcon />
+              Secure Stripe checkout
+            </li>
+            <li>
+              <CheckIcon />
+              No account needed
+            </li>
+            <li>
+              <MessageIcon />
+              Private links &amp; chat
+            </li>
+          </ul>
+        </div>
+
+        <Link href="/service-chat" className={s.returning}>
+          <span className={s.eyebrow}>Already ordered?</span>
+          <strong>Open My Service</strong>
+          <small>
+            Your private chats and service orders. Bought codes? They’re in
+            your email.
+          </small>
+          <ArrowIcon />
+        </Link>
+      </section>
+
+      <OrderPaths />
+
+      <section className={s.faq} aria-labelledby="faq-title">
+        <div className={s.faqHead}>
+          <span className={s.eyebrow}>Good to know</span>
+          <h2 id="faq-title">Quick answers.</h2>
+          <p>Payment, privacy and support, in a sentence or two.</p>
+          <Link className={s.secondary} href="/faqs">
+            See All FAQs
+          </Link>
+        </div>
+
+        <div className={s.faqList}>
+          {GOOD_TO_KNOW.map(({ q, a }) => (
+            <details key={q} className={s.faqItem}>
+              <summary>
+                {q}
+                <span className={s.plus} aria-hidden="true" />
+              </summary>
+              <p>{a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <div className={s.helpWrap}>
+        <section className={s.help} aria-labelledby="help-title">
+          <div>
+            <span className={s.eyebrow}>Still deciding?</span>
+            <h2 id="help-title">Not sure which path fits?</h2>
+            <p>Tell us what you need and we’ll point you the right way.</p>
+          </div>
+
+          <Link className={s.primary} href="/contact?topic=general">
+            Ask BirdShop
+            <ArrowIcon />
+          </Link>
+        </section>
+      </div>
+
+      <SiteFooter />
+    </main>
+  );
 }

@@ -1,116 +1,690 @@
-/* Shared dark palette. Original light colours remain the fallbacks in each stylesheet. */
+/* =========================================================
+   BIRDSHOP THEME LAYER
+
+   1. --bs-* design tokens. Light values on :root, dark values on
+      html[data-theme="dark"]. Modules use these directly; never put a
+      literal dark hex in a module.
+   2. Legacy --theme-* tokens (dark only). Every stylesheet keeps its
+      light colour as the var() fallback, so light mode never reads them.
+      NOTE: the names still encode the OLD dark RGB values (for example
+      --theme-surface-24-28-24-1 is now the page colour #0b130e). They are
+      only IDs now. Do not rename them; dozens of files use them.
+   3. Global dark rules: canvas, selection, native controls, shell.
+   4. ThemeToggle (floating, header, menu, sidebar) and the theme switch.
+========================================================= */
+
 html { color-scheme: light; }
-html[data-theme="dark"] {
-  color-scheme: dark;
-  --theme-border-207-215-196-0_08: rgba(207, 215, 196, 0.08);
-  --theme-border-207-215-196-0_09: rgba(207, 215, 196, 0.09);
-  --theme-border-207-215-196-0_1: rgba(207, 215, 196, 0.1);
-  --theme-border-207-215-196-0_11: rgba(207, 215, 196, 0.11);
-  --theme-border-207-215-196-0_12: rgba(207, 215, 196, 0.12);
-  --theme-border-207-215-196-0_13: rgba(207, 215, 196, 0.13);
-  --theme-border-207-215-196-0_14: rgba(207, 215, 196, 0.14);
-  --theme-border-207-215-196-0_149: rgba(207, 215, 196, 0.14901960784313725);
-  --theme-border-207-215-196-0_15: rgba(207, 215, 196, 0.15);
-  --theme-border-207-215-196-0_16: rgba(207, 215, 196, 0.16);
-  --theme-border-207-215-196-0_17: rgba(207, 215, 196, 0.17);
-  --theme-border-207-215-196-0_18: rgba(207, 215, 196, 0.18);
-  --theme-border-207-215-196-0_19: rgba(207, 215, 196, 0.19);
-  --theme-border-207-215-196-0_2: rgba(207, 215, 196, 0.2);
-  --theme-border-207-215-196-0_22: rgba(207, 215, 196, 0.22);
-  --theme-border-207-215-196-0_23: rgba(207, 215, 196, 0.23);
-  --theme-border-207-215-196-0_24: rgba(207, 215, 196, 0.24);
-  --theme-border-207-215-196-0_25: rgba(207, 215, 196, 0.25);
-  --theme-border-207-215-196-0_26: rgba(207, 215, 196, 0.26);
-  --theme-border-207-215-196-0_267: rgba(207, 215, 196, 0.26666666666666666);
-  --theme-border-207-215-196-0_27: rgba(207, 215, 196, 0.27);
-  --theme-border-207-215-196-0_28: rgba(207, 215, 196, 0.28);
-  --theme-border-207-215-196-0_29: rgba(207, 215, 196, 0.29);
-  --theme-border-207-215-196-0_3: rgba(207, 215, 196, 0.3);
-  --theme-border-207-215-196-0_333: rgba(207, 215, 196, 0.3333333333333333);
-  --theme-border-207-215-196-0_34: rgba(207, 215, 196, 0.34);
-  --theme-border-207-215-196-0_35: rgba(207, 215, 196, 0.35);
-  --theme-border-207-215-196-0_4: rgba(207, 215, 196, 0.4);
-  --theme-border-207-215-196-0_42: rgba(207, 215, 196, 0.42);
-  --theme-border-207-215-196-0_5: rgba(207, 215, 196, 0.5);
-  --theme-border-207-215-196-0_52: rgba(207, 215, 196, 0.52);
-  --theme-border-207-215-196-0_55: rgba(207, 215, 196, 0.55);
-  --theme-border-207-215-196-0_6: rgba(207, 215, 196, 0.6);
-  --theme-border-207-215-196-0_62: rgba(207, 215, 196, 0.62);
-  --theme-border-207-215-196-0_65: rgba(207, 215, 196, 0.65);
-  --theme-border-207-215-196-1: #cfd7c4;
-  --theme-readable-accent: #b8c4aa;
-  --theme-surface-24-28-24-0_28: rgba(24, 28, 24, 0.28);
-  --theme-surface-24-28-24-0_34: rgba(24, 28, 24, 0.34);
-  --theme-surface-24-28-24-0_48: rgba(24, 28, 24, 0.48);
-  --theme-surface-24-28-24-0_6: rgba(24, 28, 24, 0.6);
-  --theme-surface-24-28-24-0_68: rgba(24, 28, 24, 0.68);
-  --theme-surface-24-28-24-0_72: rgba(24, 28, 24, 0.72);
-  --theme-surface-24-28-24-0_74: rgba(24, 28, 24, 0.74);
-  --theme-surface-24-28-24-0_76: rgba(24, 28, 24, 0.76);
-  --theme-surface-24-28-24-0_78: rgba(24, 28, 24, 0.78);
-  --theme-surface-24-28-24-0_8: rgba(24, 28, 24, 0.8);
-  --theme-surface-24-28-24-0_82: rgba(24, 28, 24, 0.82);
-  --theme-surface-24-28-24-0_85: rgba(24, 28, 24, 0.85);
-  --theme-surface-24-28-24-0_88: rgba(24, 28, 24, 0.88);
-  --theme-surface-24-28-24-0_9: rgba(24, 28, 24, 0.9);
-  --theme-surface-24-28-24-0_91: rgba(24, 28, 24, 0.91);
-  --theme-surface-24-28-24-0_92: rgba(24, 28, 24, 0.92);
-  --theme-surface-24-28-24-0_93: rgba(24, 28, 24, 0.93);
-  --theme-surface-24-28-24-0_94: rgba(24, 28, 24, 0.94);
-  --theme-surface-24-28-24-0_96: rgba(24, 28, 24, 0.96);
-  --theme-surface-24-28-24-0_98: rgba(24, 28, 24, 0.98);
-  --theme-surface-24-28-24-0_99: rgba(24, 28, 24, 0.99);
-  --theme-surface-24-28-24-0_995: rgba(24, 28, 24, 0.995);
-  --theme-surface-24-28-24-1: #181c18;
-  --theme-surface-37-42-35-0_24: rgba(37, 42, 35, 0.24);
-  --theme-surface-37-42-35-0_25: rgba(37, 42, 35, 0.25);
-  --theme-surface-37-42-35-0_32: rgba(37, 42, 35, 0.32);
-  --theme-surface-37-42-35-0_42: rgba(37, 42, 35, 0.42);
-  --theme-surface-37-42-35-0_45: rgba(37, 42, 35, 0.45);
-  --theme-surface-37-42-35-0_48: rgba(37, 42, 35, 0.48);
-  --theme-surface-37-42-35-0_62: rgba(37, 42, 35, 0.62);
-  --theme-surface-37-42-35-0_64: rgba(37, 42, 35, 0.64);
-  --theme-surface-37-42-35-0_72: rgba(37, 42, 35, 0.72);
-  --theme-surface-37-42-35-0_76: rgba(37, 42, 35, 0.76);
-  --theme-surface-37-42-35-0_8: rgba(37, 42, 35, 0.8);
-  --theme-surface-37-42-35-0_9: rgba(37, 42, 35, 0.9);
-  --theme-surface-37-42-35-0_94: rgba(37, 42, 35, 0.94);
-  --theme-surface-37-42-35-1: #252a23;
-  --theme-surface-48-54-44-0_64: rgba(48, 54, 44, 0.64);
-  --theme-surface-48-54-44-0_67: rgba(48, 54, 44, 0.67);
-  --theme-surface-48-54-44-0_7: rgba(48, 54, 44, 0.7);
-  --theme-surface-48-54-44-0_72: rgba(48, 54, 44, 0.72);
-  --theme-surface-48-54-44-1: #30362c;
-  --theme-text-184-196-170-0_23: rgba(184, 196, 170, 0.23);
-  --theme-text-184-196-170-1: #b8c4aa;
-  --theme-text-232-169-150-1: #e8a996;
-  --theme-text-240-236-226-0_55: rgba(240, 236, 226, 0.55);
-  --theme-text-240-236-226-0_58: rgba(240, 236, 226, 0.58);
-  --theme-text-240-236-226-0_61: rgba(240, 236, 226, 0.61);
-  --theme-text-240-236-226-0_64: rgba(240, 236, 226, 0.64);
-  --theme-text-240-236-226-0_68: rgba(240, 236, 226, 0.68);
-  --theme-text-240-236-226-0_7: rgba(240, 236, 226, 0.7);
-  --theme-text-240-236-226-0_75: rgba(240, 236, 226, 0.75);
-  --theme-text-240-236-226-0_77: rgba(240, 236, 226, 0.77);
-  --theme-text-240-236-226-0_78: rgba(240, 236, 226, 0.78);
-  --theme-text-240-236-226-1: #f0ece2;
+
+/* ---------------------------------------------------------
+   1. TOKENS
+--------------------------------------------------------- */
+
+:root {
+  --bs-canvas: #10170f;
+  --bs-page: #f0ece2;
+  --bs-band: #e9e5da;
+  --bs-card: #f8f5ec;
+  --bs-raised: #fffdf8;
+  --bs-field: #fffdf7;
+  --bs-well:
+    radial-gradient(circle at 66% 32%, rgba(112, 130, 97, 0.26), transparent 42%),
+    linear-gradient(160deg, #1f2b1e, #141c14);
+
+  --bs-ink: #1c241b;
+  --bs-muted: #4a5345;
+  --bs-faint: #5f6859;
+  --bs-accent: #4d6044;
+
+  --bs-line: rgba(29, 36, 26, 0.13);
+  --bs-line-strong: rgba(29, 36, 26, 0.26);
+  --bs-line-active: rgba(70, 97, 58, 0.6);
+
+  --bs-btn-bg: #46513e;
+  --bs-btn-hover: #56644b;
+  --bs-btn-ink: #f6f2e8;
+  --bs-btn-disabled-bg: rgba(70, 81, 62, 0.14);
+  --bs-btn-disabled-ink: rgba(28, 36, 27, 0.45);
+
+  --bs-selected-bg: #2f3e2a;
+  --bs-selected-ink: #f6f2e8;
+  --bs-selected-line: #2f3e2a;
+
+  --bs-focus: #46613a;
+  --bs-focus-on-dark: #ece5cf;
+
+  --bs-gold: #8a6a2a;
+  --bs-star: #7d8a63;
+
+  --bs-success-ink: #3f5236;
+  --bs-success-bg: rgba(89, 111, 80, 0.12);
+  --bs-warn-ink: #7a5a34;
+  --bs-warn-bg: rgba(145, 112, 70, 0.13);
+  --bs-danger-ink: #7d3a28;
+  --bs-danger-bg: #f9ebe5;
+  --bs-skeleton: rgba(29, 36, 26, 0.08);
+
+  --bs-shadow-card: 0 1px 2px rgba(16, 23, 15, 0.04), 0 10px 28px rgba(16, 23, 15, 0.06);
+  --bs-shadow-raised: 0 2px 4px rgba(16, 23, 15, 0.05), 0 20px 44px rgba(16, 23, 15, 0.12);
+
+  /* Forest / photo surfaces (hero, summary cards, help bands, sticky CTAs). */
+  --bs-forest: linear-gradient(155deg, #0f1e13, #1a2c1e);
+  --bs-forest-ink: #f4efe6;
+  --bs-forest-muted: rgba(244, 239, 230, 0.74);
+  --bs-forest-line: rgba(244, 239, 230, 0.14);
+  --bs-forest-btn-bg: #f0ece2;
+  --bs-forest-btn-ink: #142012;
+  --bs-forest-btn-hover: #fffaf0;
+
+  /* Radii (the page shell stays 18px). */
+  --bs-r-control: 8px;
+  --bs-r-card: 12px;
+  --bs-r-panel: 16px;
+  --bs-r-pill: 999px;
+
+  /* Durations (easing: --ease-standard from globals.css). */
+  --bs-dur-fast: 160ms;
+  --bs-dur: 240ms;
+  --bs-dur-slow: 600ms;
 }
 
+html[data-theme="dark"] {
+  color-scheme: dark;
+  accent-color: #adc29a;
+  scrollbar-color: rgba(173, 194, 154, 0.3) transparent;
+
+  --bs-canvas: #050a07;
+  --bs-page: #0b130e;
+  --bs-band: #111d15;
+  --bs-card: #16211a;
+  --bs-raised: #1d2a21;
+  --bs-field: #101a13;
+  --bs-well:
+    radial-gradient(circle at 66% 30%, rgba(173, 194, 154, 0.16), transparent 46%),
+    linear-gradient(160deg, #16231a, #0a120d);
+
+  --bs-ink: #f1ebdd;
+  --bs-muted: #bdb8a6;
+  --bs-faint: #9a9c8e;
+  --bs-accent: #adc29a;
+
+  --bs-line: rgba(226, 216, 186, 0.12);
+  --bs-line-strong: rgba(226, 216, 186, 0.22);
+  --bs-line-active: rgba(173, 194, 154, 0.5);
+
+  /* Cream primary on dark: always pair --bs-btn-bg with --bs-btn-ink. */
+  --bs-btn-bg: #e9e4d6;
+  --bs-btn-hover: #f6f2e8;
+  --bs-btn-ink: #142012;
+  --bs-btn-disabled-bg: rgba(226, 216, 186, 0.07);
+  --bs-btn-disabled-ink: rgba(241, 235, 221, 0.4);
+
+  --bs-selected-bg: #34472e;
+  --bs-selected-ink: #f1ebdd;
+  --bs-selected-line: rgba(173, 194, 154, 0.5);
+
+  --bs-focus: #c9d8b4;
+
+  --bs-gold: #d6b778;
+  --bs-star: #d8c690;
+
+  --bs-success-ink: #c3d1b2;
+  --bs-success-bg: rgba(150, 175, 130, 0.14);
+  --bs-warn-ink: #eaab95;
+  --bs-warn-bg: rgba(234, 171, 149, 0.12);
+  --bs-danger-ink: #f0b4a2;
+  --bs-danger-bg: #2a1d19;
+  --bs-skeleton: rgba(241, 235, 221, 0.06);
+
+  --bs-shadow-card:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 1px 2px rgba(0, 0, 0, 0.35),
+    0 18px 42px -22px rgba(0, 0, 0, 0.8);
+  --bs-shadow-raised:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    0 30px 70px -28px rgba(0, 0, 0, 0.85);
+
+  --bs-forest-line: rgba(226, 216, 186, 0.14);
+
+  /* RGB channels for the legacy alpha tokens below (private to this file). */
+  --dark-line-rgb: 226, 216, 186;   /* champagne hairline */
+  --dark-accent-rgb: 173, 194, 154; /* sage: hover, active and focus borders */
+  --dark-card-rgb: 22, 33, 26;
+  --dark-raised-rgb: 29, 42, 33;
+  --dark-band-rgb: 17, 29, 21;
+  --dark-text-rgb: 241, 235, 221;
+  --dark-text-2-rgb: 189, 184, 166;
+
+  /* ---------------------------------------------------------
+     2. LEGACY --theme-* TOKENS (names are IDs, see header note)
+  --------------------------------------------------------- */
+
+  /* Borders below .3 alpha: champagne hairlines. */
+  --theme-border-207-215-196-0_08: rgba(var(--dark-line-rgb), 0.08);
+  --theme-border-207-215-196-0_09: rgba(var(--dark-line-rgb), 0.09);
+  --theme-border-207-215-196-0_1: rgba(var(--dark-line-rgb), 0.1);
+  --theme-border-207-215-196-0_11: rgba(var(--dark-line-rgb), 0.11);
+  --theme-border-207-215-196-0_12: rgba(var(--dark-line-rgb), 0.12);
+  --theme-border-207-215-196-0_13: rgba(var(--dark-line-rgb), 0.13);
+  --theme-border-207-215-196-0_14: rgba(var(--dark-line-rgb), 0.14);
+  --theme-border-207-215-196-0_149: rgba(var(--dark-line-rgb), 0.149);
+  --theme-border-207-215-196-0_15: rgba(var(--dark-line-rgb), 0.15);
+  --theme-border-207-215-196-0_16: rgba(var(--dark-line-rgb), 0.16);
+  --theme-border-207-215-196-0_17: rgba(var(--dark-line-rgb), 0.17);
+  --theme-border-207-215-196-0_18: rgba(var(--dark-line-rgb), 0.18);
+  --theme-border-207-215-196-0_19: rgba(var(--dark-line-rgb), 0.19);
+  --theme-border-207-215-196-0_2: rgba(var(--dark-line-rgb), 0.2);
+  --theme-border-207-215-196-0_22: rgba(var(--dark-line-rgb), 0.22);
+  --theme-border-207-215-196-0_23: rgba(var(--dark-line-rgb), 0.23);
+  --theme-border-207-215-196-0_24: rgba(var(--dark-line-rgb), 0.24);
+  --theme-border-207-215-196-0_25: rgba(var(--dark-line-rgb), 0.25);
+  --theme-border-207-215-196-0_26: rgba(var(--dark-line-rgb), 0.26);
+  --theme-border-207-215-196-0_267: rgba(var(--dark-line-rgb), 0.267);
+  --theme-border-207-215-196-0_27: rgba(var(--dark-line-rgb), 0.27);
+  --theme-border-207-215-196-0_28: rgba(var(--dark-line-rgb), 0.28);
+  --theme-border-207-215-196-0_29: rgba(var(--dark-line-rgb), 0.29);
+  /* Borders at .3 alpha and above: sage (hover, active, focus borders). */
+  --theme-border-207-215-196-0_3: rgba(var(--dark-accent-rgb), 0.3);
+  --theme-border-207-215-196-0_333: rgba(var(--dark-accent-rgb), 0.333);
+  --theme-border-207-215-196-0_34: rgba(var(--dark-accent-rgb), 0.34);
+  --theme-border-207-215-196-0_35: rgba(var(--dark-accent-rgb), 0.35);
+  --theme-border-207-215-196-0_4: rgba(var(--dark-accent-rgb), 0.4);
+  --theme-border-207-215-196-0_42: rgba(var(--dark-accent-rgb), 0.42);
+  --theme-border-207-215-196-0_5: rgba(var(--dark-accent-rgb), 0.5);
+  --theme-border-207-215-196-0_52: rgba(var(--dark-accent-rgb), 0.52);
+  --theme-border-207-215-196-0_55: rgba(var(--dark-accent-rgb), 0.55);
+  --theme-border-207-215-196-0_6: rgba(var(--dark-accent-rgb), 0.6);
+  --theme-border-207-215-196-0_62: rgba(var(--dark-accent-rgb), 0.62);
+  --theme-border-207-215-196-0_65: rgba(var(--dark-accent-rgb), 0.65);
+  /* Selected, active and left-accent borders (was a near-white #cfd7c4). */
+  --theme-border-207-215-196-1: #869d76;
+
+  --theme-readable-accent: var(--bs-accent);
+
+  /* surface-24 = page; its alpha variants use the CARD colour so translucent
+     cards sit above the page instead of below it. */
+  --theme-surface-24-28-24-0_28: rgba(var(--dark-card-rgb), 0.28);
+  --theme-surface-24-28-24-0_34: rgba(var(--dark-card-rgb), 0.34);
+  --theme-surface-24-28-24-0_48: rgba(var(--dark-card-rgb), 0.48);
+  --theme-surface-24-28-24-0_6: rgba(var(--dark-card-rgb), 0.6);
+  --theme-surface-24-28-24-0_68: rgba(var(--dark-card-rgb), 0.68);
+  --theme-surface-24-28-24-0_72: rgba(var(--dark-card-rgb), 0.72);
+  --theme-surface-24-28-24-0_74: rgba(var(--dark-card-rgb), 0.74);
+  --theme-surface-24-28-24-0_76: rgba(var(--dark-card-rgb), 0.76);
+  --theme-surface-24-28-24-0_78: rgba(var(--dark-card-rgb), 0.78);
+  --theme-surface-24-28-24-0_8: rgba(var(--dark-card-rgb), 0.8);
+  --theme-surface-24-28-24-0_82: rgba(var(--dark-card-rgb), 0.82);
+  --theme-surface-24-28-24-0_85: rgba(var(--dark-card-rgb), 0.85);
+  --theme-surface-24-28-24-0_88: rgba(var(--dark-card-rgb), 0.88);
+  --theme-surface-24-28-24-0_9: rgba(var(--dark-card-rgb), 0.9);
+  --theme-surface-24-28-24-0_91: rgba(var(--dark-card-rgb), 0.91);
+  --theme-surface-24-28-24-0_92: rgba(var(--dark-card-rgb), 0.92);
+  --theme-surface-24-28-24-0_93: rgba(var(--dark-card-rgb), 0.93);
+  --theme-surface-24-28-24-0_94: rgba(var(--dark-card-rgb), 0.94);
+  --theme-surface-24-28-24-0_96: rgba(var(--dark-card-rgb), 0.96);
+  --theme-surface-24-28-24-0_98: rgba(var(--dark-card-rgb), 0.98);
+  --theme-surface-24-28-24-0_99: rgba(var(--dark-card-rgb), 0.99);
+  --theme-surface-24-28-24-0_995: rgba(var(--dark-card-rgb), 0.995);
+  --theme-surface-24-28-24-1: var(--bs-page);
+
+  /* surface-37 = card; its alpha variants use the RAISED colour. */
+  --theme-surface-37-42-35-0_24: rgba(var(--dark-raised-rgb), 0.24);
+  --theme-surface-37-42-35-0_25: rgba(var(--dark-raised-rgb), 0.25);
+  --theme-surface-37-42-35-0_32: rgba(var(--dark-raised-rgb), 0.32);
+  --theme-surface-37-42-35-0_42: rgba(var(--dark-raised-rgb), 0.42);
+  --theme-surface-37-42-35-0_45: rgba(var(--dark-raised-rgb), 0.45);
+  --theme-surface-37-42-35-0_48: rgba(var(--dark-raised-rgb), 0.48);
+  --theme-surface-37-42-35-0_62: rgba(var(--dark-raised-rgb), 0.62);
+  --theme-surface-37-42-35-0_64: rgba(var(--dark-raised-rgb), 0.64);
+  --theme-surface-37-42-35-0_72: rgba(var(--dark-raised-rgb), 0.72);
+  --theme-surface-37-42-35-0_76: rgba(var(--dark-raised-rgb), 0.76);
+  --theme-surface-37-42-35-0_8: rgba(var(--dark-raised-rgb), 0.8);
+  --theme-surface-37-42-35-0_9: rgba(var(--dark-raised-rgb), 0.9);
+  --theme-surface-37-42-35-0_94: rgba(var(--dark-raised-rgb), 0.94);
+  --theme-surface-37-42-35-1: var(--bs-card);
+
+  /* surface-48 = band (alternating sections, chips, step circles). */
+  --theme-surface-48-54-44-0_64: rgba(var(--dark-band-rgb), 0.64);
+  --theme-surface-48-54-44-0_67: rgba(var(--dark-band-rgb), 0.67);
+  /* Only use is a hover state (ServiceCardPlanControls), so it lifts. */
+  --theme-surface-48-54-44-0_7: rgba(var(--dark-raised-rgb), 0.7);
+  --theme-surface-48-54-44-0_72: rgba(var(--dark-band-rgb), 0.72);
+  --theme-surface-48-54-44-1: var(--bs-band);
+
+  /* Secondary text (warm stone) and warning text. */
+  --theme-text-184-196-170-0_23: rgba(var(--dark-text-2-rgb), 0.23);
+  --theme-text-184-196-170-1: var(--bs-muted);
+  --theme-text-232-169-150-1: var(--bs-warn-ink);
+
+  /* Primary text (warm ivory). The lowest alpha (.55) is still AA on raised. */
+  --theme-text-240-236-226-0_55: rgba(var(--dark-text-rgb), 0.55);
+  --theme-text-240-236-226-0_58: rgba(var(--dark-text-rgb), 0.58);
+  --theme-text-240-236-226-0_61: rgba(var(--dark-text-rgb), 0.61);
+  --theme-text-240-236-226-0_64: rgba(var(--dark-text-rgb), 0.64);
+  --theme-text-240-236-226-0_68: rgba(var(--dark-text-rgb), 0.68);
+  --theme-text-240-236-226-0_7: rgba(var(--dark-text-rgb), 0.7);
+  --theme-text-240-236-226-0_75: rgba(var(--dark-text-rgb), 0.75);
+  --theme-text-240-236-226-0_77: rgba(var(--dark-text-rgb), 0.77);
+  --theme-text-240-236-226-0_78: rgba(var(--dark-text-rgb), 0.78);
+  --theme-text-240-236-226-1: var(--bs-ink);
+
+  /* Compatibility aliases (dark only, so light fallbacks stay). Prefer --bs-*. */
+  --theme-shadow-card: var(--bs-shadow-card);
+  --theme-shadow-raised: var(--bs-shadow-raised);
+  --theme-focus-ring: var(--bs-focus);
+
+  /* globals.css root variables, dark only. --cream is NOT overridden: it is
+     cream text on dark buttons in both modes. */
+  --line-light: rgba(var(--dark-line-rgb), 0.12);
+  --shadow-card: var(--bs-shadow-card);
+  --shadow-shell: 0 40px 120px rgba(0, 0, 0, 0.6), 0 8px 28px rgba(0, 0, 0, 0.4);
+}
+
+/* ---------------------------------------------------------
+   3. GLOBAL DARK RULES
+--------------------------------------------------------- */
+
+/* Deep canvas with a faint sage glow at the top and the shop grid.
+   No background-attachment: fixed (it repaints on every scroll). */
+html[data-theme="dark"] body {
+  background-color: var(--bs-canvas);
+  background-image:
+    radial-gradient(ellipse 70% 42% at 50% -8%, rgba(var(--dark-accent-rgb), 0.07), transparent 70%),
+    linear-gradient(rgba(var(--dark-line-rgb), 0.016) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--dark-line-rgb), 0.016) 1px, transparent 1px);
+  background-size: 100% 1400px, 42px 42px, 42px 42px;
+  background-repeat: no-repeat, repeat, repeat;
+}
+
+html[data-theme="dark"] ::selection {
+  color: #f6f1e4;
+  background: #3e5537;
+}
+
+html[data-theme="dark"] .page-shell {
+  border-color: rgba(var(--dark-line-rgb), 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* Logos drawn for light backgrounds swap to the cream mark in dark mode. */
+.theme-logo-dark { display: none !important; }
+html[data-theme="dark"] .theme-logo-light { display: none !important; }
+html[data-theme="dark"] .theme-logo-dark { display: block !important; }
+
+/* ---------------------------------------------------------
+   4. THEME TOGGLE
+
+   Markup: button.theme-toggle.theme-toggle-<placement>[role=switch]
+     > svg.theme-toggle-icon + span.theme-toggle-label + span.theme-toggle-track > i
+   The on/off look is driven only by html[data-theme], so nothing flashes
+   before hydration. Placements:
+   - floating: fixed pill for bare pages (e.g. admin login)
+   - header:   40px icon button in .site-header-actions (desktop only)
+   - menu:     full-width row in the mobile navigation
+   - sidebar:  row in the admin sidebar (always a dark surface)
+--------------------------------------------------------- */
+
 .theme-toggle {
-  position: fixed; right: max(22px, env(safe-area-inset-right));
-  bottom: max(22px, env(safe-area-inset-bottom)); z-index: 80;
-  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
-  min-height: 44px; padding: 11px 15px; border-radius: 999px;
-  border: 1px solid #c5cbbb; background: #f4f0e6; color: #34432e;
-  box-shadow: 0 6px 24px #0003; cursor: pointer;
-  font: 600 12px Arial, sans-serif;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font: 13px/1.2 var(--serif, Georgia, "Times New Roman", serif);
+  letter-spacing: 0;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--bs-dur-fast) ease,
+    border-color var(--bs-dur-fast) ease,
+    color var(--bs-dur-fast) ease;
 }
-.theme-toggle:hover { background: #e3e8d9; }
-.theme-toggle:focus-visible { outline: 3px solid #94a77d; outline-offset: 4px; }
-html[data-theme="dark"] .theme-toggle { background: #282e24; color: #f0ece2; border-color: #65705b; }
-html[data-theme="dark"] .theme-toggle:hover { background: #394231; }
-@media(max-width: 650px) {
-  .theme-toggle { right: 12px; bottom: calc(88px + env(safe-area-inset-bottom)); width: 44px; padding: 10px; }
-  .theme-toggle span { display: none; }
+
+.theme-toggle-icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: transparent;
+  transition: fill var(--bs-dur-fast) ease, color var(--bs-dur-fast) ease;
 }
-@media(prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+html[data-theme="dark"] .theme-toggle-icon {
+  color: var(--bs-accent);
+  fill: currentColor; /* the moon fills in when dark mode is on */
+}
+
+.theme-toggle-label { white-space: nowrap; }
+
+.theme-toggle-track {
+  position: relative;
+  width: 30px;
+  height: 18px;
+  flex: none;
+  border-radius: var(--bs-r-pill);
+  background: var(--tt-track, rgba(52, 67, 46, 0.16));
+  box-shadow: inset 0 0 0 1px var(--tt-track-line, rgba(52, 67, 46, 0.22));
+}
+.theme-toggle-track i {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--tt-knob, #34432e);
+  transition: transform var(--bs-dur) var(--ease-standard), background-color var(--bs-dur) ease;
+}
+html[data-theme="dark"] .theme-toggle-track {
+  background: rgba(var(--dark-accent-rgb), 0.18);
+  box-shadow: inset 0 0 0 1px rgba(var(--dark-accent-rgb), 0.35);
+}
+html[data-theme="dark"] .theme-toggle-track i {
+  transform: translateX(12px);
+  background: var(--bs-accent);
+}
+
+/* Label hidden visually but kept as the accessible name. */
+.theme-toggle.theme-toggle-header .theme-toggle-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.theme-toggle.theme-toggle-header .theme-toggle-track { display: none; }
+
+/* --- Floating -------------------------------------------- */
+/* No backdrop-filter: a near-opaque fill instead. */
+.theme-toggle.theme-toggle-floating {
+  position: fixed;
+  right: max(22px, env(safe-area-inset-right));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  z-index: 80;
+  min-height: 44px;
+  padding: 0 12px 0 14px;
+  border: 1px solid #c5cbbb;
+  border-radius: var(--bs-r-pill);
+  background: rgba(244, 240, 230, 0.94);
+  color: #34432e;
+  box-shadow: 0 10px 30px rgba(16, 23, 15, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.theme-toggle.theme-toggle-floating:focus-visible {
+  outline: 2px solid var(--bs-focus);
+  outline-offset: 3px;
+}
+html[data-theme="dark"] .theme-toggle.theme-toggle-floating {
+  border-color: rgba(var(--dark-line-rgb), 0.16);
+  background: rgba(var(--dark-band-rgb), 0.94);
+  color: var(--bs-ink);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 650px) {
+  .theme-toggle.theme-toggle-floating {
+    right: max(12px, env(safe-area-inset-right));
+    bottom: calc(88px + env(safe-area-inset-bottom));
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+  .theme-toggle.theme-toggle-floating .theme-toggle-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+  .theme-toggle.theme-toggle-floating .theme-toggle-track { display: none; }
+}
+
+/* Pages with the site header or the admin sidebar carry their own toggle. */
+body:has(.site-header, .birdshop-admin-sidebar) .theme-toggle:not(.theme-toggle-menu):not(.theme-toggle-header):not(.theme-toggle-sidebar) { display: none; }
+
+/* --- Header (sits on the dark end of the header gradient in both modes) --- */
+.theme-toggle.theme-toggle-header {
+  position: static;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  justify-content: center;
+  border: 1px solid rgba(240, 236, 226, 0.22);
+  border-radius: var(--bs-r-pill);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f0ece2;
+  box-shadow: none;
+}
+.theme-toggle.theme-toggle-header:focus-visible {
+  outline: 2px solid var(--bs-focus-on-dark);
+  outline-offset: 3px;
+  border-radius: var(--bs-r-pill);
+}
+html[data-theme="dark"] .theme-toggle.theme-toggle-header {
+  border-color: rgba(var(--dark-line-rgb), 0.16);
+  background: rgba(var(--dark-line-rgb), 0.035);
+}
+/* Matches the header collapse breakpoint; the menu toggle takes over. */
+@media (max-width: 1100px) {
+  .theme-toggle.theme-toggle-header { display: none; }
+}
+
+/* --- Mobile navigation menu ------------------------------- */
+.theme-toggle.theme-toggle-menu {
+  --tt-track: rgba(240, 236, 226, 0.12);
+  --tt-track-line: rgba(240, 236, 226, 0.2);
+  --tt-knob: #f0ece2;
+  position: static;
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 52px;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 0 15px;
+  border: 1px solid rgba(240, 236, 226, 0.08);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.025);
+  color: rgba(244, 240, 229, 0.8);
+  box-shadow: none;
+}
+.theme-toggle.theme-toggle-menu .theme-toggle-track { margin-left: auto; }
+.theme-toggle.theme-toggle-menu:focus-visible {
+  outline: 2px solid var(--bs-focus-on-dark);
+  outline-offset: 2px;
+}
+
+/* --- Admin sidebar (dark in both modes) ------------------- */
+.theme-toggle.theme-toggle-sidebar {
+  --tt-track: rgba(240, 236, 226, 0.12);
+  --tt-track-line: rgba(240, 236, 226, 0.2);
+  --tt-knob: #f0ece2;
+  position: static;
+  width: 100%;
+  min-height: 42px;
+  justify-content: flex-start;
+  margin: 0 0 8px;
+  padding: 0 13px;
+  border: 1px solid var(--admin-line-light, rgba(242, 238, 228, 0.13));
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--admin-ink-soft, rgba(242, 238, 228, 0.72));
+  box-shadow: none;
+}
+.theme-toggle.theme-toggle-sidebar .theme-toggle-track { margin-left: auto; }
+.theme-toggle.theme-toggle-sidebar:focus-visible {
+  outline: 2px solid var(--bs-focus-on-dark);
+  outline-offset: 2px;
+}
+/* Inside the admin mobile sheet it shares a row with "View store" and log out. */
+.birdshop-admin-sidebar details .theme-toggle.theme-toggle-sidebar {
+  flex: 1 1 auto;
+  width: auto;
+  min-height: 44px;
+  margin: 0;
+}
+
+/* --- Hover and press (precise pointers only) -------------- */
+@media (hover: hover) and (pointer: fine) {
+  .theme-toggle.theme-toggle-floating:hover {
+    border-color: #a9b49c;
+    background: #e9ecdf;
+  }
+  html[data-theme="dark"] .theme-toggle.theme-toggle-floating:hover {
+    border-color: rgba(var(--dark-accent-rgb), 0.42);
+    background: rgba(var(--dark-raised-rgb), 0.96);
+  }
+  .theme-toggle.theme-toggle-header:hover {
+    border-color: rgba(240, 236, 226, 0.32);
+    background: rgba(255, 255, 255, 0.12);
+  }
+  html[data-theme="dark"] .theme-toggle.theme-toggle-header:hover {
+    border-color: rgba(var(--dark-accent-rgb), 0.4);
+    background: rgba(var(--dark-line-rgb), 0.08);
+  }
+  .theme-toggle.theme-toggle-menu:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .theme-toggle.theme-toggle-sidebar:hover {
+    color: var(--admin-ink, #f2eee4);
+    border-color: rgba(242, 238, 228, 0.24);
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .theme-toggle.theme-toggle-floating,
+  .theme-toggle.theme-toggle-header {
+    transition:
+      background-color var(--bs-dur-fast) ease,
+      border-color var(--bs-dur-fast) ease,
+      color var(--bs-dur-fast) ease,
+      transform var(--bs-dur-fast) var(--ease-standard);
+  }
+  .theme-toggle.theme-toggle-floating:active,
+  .theme-toggle.theme-toggle-header:active { transform: scale(0.97); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle,
+  .theme-toggle-icon,
+  .theme-toggle-track i { transition: none; }
+}
+
+/* ---------------------------------------------------------
+   THEME SWITCH
+
+   ThemeToggle adds html.theme-switching for the duration of a switch, so
+   element transitions do not run a second time (or unevenly) while the
+   colours change. With motion allowed and View Transitions supported, the
+   new theme is revealed as a circle growing from the toggle; the default
+   cross-fade is turned off. Everything is scoped to .theme-switching so
+   route view transitions elsewhere are unaffected.
+--------------------------------------------------------- */
+
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: none !important;
+}
+
+html.theme-switching::view-transition-old(root),
+html.theme-switching::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html.theme-switching::view-transition-new(root) { z-index: 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-switching::view-transition-group(*),
+  html.theme-switching::view-transition-old(*),
+  html.theme-switching::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   FIRST-VISIT HINT
+   The site opens in light mode. On a visitor's first visits
+   (html[data-theme-hint], set by the boot script in layout.tsx)
+   the dark-mode switch glows a few times with a short label so
+   people notice it. Clicking the switch removes the hint.
+========================================================= */
+
+@keyframes birdshop-theme-hint-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(234, 227, 206, 0);
+  }
+  40% {
+    box-shadow:
+      0 0 0 5px rgba(234, 227, 206, 0.28),
+      0 0 26px 8px rgba(216, 201, 163, 0.55);
+  }
+}
+
+@keyframes birdshop-theme-hint-label {
+  0%, 100% { opacity: 0; translate: 0 -4px; }
+  12%, 82% { opacity: 1; translate: 0 0; }
+}
+
+html[data-theme-hint] .theme-toggle.theme-toggle-header {
+  position: relative;
+  overflow: visible;
+  border-color: rgba(234, 227, 206, 0.6);
+}
+
+html[data-theme-hint] .theme-toggle.theme-toggle-header::after {
+  content: "Try dark mode";
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 50%;
+  translate: 0 0;
+  transform: translateX(50%);
+  padding: 7px 12px;
+  border: 1px solid rgba(234, 227, 206, 0.35);
+  border-radius: 999px;
+  background: #0b140e;
+  color: #f0ece2;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35), 0 0 18px rgba(216, 201, 163, 0.35);
+  font: 600 12px/1 Georgia, "Times New Roman", serif;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html[data-theme-hint] .theme-toggle.theme-toggle-header,
+  html[data-theme-hint] .site-header-menu-toggle {
+    animation: birdshop-theme-hint-glow 1.6s ease-in-out 1.2s 4;
+  }
+
+  html[data-theme-hint] .theme-toggle.theme-toggle-header::after {
+    animation: birdshop-theme-hint-label 6.4s ease-in-out 1.2s 1 both;
+  }
+}
+
+/* Reduced motion: a steady ring and label instead of pulsing. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme-hint] .theme-toggle.theme-toggle-header,
+  html[data-theme-hint] .site-header-menu-toggle {
+    box-shadow: 0 0 0 3px rgba(234, 227, 206, 0.35);
+  }
+
+  html[data-theme-hint] .theme-toggle.theme-toggle-header::after {
+    opacity: 1;
+  }
+}

@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 
 import {
   cancelPaymentRequest,
+  completeServiceOrderFromChat,
   createPaymentRequest,
   restoreConversation,
   setConversationStatus,
@@ -379,6 +380,21 @@ function isUnread(conversation: Conversation) {
    STATUS LOGIC
 ========================================================= */
 
+// Nobody has worked on it yet: brand new requests, and paid package chats that
+// arrive as "paid" but have no staff reply or assignment. The first staff reply
+// moves paid chats to in_progress (migration 20261009030000).
+function isUntouched(conversation: Conversation) {
+  const status = conversation.workflow_status;
+
+  if (!status || status === "new") return true;
+
+  return (
+    status === "paid" &&
+    !conversation.assigned_staff_user_id &&
+    !conversation.assigned_to
+  );
+}
+
 function getConversationView(
   conversation: Conversation,
 
@@ -388,11 +404,8 @@ function getConversationView(
     return "closed";
   }
 
-  if (conversation.status !== "open") {
-    return "closed";
-  }
-
-  // Payment and completion of service work are separate states.
+  // Finished orders stay under Completed, including after the automatic
+  // close one hour later; Closed is for chats closed or removed by staff.
   if (
     conversation.conversation_type === "service" &&
     order?.service_status === "completed"
@@ -403,14 +416,15 @@ function getConversationView(
     return "completed";
   }
 
+  if (conversation.status !== "open") {
+    return "closed";
+  }
+
   /*
    * Truly untouched/unclaimed requests remain New.
    */
 
-  if (
-    (!conversation.workflow_status || conversation.workflow_status === "new") &&
-    true
-  ) {
+  if (isUntouched(conversation)) {
     return "new";
   }
 
@@ -457,7 +471,7 @@ function staffPalette(conversation: Conversation) {
   const key =
     conversation.assigned_staff_user_id ||
     conversation.assigned_to ||
-    (conversation.workflow_status !== "new" ? "birdshop-owner" : "");
+    (!isUntouched(conversation) ? "birdshop-owner" : "");
 
   if (!key) {
     return 0;
@@ -479,7 +493,7 @@ function staffLabel(conversation: Conversation) {
     return conversation.assigned_to;
   }
 
-  if (conversation.workflow_status !== "new") {
+  if (!isUntouched(conversation)) {
     return "BirdShop";
   }
 
@@ -1304,12 +1318,12 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                 {selected.conversation_type === "service" && (
                   <>
                     <PaymentFeedback
-                      key={selected.id}
+                      key={`feedback-${selected.id}`}
                       conversationId={selected.id}
                     />
                     <details
                       className={paymentStyles.paymentDrawer}
-                      key={selected.id}
+                      key={`payments-${selected.id}`}
                     >
                       <summary>
                         <div>
@@ -1551,12 +1565,35 @@ export default async function OwnerAdminChatPage({ searchParams }: PageProps) {
                     </form>
                   </div>
 
-                  {selectedOrder ? (
-                    <Link href="/admin/orders?view=services">
-                      Open Service Order →
-                    </Link>
+                  {selectedOrder &&
+                  selectedOrder.service_status === "completed" ? (
+                    <span className={styles.completeNote}>
+                      {selected.status === "open"
+                        ? "✓ Order completed · this chat closes automatically 1 hour after completion"
+                        : "✓ Order completed · chat closed"}
+                    </span>
+                  ) : selectedOrder &&
+                    ["paid", "partially_refunded"].includes(
+                      selectedOrder.payment_status,
+                    ) ? (
+                    <details className={styles.completeOrder}>
+                      <summary>Complete Order</summary>
+                      <form action={completeServiceOrderFromChat}>
+                        <input
+                          type="hidden"
+                          name="conversation_id"
+                          value={selected.id}
+                        />
+                        <label>
+                          <input type="checkbox" name="confirm" value="yes" required />
+                          The work is finished. Email the customer that their
+                          order is complete and close this chat in 1 hour.
+                        </label>
+                        <SubmitButton type="submit">Complete Order</SubmitButton>
+                      </form>
+                    </details>
                   ) : (
-                    <span>No order created yet</span>
+                    <span>No paid order yet</span>
                   )}
                 </footer>
               </section>

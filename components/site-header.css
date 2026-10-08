@@ -1,8 +1,15 @@
 /* =========================================================
-   BIRDSHOP GLOBAL HEADER
+   BIRDSHOP GLOBAL CHROME (header + footer)
 
-   Loaded from the root layout so it remains available
-   across every route and browser back/forward navigation.
+   Loaded last from the root layout (globals → theme → this
+   file), so it remains available across every route and
+   browser back/forward navigation.
+
+   - Header: all styling, both themes, plus .site-header-actions.
+   - Footer: refinements over the globals.css base, both themes.
+   - The theme toggle itself (.theme-toggle*) lives in theme.css.
+   - The header collapses to the menu at 1100px; the header
+     theme toggle hides at the same width (theme.css).
 ========================================================= */
 
 .site-header {
@@ -52,16 +59,8 @@
     background 160ms ease;
 }
 
-/* =========================================================
-   SCROLLED HEADER
-
-   At the top:
-   rounded / beveled.
-
-   Once scrolling:
-   square top edge against browser viewport.
-========================================================= */
-
+/* At the top the header is rounded and bevelled; once the page
+   scrolls it squares off against the viewport edge. */
 .site-header-scrolled {
   border-radius: 0;
 
@@ -100,7 +99,7 @@
   width: 1px;
   height: 38px;
 
-  background: var(--theme-surface-24-28-24-0_48, rgba(241, 236, 224, 0.48));
+  background: rgba(241, 236, 224, 0.48);
 }
 
 .site-header-brand-word {
@@ -119,7 +118,10 @@
   align-items: center;
   justify-content: center;
 
-  gap: 34px;
+  /* Eight links: the gap tightens with the viewport (22px at 1200,
+     34px from 1440) so the nav never runs into the actions before
+     the 1100px collapse, even with a classic 17px scrollbar. */
+  gap: clamp(20px, calc(5vw - 38px), 34px);
 
   min-width: 0;
 
@@ -145,10 +147,6 @@
   transition: color 150ms ease;
 }
 
-.site-header-nav a:hover {
-  color: #ffffff;
-}
-
 .site-header-nav a::after {
   content: "";
 
@@ -164,31 +162,49 @@
 
   transform: scaleX(0.45);
 
-  background: var(--theme-surface-24-28-24-1, #f4efe4);
+  background: #f4efe4;
 
   transition:
     opacity 160ms ease,
     transform 160ms ease;
 }
 
-.site-header-nav a:hover::after,
+.site-header-nav .site-header-active {
+  color: #ffffff;
+}
+
 .site-header-nav .site-header-active::after {
   opacity: 1;
 
   transform: scaleX(1);
 }
 
-.site-header-nav .site-header-active {
-  color: #ffffff;
+@media (hover: hover) and (pointer: fine) {
+  .site-header-nav a:hover {
+    color: #ffffff;
+  }
+
+  .site-header-nav a:hover::after {
+    opacity: 1;
+
+    transform: scaleX(1);
+  }
 }
 
 /* =========================================================
-   CART
-
-   Icon + count are inside ONE link.
-   The entire area is clickable.
+   ACTIONS (theme toggle + cart)
 ========================================================= */
 
+.site-header-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  justify-self: end;
+}
+
+/* Icon + count are inside ONE link; the entire area is clickable. */
 .site-header-cart {
   min-width: 96px;
   height: 58px;
@@ -212,12 +228,14 @@
     transform 150ms ease;
 }
 
-.site-header-cart:hover {
-  background: rgba(255, 255, 255, 0.16);
-}
-
 .site-header-cart:active {
   transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .site-header-cart:hover {
+    background: rgba(255, 255, 255, 0.16);
+  }
 }
 
 .site-header-cart-icon {
@@ -255,17 +273,96 @@
   font-size: 11px;
   font-weight: 700;
 
+  font-variant-numeric: tabular-nums;
+
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  transition: opacity 160ms ease;
+}
+
+/* The count stays blank (and quiet) until the saved cart is read. */
+.site-header-cart-count:empty {
+  opacity: 0.45;
 }
 
 /* =========================================================
-   KEYBOARD FOCUS
+   KEYBOARD FOCUS + SKIP LINK
 ========================================================= */
 
-.site-header a:focus-visible {
-  outline: 1px solid rgba(240, 236, 226, 0.8);
+/* The header is dark behind the brand, nav and menu toggle. */
+.site-header a:focus-visible,
+.site-header button:focus-visible {
+  outline: 2px solid var(--bs-focus-on-dark, #ece5cf);
+  outline-offset: 3px;
 
-  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* Two-tone ring: dark ink plus a cream halo stays visible whether the cart
+   sits on the forest, the grey transition or the cream end of the header. */
+.site-header .site-header-cart:focus-visible {
+  outline: 2px solid #142014;
+  outline-offset: 2px;
+
+  box-shadow: 0 0 0 4px var(--bs-focus-on-dark, #ece5cf);
+
+  border-radius: 999px;
+}
+
+/* First focusable element on every public page. It sits over the dark
+   brand end of the header (both themes) once focused. */
+.site-skip-link {
+  position: absolute;
+
+  top: 18px;
+  left: 18px;
+
+  z-index: 1100;
+
+  padding: 11px 18px;
+
+  border-radius: var(--bs-r-control, 8px);
+
+  color: var(--bs-forest-btn-ink, #142012);
+  background: var(--bs-forest-btn-bg, #f0ece2);
+
+  box-shadow: var(--bs-shadow-raised);
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  line-height: 1.2;
+
+  white-space: nowrap;
+}
+
+/* Visually hidden until focused: clipped in place, so it can never show
+   through a transform, an animation or an unexpected containing block. */
+.site-skip-link:not(:focus) {
+  width: 1px;
+  height: 1px;
+
+  margin: -1px;
+  padding: 0;
+
+  overflow: hidden;
+
+  clip-path: inset(50%);
+
+  box-shadow: none;
+}
+
+.site-skip-link:focus {
+  outline: 2px solid var(--bs-focus-on-dark, #ece5cf);
+  outline-offset: 3px;
+}
+
+/* Skip-link target, directly after the header. */
+.site-content-anchor {
+  display: block;
+
+  height: 0;
+
+  outline: none;
 }
 
 /* =========================================================
@@ -278,7 +375,7 @@
   }
 
   .site-header-nav {
-    gap: 22px;
+    gap: 18px;
 
     padding: 0 18px;
 
@@ -286,11 +383,23 @@
   }
 }
 
-@media (max-width: 980px) {
+/* =========================================================
+   COLLAPSED HEADER + MOBILE NAVIGATION (≤1100px)
+
+   The full navigation hides and the menu toggle takes over.
+   The header theme toggle hides at the same width (theme.css);
+   the menu carries its own toggle row.
+========================================================= */
+
+.site-header-menu-toggle,
+.site-header-mobile-nav {
+  display: none;
+}
+
+@media (max-width: 1100px) {
   .site-header {
-    grid-template-columns:
-      1fr
-      auto;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
 
     padding: 0 28px;
   }
@@ -299,60 +408,22 @@
     display: none;
   }
 
+  /* Collapsed header: the cream right-edge glow would sit behind the cart
+     here and hide its dark icon, so the header is one deep forest surface
+     (as in dark mode) and the cart icon is cream like the menu button. */
+  .site-header {
+    background: linear-gradient(
+      90deg,
+      #061009 0%,
+      #08130c 64%,
+      #121c14 100%
+    );
+  }
+
   .site-header-cart {
     min-width: 90px;
 
     color: #f0ece2;
-  }
-}
-
-@media (max-width: 700px) {
-  .site-header {
-    height: var(--header-height);
-
-    padding: 0 18px;
-
-    border-radius: 0;
-  }
-
-  .site-header-bs {
-    font-size: 34px;
-  }
-
-  .site-header-brand-rule {
-    height: 30px;
-  }
-
-  .site-header-brand-word {
-    font-size: 9px;
-  }
-
-  .site-header-cart {
-    min-width: 78px;
-
-    padding-left: 10px;
-  }
-
-  .site-header-cart-count {
-    width: 33px;
-    height: 33px;
-  }
-}
-/* =========================================================
-   MOBILE NAVIGATION
-   Desktop remains unchanged; this only becomes interactive
-   when the full navigation is hidden below 980px.
-========================================================= */
-
-.site-header-menu-toggle,
-.site-header-mobile-nav {
-  display: none;
-}
-
-@media (max-width: 980px) {
-  .site-header {
-    grid-template-columns: 1fr auto auto;
-    gap: 10px;
   }
 
   .site-header-menu-toggle {
@@ -382,11 +453,6 @@
       border-color 150ms ease;
   }
 
-  .site-header-menu-toggle:hover {
-    border-color: rgba(240, 236, 226, 0.3);
-    background: rgba(255, 255, 255, 0.08);
-  }
-
   .site-header-menu-icon {
     width: 15px;
     height: 12px;
@@ -406,9 +472,7 @@
 
     transform-origin: center;
 
-    transition:
-      transform 160ms ease,
-      translate 160ms ease;
+    transition: transform 160ms ease;
   }
 
   .site-header-menu-open .site-header-menu-icon i:first-child {
@@ -426,6 +490,10 @@
     left: 0;
 
     z-index: 1001;
+
+    max-height: calc(100dvh - 90px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
 
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -477,13 +545,13 @@
     padding: 0 15px;
 
     border: 1px solid rgba(240, 236, 226, 0.08);
-    border-radius: 5px;
+    border-radius: 6px;
 
-    color: rgba(244, 240, 229, 0.8);
+    color: rgba(244, 240, 229, 0.82);
     background: rgba(255, 255, 255, 0.025);
 
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 13px;
+    font-size: 14px;
 
     transition:
       color 150ms ease,
@@ -491,21 +559,89 @@
       border-color 150ms ease;
   }
 
-  .site-header-mobile-nav a:hover,
   .site-header-mobile-nav .site-header-mobile-active {
     color: #ffffff;
-    border-color: rgba(240, 236, 226, 0.16);
+    border-color: rgba(240, 236, 226, 0.2);
     background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 2px 0 0 rgba(240, 236, 226, 0.7);
   }
 
   .site-header-mobile-nav a > span:last-child {
     color: rgba(240, 236, 226, 0.52);
   }
+
+  .site-header-mobile-nav a:focus-visible {
+    outline-offset: -2px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .site-header-menu-toggle:hover {
+      border-color: rgba(240, 236, 226, 0.3);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .site-header-mobile-nav a:hover {
+      color: #ffffff;
+      border-color: rgba(240, 236, 226, 0.16);
+      background: rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  /* Links settle in one after another as the menu opens. */
+  @media (prefers-reduced-motion: no-preference) {
+    .site-header-mobile-nav a {
+      opacity: 0;
+
+      transform: translateY(-4px);
+
+      transition:
+        color 150ms ease,
+        background 150ms ease,
+        border-color 150ms ease,
+        opacity 180ms ease calc(var(--i, 0) * 18ms),
+        transform 180ms var(--ease-standard) calc(var(--i, 0) * 18ms);
+    }
+
+    .site-header-menu-open .site-header-mobile-nav a {
+      opacity: 1;
+
+      transform: none;
+    }
+  }
 }
 
 @media (max-width: 700px) {
   .site-header {
+    height: var(--header-height);
+
     gap: 6px;
+
+    padding: 0 18px;
+
+    border-radius: 0;
+  }
+
+  .site-header-bs {
+    font-size: 34px;
+  }
+
+  .site-header-brand-rule {
+    height: 30px;
+  }
+
+  .site-header-brand-word {
+    font-size: 10px;
+  }
+
+  .site-header-cart {
+    min-width: 78px;
+
+    padding-left: 10px;
+  }
+
+  .site-header-cart-count {
+    width: 33px;
+    height: 33px;
   }
 
   .site-header-menu-toggle {
@@ -530,21 +666,274 @@
   }
 }
 
-@media (max-width: 980px) {
-  .site-header-cart {
-    color: var(--theme-text-240-236-226-1, #142014);
+/* Smallest phones (≈320px): keep the cart count fully visible. */
+@media (max-width: 360px) {
+  .site-header {
+    padding: 0 12px;
   }
-}
 
-@media (max-width: 700px) {
+  .site-header-brand-rule,
   .site-header-brand-word {
-    font-size: 10px;
+    display: none;
+  }
+
+  .site-header-cart {
+    min-width: 0;
   }
 }
 
-@media (max-width: 980px) {
-  .site-header-mobile-nav {
-    max-height: calc(100dvh - 90px);
-    overflow-y: auto;
+/* =========================================================
+   HEADER — DARK MODE
+
+   Written at html[data-theme] specificity so they win over the
+   light rules above regardless of order. The grey #67685f stop
+   and the bright cream top edge are removed; the header stays
+   one continuous deep forest surface.
+========================================================= */
+
+html[data-theme="dark"] .site-header {
+  background: linear-gradient(
+    90deg,
+    #050d08 0%,
+    #07110b 58%,
+    #0c1711 82%,
+    #101c15 100%
+  );
+
+  box-shadow:
+    inset 0 1px 0 rgba(226, 216, 186, 0.18),
+    inset 1px 0 0 rgba(226, 216, 186, 0.08),
+    inset -1px 0 0 rgba(226, 216, 186, 0.08),
+    inset 0 -1px 0 rgba(226, 216, 186, 0.09),
+    0 8px 26px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .site-header.site-header-scrolled {
+  box-shadow:
+    inset 0 -1px 0 rgba(226, 216, 186, 0.1),
+    0 12px 34px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="dark"] .site-header-nav a::after {
+  background: #adc29a;
+}
+
+html[data-theme="dark"] .site-header-cart-count {
+  background: #3e5537;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 0 1px rgba(173, 194, 154, 0.25);
+}
+
+html[data-theme="dark"] .site-header-mobile-nav {
+  border-color: rgba(226, 216, 186, 0.12);
+
+  background: linear-gradient(
+    160deg,
+    rgba(6, 13, 9, 0.995),
+    rgba(14, 24, 17, 0.99)
+  );
+
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="dark"] .site-header-mobile-nav .site-header-mobile-active {
+  border-color: rgba(173, 194, 154, 0.32);
+
+  box-shadow: inset 2px 0 0 #adc29a;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="dark"] .site-header-cart:hover {
+    background: rgba(226, 216, 186, 0.07);
+  }
+}
+
+/* =========================================================
+   FOOTER
+
+   Refines the globals.css base (which loads earlier). The
+   photo background itself is owned by globals.css.
+========================================================= */
+
+.footer-brand span,
+.footer-message {
+  text-transform: uppercase;
+}
+
+.footer-brand span {
+  font-size: 10px;
+}
+
+.footer-nav {
+  gap: 4px 24px;
+}
+
+.footer-nav a {
+  position: relative;
+
+  padding: 6px 0;
+
+  transition: color 160ms ease;
+}
+
+.footer-nav a::after {
+  content: "";
+
+  position: absolute;
+
+  right: 0;
+  bottom: 2px;
+  left: 0;
+
+  height: 1px;
+
+  opacity: 0.6;
+
+  background: currentColor;
+
+  transform: scaleX(0);
+  transform-origin: left;
+
+  transition: transform 200ms var(--ease-standard);
+}
+
+.footer-socials a {
+  width: 40px;
+  height: 40px;
+
+  border: 1px solid rgba(240, 236, 226, 0.16);
+  border-radius: 50%;
+
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.footer-socials svg {
+  width: 19px;
+  height: 19px;
+}
+
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  gap: 10px 24px;
+
+  padding: 16px 55px 18px;
+
+  text-align: left;
+}
+
+.footer-bottom a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: rgba(239, 235, 225, 0.75);
+
+  transition: color 160ms ease;
+}
+
+.site-footer a:focus-visible {
+  outline: 2px solid var(--bs-focus-on-dark, #ece5cf);
+  outline-offset: 4px;
+
+  border-radius: 2px;
+}
+
+.footer-socials a:focus-visible {
+  border-radius: 50%;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .footer-nav a:hover,
+  .footer-bottom a:hover {
+    color: #ffffff;
+  }
+
+  .footer-nav a:hover::after {
+    transform: scaleX(1);
+  }
+
+  .footer-socials a:hover {
+    border-color: rgba(240, 236, 226, 0.32);
+
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+@media (max-width: 740px) {
+  .footer-nav {
+    gap: 2px 20px;
+  }
+
+  .footer-nav a,
+  .footer-bottom a {
+    min-height: 44px;
+
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .footer-socials a {
+    width: 44px;
+    height: 44px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    justify-content: center;
+
+    gap: 6px;
+
+    padding: 16px 20px calc(18px + env(safe-area-inset-bottom));
+
+    text-align: center;
+  }
+}
+
+/* --- Footer, dark mode --- */
+
+html[data-theme="dark"] .site-footer {
+  border-top: 1px solid rgba(226, 216, 186, 0.08);
+}
+
+html[data-theme="dark"] .footer-overlay {
+  background: linear-gradient(
+    90deg,
+    rgba(4, 8, 5, 0.95),
+    rgba(6, 12, 8, 0.8) 50%,
+    rgba(6, 12, 8, 0.92)
+  );
+}
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .site-header-nav a,
+  .site-header-nav a::after,
+  .site-header-cart,
+  .site-header-cart-count,
+  .site-header-menu-toggle,
+  .site-header-menu-icon i,
+  .site-header-mobile-nav,
+  .site-header-mobile-nav a,
+  .footer-nav a,
+  .footer-nav a::after,
+  .footer-socials a,
+  .footer-bottom a {
+    transition: none;
+  }
+
+  .site-header-cart:active {
+    transform: none;
   }
 }

@@ -7,12 +7,15 @@ import {
   XIcon,
   YoutubeIcon,
 } from "@/components/SiteIcons";
-import { siteConfig } from "@/lib/site-config";
+import { hasDiscordInvite, siteConfig } from "@/lib/site-config";
 
+// Only channels that actually exist are shown; greyed "coming soon" icons
+// read as unfinished. Without a real invite the Discord URL falls back to the
+// Contact page, which a "Discord" icon should not point at.
 const socialLinks = [
   {
     label: "Discord",
-    href: siteConfig.socials.discord,
+    href: hasDiscordInvite ? siteConfig.socials.discord : null,
     Icon: DiscordIcon,
   },
   {
@@ -30,7 +33,14 @@ const socialLinks = [
     href: siteConfig.socials.x,
     Icon: XIcon,
   },
-] as const;
+].flatMap(({ label, href, Icon }) =>
+  href ? [{ label, href, Icon }] : [],
+);
+
+// Read once per module load, not during render. The footer is also rendered
+// inside client pages, so the year text opts out of hydration warnings for the
+// rare build-year / visit-year mismatch.
+const YEAR = new Date().getFullYear();
 
 export default function SiteFooter() {
   return (
@@ -41,15 +51,15 @@ export default function SiteFooter() {
         <div className="footer-brand">
           <Image
             src="/cremebs.png"
-            alt="BirdShop"
-            width={180}
-            height={180}
+            alt=""
+            width={80}
+            height={80}
             className="footer-logo"
           />
 
           <div>
             <strong>{siteConfig.displayName}</strong>
-            <span>GAMES BRING US CLOSER</span>
+            <span>Games bring us closer</span>
           </div>
         </div>
 
@@ -64,39 +74,41 @@ export default function SiteFooter() {
           ))}
         </nav>
 
-        <div className="footer-socials">
-          {socialLinks.map(({ label, href, Icon }) =>
-            href ? (
+        {socialLinks.length > 0 && (
+          <div className="footer-socials">
+            {socialLinks.map(({ label, href, Icon }) => (
               <Link
                 key={label}
                 href={href}
-                target="_blank"
-                rel="noreferrer"
+                {...(href.startsWith("https://")
+                  ? { target: "_blank", rel: "noreferrer" }
+                  : {})}
                 aria-label={label}
               >
                 <Icon />
               </Link>
-            ) : (
-              <span
-                key={label}
-                className="footer-social-disabled"
-                aria-label={`${label} coming soon`}
-                title={`${label} coming soon`}
-              >
-                <Icon />
-              </span>
-            )
-          )}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="footer-message">
-          <span>MORE THAN GAMES</span>
-          <span>A BRIGHTER TOMORROW</span>
+          <span>More than games</span>
+          <span>A brighter tomorrow</span>
         </div>
       </div>
 
       <div className="footer-bottom">
-        © 2026 Bird Shop. All rights reserved.
+        <span suppressHydrationWarning>
+          © {YEAR} BirdShop. All rights reserved.
+        </span>
+
+        <span>Payments secured by Stripe · Private digital delivery</span>
+
+        {/* "#top" scrolls to the very top; the sticky header is always in view,
+            so linking to it would only nudge the page. */}
+        <a href="#top">
+          Back to top <span aria-hidden="true">↑</span>
+        </a>
       </div>
     </footer>
   );

@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     });
     const statusUrl = `/services/checkout?token=${token}`;
     if (attempt.order_id) return Response.json({ url: statusUrl, completed: true }, { headers: privateHeaders });
-    if (["paid", "processing", "attention", "expired", "cancelled", "failed"].includes(attempt.status)) {
+    if (attempt.cancel_requested_at || ["paid", "processing", "attention", "expired", "cancelled", "failed"].includes(attempt.status)) {
       return Response.json({ url: statusUrl }, { headers: privateHeaders });
     }
     try {

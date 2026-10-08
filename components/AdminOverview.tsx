@@ -5,6 +5,7 @@ import {
   formatCount as count,
   formatMoney as money,
   statusText,
+  type Operations,
   type Overview,
 } from "@/lib/admin-reporting";
 import s from "./AdminReports.module.css";
@@ -12,6 +13,8 @@ export default function AdminOverview() {
   const { data: d, error } = useAdminReport<Overview>(
     "birdshop_admin_overview",
   );
+  // Optional until the production-readiness migration is applied.
+  const { data: ops } = useAdminReport<Operations>("birdshop_admin_operations");
   if (!d)
     return (
       <section className={s.panel} aria-busy={!error}>
@@ -30,7 +33,7 @@ export default function AdminOverview() {
     {
       label: "Delivery / fulfillment issues",
       count: d.delivery_issues,
-      href: "/admin/orders?view=digital",
+      href: "/admin/settings#deliveries",
     },
     {
       label: "Email jobs need attention",
@@ -47,6 +50,30 @@ export default function AdminOverview() {
       count: d.low_stock_count,
       href: "/admin/inventory",
     },
+    ...(ops
+      ? [
+          {
+            label: "Service chats nobody has claimed",
+            count: ops.unclaimed_chats,
+            href: "/admin/chat?view=new&type=service",
+          },
+          {
+            label: "Payment requests unpaid for 3+ days",
+            count: ops.stale_unpaid_requests,
+            href: "/admin/chat",
+          },
+          {
+            label: "Reviews awaiting moderation",
+            count: ops.pending_reviews,
+            href: "/admin/reviews",
+          },
+          {
+            label: "Open support requests",
+            count: ops.open_support_requests,
+            href: "/admin/requests",
+          },
+        ]
+      : []),
   ].filter((x) => Number(x.count) > 0);
   return (
     <div className={s.report}>
@@ -69,26 +96,51 @@ export default function AdminOverview() {
         </p>
       )}
       <div className={s.metrics}>
-        <article className={s.primary}>
-          <span>Lifetime net revenue</span>
-          {d.revenue.length ? (
-            d.revenue.map((r) => (
-              <strong key={r.currency}>{money(r.net, r.currency)}</strong>
-            ))
-          ) : (
-            <strong>—</strong>
-          )}
-          <small>
-            {d.revenue.length
-              ? "Confirmed payments less refunds"
-              : "No confirmed payments yet"}
-          </small>
-        </article>
-        {[
-          ["Paid orders", d.paid_orders, "Historical real purchases"],
-          ["Products sold", d.units, "Paid digital units, including refunds"],
-          ["Live now", d.live_now, "Anonymous browsers · last 2 minutes"],
-        ].map(([label, n, note]) => (
+        {ops ? (
+          <article className={s.primary}>
+            <span>Today’s net revenue</span>
+            {ops.today.length ? (
+              ops.today.map((r) => (
+                <strong key={r.currency}>{money(r.net, r.currency)}</strong>
+              ))
+            ) : (
+              <strong>{money(0)}</strong>
+            )}
+            <small>Confirmed payments since 00:00 UTC, less refunds</small>
+          </article>
+        ) : (
+          <article className={s.primary}>
+            <span>Lifetime net revenue</span>
+            {d.revenue.length ? (
+              d.revenue.map((r) => (
+                <strong key={r.currency}>{money(r.net, r.currency)}</strong>
+              ))
+            ) : (
+              <strong>—</strong>
+            )}
+            <small>
+              {d.revenue.length
+                ? "Confirmed payments less refunds"
+                : "No confirmed payments yet"}
+            </small>
+          </article>
+        )}
+        {(ops
+          ? [
+              [
+                "Paid orders today",
+                ops.today.reduce((sum, r) => sum + Number(r.orders), 0),
+                `${count(d.paid_orders)} all time`,
+              ],
+              ["Visitors today", ops.today_visitors, "Unique browser sessions"],
+              ["Live now", d.live_now, "Anonymous browsers · last 2 minutes"],
+            ]
+          : [
+              ["Paid orders", d.paid_orders, "Historical real purchases"],
+              ["Products sold", d.units, "Paid digital units, including refunds"],
+              ["Live now", d.live_now, "Anonymous browsers · last 2 minutes"],
+            ]
+        ).map(([label, n, note]) => (
           <article key={String(label)}>
             <span>{label}</span>
             <strong>{count(Number(n))}</strong>
@@ -134,6 +186,12 @@ export default function AdminOverview() {
               ["Open conversations", d.open_chats],
               ["Awaiting your reply", d.awaiting_reply],
               ["Assigned conversations", d.assigned_chats],
+              ...(ops
+                ? [
+                    ["Unclaimed service chats", ops.unclaimed_chats],
+                    ["Unpaid payment requests", ops.unpaid_requests],
+                  ]
+                : []),
               ["Paid services in progress", d.paid_services],
               ["Digital deliveries pending", d.pending_digital],
             ].map(([label, n]) => (
@@ -151,7 +209,7 @@ export default function AdminOverview() {
             <span className={s.eyebrow}>LATEST PURCHASES</span>
             <h2>Recent paid orders</h2>
           </div>
-          <Link href="/admin/orders">View all →</Link>
+          <Link href="/admin/analytics">Sales history →</Link>
         </div>
         {d.recent_orders.length ? (
           <div className={s.orders}>
@@ -159,8 +217,9 @@ export default function AdminOverview() {
               <Link
                 className={s.order}
                 href={
-                  "/admin/orders?view=" +
-                  (o.order_type === "product" ? "digital" : "services")
+                  o.order_type === "product"
+                    ? "/admin/analytics"
+                    : "/admin/chat?view=progress&type=service"
                 }
                 key={o.reference}
               >

@@ -1,3 +1,5 @@
+import { utcStamp } from "./order-completed";
+
 export type PaymentConfirmedEmailData = {
   reference: string; orderReference: string; customerName: string | null;
   customerEmail: string; serviceName: string; packageName: string | null;
@@ -12,16 +14,16 @@ function escape(value: unknown) {
 function render(data: PaymentConfirmedEmailData, adminUrl?: string) {
   const amount = new Intl.NumberFormat("en-US", { style: "currency", currency: data.currency.toUpperCase() }).format(data.amount);
   const admin = Boolean(adminUrl);
-  const subject = `${data.orderReference} · Purchase complete · ${amount}`;
-  const title = admin ? "Paid service order received." : "Your purchase is complete.";
+  const subject = `${data.orderReference} · Payment confirmed · ${amount}`;
+  const title = admin ? "Paid service order received." : "Your payment is confirmed.";
   const intro = admin
     ? "Payment has been verified. Open the private chat to discuss the requirements before starting work."
     : `Hi ${data.customerName || "there"}, your payment is confirmed. Your private chat is ready to discuss the next steps.`;
   const rows = [
     ["Order", data.orderReference], ["Service", data.serviceName],
-    ["Package", data.packageName || "Custom"], ["Amount paid", amount],
-    ["Payment", "Confirmed"], ["Service fulfillment", "Work completion is confirmed separately"],
-    ["Paid at", new Date(data.paidAt).toISOString().replace("T", " ").replace(".000Z", " UTC")],
+    ["Package", data.packageName || "Custom quote"], ["Amount paid", amount],
+    ["Payment", "Confirmed"], ["Service fulfillment", "We will email you when your order is completed"],
+    ["Paid at", utcStamp(data.paidAt)],
     ...(admin ? [["Customer", data.customerName || "Customer"], ["Email", data.customerEmail]] : []),
   ];
   const url = adminUrl || data.chatUrl;
@@ -37,7 +39,7 @@ function render(data: PaymentConfirmedEmailData, adminUrl?: string) {
 <table role="presentation" style="width:100%;border-spacing:0;margin:24px 0;background:#e9e6da;border-radius:12px;padding:12px">
 ${rows.map(([key,value]) => `<tr><td style="padding:12px 6px;border-bottom:1px solid #d5d8c9;color:#617058;font-size:11px">${escape(key)}</td><td style="padding:12px 6px;border-bottom:1px solid #d5d8c9;font-weight:600">${escape(value)}</td></tr>`).join("")}
 </table><p style="margin:26px 0"><a href="${escape(url)}" style="display:block;padding:15px;text-align:center;background:#435b3c;color:#fffdf4;text-decoration:none;border-radius:9px;font-weight:600">${label}</a></p>
-<p style="font-size:12px;color:#687461">Your purchase is complete. Service delivery and completion are arranged in your private chat. Keep this link safe.</p></td></tr></table></div>`,
+<p style="font-size:12px;color:#687461">Your payment is confirmed. Service delivery is arranged in your private chat, and we will email you when the order is completed. Keep this link safe.</p></td></tr></table></div>`,
   };
 }
 export function paymentConfirmedCustomerEmail(data: PaymentConfirmedEmailData) { return render(data); }

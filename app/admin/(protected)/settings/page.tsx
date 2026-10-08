@@ -1,4 +1,5 @@
 import SubmitButton from "@/components/SubmitButton";
+import { formatUSD } from "@/lib/money";
 import { configurationChecks } from "@/lib/deployment-config";
 import AdminSidebar from "@/components/AdminSidebar";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
@@ -7,6 +8,7 @@ import {
   retryBackgroundWork,
   reconcileSavedCheckout,
   resendReviewedEmail,
+  retryProductDelivery,
 } from "./actions";
 import styles from "../admin.module.css";
 import local from "./settings.module.css";
@@ -44,6 +46,27 @@ export default async function Page({
   const { supabase, profile } = await requireOwner();
   const { data, error } = await supabase.rpc("birdshop_v2_admin_health");
   const health = data as Health | null;
+  // Paid digital orders whose codes have not been delivered yet.
+  const { data: deliveryData } = await supabase
+    .from("orders")
+    .select("id,reference,customer_name,total,currency,delivery_status,fulfillment_status,paid_at")
+    .eq("order_type", "product")
+    .in("payment_status", ["paid", "partially_refunded"])
+    .or("delivery_status.is.null,delivery_status.not.in.(sent,cancelled)")
+    .is("deleted_at", null)
+    .or("source.is.null,source.neq.admin_test")
+    .order("paid_at", { ascending: false })
+    .limit(50);
+  const deliveries = (deliveryData ?? []) as {
+    id: string;
+    reference: string;
+    customer_name: string | null;
+    total: number | string;
+    currency: string;
+    delivery_status: string | null;
+    fulfillment_status: string | null;
+    paid_at: string | null;
+  }[];
   return (
     <main className={styles.page}>
       <AdminSidebar />
@@ -98,6 +121,39 @@ export default async function Page({
             installed.
           </p>
         )}
+        <section className={local.section} id="deliveries">
+          <h2>Digital deliveries needing attention</h2>
+          <p>
+            Paid digital orders whose codes have not been emailed yet. Delivery
+            normally happens within minutes of payment; retry here after adding
+            stock or after checking the email provider.
+          </p>
+          <div className={local.jobs}>
+            {deliveries.map((order) => (
+              <article key={order.id}>
+                <div>
+                  <strong>
+                    {order.reference} · {order.customer_name || "Customer"}
+                  </strong>
+                  <span>{(order.delivery_status ?? "pending").replaceAll("_", " ")}</span>
+                </div>
+                <small>
+                  {formatUSD(order.total)} ·{" "}
+                  {order.paid_at ? new Date(order.paid_at).toLocaleString() : ""}
+                </small>
+                <form action={retryProductDelivery}>
+                  <input type="hidden" name="orderId" value={order.id} />
+                  <label>
+                    <input type="checkbox" name="reviewed" value="yes" /> I checked
+                    email-provider history if delivery is uncertain.
+                  </label>
+                  <SubmitButton>Retry allocation / delivery</SubmitButton>
+                </form>
+              </article>
+            ))}
+            {deliveries.length === 0 && <p>All paid digital orders have been delivered.</p>}
+          </div>
+        </section>
         <section className={local.section}>
           <h2>Pending checkouts</h2>
           <p>

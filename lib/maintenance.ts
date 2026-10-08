@@ -29,17 +29,44 @@ export async function recoverCheckoutAttempt(
     );
   }
   if (!knownId) {
-    // A bounded lookup recovers a lost API response without creating a second session.
-    const sessions = await stripe.checkout.sessions.list({
+    // A paged lookup recovers a lost API response without creating a second session.
+    const listing = stripe.checkout.sessions.list({
       created: {
         gte: Math.floor(new Date(attempt.created_at).getTime() / 1000) - 60,
         lte: Math.floor(new Date(attempt.expires_at).getTime() / 1000) + 60,
       },
       limit: 100,
     });
-    knownId =
-      sessions.data.find((s) => s.metadata?.birdshop_attempt_id === attempt.id)
-        ?.id ?? null;
+    let scanned = 0;
+    let complete = true;
+    for await (const s of listing) {
+      if (s.metadata?.birdshop_attempt_id === attempt.id) {
+        knownId = s.id;
+        break;
+      }
+      if (++scanned >= 2000) {
+        complete = false;
+        break;
+      }
+    }
+    // The saved Stripe request can never succeed once its expires_at has passed.
+    // With no session anywhere in the creation window, release the hold so codes
+    // and service quotes are not blocked forever.
+    const savedExpiry = Number(
+      (attempt.stripe_params as { expires_at?: number } | null)?.expires_at ?? 0,
+    );
+    if (
+      !knownId &&
+      complete &&
+      attempt.stripe_params &&
+      savedExpiry * 1000 < Date.now()
+    ) {
+      const released = await serverRpc<boolean>(
+        "birdshop_v2_release_stale_checkout",
+        { p_attempt_id: attempt.id },
+      );
+      if (released) return;
+    }
     if (
       !knownId &&
       attempt.status === "creating" &&
@@ -74,6 +101,57 @@ export async function recoverCheckoutAttempt(
     }
   }
   await reconcileCheckout(session);
+}
+
+const CLOSE_AFTER_COMPLETION_MS = 60 * 60 * 1000;
+
+// A completed service chat stays open for an hour so the customer can say thanks
+// or ask a last question, then closes with a short system message.
+async function closeCompletedChats() {
+  const db = createAdminClient();
+  const { data: chats, error } = await db
+    .from("service_conversations")
+    .select("id,order_id")
+    .eq("status", "open")
+    .eq("conversation_type", "service")
+    .eq("workflow_status", "completed")
+    .is("deleted_at", null)
+    .not("order_id", "is", null)
+    .limit(50);
+  if (error) throw new Error("Completed chats could not be read.");
+  if (!chats?.length) return 0;
+
+  const cutoff = new Date(Date.now() - CLOSE_AFTER_COMPLETION_MS).toISOString();
+  const { data: orders, error: orderError } = await db
+    .from("orders")
+    .select("id")
+    .in("id", chats.map((chat) => chat.order_id))
+    .eq("service_status", "completed")
+    .lt("fulfilled_at", cutoff);
+  if (orderError) throw new Error("Completed orders could not be read.");
+
+  const due = new Set((orders ?? []).map((order) => order.id));
+  let closed = 0;
+  for (const chat of chats) {
+    if (!due.has(chat.order_id)) continue;
+    const { data: updated, error: closeError } = await db
+      .from("service_conversations")
+      .update({ status: "closed" })
+      .eq("id", chat.id)
+      .eq("status", "open")
+      .select("id");
+    if (closeError || !updated?.length) continue;
+    closed++;
+    await db.from("service_messages").insert({
+      conversation_id: chat.id,
+      sender_type: "system",
+      sender_label: "BirdShop",
+      body: "This order is complete and this chat is now closed. Need anything else? Start a new conversation from My Service.",
+      message_type: "system",
+      metadata: { event: "chat_auto_closed" },
+    });
+  }
+  return closed;
 }
 
 export async function runMaintenance() {
@@ -142,11 +220,25 @@ export async function runMaintenance() {
         .eq("id", attempt.id);
     }
   }
+  // An email-state failure must not skip the rate-limit cleanup below.
+  // Never let chat housekeeping stop email delivery or cleanup.
+  const closedChats = await closeCompletedChats().catch(() => {
+    console.error("BirdShop maintenance could not close completed chats");
+    return 0;
+  });
+  let emailError: unknown = null;
   const email =
-    Date.now() - started < 45_000 ? await drainEmailJobs(3) : { sent: 0 };
+    Date.now() - started < 45_000
+      ? await drainEmailJobs(6).catch((error: unknown) => {
+          emailError = error;
+          return { sent: 0 };
+        })
+      : { sent: 0 };
   await db
     .from("birdshop_rate_limits")
     .delete()
     .lt("window_start", new Date(Date.now() - 2 * 86400_000).toISOString());
-  return { events, checkouts, emails: email.sent };
+  // Cleanup still ran; now fail the run so the scheduler shows the email outage.
+  if (emailError) throw emailError;
+  return { events, checkouts, emails: email.sent, closedChats };
 }

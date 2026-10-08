@@ -3,7 +3,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import InboxVerify from "./InboxVerify";
 export const metadata: Metadata = {
-  title: "Open your inbox | BirdShop",
+  title: "Open your inbox",
   robots: { index: false, follow: false },
   referrer: "no-referrer",
 };

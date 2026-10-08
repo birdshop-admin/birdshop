@@ -2,15 +2,29 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import type { Service, ServicePlan } from "@/lib/services";
+
+import CatalogArtwork from "@/components/CatalogArtwork";
+import { ArrowIcon, CheckIcon, MessageIcon, ShieldIcon } from "@/components/SiteIcons";
+import { formatUSD } from "@/lib/money";
+import {
+  HOW_TO_ORDER_PACKAGES,
+  type PublishedServicePlan,
+} from "@/lib/service-packages";
+import type { Service } from "@/lib/services";
+
 import s from "./purchase.module.css";
 
+/*
+ * Fixed-package purchase. The page only renders this for a published package
+ * of an available, non-quote-only service; checkout re-validates the price.
+ * Copy never says "plan" or "tier".
+ */
 export default function Purchase({
   service,
   plan,
 }: {
   service: Service;
-  plan: ServicePlan;
+  plan: PublishedServicePlan;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -94,7 +108,7 @@ export default function Purchase({
         }),
       });
 
-      const result = await response.json();
+      const result = await response.json().catch(() => ({ error: "BirdShop is temporarily unavailable. Please retry in a moment." }));
 
       if (!response.ok) {
         // Unpaid failures must never expose a private chat.
@@ -140,23 +154,48 @@ export default function Purchase({
     setError("");
   }
 
+  const includes = plan.includes.filter((item) => item.trim().length > 0);
+
   return (
     <section className={s.layout}>
-      <div>
-        <Link href={`/services/${service.slug}`}>← Back to plans</Link>
+      <div className={s.summary}>
+        <Link href={`/services/${service.slug}`} className={s.back}>
+          <span aria-hidden="true">←</span>
+          Back to {service.name}
+        </Link>
 
-        <span className={s.eyebrow}>YOUR NEXT STEP</span>
+        {service.image && (
+          <div className={s.thumb}>
+            <CatalogArtwork
+              src={service.image}
+              sizes="(max-width: 760px) 92vw, 560px"
+              fallback={
+                <span className="catalog-artwork-fallback" aria-hidden="true">
+                  {service.initials}
+                </span>
+              }
+            />
+          </div>
+        )}
+
+        <span className={s.eyebrow}>Your next step</span>
 
         <h1>{service.name}</h1>
-        <h2>{plan.name} package</h2>
 
-        <p>{plan.scope}</p>
+        <h2 className={s.packageName}>{plan.name} package</h2>
 
-        <ul>
-          {plan.includes.map((x, i) => (
-            <li key={i}>{x}</li>
-          ))}
-        </ul>
+        <p className={s.scope}>{plan.scope}</p>
+
+        {includes.length > 0 && (
+          <ul className={s.includes}>
+            {includes.map((item, index) => (
+              <li key={`${index}-${item}`}>
+                <CheckIcon />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        )}
 
         <p>
           After secure payment, you return directly to a private BirdShop chat
@@ -164,18 +203,30 @@ export default function Purchase({
           and receipts.
         </p>
 
-        <p>Turnaround: {service.turnaround}</p>
+        <dl className={s.facts}>
+          <div>
+            <dt>Turnaround</dt>
+            <dd>{service.turnaround}</dd>
+          </div>
+
+          <div>
+            <dt>Delivery</dt>
+            <dd>{service.delivery}</dd>
+          </div>
+        </dl>
+
+        <Link href={HOW_TO_ORDER_PACKAGES} className={s.textLink}>
+          How package orders work
+        </Link>
       </div>
 
-      <form className={s.card} onSubmit={submit}>
-        <span className={s.eyebrow}>SECURE SERVICE PURCHASE</span>
+      <form className={s.card} onSubmit={submit} aria-busy={busy}>
+        <span className={s.eyebrow}>Secure service purchase</span>
 
-        <h2>
-          {new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-          }).format(plan.cents! / 100)}
-        </h2>
+        <div className={s.priceBlock}>
+          <strong className={s.price}>{formatUSD(plan.cents / 100)}</strong>
+          <span>{plan.name} package · USD</span>
+        </div>
 
         <label>
           Your name
@@ -201,13 +252,35 @@ export default function Purchase({
           />
         </label>
 
-        <button disabled={busy || completed}>
+        <button
+          type="submit"
+          className={s.primary}
+          disabled={busy || completed}
+        >
+          <ShieldIcon />
           {busy
-            ? "Opening checkout…"
+            ? "Opening Checkout…"
             : completed
-              ? "Already purchased"
-              : "Pay securely & open chat"}
+              ? "Already Purchased"
+              : "Pay Securely & Open Chat"}
         </button>
+
+        <ul className={s.trust}>
+          <li>
+            <ShieldIcon />
+            Secure Stripe checkout
+          </li>
+
+          <li>
+            <MessageIcon />
+            Private chat unlocks after payment
+          </li>
+
+          <li>
+            <CheckIcon />
+            Payment confirmation by email
+          </li>
+        </ul>
 
         <small>
           Your order is created after payment is confirmed. No account password
@@ -215,22 +288,29 @@ export default function Purchase({
         </small>
 
         {completed && (
-          <div role="status">
+          <div role="status" className={s.notice}>
             <p>
               You have already purchased this package. Open your chat below,
               or start another purchase.
             </p>
 
-            <button type="button" onClick={buyAgain}>
-              Buy this package again
+            <button type="button" className={s.secondary} onClick={buyAgain}>
+              Buy This Package Again
             </button>
           </div>
         )}
 
-        {error && <p role="alert">{error}</p>}
+        {error && (
+          <p role="alert" className={s.error}>
+            {error}
+          </p>
+        )}
 
         {chat && (
-          <Link href={chat}>Continue to your private chat →</Link>
+          <Link href={chat} className={s.primary}>
+            Continue to Your Private Chat
+            <ArrowIcon />
+          </Link>
         )}
       </form>
     </section>

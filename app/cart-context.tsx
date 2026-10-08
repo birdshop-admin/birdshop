@@ -13,6 +13,11 @@ import {
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Product } from "@/lib/products";
+import {
+  mapDatabaseProduct,
+  PRODUCT_COLUMNS,
+  type DatabaseProduct,
+} from "@/lib/product-catalog";
 
 export type CartItem = {
   slug: string;
@@ -35,79 +40,14 @@ type CartContextValue = {
   refreshProducts: () => Promise<void>;
 };
 
-type DatabaseProduct = {
-  id: string;
-  slug: string;
-  name: string;
-  category: string;
-  platform: string;
-  region: string;
-  price: number | string;
-  old_price: number | string | null;
-  badge: string | null;
-  stock: number;
-  delivery: string;
-  description: string;
-  short_description: string;
-  code_format: string;
-  initials: string;
-  gallery: unknown;
-  is_visible: boolean;
-  sort_order: number;
-};
-
 const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = "birdshop-cart";
 
-function normalizeGallery(row: DatabaseProduct): Product["gallery"] {
-  if (Array.isArray(row.gallery) && row.gallery.length > 0) {
-    return row.gallery as Product["gallery"];
-  }
-
-  const display =
-    row.initials.trim() ||
-    row.name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((word) => word.charAt(0).toUpperCase())
-      .join("") ||
-    "BS";
-
-  return [
-    {
-      id: "primary",
-      label: "Product",
-      display,
-    },
-  ] as Product["gallery"];
-}
-
-function mapDatabaseProduct(row: DatabaseProduct): Product {
-  const price = Number(row.price);
-  const oldPrice = row.old_price === null ? undefined : Number(row.old_price);
-
-  return {
-    slug: row.slug,
-    name: row.name,
-    category: row.category,
-    platform: row.platform,
-    region: row.region,
-    price: Number.isFinite(price) ? price : 0,
-    oldPrice:
-      oldPrice !== undefined && Number.isFinite(oldPrice)
-        ? oldPrice
-        : undefined,
-    badge: row.badge ?? undefined,
-    stock: Math.max(0, Math.floor(Number(row.stock) || 0)),
-    delivery: row.delivery,
-    description: row.description,
-    shortDescription: row.short_description,
-    codeFormat: row.code_format,
-    initials: row.initials || row.name.slice(0, 2).toUpperCase(),
-    gallery: normalizeGallery(row),
-  };
-}
+// Navigation, focus, visibility and reconnects reuse a catalog younger than this.
+// Price and stock are re-validated server-side at checkout.
+const STALE_MS = 30_000;
+const CATALOG_ERROR =
+  "The product catalog could not load. Please refresh and retry.";
 
 function createProductMap(productList: Product[]) {
   return productList.reduce<ProductMap>((catalog, product) => {
@@ -167,6 +107,17 @@ function sanitizeCartItems(value: unknown, catalog: ProductMap): CartItem[] {
   }));
 }
 
+function sameItems(current: CartItem[], next: CartItem[]) {
+  return (
+    current.length === next.length &&
+    current.every(
+      (item, index) =>
+        item.slug === next[index].slug &&
+        item.quantity === next[index].quantity,
+    )
+  );
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const supabase = useMemo(() => createClient(), []);
@@ -178,80 +129,148 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [productsError, setProductsError] = useState<string | null>(null);
 
   const cartHydrated = useRef(false);
+  const lastFetchedAt = useRef(0);
+  // Serialized rows of the last good catalog; null until one has loaded.
+  const lastPayload = useRef<string | null>(null);
+  const inFlight = useRef<Promise<void> | null>(null);
+  const followUp = useRef<Promise<void> | null>(null);
 
-  const refreshProducts = useCallback(async () => {
-    setProductsError(null);
+  const loadCatalog = useCallback(async () => {
+    const startedAt = Date.now();
 
-    const { data, error } = await supabase
-      .from("products")
-      .select(
-        [
-          "id",
-          "slug",
-          "name",
-          "category",
-          "platform",
-          "region",
-          "price",
-          "old_price",
-          "badge",
-          "stock",
-          "delivery",
-          "description",
-          "short_description",
-          "code_format",
-          "initials",
-          "gallery",
-          "is_visible",
-          "sort_order",
-        ].join(","),
-      )
-      .eq("is_visible", true)
-      .order("sort_order", { ascending: true })
-      .order("name", { ascending: true });
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select(PRODUCT_COLUMNS)
+        .eq("is_visible", true)
+        .order("sort_order", { ascending: true })
+        .order("name", { ascending: true });
 
-    if (error) {
-      setProductsError(
-        "The product catalog could not load. Please refresh and retry.",
-      );
+      if (error) throw error;
+
+      lastFetchedAt.current = startedAt;
+
+      const payload = JSON.stringify(data ?? []);
+
+      // Unchanged catalog: keep every array identity so no consumer re-renders
+      // and the saved cart is not rewritten.
+      if (payload === lastPayload.current && cartHydrated.current) {
+        setProductsError(null);
+        setProductsLoaded(true);
+        return;
+      }
+
+      const nextProductList = (
+        (data ?? []) as unknown as DatabaseProduct[]
+      ).map(mapDatabaseProduct);
+
+      const nextProducts = createProductMap(nextProductList);
+
+      lastPayload.current = payload;
+      setProductList(nextProductList);
+      setProducts(nextProducts);
+
+      if (!cartHydrated.current) {
+        try {
+          const savedCart = window.localStorage.getItem(STORAGE_KEY);
+          const parsed = savedCart ? JSON.parse(savedCart) : [];
+
+          setItems(sanitizeCartItems(parsed, nextProducts));
+        } catch {
+          setItems([]);
+        }
+
+        cartHydrated.current = true;
+      } else {
+        setItems((current) => {
+          const next = sanitizeCartItems(current, nextProducts);
+          return sameItems(current, next) ? current : next;
+        });
+      }
+
+      setProductsError(null);
       setProductsLoaded(true);
+    } catch {
+      lastFetchedAt.current = startedAt;
+
+      // A failed background refresh keeps the last good catalog on screen.
+      // Without one, show the error; a previous error stays visible until a
+      // retry succeeds, so pages never flash "not found" / "no results".
+      if (lastPayload.current === null) {
+        setProductsError(CATALOG_ERROR);
+      }
+
+      setProductsLoaded(true);
+    }
+  }, [supabase]);
+
+  const startLoad = useCallback(() => {
+    const run = loadCatalog().finally(() => {
+      if (inFlight.current === run) inFlight.current = null;
+    });
+
+    inFlight.current = run;
+    return run;
+  }, [loadCatalog]);
+
+  // Forced refresh (Try Again, checkout recovery). A request already in flight
+  // may predate the caller's change (for example a released reservation), so
+  // wait for it and fetch once more; concurrent callers share that follow-up.
+  const refreshProducts = useCallback((): Promise<void> => {
+    const current = inFlight.current;
+
+    if (!current) return startLoad();
+
+    if (!followUp.current) {
+      followUp.current = current.then(() => {
+        followUp.current = null;
+        return startLoad();
+      });
+    }
+
+    return followUp.current;
+  }, [startLoad]);
+
+  // Background revalidation: deduplicated, and skipped while the catalog is fresh.
+  const revalidate = useCallback(() => {
+    if (inFlight.current) return;
+
+    if (
+      lastPayload.current !== null &&
+      Date.now() - lastFetchedAt.current < STALE_MS
+    ) {
       return;
     }
 
-    const nextProductList = (
-      (data ?? []) as unknown as DatabaseProduct[]
-    ).map(mapDatabaseProduct);
-
-    const nextProducts = createProductMap(nextProductList);
-
-    setProductList(nextProductList);
-    setProducts(nextProducts);
-
-    if (!cartHydrated.current) {
-      try {
-        const savedCart = window.localStorage.getItem(STORAGE_KEY);
-        const parsed = savedCart ? JSON.parse(savedCart) : [];
-
-        setItems(sanitizeCartItems(parsed, nextProducts));
-      } catch {
-        setItems([]);
-      }
-
-      cartHydrated.current = true;
-    } else {
-      setItems((current) => sanitizeCartItems(current, nextProducts));
-    }
-
-    setProductsLoaded(true);
-  }, [supabase]);
+    void startLoad();
+  }, [startLoad]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      void refreshProducts();
+      revalidate();
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, [pathname, refreshProducts]);
+  }, [pathname, revalidate]);
+
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") revalidate();
+    }
+
+    window.addEventListener("focus", revalidate);
+    window.addEventListener("online", revalidate);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", revalidate);
+      window.removeEventListener("online", revalidate);
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange,
+      );
+    };
+  }, [revalidate]);
 
   useEffect(() => {
     if (!productsLoaded || !cartHydrated.current) return;
@@ -332,7 +351,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [products],
   );
 
+  // Clear storage synchronously too, so a catalog load still in flight cannot
+  // re-hydrate the purchased items from the saved cart.
   const clearCart = useCallback(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, "[]");
+    } catch {
+      // The in-memory cart is still cleared.
+    }
     setItems([]);
   }, []);
 

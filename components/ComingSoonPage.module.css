@@ -1,48 +1,48 @@
+/* =========================================================
+   404 / ERROR HERO (photo surface in both themes)
+
+   Used by app/not-found.tsx (through ComingSoonPage) and by
+   app/error.tsx, which imports this module directly, so the
+   class names .hero/.overlay/.glow/.content/.eyebrow/
+   .description/.actions/.primary/.secondary/.monogram stay.
+   Text and buttons use the --bs-forest-* family.
+========================================================= */
+
 .hero {
   position: relative;
 
-  min-height:
-    calc(
-      100vh
-      - var(--header-height)
-      - 220px
-    );
+  min-height: calc(100vh - var(--header-height) - 220px);
+  min-height: calc(100svh - var(--header-height) - 220px);
 
   overflow: hidden;
 
   display: grid;
-  grid-template-columns:
-    1fr
-    0.7fr;
-
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.7fr);
   align-items: center;
+  gap: 48px;
 
-  padding:
-    90px
-    72px;
+  padding: 88px 72px;
 
-  color: #f0ece2;
+  color: var(--bs-forest-ink);
 
-  background-image:
-    url("/landscape1.png");
-
-  background-size: cover;
-  background-position: center;
+  background: url("/landscape1.webp") center / cover no-repeat;
 }
 
+/* Dark behind the copy; the light-mode right end lifts so the green
+   logo reads (the token keeps it deep forest in dark mode). */
 .overlay {
   position: absolute;
   inset: 0;
 
-  background:
-    linear-gradient(
-      90deg,
-      rgba(5, 11, 7, 0.96),
-      rgba(8, 15, 9, 0.89) 48%,
-      var(--theme-surface-48-54-44-0_64, rgba(234, 231, 219, 0.64))
-    );
+  background: linear-gradient(
+    90deg,
+    rgba(5, 11, 7, 0.96),
+    rgba(8, 15, 9, 0.89) 48%,
+    var(--theme-surface-48-54-44-0_64, rgba(234, 231, 219, 0.64)) 76%
+  );
 }
 
+/* A soft glow drawn by the gradient alone (no blur filter). */
 .glow {
   position: absolute;
 
@@ -52,284 +52,369 @@
   width: 470px;
   height: 470px;
 
-  transform:
-    translateY(-50%);
-
   border-radius: 50%;
 
-  background:
-    radial-gradient(
-      circle,
-      rgba(
-        108,
-        123,
-        92,
-        0.18
-      ),
-      transparent 70%
-    );
+  pointer-events: none;
 
-  filter:
-    blur(20px);
+  background: radial-gradient(
+    circle,
+    rgba(108, 123, 92, 0.2),
+    transparent 68%
+  );
+
+  transform: translateY(-50%);
 }
 
 .content {
   position: relative;
   z-index: 2;
 
+  min-width: 0;
   max-width: 720px;
 }
 
 .eyebrow {
-  margin:
-    0
-    0
-    18px;
+  margin: 0 0 18px;
 
-  color:
-    rgba(
-      240,
-      236,
-      226,
-      0.64
-    );
+  color: var(--bs-forest-muted);
 
   font-size: 10px;
   font-weight: 700;
-
-  letter-spacing: 0.31em;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
 }
 
 .content h1 {
   margin: 0;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  color: var(--bs-forest-ink);
 
-  font-size:
-    clamp(
-      58px,
-      6vw,
-      92px
-    );
-
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(52px, 6vw, 92px);
   font-weight: 400;
   line-height: 0.94;
-
-  letter-spacing: -0.055em;
+  letter-spacing: -0.05em;
+  text-wrap: balance;
 }
 
 .description {
   max-width: 580px;
 
-  margin:
-    27px
-    0
-    30px;
+  margin: 26px 0 30px;
 
-  color:
-    rgba(
-      240,
-      236,
-      226,
-      0.8
-    );
+  color: var(--bs-forest-muted);
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
-
-  font-size: 19px;
-  line-height: 1.5;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.55;
+  text-wrap: pretty;
 }
+
+/* ---------------------------------------------------------
+   ACTIONS (links on the 404, a button on the error page)
+--------------------------------------------------------- */
 
 .actions {
   display: flex;
-
-  gap: 12px;
-
   flex-wrap: wrap;
+  gap: 12px;
 }
 
-.actions a {
+.actions a,
+.actions button {
   min-height: 52px;
 
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 24px;
 
-  padding:
-    0
-    22px;
+  padding: 0 22px;
 
-  border-radius: 5px;
+  border-radius: var(--bs-r-control);
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  cursor: pointer;
 
+  font-family: Georgia, "Times New Roman", serif;
   font-size: 15px;
+
+  transition:
+    background-color var(--bs-dur-fast) ease,
+    border-color var(--bs-dur-fast) ease,
+    transform var(--bs-dur-fast) ease;
 }
 
 .primary {
   min-width: 190px;
 
-  gap: 24px;
+  justify-content: space-between;
 
-  color: #f0ece2;
+  border: 1px solid transparent;
 
-  background:
-    #4a5941;
-
-  border:
-    1px solid
-    rgba(
-      224,
-      230,
-      212,
-      0.25
-    );
+  color: var(--bs-forest-btn-ink);
+  background: var(--bs-forest-btn-bg);
 }
 
 .primary span {
-  margin-left: auto;
-
   font-size: 20px;
+  line-height: 1;
 }
 
 .secondary {
   min-width: 180px;
 
-  border:
-    1px solid
-    rgba(
-      240,
-      236,
-      226,
-      0.3
-    );
+  border: 1px solid rgba(240, 236, 226, 0.34);
 
-  background:
-    rgba(
-      5,
-      11,
-      7,
-      0.3
-    );
+  color: var(--bs-forest-ink);
+  background: rgba(5, 11, 7, 0.3);
 }
+
+.actions a:active,
+.actions button:active {
+  transform: translateY(1px);
+}
+
+.actions a:focus-visible,
+.actions button:focus-visible,
+.quickLink:focus-visible {
+  outline: 2px solid var(--bs-focus-on-dark);
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------
+   QUICK LINKS (404)
+--------------------------------------------------------- */
+
+.quickLinks {
+  max-width: 560px;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+
+  margin-top: 34px;
+}
+
+.quickLink {
+  min-width: 0;
+  min-height: 64px;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 3px 12px;
+
+  padding: 13px 16px;
+
+  border: 1px solid var(--bs-forest-line);
+  border-radius: var(--bs-r-control);
+
+  color: var(--bs-forest-ink);
+  background: rgba(5, 11, 7, 0.32);
+
+  transition:
+    border-color var(--bs-dur-fast) ease,
+    background-color var(--bs-dur-fast) ease;
+}
+
+.quickLink strong {
+  grid-column: 1;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.quickNote {
+  grid-column: 1;
+
+  color: var(--bs-forest-muted);
+
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.quickArrow {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+
+  color: var(--bs-forest-muted);
+
+  font-size: 18px;
+
+  transition: transform var(--bs-dur-fast) var(--ease-standard);
+}
+
+/* ---------------------------------------------------------
+   STATUS + MARK
+--------------------------------------------------------- */
 
 .status {
   display: flex;
   align-items: center;
-
   gap: 11px;
 
-  margin-top: 38px;
+  margin-top: 34px;
 }
 
 .status span {
   width: 7px;
   height: 7px;
 
+  flex: none;
+
   border-radius: 50%;
 
-  background:
-    #7c8d6d;
+  background: #a9bd96;
 
-  box-shadow:
-    0
-    0
-    15px
-    rgba(
-      124,
-      141,
-      109,
-      0.6
-    );
+  box-shadow: 0 0 0 4px rgba(169, 189, 150, 0.14);
 }
 
 .status p {
   margin: 0;
 
-  color:
-    rgba(
-      240,
-      236,
-      226,
-      0.52
-    );
+  color: rgba(244, 239, 230, 0.6);
 
   font-size: 10px;
   font-weight: 700;
-
   letter-spacing: 0.24em;
+  text-transform: uppercase;
 }
 
+/* The logo pair on the 404; "BS" type on the error page. */
 .monogram {
   position: relative;
   z-index: 2;
 
   justify-self: center;
 
-  color:
-    var(--theme-text-240-236-226-0_78, rgba(
-      22,
-      31,
-      20,
-      0.78
-    ));
+  display: grid;
+  place-items: center;
 
-  font-family:
-    Georgia,
-    "Times New Roman",
-    serif;
+  color: var(--theme-text-240-236-226-0_78, rgba(22, 31, 20, 0.78));
 
-  font-size:
-    clamp(
-      120px,
-      14vw,
-      220px
-    );
-
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(120px, 14vw, 220px);
   line-height: 1;
-
   letter-spacing: -0.09em;
 }
 
-@media (max-width: 900px) {
-  .hero {
-    grid-template-columns: 1fr;
+.monogram img {
+  width: clamp(180px, 22vw, 300px);
+  height: auto;
+}
 
-    padding:
-      70px
-      45px;
+@media (prefers-reduced-motion: no-preference) {
+  .status span {
+    animation: statusPulse 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes statusPulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* ---------------------------------------------------------
+   HOVER (pointer devices only)
+--------------------------------------------------------- */
+
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover {
+    transform: translateY(-1px);
+
+    background: var(--bs-forest-btn-hover);
   }
 
+  .secondary:hover {
+    transform: translateY(-1px);
+
+    border-color: rgba(240, 236, 226, 0.5);
+
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .quickLink:hover {
+    border-color: rgba(240, 236, 226, 0.34);
+
+    background: rgba(5, 11, 7, 0.5);
+  }
+
+  .quickLink:hover .quickArrow {
+    transform: translateX(3px);
+  }
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE
+--------------------------------------------------------- */
+
+/* One column: the copy spans the width, so the overlay stays dark
+   and the decorative mark steps aside. */
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+
+    padding: 72px 45px;
+  }
+
+  .overlay {
+    background: linear-gradient(
+      90deg,
+      rgba(5, 11, 7, 0.96),
+      rgba(8, 15, 9, 0.9)
+    );
+  }
+
+  .glow,
   .monogram {
-    margin-top: 60px;
+    display: none;
   }
 }
 
 @media (max-width: 700px) {
   .hero {
-    padding:
-      55px
-      22px;
+    padding: 56px 20px 60px;
+  }
+
+  .content h1 {
+    font-size: clamp(44px, 13vw, 58px);
+  }
+
+  .description {
+    font-size: 16px;
   }
 
   .actions {
     flex-direction: column;
   }
 
-  .actions a {
+  .actions a,
+  .actions button {
     width: 100%;
+    min-width: 0;
   }
 
-  .monogram {
-    font-size: 120px;
+  .quickLinks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actions a,
+  .actions button,
+  .quickLink,
+  .quickArrow {
+    transition: none;
+  }
+
+  .actions a:hover,
+  .actions a:active,
+  .actions button:hover,
+  .actions button:active,
+  .quickLink:hover .quickArrow {
+    transform: none;
   }
 }

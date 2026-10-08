@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { playChatChime, unlockChatSound } from "@/lib/chat-sound";
 
 import {
+  clearServiceChatToken,
   readServiceChatToken,
   SERVICE_CHAT_BROADCAST_EVENT,
   SERVICE_CHAT_LAST_INCOMING_STORAGE_KEY,
@@ -170,6 +171,11 @@ export default function PublicServiceChatNotifier() {
         );
 
         if (!response.ok) {
+          // A removed or invalid chat will never come back; stop watching it.
+          if (response.status === 404 && readServiceChatToken() === token) {
+            clearServiceChatToken();
+          }
+
           return;
         }
 

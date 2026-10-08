@@ -1,10 +1,12 @@
 "use client";
+import { formatUSD } from "@/lib/money";
 
-import Image from "next/image";
 import Link from "next/link";
-import { use, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import CatalogArtwork from "@/components/CatalogArtwork";
+import ProductThumbnail from "@/components/ProductThumbnail";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
@@ -15,14 +17,20 @@ import {
   ShieldIcon,
   CopyIcon,
   DiscordIcon,
+  MessageIcon,
 } from "@/components/SiteIcons";
 
 import { useCart } from "@/app/cart-context";
 
-
-import { siteConfig } from "@/lib/site-config";
+import {
+  discordLinkProps,
+  hasDiscordInvite,
+  siteConfig,
+} from "@/lib/site-config";
 
 import styles from "./product.module.css";
+
+const ADDED_FEEDBACK_MS = 1300;
 
 /* =========================================================
    PRODUCT PAGE
@@ -40,6 +48,35 @@ export default function ProductPage({
   return <ProductPageContent key={slug} slug={slug} />;
 }
 
+function ProductSkeleton() {
+  return (
+    <section className={styles.productArea} aria-busy="true">
+      <p className="visually-hidden" role="status">
+        Loading product…
+      </p>
+
+      <div className={styles.breadcrumbs} aria-hidden="true">
+        <span className={`${styles.skeleton} ${styles.skeletonCrumb}`} />
+      </div>
+
+      <div className={styles.productLayout} aria-hidden="true">
+        <div className={styles.galleryColumn}>
+          <div className={`${styles.productArtwork} ${styles.skeleton}`} />
+        </div>
+
+        <div className={styles.purchaseColumn}>
+          <span className={`${styles.skeleton} ${styles.skeletonLine} ${styles.skeletonShort}`} />
+          <span className={`${styles.skeleton} ${styles.skeletonHeading}`} />
+          <span className={`${styles.skeleton} ${styles.skeletonLine} ${styles.skeletonLong}`} />
+          <span className={`${styles.skeleton} ${styles.skeletonLine} ${styles.skeletonMid}`} />
+          <span className={`${styles.skeleton} ${styles.skeletonBlock}`} />
+          <span className={`${styles.skeleton} ${styles.skeletonButton}`} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ProductPageContent({
   slug,
 }: {
@@ -52,73 +89,62 @@ function ProductPageContent({
     productList,
     products,
     productsLoaded,
+    productsError,
+    refreshProducts,
   } = useCart();
 
-  const product =
-    products[slug];
+  const product = products[slug];
 
-  const [
-    selectedImage,
-    setSelectedImage,
-  ] = useState(0);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
 
-  const [
-    quantity,
-    setQuantity,
-  ] = useState(1);
+  const addedTimer = useRef<number | null>(null);
 
-  const [
-    added,
-    setAdded,
-  ] = useState(false);
+  useEffect(() => {
+    return () => {
+      if (addedTimer.current !== null) {
+        window.clearTimeout(addedTimer.current);
+      }
+    };
+  }, []);
 
   /* =======================================================
      RELATED PRODUCTS
   ======================================================= */
 
-  const relatedProducts =
-    useMemo(() => {
-      if (!product) {
-        return [];
-      }
+  const relatedProducts = useMemo(() => {
+    if (!product) {
+      return [];
+    }
 
-      const related =
-        productList
-          .filter(
-            (item) =>
-              item.slug !==
-                product.slug &&
-              (
-                item.category ===
-                  product.category ||
-                item.platform ===
-                  product.platform
-              )
-          )
-          .slice(0, 3);
+    const related = productList
+      .filter(
+        (item) =>
+          item.slug !== product.slug &&
+          (item.category === product.category ||
+            item.platform === product.platform),
+      )
+      .slice(0, 3);
 
-      if (related.length < 3) {
-        for (const item of productList) {
-          const alreadyIncluded =
-            related.some(
-              (existing) =>
-                existing.slug ===
-                item.slug
-            );
+    if (related.length < 3) {
+      for (const item of productList) {
+        const alreadyIncluded = related.some(
+          (existing) => existing.slug === item.slug,
+        );
 
-          if (
-            item.slug !==
-              product.slug &&
-            !alreadyIncluded &&
-            related.length < 3
-          ) {
-            related.push(item);
-          }
+        if (
+          item.slug !== product.slug &&
+          !alreadyIncluded &&
+          related.length < 3
+        ) {
+          related.push(item);
         }
       }
+    }
 
-      return related;
-    }, [product, productList]);
+    return related;
+  }, [product, productList]);
 
   /* =======================================================
      PRODUCT LOADING
@@ -129,18 +155,32 @@ function ProductPageContent({
       <main className="page-shell">
         <SiteHeader />
 
-        <section
-          className={
-            styles.notFound
-          }
-        >
-          <span>
-            BIRDSHOP / PRODUCTS
-          </span>
+        <ProductSkeleton />
 
-          <h1>
-            Loading product...
-          </h1>
+        <SiteFooter />
+      </main>
+    );
+  }
+
+  /* =======================================================
+     CATALOG UNAVAILABLE
+  ======================================================= */
+
+  if (!product && productsError) {
+    return (
+      <main className="page-shell">
+        <SiteHeader />
+
+        <section className={styles.notFound} role="alert">
+          <span>BirdShop / Products</span>
+
+          <h1>This product could not load.</h1>
+
+          <button type="button" onClick={() => void refreshProducts()}>
+            Try Again
+          </button>
+
+          <Link href="/products">Return to Products →</Link>
         </section>
 
         <SiteFooter />
@@ -157,22 +197,12 @@ function ProductPageContent({
       <main className="page-shell">
         <SiteHeader />
 
-        <section
-          className={
-            styles.notFound
-          }
-        >
-          <span>
-            PRODUCT NOT FOUND
-          </span>
+        <section className={styles.notFound}>
+          <span>Product not found</span>
 
-          <h1>
-            This product does not exist.
-          </h1>
+          <h1>This product does not exist.</h1>
 
-          <Link href="/products">
-            Return to Products →
-          </Link>
+          <Link href="/products">Return to Products →</Link>
         </section>
 
         <SiteFooter />
@@ -185,10 +215,7 @@ function ProductPageContent({
   ======================================================= */
 
   const activeGallery =
-    product.gallery[
-      selectedImage
-    ] ??
-    product.gallery[0];
+    product.gallery[selectedImage] ?? product.gallery[0];
 
   const stockLabel =
     product.stock <= 0
@@ -197,66 +224,52 @@ function ProductPageContent({
         ? `${product.stock} left`
         : "In Stock";
 
-  const maxQuantity =
-    Math.max(
-      1,
-      Math.min(
-        4,
-        product.stock
-      )
-    );
+  const maxQuantity = Math.max(1, Math.min(4, product.stock));
 
-  const quantityOptions =
-    Array.from(
-      {
-        length:
-          maxQuantity,
-      },
-      (_, index) =>
-        index + 1
-    );
+  const quantityOptions = Array.from(
+    { length: maxQuantity },
+    (_, index) => index + 1,
+  );
+
+  const artPlaceholder = (
+    <div className={styles.artPlaceholder}>
+      <span>{activeGallery.display}</span>
+
+      <small>{activeGallery.label}</small>
+    </div>
+  );
 
   /* =======================================================
      CART FUNCTIONS
   ======================================================= */
 
   function handleAddToCart() {
-    if (
-      product.stock <= 0
-    ) {
+    if (product.stock <= 0) {
       return;
     }
 
-    addToCart(
-      product.slug,
-      quantity
-    );
+    addToCart(product.slug, quantity);
 
     setAdded(true);
 
-    window.setTimeout(
-      () => {
-        setAdded(false);
-      },
-      1300
-    );
+    if (addedTimer.current !== null) {
+      window.clearTimeout(addedTimer.current);
+    }
+
+    addedTimer.current = window.setTimeout(() => {
+      addedTimer.current = null;
+      setAdded(false);
+    }, ADDED_FEEDBACK_MS);
   }
 
   function handleBuyNow() {
-    if (
-      product.stock <= 0
-    ) {
+    if (product.stock <= 0) {
       return;
     }
 
-    addToCart(
-      product.slug,
-      quantity
-    );
+    addToCart(product.slug, quantity);
 
-    router.push(
-      "/cart"
-    );
+    router.push("/cart");
   }
 
   /* =======================================================
@@ -271,376 +284,167 @@ function ProductPageContent({
           PRODUCT AREA
       =================================================== */}
 
-      <section
-        className={
-          styles.productArea
-        }
-      >
-        {/* BREADCRUMBS */}
+      <section className={styles.productArea}>
+        <nav className={styles.breadcrumbs} aria-label="Breadcrumb">
+          <Link href="/">Home</Link>
 
-        <div
-          className={
-            styles.breadcrumbs
-          }
-        >
-          <Link href="/">
-            Home
-          </Link>
+          <span aria-hidden="true">/</span>
 
-          <span>/</span>
+          <Link href="/products">Products</Link>
 
-          <Link href="/products">
-            Products
-          </Link>
+          <span aria-hidden="true">/</span>
 
-          <span>/</span>
+          <span aria-current="page">{product.name}</span>
+        </nav>
 
-          <span>
-            {product.name}
-          </span>
-        </div>
-
-        <div
-          className={
-            styles.productLayout
-          }
-        >
+        <div className={styles.productLayout}>
           {/* ===============================================
               GALLERY
           =============================================== */}
 
-          <div
-            className={
-              styles.galleryColumn
-            }
-          >
-            <div
-              className={
-                styles.productArtwork
-              }
-            >
-              <div
-                className={
-                  styles.artGlow
-                }
+          <div className={styles.galleryColumn}>
+            <div className={styles.productArtwork}>
+              <div className={styles.artGlow} />
+
+              {/* The page's one preloaded image (LCP): it also loads eagerly. */}
+              <CatalogArtwork
+                src={activeGallery.src}
+                alt={`${product.name} - ${activeGallery.label}`}
+                sizes="(max-width: 900px) 100vw, 55vw"
+                fit="cover"
+                preload
+                className={styles.artImage}
+                fallback={artPlaceholder}
               />
 
-              {activeGallery.src ? (
-                <Image
-                  src={
-                    activeGallery.src
-                  }
-                  alt={`${product.name} - ${activeGallery.label}`}
-                  fill
-                  priority
-                  sizes="(max-width: 900px) 100vw, 55vw"
-                  className={
-                    styles.artImage
-                  }
-                />
-              ) : (
-                <div
-                  className={
-                    styles.artPlaceholder
-                  }
-                >
-                  <span>
-                    {
-                      activeGallery.display
-                    }
-                  </span>
-
-                  <small>
-                    {
-                      activeGallery.label
-                    }
-                  </small>
-                </div>
-              )}
-
               {product.badge && (
-                <span
-                  className={
-                    styles.artBadge
-                  }
-                >
-                  {product.badge}
-                </span>
+                <span className={styles.artBadge}>{product.badge}</span>
               )}
 
-              <span
-                className={
-                  styles.artCategory
-                }
-              >
-                {product.category}
-              </span>
+              <span className={styles.artCategory}>{product.category}</span>
 
-              <div
-                className={
-                  styles.artFooter
-                }
-              >
-                <span>
-                  BIRDSHOP
-                </span>
+              <div className={styles.artFooter}>
+                <span>BirdShop</span>
 
-                <span>
-                  {
-                    product.platform
-                  }
-                </span>
+                <span>{product.platform}</span>
               </div>
             </div>
 
-            {/* THUMBNAILS */}
-
-            <div
-              className={
-                styles.thumbnailRow
-              }
-            >
-              {product.gallery.map(
-                (
-                  galleryItem,
-                  index
-                ) => {
-                  const active =
-                    selectedImage ===
-                    index;
+            {/* A single image needs no thumbnail row. */}
+            {product.gallery.length > 1 && (
+              <div className={styles.thumbnailRow}>
+                {product.gallery.map((galleryItem, index) => {
+                  const active = selectedImage === index;
 
                   return (
                     <button
-                      key={
-                        galleryItem.id
-                      }
+                      key={galleryItem.id}
                       type="button"
-                      onClick={() =>
-                        setSelectedImage(
-                          index
-                        )
-                      }
-                      className={
-                        active
-                          ? styles.activeThumbnail
-                          : ""
-                      }
+                      onClick={() => setSelectedImage(index)}
+                      className={active ? styles.activeThumbnail : ""}
                       aria-label={`View ${galleryItem.label}`}
-                      aria-pressed={
-                        active
-                      }
+                      aria-pressed={active}
                     >
-                      {galleryItem.src ? (
-                        <Image
-                          src={
-                            galleryItem.src
-                          }
-                          alt=""
-                          fill
-                          sizes="150px"
-                          className={
-                            styles.thumbnailImage
-                          }
-                        />
-                      ) : (
-                        <>
-                          <strong>
-                            {
-                              galleryItem.display
-                            }
-                          </strong>
+                      <CatalogArtwork
+                        src={galleryItem.src}
+                        sizes="150px"
+                        fit="cover"
+                        className={styles.thumbnailImage}
+                        fallback={
+                          <>
+                            <strong>{galleryItem.display}</strong>
 
-                          <span>
-                            {
-                              galleryItem.label
-                            }
-                          </span>
-                        </>
-                      )}
+                            <span>{galleryItem.label}</span>
+                          </>
+                        }
+                      />
                     </button>
                   );
-                }
-              )}
-            </div>
+                })}
+              </div>
+            )}
           </div>
 
           {/* ===============================================
               PURCHASE COLUMN
           =============================================== */}
 
-          <div
-            className={
-              styles.purchaseColumn
-            }
-          >
-            <div
-              className={
-                styles.productHeading
-              }
-            >
-              <div
-                className={
-                  styles.headingTop
-                }
-              >
-                <span>
-                  {
-                    product.category
-                  }
-                </span>
+          <div className={styles.purchaseColumn}>
+            <div className={styles.productHeading}>
+              <div className={styles.headingTop}>
+                <span>{product.category}</span>
 
                 <span
                   className={
-                    product.stock > 0
-                      ? styles.available
-                      : styles.unavailable
+                    product.stock > 0 ? styles.available : styles.unavailable
                   }
                 >
-                  {product.stock >
-                    0 && (
-                    <CheckIcon />
-                  )}
+                  {product.stock > 0 && <CheckIcon />}
 
                   {stockLabel}
                 </span>
               </div>
 
-              <h1>
-                {product.name}
-              </h1>
+              <h1>{product.name}</h1>
 
-              <p>
-                {
-                  product.shortDescription
-                }
-              </p>
+              <p>{product.shortDescription}</p>
             </div>
 
             {/* PRICE */}
 
-            <div
-              className={
-                styles.priceRow
-              }
-            >
-              <strong>
-                $
-                {product.price.toFixed(
-                  2
-                )}
-              </strong>
+            <div className={styles.priceRow}>
+              <strong>{formatUSD(product.price)}</strong>
 
-              {product.oldPrice && (
-                <span>
-                  $
-                  {product.oldPrice.toFixed(
-                    2
-                  )}
-                </span>
-              )}
+              {product.oldPrice && <span>{formatUSD(product.oldPrice)}</span>}
             </div>
 
-            <div
-              className={
-                styles.purchaseDivider
-              }
-            />
+            <div className={styles.purchaseDivider} />
 
             {/* PRODUCT DETAILS */}
 
-            <div
-              className={
-                styles.optionGrid
-              }
-            >
+            <div className={styles.optionGrid}>
               <div>
-                <span>
-                  PLATFORM
-                </span>
+                <span>Platform</span>
 
-                <strong>
-                  {
-                    product.platform
-                  }
-                </strong>
+                <strong>{product.platform}</strong>
               </div>
 
               <div>
-                <span>
-                  REGION
-                </span>
+                <span>Region</span>
 
-                <strong>
-                  {
-                    product.region
-                  }
-                </strong>
+                <strong>{product.region}</strong>
               </div>
 
               <div>
-                <span>
-                  DELIVERY
-                </span>
+                <span>Delivery</span>
 
-                <strong>
-                  {
-                    product.delivery
-                  }
-                </strong>
+                <strong>{product.delivery}</strong>
               </div>
 
               <div>
-                <span>
-                  FORMAT
-                </span>
+                <span>Format</span>
 
-                <strong>
-                  {
-                    product.codeFormat
-                  }
-                </strong>
+                <strong>{product.codeFormat}</strong>
               </div>
             </div>
 
             {/* STOCK */}
 
-            <div
-              className={
-                styles.stockArea
-              }
-            >
-              <div
-                className={
-                  styles.stockTop
-                }
-              >
-                <span>
-                  AVAILABILITY
-                </span>
+            <div className={styles.stockArea}>
+              <div className={styles.stockTop}>
+                <span>Availability</span>
 
-                <strong>
-                  {stockLabel}
-                </strong>
+                <strong>{stockLabel}</strong>
               </div>
 
-              <div
-                className={
-                  styles.stockTrack
-                }
-              >
+              <div className={styles.stockTrack}>
                 <div
                   style={{
                     width:
-                      product.stock <=
-                      0
+                      product.stock <= 0
                         ? "0%"
-                        : product.stock <
-                            25
-                          ? `${Math.max(
-                              12,
-                              product.stock *
-                                3
-                            )}%`
+                        : product.stock < 25
+                          ? `${Math.max(12, product.stock * 3)}%`
                           : "84%",
                   }}
                 />
@@ -649,128 +453,70 @@ function ProductPageContent({
 
             {/* QUANTITY */}
 
-            <div
-              className={
-                styles.quantityRow
-              }
-            >
-              <label
-                htmlFor="quantity"
-              >
-                QUANTITY
-              </label>
+            <div className={styles.quantityRow}>
+              <label htmlFor="quantity">Quantity</label>
 
               <select
                 id="quantity"
-                value={
-                  quantity
-                }
-                disabled={
-                  product.stock <=
-                  0
-                }
-                onChange={(
-                  event
-                ) =>
-                  setQuantity(
-                    Number(
-                      event.target
-                        .value
-                    )
-                  )
-                }
+                value={quantity}
+                disabled={product.stock <= 0}
+                onChange={(event) => setQuantity(Number(event.target.value))}
               >
-                {quantityOptions.map(
-                  (value) => (
-                    <option
-                      key={value}
-                      value={value}
-                    >
-                      {value}
-                    </option>
-                  )
-                )}
+                {quantityOptions.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
               </select>
             </div>
 
             {/* BUY BUTTONS */}
 
-            <div
-              className={
-                styles.purchaseButtons
-              }
-            >
+            <div className={styles.purchaseButtons}>
               <button
                 type="button"
-                onClick={
-                  handleAddToCart
-                }
-                disabled={
-                  product.stock <=
-                  0
-                }
+                onClick={handleAddToCart}
+                disabled={product.stock <= 0}
                 className={`${styles.addButton} ${
-                  added
-                    ? styles.addedButton
-                    : ""
+                  added ? styles.addedButton : ""
                 }`}
               >
-                {added ? (
-                  <CheckIcon />
-                ) : (
-                  <CartIcon />
-                )}
+                {added ? <CheckIcon /> : <CartIcon />}
 
                 <span>
-                  {product.stock <=
-                  0
+                  {product.stock <= 0
                     ? "Out of Stock"
                     : added
                       ? "Added to Cart"
                       : "Add to Cart"}
                 </span>
 
-                <span>
-                  {added
-                    ? "✓"
-                    : "→"}
-                </span>
+                <span aria-hidden="true">{added ? "✓" : "→"}</span>
               </button>
 
               <button
                 type="button"
-                onClick={
-                  handleBuyNow
-                }
-                disabled={
-                  product.stock <=
-                  0
-                }
-                className={
-                  styles.buyButton
-                }
+                onClick={handleBuyNow}
+                disabled={product.stock <= 0}
+                className={styles.buyButton}
               >
                 Buy Now
               </button>
             </div>
 
+            <p className="visually-hidden" role="status">
+              {added ? `${product.name} added to cart` : ""}
+            </p>
+
             {/* TRUST */}
 
-            <div
-              className={
-                styles.purchaseTrust
-              }
-            >
+            <div className={styles.purchaseTrust}>
               <div>
                 <LightningIcon />
 
                 <span>
-                  <strong>
-                    Fast Delivery
-                  </strong>
-
-                  Digital product
-                  delivery
+                  <strong>Fast Delivery</strong>
+                  Digital product delivery
                 </span>
               </div>
 
@@ -778,12 +524,8 @@ function ProductPageContent({
                 <ShieldIcon />
 
                 <span>
-                  <strong>
-                    Secure Purchase
-                  </strong>
-
-                  Protected checkout
-                  flow
+                  <strong>Secure Purchase</strong>
+                  Protected checkout flow
                 </span>
               </div>
 
@@ -791,12 +533,8 @@ function ProductPageContent({
                 <DiscordIcon />
 
                 <span>
-                  <strong>
-                    Discord Support
-                  </strong>
-
-                  Help when you
-                  need it
+                  <strong>Discord Support</strong>
+                  Help when you need it
                 </span>
               </div>
             </div>
@@ -808,166 +546,81 @@ function ProductPageContent({
           PRODUCT INFORMATION
       =================================================== */}
 
-      <section
-        className={
-          styles.informationSection
-        }
-      >
-        <div
-          className={
-            styles.descriptionBlock
-          }
-        >
-          <p
-            className={
-              styles.sectionLabel
-            }
-          >
-            PRODUCT INFORMATION
-          </p>
+      <section className={styles.informationSection}>
+        <div className={styles.descriptionBlock}>
+          <p className={styles.sectionLabel}>Product information</p>
 
-          <h2>
-            About this product
-          </h2>
+          <h2>About this product</h2>
 
-          <p
-            className={
-              styles.mainDescription
-            }
-          >
-            {
-              product.description
-            }
-          </p>
+          <p className={styles.mainDescription}>{product.description}</p>
 
-          <div
-            className={
-              styles.detailList
-            }
-          >
+          <div className={styles.detailList}>
             <div>
-              <span>
-                TYPE
-              </span>
+              <span>Type</span>
 
-              <strong>
-                {
-                  product.category
-                }
-              </strong>
+              <strong>{product.category}</strong>
             </div>
 
             <div>
-              <span>
-                PLATFORM
-              </span>
+              <span>Platform</span>
 
-              <strong>
-                {
-                  product.platform
-                }
-              </strong>
+              <strong>{product.platform}</strong>
             </div>
 
             <div>
-              <span>
-                REGION
-              </span>
+              <span>Region</span>
 
-              <strong>
-                {
-                  product.region
-                }
-              </strong>
+              <strong>{product.region}</strong>
             </div>
 
             <div>
-              <span>
-                DELIVERY
-              </span>
+              <span>Delivery</span>
 
-              <strong>
-                Digital
-              </strong>
+              <strong>Digital</strong>
             </div>
           </div>
         </div>
 
         {/* DELIVERY STEPS */}
 
-        <div
-          className={
-            styles.deliveryBlock
-          }
-        >
-          <p
-            className={
-              styles.sectionLabel
-            }
-          >
-            AFTER PURCHASE
-          </p>
+        <div className={styles.deliveryBlock}>
+          <p className={styles.sectionLabel}>After purchase</p>
 
-          <h2>
-            How delivery works
-          </h2>
+          <h2>How delivery works</h2>
 
-          <div
-            className={
-              styles.steps
-            }
-          >
+          <div className={styles.steps}>
             <div>
-              <span>
-                01
-              </span>
+              <span>01</span>
 
               <div>
-                <strong>
-                  Complete checkout
-                </strong>
+                <strong>Complete checkout</strong>
 
-                <p>
-                  Purchase the
-                  product through
-                  BirdShop.
-                </p>
+                <p>Purchase the product through BirdShop.</p>
               </div>
             </div>
 
             <div>
-              <span>
-                02
-              </span>
+              <span>02</span>
 
               <div>
-                <strong>
-                  Receive your code
-                </strong>
+                <strong>Receive your code</strong>
 
                 <p>
-                  Your digital product
-                  information is
-                  delivered
+                  Your digital product information is delivered
                   electronically.
                 </p>
               </div>
             </div>
 
             <div>
-              <span>
-                03
-              </span>
+              <span>03</span>
 
               <div>
-                <strong>
-                  Redeem
-                </strong>
+                <strong>Redeem</strong>
 
                 <p>
-                  Follow the included
-                  instructions for the
-                  supported platform.
+                  Follow the included instructions for the supported
+                  platform.
                 </p>
               </div>
             </div>
@@ -979,57 +632,30 @@ function ProductPageContent({
           REDEMPTION STRIP
       =================================================== */}
 
-      <section
-        className={
-          styles.redemptionSection
-        }
-      >
-        <div
-          className={
-            styles.redemptionIcon
-          }
-        >
+      <section className={styles.redemptionSection}>
+        <div className={styles.redemptionIcon}>
           <CopyIcon />
         </div>
 
-        <div
-          className={
-            styles.redemptionCopy
-          }
-        >
-          <span>
-            DIGITAL DELIVERY
-          </span>
+        <div className={styles.redemptionCopy}>
+          <span>Digital delivery</span>
 
-          <h2>
-            Simple redemption.
-          </h2>
+          <h2>Simple redemption.</h2>
 
           <p>
-            Product-specific
-            redemption instructions
-            will appear with your
-            order. Always confirm the
-            platform and region before
-            purchasing.
+            Product-specific redemption instructions will appear with your
+            order. Always confirm the platform and region before purchasing.
           </p>
         </div>
 
         <Link
           href={siteConfig.discordUrl}
-          target="_blank"
-          rel="noreferrer"
-          className={
-            styles.supportButton
-          }
+          {...discordLinkProps}
+          className={styles.supportButton}
         >
-          <DiscordIcon />
-
+          {hasDiscordInvite ? <DiscordIcon /> : <MessageIcon />}
           Need Help?
-
-          <span>
-            →
-          </span>
+          <span aria-hidden="true">→</span>
         </Link>
       </section>
 
@@ -1037,96 +663,48 @@ function ProductPageContent({
           RELATED PRODUCTS
       =================================================== */}
 
-      <section
-        className={
-          styles.relatedSection
-        }
-      >
-        <div
-          className={
-            styles.relatedHeading
-          }
-        >
-          <div>
-            <p
-              className={
-                styles.sectionLabel
-              }
-            >
-              YOU MAY ALSO LIKE
-            </p>
+      {relatedProducts.length > 0 && (
+        <section className={styles.relatedSection}>
+          <div className={styles.relatedHeading}>
+            <div>
+              <p className={styles.sectionLabel}>You may also like</p>
 
-            <h2>
-              Related Products
-            </h2>
+              <h2>Related Products</h2>
+            </div>
+
+            <Link href="/products">
+              View All Products
+              <span aria-hidden="true">→</span>
+            </Link>
           </div>
 
-          <Link href="/products">
-            View All Products
-
-            <span>
-              →
-            </span>
-          </Link>
-        </div>
-
-        <div
-          className={
-            styles.relatedGrid
-          }
-        >
-          {relatedProducts.map(
-            (related) => (
+          <div className={styles.relatedGrid}>
+            {relatedProducts.map((related) => (
               <Link
-                key={
-                  related.slug
-                }
+                key={related.slug}
                 href={`/products/${related.slug}`}
-                className={
-                  styles.relatedCard
-                }
+                className={styles.relatedCard}
               >
-                <div
-                  className={
-                    styles.relatedImage
-                  }
-                >
-                  <span>
-                    {
-                      related.initials
-                    }
-                  </span>
+                <div className={styles.relatedImage}>
+                  <ProductThumbnail
+                    product={related}
+                    alt=""
+                    sizes="(max-width: 700px) 90vw, 360px"
+                  />
                 </div>
 
-                <div
-                  className={
-                    styles.relatedInfo
-                  }
-                >
-                  <span>
-                    {
-                      related.category
-                    }
-                  </span>
+                <div className={styles.relatedInfo}>
+                  <span>{related.category}</span>
 
-                  <h3>
-                    {
-                      related.name
-                    }
-                  </h3>
+                  <h3>{related.name}</h3>
 
-                  <strong>
-                    $
-                    {related.price.toFixed(
-                      2
-                    )}
-                  </strong>
+                  <strong>{formatUSD(related.price)}</strong>
                 </div>
               </Link>
-            )
-          )}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       <SiteFooter />
     </main>

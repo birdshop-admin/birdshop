@@ -3,10 +3,12 @@ import { paymentLabel } from "@/lib/payment-display";
 
 import {
   FormEvent,
+  Fragment,
   KeyboardEvent,
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -16,12 +18,35 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { playChatChime, unlockChatSound } from "@/lib/chat-sound";
 
 import {
+  clearServiceChatToken,
+  readServiceChatToken,
   saveServiceChatToken,
   SERVICE_CHAT_LIVE_EVENT,
 } from "@/lib/service-chat-session";
+import { ArrowIcon, CheckIcon, CopyIcon } from "@/components/SiteIcons";
 import CustomerInbox from "./CustomerInbox";
 import DeviceChatAccess from "./DeviceChatAccess";
 import Link from "next/link";
+import {
+  ChevronIcon,
+  CloseIcon,
+  LockIcon,
+  SendIcon,
+  Spinner,
+  StatusChip,
+} from "./ChatUI";
+import ui from "./chat-ui.module.css";
+import {
+  chatStatus,
+  formatClock,
+  formatDay,
+  formatShortDate,
+  groupMessages,
+  requestChipLabel,
+  serviceSteps,
+  typeLabel,
+  useNow,
+} from "./presentation";
 import paymentStyles from "./ServiceChatPaymentUI.module.css";
 import styles from "./service-chat.module.css";
 
@@ -130,16 +155,29 @@ function statusLabel(value: string | null | undefined) {
     .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
+// Full message timestamp, e.g. "Oct 6, 3:42 PM". Same format as before, but one
+// cached formatter instead of a new one per message on every poll.
+const messageTimeFormat = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+
+  day: "numeric",
+
+  hour: "numeric",
+
+  minute: "2-digit",
+});
+
 function formatMessageTime(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
+  return messageTimeFormat.format(new Date(value));
+}
 
-    day: "numeric",
+const NO_MESSAGES: ChatMessage[] = [];
 
-    hour: "numeric",
-
-    minute: "2-digit",
-  }).format(new Date(value));
+function prefersReducedMotion() {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true
+  );
 }
 
 function paymentRequestIdFromMessage(message: ChatMessage) {
@@ -148,16 +186,23 @@ function paymentRequestIdFromMessage(message: ChatMessage) {
   return typeof value === "string" ? value : null;
 }
 
-function conversationTypeLabel(type: ConversationType) {
-  switch (type) {
-    case "product":
-      return "PRODUCT SUPPORT";
+// Order work status is authoritative once a paid order exists; "new" orders read as paid.
+function customerStatus(chat: ChatData) {
+  return chat.order_id && chat.service_status && chat.service_status !== "new"
+    ? chat.service_status
+    : chat.workflow_status;
+}
 
-    case "general":
-      return "GENERAL SUPPORT";
+type JsonBody = Partial<ChatData> & { error?: string; url?: string };
 
-    default:
-      return "SERVICE";
+// Gateway/HTML error pages must not surface as raw JSON parser errors.
+async function readJson(response: Response): Promise<JsonBody> {
+  try {
+    return (await response.json()) as JsonBody;
+  } catch {
+    throw new Error(
+      "BirdShop is temporarily unavailable. Please retry in a moment.",
+    );
   }
 }
 
@@ -197,11 +242,16 @@ function conversationSubtitle(chat: ChatData) {
 ========================================================= */
 
 export default function ServiceChatClient() {
+  const token = useSearchParams().get("token") ?? "";
+
+  // Keyed by token so history cursors, refs and state never leak between chats.
+  return <ServiceChatView key={token} token={token} />;
+}
+
+function ServiceChatView({ token }: { token: string }) {
   const router = useRouter();
 
   const searchParams = useSearchParams();
-
-  const token = searchParams.get("token") ?? "";
 
   const paymentResult = searchParams.get("payment");
 
@@ -216,6 +266,25 @@ export default function ServiceChatClient() {
   const [checkoutId, setCheckoutId] = useState<string | null>(null);
 
   const [error, setError] = useState("");
+
+  const [confirmSlow, setConfirmSlow] = useState(false);
+
+  /* Presentation-only state (never read by fetch, poll or payment logic). */
+  const [summaryOpen, setSummaryOpen] = useState(false);
+
+  const [copied, setCopied] = useState(false);
+
+  const [atBottom, setAtBottom] = useState(true);
+
+  const [seenLatestId, setSeenLatestId] = useState("");
+
+  const copyTimer = useRef<number | undefined>(undefined);
+
+  const now = useNow();
+
+  const chatMessages = chat?.messages ?? NO_MESSAGES;
+
+  const grouped = useMemo(() => groupMessages(chatMessages), [chatMessages]);
 
   /* =======================================================
      REFS
@@ -234,6 +303,9 @@ export default function ServiceChatClient() {
   const shouldFollowRef = useRef(true);
 
   const initializedScrollRef = useRef(false);
+
+  // Set after a 404 so polling stops for removed or invalid chats.
+  const unavailableRef = useRef(false);
 
   /* =======================================================
      SOUND
@@ -260,25 +332,17 @@ export default function ServiceChatClient() {
   }, []);
 
   /* =======================================================
-     RESET CHAT
-  ======================================================= */
-
-  useEffect(() => {
-    shouldFollowRef.current = true;
-
-    initializedScrollRef.current = false;
-
-    lastMessageIdRef.current = null;
-    refreshAfter.current = 0;
-  }, [token]);
-
-  /* =======================================================
      LOAD
   ======================================================= */
 
   const loadChat = useCallback(
     async (quiet = false) => {
-      if (!token || loadingChat.current || Date.now() < refreshAfter.current)
+      if (
+        !token ||
+        unavailableRef.current ||
+        loadingChat.current ||
+        Date.now() < refreshAfter.current
+      )
         return;
       loadingChat.current = true;
       const controller = new AbortController();
@@ -298,9 +362,15 @@ export default function ServiceChatClient() {
           },
         );
 
-        const result = await response.json();
+        const result = await readJson(response);
 
         if (!response.ok) {
+          if (response.status === 404) {
+            unavailableRef.current = true;
+            setChat(null);
+            // Stop the site-wide notifier from polling a removed chat.
+            if (readServiceChatToken() === token) clearServiceChatToken();
+          }
           if (response.status === 429) {
             const seconds = Number(response.headers.get("Retry-After")) || 60;
             refreshAfter.current = Date.now() + Math.max(1, seconds) * 1000;
@@ -316,17 +386,20 @@ export default function ServiceChatClient() {
             ? next.messages[next.messages.length - 1]
             : null;
 
-        if (
-          latest &&
-          lastMessageIdRef.current &&
-          latest.id !== lastMessageIdRef.current &&
-          (latest.sender_type === "admin" || latest.sender_type === "system")
-        ) {
-          playChatChime();
-        }
+        // Paging through history must not chime or move the "latest" marker.
+        if (!historyBefore) {
+          if (
+            latest &&
+            lastMessageIdRef.current &&
+            latest.id !== lastMessageIdRef.current &&
+            (latest.sender_type === "admin" || latest.sender_type === "system")
+          ) {
+            playChatChime();
+          }
 
-        if (latest) {
-          lastMessageIdRef.current = latest.id;
+          if (latest) {
+            lastMessageIdRef.current = latest.id;
+          }
         }
 
         setChat(next);
@@ -416,6 +489,8 @@ export default function ServiceChatClient() {
      SCROLL TRACKING
   ======================================================= */
 
+  const latestMessageId = chat?.messages[chat.messages.length - 1]?.id ?? "";
+
   function handleMessagesScroll() {
     const element = messagesRef.current;
 
@@ -426,14 +501,35 @@ export default function ServiceChatClient() {
     const distanceFromBottom =
       element.scrollHeight - element.scrollTop - element.clientHeight;
 
-    shouldFollowRef.current = distanceFromBottom <= 100;
+    const follow = distanceFromBottom <= 100;
+
+    shouldFollowRef.current = follow;
+
+    // Drives the "New messages" button from scroll events, not from an effect.
+    setAtBottom(follow);
+
+    if (follow) setSeenLatestId(latestMessageId);
+  }
+
+  function jumpToLatest() {
+    const element = messagesRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    shouldFollowRef.current = true;
+
+    element.scrollTo({
+      top: element.scrollHeight,
+
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    });
   }
 
   /* =======================================================
      AUTO SCROLL
   ======================================================= */
-
-  const latestMessageId = chat?.messages[chat.messages.length - 1]?.id ?? "";
 
   useLayoutEffect(() => {
     const element = messagesRef.current;
@@ -442,8 +538,9 @@ export default function ServiceChatClient() {
       return;
     }
 
+    let secondFrame = 0;
     const firstFrame = window.requestAnimationFrame(() => {
-      const secondFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
         if (!messagesRef.current) {
           return;
         }
@@ -454,7 +551,7 @@ export default function ServiceChatClient() {
           current.scrollTo({
             top: current.scrollHeight,
 
-            behavior: "smooth",
+            behavior: prefersReducedMotion() ? "auto" : "smooth",
           });
         } else {
           current.scrollTop = current.scrollHeight;
@@ -462,14 +559,11 @@ export default function ServiceChatClient() {
           initializedScrollRef.current = true;
         }
       });
-
-      return () => {
-        window.cancelAnimationFrame(secondFrame);
-      };
     });
 
     return () => {
       window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
     };
   }, [latestMessageId]);
 
@@ -514,7 +608,7 @@ export default function ServiceChatClient() {
         },
       );
 
-      const result = await response.json();
+      const result = await readJson(response);
 
       if (!response.ok) {
         throw new Error(result.error ?? "Unable to send message.");
@@ -599,7 +693,7 @@ export default function ServiceChatClient() {
         },
       );
 
-      const result = await response.json();
+      const result = await readJson(response);
 
       if (!response.ok || !result.url) {
         throw new Error(result.error ?? "Unable to open secure checkout.");
@@ -618,6 +712,57 @@ export default function ServiceChatClient() {
   }
 
   /* =======================================================
+     PAYMENT CONFIRMATION
+
+     The Stripe redirect is never proof of payment. Poll gently
+     until the webhook-confirmed state arrives, then stop.
+  ======================================================= */
+
+  // A webhook-confirmed payment always creates the order and marks its request paid.
+  // Refunds later change payment_status, but never undo this confirmation.
+  const paymentConfirmed = Boolean(
+    chat?.order_id ||
+      chat?.payment_requests.some((request) => request.status === "paid"),
+  );
+
+  const awaitingConfirmation =
+    paymentResult === "success" &&
+    chat?.conversation_type === "service" &&
+    !paymentConfirmed;
+
+  useEffect(() => {
+    if (!awaitingConfirmation) return;
+    const started = Date.now();
+    const timer = window.setInterval(() => {
+      if (Date.now() - started > 120_000) {
+        window.clearInterval(timer);
+        setConfirmSlow(true);
+        return;
+      }
+      if (document.visibilityState === "visible") void loadChat(true);
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, [awaitingConfirmation, loadChat]);
+
+  /* =======================================================
+     COPY REFERENCE (presentation only)
+  ======================================================= */
+
+  async function copyReference(reference: string) {
+    try {
+      await navigator.clipboard.writeText(reference);
+
+      setCopied(true);
+
+      window.clearTimeout(copyTimer.current);
+
+      copyTimer.current = window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      // Clipboard blocked: the reference text stays selectable.
+    }
+  }
+
+  /* =======================================================
      ACCESS / RECOVERY
   ======================================================= */
 
@@ -629,9 +774,20 @@ export default function ServiceChatClient() {
 
   if (loading && !chat) {
     return (
-      <section className={styles.page}>
-        <div className={styles.loading}>
-          Opening your BirdShop conversation...
+      <section className={`${ui.tokens} ${styles.page}`}>
+        <div className={styles.workspace} role="status" aria-live="polite">
+          <span className="visually-hidden">
+            Opening your BirdShop conversation…
+          </span>
+
+          <div className={styles.skeletonSummary} aria-hidden="true" />
+
+          <div className={styles.skeletonChat} aria-hidden="true">
+            <span className={styles.skeletonBar} />
+            <span className={styles.skeletonBubble} data-side="them" />
+            <span className={styles.skeletonBubble} data-side="me" />
+            <span className={styles.skeletonBubble} data-side="them" />
+          </div>
         </div>
       </section>
     );
@@ -643,17 +799,27 @@ export default function ServiceChatClient() {
 
   if (!chat) {
     return (
-      <section className={styles.page}>
+      <section className={`${ui.tokens} ${styles.page}`}>
         <div className={styles.accessCard}>
-          <span className={styles.eyebrow}>PRIVATE CHAT</span>
+          <span className={styles.eyebrow}>Private chat</span>
 
           <h1>Conversation unavailable.</h1>
 
           <p>{error || "The BirdShop conversation could not be opened."}</p>
 
-          <button type="button" onClick={() => router.replace("/service-chat")}>
-            Return to Private Chat
-          </button>
+          <div className={styles.accessActions}>
+            <button
+              type="button"
+              className={styles.primary}
+              onClick={() => router.replace("/service-chat")}
+            >
+              Back to Your Conversations
+            </button>
+
+            <Link className={styles.secondary} href="/contact">
+              Contact BirdShop
+            </Link>
+          </div>
         </div>
       </section>
     );
@@ -664,6 +830,10 @@ export default function ServiceChatClient() {
   ======================================================= */
 
   const isService = chat.conversation_type === "service";
+
+  // Checkout only starts for open chats; a closed chat must not
+  // offer a button the server will refuse.
+  const chatOpen = chat.conversation_status === "open";
 
   const paymentMap = new Map(
     chat.payment_requests.map((request) => [request.id, request]),
@@ -682,15 +852,75 @@ export default function ServiceChatClient() {
 
   const subtitle = conversationSubtitle(chat);
 
+  // The single checkout rule. The summary's duplicate Pay button uses it as is.
+  const canPayRequest = (request: PaymentRequest) =>
+    request.status === "pending" &&
+    !paymentConfirmed &&
+    !awaitingConfirmation &&
+    chatOpen;
+
+  /* =======================================================
+     PRESENTATION
+  ======================================================= */
+
+  const stage = customerStatus(chat);
+
+  // Stripe's return URL keeps ?payment=success. Once the order has moved on
+  // (completed, cancelled or refunded) the status chip tells the truth, so the
+  // "order is active" return notice is no longer shown.
+  const returnNoticeStale =
+    paymentConfirmed &&
+    (chat.payment_status === "refunded" ||
+      stage === "completed" ||
+      stage === "cancelled");
+
+  const unpaidPending =
+    pendingPayment && !paymentConfirmed ? pendingPayment : null;
+
+  const status = chatStatus(chat, {
+    stage,
+    pendingAmount: unpaidPending?.amount ?? null,
+    awaitingConfirmation,
+    historyMode: Boolean(historyBefore),
+  });
+
+  const statusPulse = status.tone === "action" || status.tone === "payment";
+
+  const steps = serviceSteps(chat, stage, Boolean(unpaidPending));
+
+  const paymentState = !isService
+    ? "support"
+    : chat.payment_status === "refunded"
+      ? "refunded"
+      : chat.payment_status === "partially_refunded"
+        ? "partial"
+        : chat.payment_status === "paid"
+          ? "paid"
+          : pendingPayment
+            ? "pending"
+            : latestPayment
+              ? "latest"
+              : "none";
+
+  const showJump =
+    !historyBefore &&
+    !atBottom &&
+    Boolean(latestMessageId) &&
+    latestMessageId !== seenLatestId;
+
   /* =======================================================
      MAIN
   ======================================================= */
 
   return (
-    <section className={styles.page}>
-      <Link className={styles.inboxBack} href="/service-chat">
-        ← Your conversations
-      </Link>
+    <section className={`${ui.tokens} ${styles.page}`}>
+      <div className={styles.topBar}>
+        <Link className={styles.inboxBack} href="/service-chat">
+          <ArrowIcon className={styles.backIcon} />
+          Your Conversations
+        </Link>
+      </div>
+
       {searchParams.get("welcome") === "1" && !welcomeDismissed && (
         <div className={styles.chatNotice} role="status">
           <div>
@@ -702,117 +932,249 @@ export default function ServiceChatClient() {
             aria-label="Dismiss welcome message"
             onClick={() => setWelcomeDismissed(true)}
           >
-            ×
+            <CloseIcon />
           </button>
         </div>
       )}
+
       <DeviceChatAccess
         key={token}
         conversationId={chat.conversation_id}
         token={token}
       />
+
       <div className={styles.workspace}>
         {/* ===============================================
-            CONVERSATION SUMMARY
+            CONVERSATION SUMMARY (forest in both themes)
         =============================================== */}
 
-        <aside className={styles.summary}>
-          <span className={styles.eyebrow}>{chat.reference}</span>
+        <aside className={styles.summary} aria-label="Conversation details">
+          <div className={styles.summaryHead}>
+            <div className={styles.refRow}>
+              <span className={styles.eyebrow}>{chat.reference}</span>
 
-          <h1>{title}</h1>
+              <button
+                type="button"
+                className={styles.copyRef}
+                aria-label={`Copy reference ${chat.reference}`}
+                onClick={() => void copyReference(chat.reference)}
+              >
+                {copied ? <CheckIcon /> : <CopyIcon />}
+                {copied ? "Copied" : "Copy"}
+              </button>
 
-          <p className={styles.packageName}>{subtitle}</p>
-
-          <div className={styles.summaryFacts}>
-            <div>
-              <span>TYPE</span>
-
-              <strong>{conversationTypeLabel(chat.conversation_type)}</strong>
+              <span className="visually-hidden" aria-live="polite">
+                {copied ? "Reference copied" : ""}
+              </span>
             </div>
 
-            <div>
-              <span>STATUS</span>
+            <h1>{title}</h1>
 
-              <strong>{statusLabel(chat.workflow_status)}</strong>
-            </div>
+            <p className={styles.packageName}>{subtitle}</p>
 
-            {isService && (
-              <div>
-                <span>ORDER</span>
+            <StatusChip
+              className={styles.summaryStatus}
+              tone={status.tone}
+              label={status.label}
+              title={status.description}
+              size="lg"
+              surface="forest"
+              pulse={statusPulse}
+            />
 
-                <strong>{chat.order_id ? "Created" : "Not Created"}</strong>
-              </div>
+            <button
+              type="button"
+              className={styles.summaryToggle}
+              aria-expanded={summaryOpen}
+              aria-controls="chat-summary-more"
+              onClick={() => setSummaryOpen((open) => !open)}
+            >
+              {summaryOpen ? "Hide Details" : "Details"}
+              <ChevronIcon data-open={summaryOpen} />
+            </button>
+          </div>
+
+          <div
+            id="chat-summary-more"
+            className={styles.summaryMore}
+            data-open={summaryOpen}
+          >
+            {steps && (
+              <ol className={styles.steps} aria-label="Service progress">
+                {steps.map((step) => (
+                  <li
+                    key={step.label}
+                    data-state={step.state}
+                    aria-current={step.state === "current" ? "step" : undefined}
+                  >
+                    <span className={styles.stepDot} aria-hidden="true">
+                      {step.state === "done" && <CheckIcon />}
+                    </span>
+                    <span className={styles.stepLabel}>
+                      {step.label}
+                      {step.state === "done" && (
+                        <span className="visually-hidden"> (completed)</span>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ol>
             )}
+
+            <dl className={styles.summaryFacts}>
+              <div>
+                <dt>Type</dt>
+                <dd>{typeLabel(chat.conversation_type)}</dd>
+              </div>
+
+              {isService && (
+                <div>
+                  <dt>Order</dt>
+                  <dd>
+                    {chat.order_reference ??
+                      (chat.order_id ? "Created" : "Not yet")}
+                  </dd>
+                </div>
+              )}
+            </dl>
           </div>
 
           {/* =============================================
-              SERVICE PAYMENT SUMMARY
+              SERVICE PAYMENT SUMMARY (refund-aware)
           ============================================= */}
 
-          {isService ? (
-            <div className={styles.futurePayment}>
-              <span>PAYMENT</span>
+          <div
+            className={styles.futurePayment}
+            data-pending={paymentState === "pending"}
+            data-open={summaryOpen}
+          >
+            <span className={styles.factLabel}>
+              {isService ? "Payment" : "Support"}
+            </span>
 
-              {chat.payment_status === "paid" ? (
-                <p>✓ Payment received for this service.</p>
-              ) : pendingPayment ? (
-                <>
-                  <p>A payment request is ready.</p>
-
-                  <strong>
-                    {money(pendingPayment.amount, pendingPayment.currency)}
-                  </strong>
-                </>
-              ) : latestPayment ? (
-                <p>Latest request: {statusLabel(latestPayment.status)}</p>
-              ) : (
-                <p>No payment request has been sent yet.</p>
-              )}
-            </div>
-          ) : (
-            <div className={styles.futurePayment}>
-              <span>SUPPORT</span>
-
-              <p>
-                This conversation does not require a service payment request.
+            {paymentState === "refunded" ? (
+              <p>This payment was refunded.</p>
+            ) : paymentState === "partial" ? (
+              <p className={styles.paidLine}>
+                <CheckIcon />
+                Payment received · partially refunded.
               </p>
-            </div>
-          )}
+            ) : paymentState === "paid" ? (
+              <p className={styles.paidLine}>
+                <CheckIcon />
+                Payment received for this service.
+              </p>
+            ) : paymentState === "pending" && pendingPayment ? (
+              <>
+                <p>A payment request is ready.</p>
+
+                <strong className={styles.summaryAmount}>
+                  {money(pendingPayment.amount, pendingPayment.currency)}
+                </strong>
+
+                {canPayRequest(pendingPayment) ? (
+                  <button
+                    type="button"
+                    className={styles.summaryPay}
+                    disabled={checkoutId !== null}
+                    onClick={() => void handleCheckout(pendingPayment.id)}
+                  >
+                    <LockIcon />
+                    {checkoutId === pendingPayment.id
+                      ? "Opening Checkout…"
+                      : "Pay Securely"}
+                  </button>
+                ) : awaitingConfirmation ? (
+                  <p className={styles.summaryNote}>
+                    <Spinner />
+                    Confirming your payment…
+                  </p>
+                ) : !chatOpen ? (
+                  <p className={styles.summaryNote}>
+                    This conversation is closed. Contact BirdShop to complete
+                    this payment.
+                  </p>
+                ) : null}
+              </>
+            ) : paymentState === "latest" && latestPayment ? (
+              <p>Latest request: {statusLabel(latestPayment.status)}</p>
+            ) : paymentState === "none" ? (
+              <p>
+                When your quote is ready, a secure payment request will appear
+                in this chat.
+              </p>
+            ) : (
+              <p>No payment is needed for this conversation.</p>
+            )}
+          </div>
         </aside>
 
         {/* ===============================================
             CHAT
         =============================================== */}
 
-        <section className={styles.chat}>
+        <section
+          className={styles.chat}
+          aria-label="Conversation with BirdShop"
+        >
           <header className={styles.chatHeader}>
-            <div>
-              <span>
-                {conversationTypeLabel(chat.conversation_type)}
-                {" · "}
-                PRIVATE CHAT
-              </span>
+            <span className={styles.avatar} aria-hidden="true">
+              B
+            </span>
 
+            <div className={styles.chatHeading}>
               <strong>BirdShop Support</strong>
+              <span>{typeLabel(chat.conversation_type)} · Private chat</span>
             </div>
 
-            <span className={styles.online}>WEBSITE CHAT</span>
+            <StatusChip
+              className={styles.headerStatus}
+              tone={status.tone}
+              label={status.label}
+              title={status.description}
+            />
           </header>
 
           {/* =============================================
               PAYMENT RETURN MESSAGES
           ============================================= */}
 
-          {isService && paymentResult === "success" && (
-            <div className={paymentStyles.notice} data-tone="success">
-              You returned from checkout. BirdShop is checking the payment
-              status.
+          {isService && paymentResult === "success" && !returnNoticeStale && (
+            <div
+              className={paymentStyles.notice}
+              data-tone="success"
+              role="status"
+            >
+              {paymentConfirmed ? <CheckIcon /> : !confirmSlow && <Spinner />}
+              <span>
+                {paymentConfirmed
+                  ? "Payment confirmed. Your service order is active."
+                  : confirmSlow
+                    ? "Confirmation is taking longer than usual. This page updates automatically, and you will receive a confirmation email once payment is verified."
+                    : "Payment received. Confirming your payment…"}
+              </span>
             </div>
           )}
 
           {isService && paymentResult === "cancelled" && (
             <div className={paymentStyles.notice} data-tone="neutral">
-              Checkout was cancelled. Your conversation remains available.
+              <span>
+                Checkout was cancelled. Your conversation remains available.
+              </span>
+            </div>
+          )}
+
+          {historyBefore && (
+            <div className={styles.historyBanner} role="status">
+              <span>Viewing earlier messages. Live updates paused.</span>
+              <button
+                type="button"
+                className={styles.textButton}
+                disabled={loading}
+                onClick={() => setHistoryBefore(null)}
+              >
+                Back to Latest
+              </button>
             </div>
           )}
 
@@ -820,169 +1182,272 @@ export default function ServiceChatClient() {
               MESSAGES
           ============================================= */}
 
-          <div
-            ref={messagesRef}
-            onScroll={handleMessagesScroll}
-            className={styles.messages}
-          >
-            <nav
-              aria-label="Conversation history"
-              style={{ display: "flex", gap: 16, padding: 12 }}
+          <div className={styles.messagesWrap}>
+            <div
+              ref={messagesRef}
+              onScroll={handleMessagesScroll}
+              className={styles.messages}
+              role="log"
+              aria-live={historyBefore ? "off" : "polite"}
+              aria-relevant="additions"
+              aria-label="Messages"
+              tabIndex={0}
             >
-              {historyBefore && (
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={() => setHistoryBefore(null)}
-                >
-                  Latest messages
-                </button>
-              )}
               {chat.has_older && (
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={() => setHistoryBefore(chat.messages[0]?.id ?? null)}
-                >
-                  Earlier messages
-                </button>
-              )}
-            </nav>
-            {chat.messages.length === 0 ? (
-              <div className={styles.empty}>
-                Send the first message to BirdShop.
-              </div>
-            ) : (
-              chat.messages.map((item) => {
-                /* =====================================
-                     PAYMENT REQUEST MESSAGE
-
-                     Only service conversations can display
-                     an actionable payment request.
-                  ===================================== */
-
-                if (isService && item.message_type === "payment_request") {
-                  const requestId = paymentRequestIdFromMessage(item);
-
-                  const request = requestId ? paymentMap.get(requestId) : null;
-
-                  if (request) {
-                    const canPay =
-                      request.status === "pending" &&
-                      chat.payment_status !== "paid";
-
-                    return (
-                      <article
-                        key={item.id}
-                        className={paymentStyles.request}
-                        data-status={request.status}
-                      >
-                        <div className={paymentStyles.requestTop}>
-                          <div>
-                            <span className={paymentStyles.requestEyebrow}>
-                              BIRDSHOP PAYMENT REQUEST
-                            </span>
-
-                            <strong className={paymentStyles.requestTitle}>
-                              {request.title}
-                            </strong>
-                          </div>
-
-                          <span className={paymentStyles.requestStatus}>
-                            {paymentLabel(request)}
-                          </span>
-                        </div>
-
-                        {request.description && (
-                          <p className={paymentStyles.requestDescription}>
-                            {request.description}
-                          </p>
-                        )}
-
-                        <div className={paymentStyles.paymentLine}>
-                          <strong className={paymentStyles.requestAmount}>
-                            {money(request.amount, request.currency)}
-                          </strong>
-
-                          {canPay ? (
-                            <button
-                              type="button"
-                              className={paymentStyles.button}
-                              disabled={checkoutId !== null}
-                              onClick={() => void handleCheckout(request.id)}
-                            >
-                              {checkoutId === request.id
-                                ? "Opening Checkout..."
-                                : "Pay Securely"}
-                            </button>
-                          ) : request.status === "paid" ||
-                            chat.payment_status === "paid" ? (
-                            <strong className={paymentStyles.paidLabel}>
-                              {paymentLabel(request)}
-                            </strong>
-                          ) : null}
-                        </div>
-
-                        <div className={paymentStyles.requestFooter}>
-                          {Number(request.refunded_amount ?? 0) > 0 && (
-                            <p>
-                              Refunded{" "}
-                              {money(
-                                request.refunded_amount ?? 0,
-                                request.currency,
-                              )}
-                            </p>
-                          )}
-                          <span>
-                            {canPay
-                              ? "Secure checkout powered by Stripe."
-                              : request.status === "cancelled"
-                                ? "This payment request was cancelled."
-                                : request.status === "paid"
-                                  ? "Payment confirmed."
-                                  : "This payment request is no longer active."}
-                          </span>
-                        </div>
-
-                        <small className={paymentStyles.safeNote}>
-                          BirdShop never asks you to enter card information
-                          directly into chat.
-                        </small>
-                      </article>
-                    );
-                  }
-                }
-
-                /* =====================================
-                     NORMAL MESSAGE
-                  ===================================== */
-
-                return (
-                  <article
-                    key={item.id}
-                    className={
-                      item.sender_type === "admin"
-                        ? styles.adminMessage
-                        : item.sender_type === "system"
-                          ? styles.systemMessage
-                          : styles.customerMessage
+                <div className={styles.historyNav}>
+                  <button
+                    type="button"
+                    className={styles.historyButton}
+                    disabled={loading}
+                    onClick={() =>
+                      setHistoryBefore(chat.messages[0]?.id ?? null)
                     }
                   >
-                    <div>
-                      <strong>
-                        {item.sender_label ||
-                          (item.sender_type === "admin"
-                            ? "BirdShop"
-                            : "Customer")}
-                      </strong>
+                    Load Earlier Messages
+                  </button>
+                </div>
+              )}
 
-                      <span>{formatMessageTime(item.created_at)}</span>
+              {chat.messages.length === 0 ? (
+                <div className={styles.empty}>
+                  <span className={styles.emptyAvatar} aria-hidden="true">
+                    B
+                  </span>
+                  <strong>Say hello.</strong>
+                  <p>
+                    Tell us what you need. Replies arrive right here, with a
+                    soft chime while this page is open.
+                  </p>
+                </div>
+              ) : (
+                grouped.map(({ item, first, last, newDay }) => {
+                  const dayLabel = newDay ? formatDay(item.created_at, now) : "";
+
+                  const divider = dayLabel ? (
+                    <div className={styles.dayDivider}>
+                      <span>{dayLabel}</span>
                     </div>
+                  ) : null;
 
-                    <p>{item.body}</p>
-                  </article>
-                );
-              })
+                  /* =====================================
+                       PAYMENT REQUEST MESSAGE
+
+                       Only service conversations can display
+                       an actionable payment request.
+                    ===================================== */
+
+                  if (isService && item.message_type === "payment_request") {
+                    const requestId = paymentRequestIdFromMessage(item);
+
+                    const request = requestId ? paymentMap.get(requestId) : null;
+
+                    if (request) {
+                      const canPay = canPayRequest(request);
+
+                      const refunded =
+                        request.refund_status === "full" ||
+                        request.refund_status === "partial" ||
+                        Number(request.refunded_amount ?? 0) > 0;
+
+                      return (
+                        <Fragment key={item.id}>
+                          {divider}
+
+                          <article
+                            className={paymentStyles.request}
+                            data-status={request.status}
+                            data-refunded={refunded || undefined}
+                            aria-labelledby={`pr-${request.id}`}
+                          >
+                            <header className={paymentStyles.requestTop}>
+                              <span className={paymentStyles.requestEyebrow}>
+                                <LockIcon />
+                                Payment request
+                              </span>
+
+                              <span className={paymentStyles.requestStatus}>
+                                {requestChipLabel(request, awaitingConfirmation)}
+                              </span>
+                            </header>
+
+                            <strong
+                              id={`pr-${request.id}`}
+                              className={paymentStyles.requestTitle}
+                            >
+                              {request.title}
+                            </strong>
+
+                            {request.description && (
+                              <p className={paymentStyles.requestDescription}>
+                                {request.description}
+                              </p>
+                            )}
+
+                            <div className={paymentStyles.paymentLine}>
+                              <div className={paymentStyles.amountBlock}>
+                                <span className={paymentStyles.amountLabel}>
+                                  Total
+                                </span>
+
+                                <strong className={paymentStyles.requestAmount}>
+                                  {money(request.amount, request.currency)}
+                                </strong>
+                              </div>
+
+                              {canPay ? (
+                                <button
+                                  type="button"
+                                  className={paymentStyles.button}
+                                  disabled={checkoutId !== null}
+                                  onClick={() => void handleCheckout(request.id)}
+                                >
+                                  {checkoutId === request.id ? (
+                                    <Spinner />
+                                  ) : (
+                                    <LockIcon />
+                                  )}
+                                  {checkoutId === request.id
+                                    ? "Opening Checkout…"
+                                    : "Pay Securely"}
+                                </button>
+                              ) : request.status === "paid" ||
+                                chat.payment_status === "paid" ? (
+                                <strong className={paymentStyles.paidLabel}>
+                                  {request.status === "paid" && <CheckIcon />}
+                                  {request.status === "paid" && request.paid_at
+                                    ? `Paid · ${formatShortDate(request.paid_at, now)}`
+                                    : paymentLabel(request)}
+                                </strong>
+                              ) : null}
+                            </div>
+
+                            <footer className={paymentStyles.requestFooter}>
+                              {Number(request.refunded_amount ?? 0) > 0 && (
+                                <p>
+                                  Refunded{" "}
+                                  {money(
+                                    request.refunded_amount ?? 0,
+                                    request.currency,
+                                  )}
+                                </p>
+                              )}
+                              <span>
+                                {canPay
+                                  ? "Secure checkout powered by Stripe."
+                                  : awaitingConfirmation
+                                    ? "Confirming your payment…"
+                                  : request.status === "pending" && !chatOpen
+                                    ? "This conversation is closed. Contact BirdShop to complete this payment."
+                                  : request.status === "cancelled"
+                                    ? "This payment request was cancelled."
+                                    : request.status === "paid"
+                                      ? "Payment confirmed."
+                                      : "This payment request is no longer active."}
+                              </span>
+
+                              <small className={paymentStyles.safeNote}>
+                                BirdShop never asks you to enter card
+                                information directly into chat.
+                              </small>
+                            </footer>
+                          </article>
+                        </Fragment>
+                      );
+                    }
+                  }
+
+                  /* =====================================
+                       SYSTEM MESSAGE
+                    ===================================== */
+
+                  if (item.sender_type === "system") {
+                    return (
+                      <Fragment key={item.id}>
+                        {divider}
+
+                        <article className={styles.systemMessage}>
+                          <p>{item.body}</p>
+                          <time
+                            dateTime={item.created_at}
+                            title={formatMessageTime(item.created_at)}
+                          >
+                            {formatClock(item.created_at)}
+                          </time>
+                        </article>
+                      </Fragment>
+                    );
+                  }
+
+                  /* =====================================
+                       NORMAL MESSAGE
+                    ===================================== */
+
+                  const fromBirdShop = item.sender_type === "admin";
+
+                  const senderName = fromBirdShop
+                    ? item.sender_label || "BirdShop"
+                    : "You";
+
+                  return (
+                    <Fragment key={item.id}>
+                      {divider}
+
+                      <article
+                        className={
+                          fromBirdShop
+                            ? styles.adminMessage
+                            : styles.customerMessage
+                        }
+                        data-first={first}
+                        data-last={last}
+                      >
+                        {fromBirdShop && last && (
+                          <span className={styles.bubbleAvatar} aria-hidden="true">
+                            B
+                          </span>
+                        )}
+
+                        {first ? (
+                          <header className={styles.bubbleMeta}>
+                            <strong>{senderName}</strong>
+                            <time
+                              dateTime={item.created_at}
+                              title={formatMessageTime(item.created_at)}
+                            >
+                              {formatClock(item.created_at)}
+                            </time>
+                          </header>
+                        ) : (
+                          // Grouped follow-ups keep sender and time for screen readers.
+                          <span className="visually-hidden">{senderName}: </span>
+                        )}
+
+                        <p>{item.body}</p>
+
+                        {!first && (
+                          <time
+                            className="visually-hidden"
+                            dateTime={item.created_at}
+                          >
+                            {formatMessageTime(item.created_at)}
+                          </time>
+                        )}
+                      </article>
+                    </Fragment>
+                  );
+                })
+              )}
+            </div>
+
+            {showJump && (
+              <button
+                type="button"
+                className={styles.jumpLatest}
+                onClick={jumpToLatest}
+              >
+                New Messages
+                <ChevronIcon />
+              </button>
             )}
           </div>
 
@@ -990,32 +1455,68 @@ export default function ServiceChatClient() {
               COMPOSER
           ============================================= */}
 
-          {chat.conversation_status === "open" ? (
+          {chatOpen ? (
             <form onSubmit={handleSend} className={styles.composer}>
-              <textarea
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                onKeyDown={handleMessageKeyDown}
-                placeholder="Message BirdShop..."
-                maxLength={4000}
-                rows={2}
-              />
+              <div className={styles.composerField}>
+                <textarea
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                  onKeyDown={handleMessageKeyDown}
+                  placeholder="Message BirdShop…"
+                  aria-label="Message BirdShop"
+                  aria-describedby="composer-hint"
+                  maxLength={4000}
+                  rows={1}
+                />
 
-              <div>
-                {error ? (
-                  <span className={styles.errorText}>{error}</span>
-                ) : (
-                  <span>Enter to send · Shift + Enter for a new line</span>
+                <button
+                  type="submit"
+                  className={styles.send}
+                  disabled={submitting || !message.trim()}
+                >
+                  {submitting ? <Spinner /> : <SendIcon />}
+                  <span className={styles.sendLabel}>
+                    {submitting ? "Sending…" : "Send"}
+                  </span>
+                </button>
+              </div>
+
+              <div id="composer-hint" className={styles.composerHint}>
+                <span className={styles.errorText} aria-live="polite">
+                  {error}
+                </span>
+
+                {!error && (
+                  <span className={styles.keyHint}>
+                    Enter to send · Shift + Enter for a new line
+                  </span>
                 )}
 
-                <button type="submit" disabled={submitting || !message.trim()}>
-                  {submitting ? "Sending..." : "Send Message"}
-                </button>
+                {message.length > 3600 && (
+                  <span className={styles.counter}>
+                    {message.length.toLocaleString("en-US")} / 4,000
+                  </span>
+                )}
               </div>
             </form>
           ) : (
             <div className={styles.closed}>
-              This BirdShop conversation has been closed.
+              <CheckIcon />
+
+              <div>
+                <strong>This conversation is closed.</strong>
+
+                <p>
+                  Need anything else?{" "}
+                  <Link href="/contact">Start a new conversation</Link>.
+                </p>
+
+                {error && (
+                  <span className={styles.errorText} role="alert">
+                    {error}
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </section>

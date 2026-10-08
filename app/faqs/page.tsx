@@ -2,10 +2,7 @@
 
 import Link from "next/link";
 
-import {
-  useMemo,
-  useState,
-} from "react";
+import { useMemo, useState } from "react";
 
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -15,6 +12,7 @@ import {
   ClockIcon,
   MessageIcon,
   PeopleIcon,
+  SearchIcon,
   ShieldIcon,
 } from "@/components/SiteIcons";
 
@@ -27,21 +25,14 @@ import {
 
 import styles from "./faqs.module.css";
 
-function SearchIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="11" cy="11" r="6.5" />
-      <path d="m16 16 4 4" />
-    </svg>
-  );
+const ALL_QUESTIONS: FAQFilter = "All Questions";
+
+const featuredFAQs = faqs.filter((faq) => faq.featured).slice(0, 3);
+
+function categoryCount(item: FAQFilter) {
+  if (item === ALL_QUESTIONS) return faqs.length;
+
+  return faqs.filter((faq) => faq.category === item).length;
 }
 
 function FAQRow({
@@ -55,16 +46,11 @@ function FAQRow({
   open: boolean;
   onToggle: () => void;
 }) {
-  const answerId =
-    `${faq.id}-answer`;
+  const answerId = `${faq.id}-answer`;
 
   return (
     <article
-      className={`${styles.faqRow} ${
-        open
-          ? styles.faqRowOpen
-          : ""
-      }`}
+      className={`${styles.faqRow} ${open ? styles.faqRowOpen : ""}`}
     >
       <button
         type="button"
@@ -82,19 +68,14 @@ function FAQRow({
           <h3>{faq.question}</h3>
         </div>
 
-        <span
-          className={styles.faqToggle}
-          aria-hidden="true"
-        >
+        <span className={styles.faqToggle} aria-hidden="true">
           {open ? "−" : "+"}
         </span>
       </button>
 
-      <div
-        id={answerId}
-        className={styles.faqAnswerWrap}
-        aria-hidden={!open}
-      >
+      {/* Collapsed answers stay in the DOM for the height animation, but are
+          inert: out of the tab order and the accessibility tree. */}
+      <div id={answerId} className={styles.faqAnswerWrap} inert={!open}>
         <div className={styles.faqAnswer}>
           <div className={styles.answerLine} />
           <p>{faq.answer}</p>
@@ -105,69 +86,32 @@ function FAQRow({
 }
 
 export default function FAQsPage() {
-  const [search, setSearch] =
-    useState("");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState<FAQFilter>(ALL_QUESTIONS);
 
-  const [category, setCategory] =
-    useState<FAQFilter>(
-      "All Questions"
-    );
+  // Deliberately empty: no FAQ, including #01, opens automatically.
+  const [openItems, setOpenItems] = useState<Set<string>>(() => new Set());
 
-  /*
-   * Deliberately empty.
-   * No FAQ, including #01, opens automatically.
-   */
-  const [openItems, setOpenItems] =
-    useState<Set<string>>(
-      new Set()
-    );
+  const filteredFAQs = useMemo(() => {
+    const query = search.trim().toLowerCase();
 
-  const filteredFAQs =
-    useMemo(() => {
-      const query =
-        search
-          .trim()
-          .toLowerCase();
+    return faqs.filter((faq) => {
+      const categoryMatch =
+        category === ALL_QUESTIONS || faq.category === category;
 
-      return faqs.filter((faq) => {
-        const categoryMatch =
-          category === "All Questions" ||
-          faq.category === category;
+      const searchMatch =
+        query.length === 0 ||
+        faq.question.toLowerCase().includes(query) ||
+        faq.answer.toLowerCase().includes(query) ||
+        faq.tags.some((tag) => tag.toLowerCase().includes(query));
 
-        const searchMatch =
-          query.length === 0 ||
-          faq.question
-            .toLowerCase()
-            .includes(query) ||
-          faq.answer
-            .toLowerCase()
-            .includes(query) ||
-          faq.tags.some((tag) =>
-            tag
-              .toLowerCase()
-              .includes(query)
-          );
+      return categoryMatch && searchMatch;
+    });
+  }, [search, category]);
 
-        return (
-          categoryMatch &&
-          searchMatch
-        );
-      });
-    }, [search, category]);
-
-  const featuredFAQs =
-    faqs
-      .filter((faq) =>
-        faq.featured
-      )
-      .slice(0, 3);
-
-  function toggleFAQ(
-    id: string
-  ) {
+  function toggleFAQ(id: string) {
     setOpenItems((current) => {
-      const next =
-        new Set(current);
+      const next = new Set(current);
 
       if (next.has(id)) {
         next.delete(id);
@@ -179,56 +123,45 @@ export default function FAQsPage() {
     });
   }
 
-  function changeCategory(
-    nextCategory: FAQFilter
-  ) {
+  function changeCategory(nextCategory: FAQFilter) {
     setCategory(nextCategory);
     setOpenItems(new Set());
   }
 
-  function updateSearch(
-    value: string
-  ) {
+  function updateSearch(value: string) {
     setSearch(value);
     setOpenItems(new Set());
   }
 
   function resetFilters() {
     setSearch("");
-    setCategory("All Questions");
+    setCategory(ALL_QUESTIONS);
     setOpenItems(new Set());
   }
 
-  function openFeatured(
-    faq: FAQ
-  ) {
-    setCategory("All Questions");
+  function openFeatured(faq: FAQ) {
+    setCategory(ALL_QUESTIONS);
     setSearch("");
-    setOpenItems(
-      new Set([faq.id])
-    );
+    setOpenItems(new Set([faq.id]));
 
-    window.setTimeout(() => {
-      document
-        .getElementById(faq.id)
-        ?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-    }, 50);
-  }
+    // The click's update has rendered by the next frame. Script smooth
+    // scrolling ignores the CSS reduced-motion rule, so check it here.
+    window.requestAnimationFrame(() => {
+      const row = document.getElementById(faq.id);
 
-  function categoryCount(
-    item: FAQFilter
-  ) {
-    if (item === "All Questions") {
-      return faqs.length;
-    }
+      if (!row) return;
 
-    return faqs.filter(
-      (faq) =>
-        faq.category === item
-    ).length;
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      row.scrollIntoView({
+        behavior: reduceMotion ? "auto" : "smooth",
+        block: "center",
+      });
+
+      row.querySelector("button")?.focus({ preventScroll: true });
+    });
   }
 
   return (
@@ -240,9 +173,7 @@ export default function FAQsPage() {
 
         <div className={styles.heroLayout}>
           <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>
-              BIRDSHOP / HELP CENTER
-            </p>
+            <p className={styles.eyebrow}>BirdShop / Help center</p>
 
             <h1>
               Questions,
@@ -251,10 +182,9 @@ export default function FAQsPage() {
             </h1>
 
             <p className={styles.heroDescription}>
-              Everything you need to know about BirdShop
-              products, services, delivery, payments, and
-              support — without digging through pages of
-              information.
+              Everything you need to know about BirdShop products, services,
+              delivery, payments, and support — without digging through pages
+              of information.
             </p>
 
             <label className={styles.heroSearch}>
@@ -263,39 +193,33 @@ export default function FAQsPage() {
               <input
                 type="search"
                 value={search}
-                onChange={(event) =>
-                  updateSearch(
-                    event.target.value
-                  )
-                }
-                placeholder="Search BirdShop questions..."
+                onChange={(event) => updateSearch(event.target.value)}
+                placeholder="Search BirdShop questions…"
                 aria-label="Search FAQs"
               />
 
               {search && (
                 <button
                   type="button"
-                  onClick={() =>
-                    updateSearch("")
-                  }
+                  onClick={() => updateSearch("")}
                   aria-label="Clear FAQ search"
                 >
-                  ×
+                  <span aria-hidden="true">×</span>
                 </button>
               )}
             </label>
           </div>
 
-          <div className={styles.heroMark}>
+          <div className={styles.heroMark} aria-hidden="true">
             <span>BS</span>
             <div />
             <strong>FAQ</strong>
             <small>
-              ANSWERS
+              Answers
               <br />
-              SUPPORT
+              Support
               <br />
-              CLARITY
+              Clarity
             </small>
           </div>
         </div>
@@ -305,32 +229,32 @@ export default function FAQsPage() {
         <div>
           <ShieldIcon />
           <div>
-            <strong>Product Clarity</strong>
-            <span>PLATFORM · REGION · STOCK</span>
+            <strong>Product clarity</strong>
+            <span>Platform · Region · Stock</span>
           </div>
         </div>
 
         <div>
           <PeopleIcon />
           <div>
-            <strong>Service Guidance</strong>
-            <span>PACKAGES · SCOPE · REQUESTS</span>
+            <strong>Service guidance</strong>
+            <span>Packages · Scope · Requests</span>
           </div>
         </div>
 
         <div>
           <ClockIcon />
           <div>
-            <strong>Delivery Answers</strong>
-            <span>DIGITAL · TIMING · SUPPORT</span>
+            <strong>Delivery answers</strong>
+            <span>Digital · Timing · Support</span>
           </div>
         </div>
 
         <div>
           <MessageIcon />
           <div>
-            <strong>Need More Help?</strong>
-            <span>SUBMIT A SUPPORT REQUEST</span>
+            <strong>Need more help?</strong>
+            <span>Send a support request</span>
           </div>
         </div>
       </section>
@@ -338,15 +262,11 @@ export default function FAQsPage() {
       <section className={styles.popularSection}>
         <div className={styles.popularHeading}>
           <div>
-            <span>START HERE</span>
-            <h2>Most Asked</h2>
+            <span>Start here</span>
+            <h2>Most asked</h2>
           </div>
 
-          <p>
-            Quick answers to some of the most important
-            BirdShop questions. These only open when you
-            choose one.
-          </p>
+          <p>Quick answers to the questions customers ask most.</p>
         </div>
 
         <div className={styles.popularGrid}>
@@ -355,14 +275,10 @@ export default function FAQsPage() {
               key={faq.id}
               type="button"
               className={styles.popularCard}
-              onClick={() =>
-                openFeatured(faq)
-              }
+              onClick={() => openFeatured(faq)}
             >
               <div className={styles.popularTop}>
-                <span>
-                  {String(index + 1).padStart(2, "0")}
-                </span>
+                <span>{String(index + 1).padStart(2, "0")}</span>
                 <small>{faq.category}</small>
               </div>
 
@@ -380,14 +296,13 @@ export default function FAQsPage() {
       <section className={styles.librarySection}>
         <div className={styles.libraryHeading}>
           <div>
-            <span>BIRDSHOP HELP CENTER</span>
+            <span>BirdShop help center</span>
             <h2>Find your answer.</h2>
           </div>
 
           <p>
-            {filteredFAQs.length} {filteredFAQs.length === 1
-              ? "question"
-              : "questions"}
+            {filteredFAQs.length}{" "}
+            {filteredFAQs.length === 1 ? "question" : "questions"}
           </p>
         </div>
 
@@ -399,49 +314,41 @@ export default function FAQsPage() {
               <input
                 type="search"
                 value={search}
-                onChange={(event) =>
-                  updateSearch(
-                    event.target.value
-                  )
-                }
+                onChange={(event) => updateSearch(event.target.value)}
                 placeholder="Search questions"
                 aria-label="Search FAQ library"
               />
             </label>
 
             <div className={styles.categoryBlock}>
-              <span>CATEGORY</span>
+              <span>Category</span>
 
               <div className={styles.categoryList}>
-                {faqCategories.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    className={
-                      category === item
-                        ? styles.categoryActive
-                        : ""
-                    }
-                    onClick={() =>
-                      changeCategory(item)
-                    }
-                  >
-                    <span>{item}</span>
-                    <small>
-                      {categoryCount(item)}
-                    </small>
-                  </button>
-                ))}
+                {faqCategories.map((item) => {
+                  const active = category === item;
+
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      className={active ? styles.categoryActive : ""}
+                      aria-pressed={active}
+                      onClick={() => changeCategory(item)}
+                    >
+                      <span>{item}</span>
+                      <small>{categoryCount(item)}</small>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             <div className={styles.helpCard}>
-              <span>STILL NEED HELP?</span>
+              <span>Still need help?</span>
               <h3>Talk to BirdShop.</h3>
               <p>
-                If the answer is not here, submit a real
-                support request. The same context can later
-                continue into BirdShop live chat.
+                If the answer is not here, send a support request and
+                BirdShop will follow up personally.
               </p>
 
               <Link href="/contact?topic=general">
@@ -453,19 +360,15 @@ export default function FAQsPage() {
 
           <div className={styles.faqArea}>
             <div className={styles.resultBar}>
-              <p>
+              <p role="status">
                 Showing <strong>{filteredFAQs.length}</strong>{" "}
-                {category === "All Questions"
+                {category === ALL_QUESTIONS
                   ? "BirdShop questions"
                   : `questions in ${category}`}
               </p>
 
-              {(search ||
-                category !== "All Questions") && (
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                >
+              {(search || category !== ALL_QUESTIONS) && (
+                <button type="button" onClick={resetFilters}>
                   Clear Filters
                 </button>
               )}
@@ -474,18 +377,12 @@ export default function FAQsPage() {
             {filteredFAQs.length > 0 ? (
               <div className={styles.faqList}>
                 {filteredFAQs.map((faq, index) => (
-                  <div
-                    key={faq.id}
-                    id={faq.id}
-                    className={styles.faqAnchor}
-                  >
+                  <div key={faq.id} id={faq.id} className={styles.faqAnchor}>
                     <FAQRow
                       faq={faq}
                       number={index + 1}
                       open={openItems.has(faq.id)}
-                      onToggle={() =>
-                        toggleFAQ(faq.id)
-                      }
+                      onToggle={() => toggleFAQ(faq.id)}
                     />
                   </div>
                 ))}
@@ -496,16 +393,11 @@ export default function FAQsPage() {
                   <SearchIcon />
                 </div>
 
-                <span>NO ANSWERS FOUND</span>
+                <span>No answers found</span>
                 <h3>Nothing matches that search.</h3>
-                <p>
-                  Try another term or reset the FAQ filters.
-                </p>
+                <p>Try another term or reset the FAQ filters.</p>
 
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                >
+                <button type="button" onClick={resetFilters}>
                   Show All Questions
                 </button>
               </div>
@@ -518,13 +410,12 @@ export default function FAQsPage() {
         <div className={styles.contactOverlay} />
 
         <div className={styles.contactCopy}>
-          <span>CAN&apos;T FIND YOUR ANSWER?</span>
+          <span>Can&apos;t find your answer?</span>
           <h2>We&apos;re still here.</h2>
           <p>
-            Use BirdShop Contact for Product Help, a Service
-            Request, General Support, or to leave a review.
-            Support requests are saved with their own
-            reference so the conversation can continue later.
+            Use BirdShop Contact for product help, a service request, general
+            support, or to leave a review. Every request gets its own private
+            reference, so the conversation can continue later.
           </p>
         </div>
 
@@ -534,11 +425,6 @@ export default function FAQsPage() {
             Contact BirdShop
             <ArrowIcon />
           </Link>
-
-          <small>
-            Live chat will plug into the same support context
-            when the chat widget is connected.
-          </small>
         </div>
       </section>
 
@@ -546,11 +432,11 @@ export default function FAQsPage() {
         <Link href="/products">
           <ShieldIcon />
           <div>
-            <span>DIGITAL STORE</span>
+            <span>Digital store</span>
             <strong>Browse Products</strong>
             <p>
-              Check pricing, platform, region, availability,
-              and delivery information.
+              Check pricing, platform, region, availability, and delivery
+              information.
             </p>
           </div>
           <ArrowIcon />
@@ -559,12 +445,9 @@ export default function FAQsPage() {
         <Link href="/services">
           <PeopleIcon />
           <div>
-            <span>GAME SERVICES</span>
+            <span>Game services</span>
             <strong>Browse Services</strong>
-            <p>
-              Compare Basic, Standard, Premium, and custom
-              service options.
-            </p>
+            <p>Choose a package or request a fully custom build.</p>
           </div>
           <ArrowIcon />
         </Link>
@@ -572,12 +455,9 @@ export default function FAQsPage() {
         <Link href="/reviews">
           <MessageIcon />
           <div>
-            <span>COMMUNITY</span>
+            <span>Community</span>
             <strong>Read Reviews</strong>
-            <p>
-              See approved product and service experiences,
-              with sample data clearly labeled during setup.
-            </p>
+            <p>Read approved product and service experiences.</p>
           </div>
           <ArrowIcon />
         </Link>

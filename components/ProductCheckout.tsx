@@ -25,6 +25,8 @@ type CheckoutState = {
 };
 
 const KEY = "birdshop-checkout-attempt";
+// Matches MAX_UNITS_PER_CHECKOUT in app/api/checkout/route.ts.
+const MAX_UNITS = 10;
 const CART_KEY = "birdshop-checkout-cart";
 
 const closed = (status: string) =>
@@ -41,7 +43,7 @@ async function manage(
     cache: "no-store",
   });
 
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     throw new Error(data.error || "Could not check your checkout.");
@@ -52,6 +54,9 @@ async function manage(
 
 export default function ProductCheckout() {
   const { items, clearCart, refreshProducts } = useCart();
+
+  const overLimit =
+    items.reduce((sum, item) => sum + item.quantity, 0) > MAX_UNITS;
 
   const [saved, setSaved] = useState<Saved | null>(null);
   const [state, setState] = useState<CheckoutState | null>(null);
@@ -96,7 +101,7 @@ export default function ProductCheckout() {
       } catch {
         if (active) {
           setError(
-            "Could not restore checkout. Refresh or use Check status below.",
+            "Could not restore checkout. Refresh or use Check Status below.",
           );
         }
       } finally {
@@ -110,6 +115,20 @@ export default function ProductCheckout() {
       active = false;
     };
   }, [refreshProducts]);
+
+  // Returning from Stripe with Back can restore this page from the back-forward
+  // cache while it was still "redirecting"; re-enable the controls.
+  useEffect(() => {
+    function restored(event: PageTransitionEvent) {
+      if (!event.persisted) return;
+      lock.current = false;
+      setBusy(false);
+    }
+
+    window.addEventListener("pageshow", restored);
+
+    return () => window.removeEventListener("pageshow", restored);
+  }, []);
 
   function save(value: Saved) {
     sessionStorage.setItem(KEY, JSON.stringify(value));
@@ -141,11 +160,12 @@ export default function ProductCheckout() {
           }),
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
           if (data.resetAttempt) {
             sessionStorage.removeItem(KEY);
+            sessionStorage.removeItem(CART_KEY);
             setSaved(null);
             setState(null);
             await refreshProducts();
@@ -184,6 +204,16 @@ export default function ProductCheckout() {
     }
   }
 
+  // An attempt the server never confirmed (e.g. a lost response) can be abandoned;
+  // any reservation it made is released automatically when it expires.
+  function startOver() {
+    sessionStorage.removeItem(KEY);
+    sessionStorage.removeItem(CART_KEY);
+    setSaved(null);
+    setState(null);
+    setError("");
+  }
+
   async function dismiss() {
     if (
       !state ||
@@ -218,11 +248,12 @@ export default function ProductCheckout() {
   async function checkout(event: FormEvent) {
     event.preventDefault();
 
-    if (!ready || saved || lock.current || !items.length) return;
+    if (!ready || saved || lock.current || !items.length || overLimit) return;
 
     lock.current = true;
     setBusy(true);
     setError("");
+    let redirecting = false;
 
     try {
       const attempt: Saved = {
@@ -248,11 +279,13 @@ export default function ProductCheckout() {
         }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
+        // Nothing was reserved: return the customer to the form with the reason.
         if (data.resetAttempt) {
           sessionStorage.removeItem(KEY);
+          sessionStorage.removeItem(CART_KEY);
           setSaved(null);
         }
 
@@ -265,6 +298,8 @@ export default function ProductCheckout() {
 
       save({ ...attempt, token: data.returnToken });
 
+      // Stay busy while the browser leaves for Stripe.
+      redirecting = true;
       window.location.assign(data.url);
     } catch (problem) {
       setError(
@@ -273,8 +308,10 @@ export default function ProductCheckout() {
           : "Could not start checkout.",
       );
     } finally {
-      lock.current = false;
-      setBusy(false);
+      if (!redirecting) {
+        lock.current = false;
+        setBusy(false);
+      }
     }
   }
 
@@ -340,7 +377,10 @@ export default function ProductCheckout() {
             {!ended && !paid && (
               <p>
                 Reserved until{" "}
-                {new Date(state.expiresAt).toLocaleString()}
+                {new Date(state.expiresAt).toLocaleString("en-US", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
                 {" "}unless payment is processing.
               </p>
             )}
@@ -354,7 +394,7 @@ export default function ProductCheckout() {
                 state!.orderToken!,
               )}`}
             >
-              View private order
+              View Private Order
             </Link>
           )}
 
@@ -369,8 +409,8 @@ export default function ProductCheckout() {
                   }
                 >
                   {saved.token
-                    ? "Resume checkout"
-                    : "Recover checkout"}
+                    ? "Resume Checkout"
+                    : "Recover Checkout"}
                 </button>
               )}
 
@@ -379,16 +419,22 @@ export default function ProductCheckout() {
                 disabled={busy}
                 onClick={() => void act("check")}
               >
-                Check status
+                Check Status
               </button>
 
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => void act("cancel")}
-              >
-                Cancel checkout
-              </button>
+              {saved.token ? (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void act("cancel")}
+                >
+                  Cancel Checkout
+                </button>
+              ) : (
+                <button type="button" disabled={busy} onClick={startOver}>
+                  Start Over
+                </button>
+              )}
             </>
           )}
 
@@ -398,7 +444,7 @@ export default function ProductCheckout() {
               disabled={busy}
               onClick={() => void dismiss()}
             >
-              Return to cart
+              Return to Cart
             </button>
           )}
         </div>
@@ -447,8 +493,18 @@ export default function ProductCheckout() {
         />
       </label>
 
-      <button className={styles.checkoutButton} disabled={busy}>
-        {busy ? "Preparing secure checkout…" : "Checkout securely"}
+      {overLimit && (
+        <p role="alert" className={styles.checkoutError}>
+          Checkout supports up to {MAX_UNITS} codes per order. Reduce
+          quantities to continue.
+        </p>
+      )}
+
+      <button
+        className={styles.checkoutButton}
+        disabled={busy || overLimit}
+      >
+        {busy ? "Preparing secure checkout…" : "Check Out Securely"}
       </button>
 
       <p className={styles.checkoutNote}>

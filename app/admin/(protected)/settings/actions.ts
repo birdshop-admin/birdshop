@@ -54,7 +54,9 @@ export async function resendReviewedEmail(form: FormData) {
       dedupe_key: `manual/${id}`,
       kind: job.kind,
       entity_id: job.entity_id,
-      payload: job.payload,
+      // Re-render from current records: a cached envelope may still carry a private
+      // chat link for a conversation that has since been removed.
+      payload: null,
     },
     { onConflict: "dedupe_key", ignoreDuplicates: true },
   );
@@ -108,4 +110,28 @@ export async function reconcileSavedCheckout(form: FormData) {
   }
   revalidatePath("/admin/settings");
   redirect(`/admin/settings?notice=${encodeURIComponent(message)}`);
+}
+
+// Moved from the former Orders page: re-checks code allocation for a paid
+// digital order and queues its delivery email again.
+export async function retryProductDelivery(form: FormData) {
+  const { user } = await requireOwner();
+  const id = String(form.get("orderId") ?? "");
+  if (!isUuid(id))
+    redirect("/admin/settings?notice=" + encodeURIComponent("Invalid order. Refresh and retry.") + "#deliveries");
+  const { serverRpc } = await import("@/lib/payment-service");
+  let message = "Allocation checked and delivery queued. Check the delivery status below.";
+  try {
+    await serverRpc("birdshop_v2_requeue_product_delivery", {
+      p_order_id: id,
+      p_actor_id: user.id,
+      p_reviewed: form.get("reviewed") === "yes",
+    });
+    await drainEmailJobs(2);
+  } catch {
+    message =
+      "Delivery needs review. Add stock if needed, or check provider history before confirming a resend.";
+  }
+  revalidatePath("/admin/settings");
+  redirect("/admin/settings?notice=" + encodeURIComponent(message) + "#deliveries");
 }

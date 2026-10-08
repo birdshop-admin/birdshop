@@ -5,7 +5,7 @@ import { privateHeaders } from "@/lib/server-config";
 
 export async function POST() {
   if (!(await cookies()).get(ADMIN_SESSION_COOKIE)?.value)
-    return Response.json({ ok: false }, { status: 401 });
+    return Response.json({ ok: false }, { status: 401, headers: privateHeaders });
   const supabase = await createClient();
   const {
     data: { user },
@@ -42,6 +42,6 @@ export async function POST() {
     profile.user_id !== user.id ||
     !["owner", "service_agent"].includes(profile.role)
   )
-    return Response.json({ ok: false }, { status: 403 });
+    return Response.json({ ok: false }, { status: 403, headers: privateHeaders });
   return Response.json({ ok: true }, { headers: privateHeaders });
 }

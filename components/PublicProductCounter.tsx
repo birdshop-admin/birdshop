@@ -36,7 +36,7 @@ export default function PublicProductCounter() {
             " " +
             (sold === 1 ? "Product Sold" : "Products Sold")}
       </strong>
-      <span>VERIFIED PRODUCT SALES</span>
+      <span>Verified product sales</span>
     </div>
   );
 }

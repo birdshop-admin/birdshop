@@ -1140,3 +1140,13 @@
     min-width: 0;
   }
 }
+
+.formNotice {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--theme-text-232-169-150-1, #b46b56);
+  border-radius: 8px;
+  color: var(--theme-text-232-169-150-1, #8a3d2a);
+  background: var(--theme-surface-37-42-35-0_42, rgba(180, 107, 86, 0.08));
+  font-size: 14px;
+}

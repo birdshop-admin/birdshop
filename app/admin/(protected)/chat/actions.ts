@@ -6,6 +6,9 @@ import { requireOwner } from "@/lib/staff-auth";
 import { revalidatePath } from "next/cache";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { isUuid } from "@/lib/server-config";
 
 /* =========================================================
    TYPES
@@ -77,7 +80,6 @@ function refreshAdmin() {
 
   revalidatePath("/admin/chat");
 
-  revalidatePath("/admin/orders");
 }
 
 /* =========================================================
@@ -156,8 +158,8 @@ export async function createPaymentRequest(
 
   if (!conversationId)
     return { ok: false, error: "Choose a conversation first." };
-  if (!Number.isFinite(amount) || amount < 0.5)
-    return { ok: false, error: "Enter an amount of at least 0.50." };
+  if (!Number.isFinite(amount) || amount < 0.5 || amount > 999999.99)
+    return { ok: false, error: "Enter an amount between 0.50 and 999,999.99." };
   if (!title || title.length > 180)
     return { ok: false, error: "Enter a title of up to 180 characters." };
   if (description.length > 2000)
@@ -225,7 +227,6 @@ export async function cancelPaymentRequest(
     };
   }
   revalidatePath("/admin/chat");
-  revalidatePath("/admin/orders");
   return { ok: true, message: "Payment request cancelled." };
 }
 
@@ -309,4 +310,67 @@ export async function permanentlyDeleteConversation(formData: FormData) {
   if (error) redirect(returnChatUrl(formData, "closed", "Could not remove this chat. Confirm the owner chat cleanup migration is installed, then retry.", "error"));
   refreshAdmin();
   redirect(returnChatUrl(formData, "closed", "Chat permanently removed. Linked payment records were retained."));
+}
+
+/* =========================================================
+   COMPLETE SERVICE ORDER (from the chat)
+
+   Owner, or the active service agent assigned to this chat.
+   Runs the same database function as Admin → Orders, so the
+   completion rules, the single completion email and the chat
+   message are identical. The chat closes automatically one
+   hour later (lib/maintenance.ts).
+========================================================= */
+
+export async function completeServiceOrderFromChat(formData: FormData) {
+  const { user, profile } = await authenticatePaymentStaff();
+  const conversationId = String(formData.get("conversation_id") ?? "").trim();
+  const back = (message: string, tone: "success" | "error" = "success", view = "progress") =>
+    chatUrl(view, conversationId || undefined, message, tone);
+
+  if (!isUuid(conversationId) || formData.get("confirm") !== "yes") {
+    redirect(back("Tick the confirmation box to complete this order.", "error"));
+  }
+
+  const db = createAdminClient();
+  const { data: chat, error: chatError } = await db
+    .from("service_conversations")
+    .select("id,order_id,conversation_type,assigned_staff_user_id,status,deleted_at")
+    .eq("id", conversationId)
+    .maybeSingle();
+
+  if (chatError || !chat || chat.deleted_at || chat.conversation_type !== "service") {
+    redirect(back("This conversation could not be found.", "error"));
+  }
+
+  const allowed =
+    profile.role === "owner" ||
+    (profile.role === "service_agent" && chat.assigned_staff_user_id === user.id);
+
+  if (!allowed) redirect(back("Only the owner or the assigned provider can complete this order.", "error"));
+  if (!chat.order_id) redirect(back("There is no paid order in this chat yet.", "error"));
+
+  const { error } = await db.rpc("birdshop_set_service_order_status", {
+    p_order_id: chat.order_id,
+    p_status: "completed",
+    p_assigned_to: null,
+  });
+
+  if (error) {
+    const known = [
+      "Completed orders cannot be reopened.",
+      "Refunded orders cannot change status.",
+      "Payment must be recorded before final delivery or completion.",
+    ];
+    redirect(back(known.includes(error.message) ? error.message : "The order could not be completed. Refresh and retry.", "error"));
+  }
+
+  // Send the completion email now instead of waiting for the schedule.
+  after(async () => {
+    const { drainEmailJobs } = await import("@/lib/email-jobs");
+    await drainEmailJobs(2).catch(() => undefined);
+  });
+
+  refreshAdmin();
+  redirect(back("Order completed. The customer has been emailed, and this chat closes automatically in 1 hour.", "success", "completed"));
 }

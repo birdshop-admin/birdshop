@@ -58,7 +58,7 @@ body {
 
   color: var(--theme-text-240-236-226-1, var(--ink));
 
-  background-color: #10170f;
+  background-color: var(--bs-canvas, #10170f);
 
   background-image:
     linear-gradient(rgba(238, 234, 220, 0.021) 1px, transparent 1px),
@@ -96,14 +96,70 @@ button {
   background: var(--olive);
 }
 
+/* Base focus ring. --bs-focus is defined in app/theme.css (light + dark).
+   Dense controls may tighten the offset to 2px; forest and photo surfaces
+   use --bs-focus-on-dark in their own rules. */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 2px solid rgba(102, 114, 87, 0.78);
+  outline: 2px solid var(--bs-focus, #46613a);
 
   outline-offset: 3px;
+}
+
+/* =========================================================
+   GLOBAL UTILITIES
+========================================================= */
+
+/* Screen-reader-only text. Use className="visually-hidden"; no module srOnly. */
+.visually-hidden {
+  position: absolute !important;
+
+  width: 1px !important;
+  height: 1px !important;
+
+  margin: -1px !important;
+  padding: 0 !important;
+
+  overflow: hidden !important;
+
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+
+  border: 0 !important;
+
+  white-space: nowrap !important;
+}
+
+/* The initials "seal" shown when a catalog item has no usable image.
+   It always sits on a dark well (both themes). Modules size it only by
+   setting --seal-size (default 112px; spotlight 160px) on it or a parent. */
+.catalog-artwork-fallback {
+  display: grid;
+  place-items: center;
+  flex: none;
+
+  width: var(--seal-size, 112px);
+  height: var(--seal-size, 112px);
+
+  border: 1px solid rgba(240, 236, 226, 0.22);
+  border-radius: 50%;
+
+  box-shadow: inset 0 0 0 6px rgba(240, 236, 226, 0.04);
+
+  color: rgba(236, 232, 220, 0.94);
+
+  font-family: var(--serif);
+  font-size: calc(var(--seal-size, 112px) * 0.4);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.03em;
+
+  text-transform: none;
+  white-space: nowrap;
 }
 
 /* =========================================================
@@ -125,13 +181,18 @@ select:focus-visible {
 
   border-radius: 18px;
 
-  background: var(--theme-surface-24-28-24-1, var(--cream));
+  background: var(--bs-page, var(--cream));
 
   box-shadow: var(--shadow-shell);
 }
 
 /* =========================================================
    HOME HERO
+
+   The photo is a CSS background (preloaded by app/page.tsx). Text sits on
+   the dark left end of the overlay; the right end fades into the page colour
+   behind the logo, so light and dark mode each get their own fade.
+   Photo overlays stay neutral literals: they are the same in both themes.
 ========================================================= */
 
 .hero {
@@ -141,9 +202,11 @@ select:focus-visible {
 
   overflow: hidden;
 
-  color: var(--cream);
+  color: var(--bs-forest-ink);
 
-  background-image: url("/landscape1.png");
+  background-color: var(--bs-canvas);
+
+  background-image: url("/landscape1.webp");
 
   background-size: cover;
 
@@ -164,14 +227,16 @@ select:focus-visible {
     rgba(7, 12, 8, 0.92) 0%,
     rgba(7, 12, 8, 0.84) 28%,
     rgba(9, 15, 10, 0.67) 48%,
-    rgba(239, 235, 223, 0.15) 65%,
-    var(--theme-surface-24-28-24-0_85, rgba(240, 236, 226, 0.85)) 81%,
-    var(--theme-surface-24-28-24-0_98, rgba(240, 236, 226, 0.98)) 100%
+    color-mix(in srgb, var(--bs-page) 15%, transparent) 65%,
+    color-mix(in srgb, var(--bs-page) 85%, transparent) 81%,
+    color-mix(in srgb, var(--bs-page) 98%, transparent) 100%
   );
 
   pointer-events: none;
 }
 
+/* Soft accent glow behind the logo. The radial gradient is already soft, so
+   this 640px layer needs no blur filter. */
 .hero::after {
   content: "";
 
@@ -185,9 +250,11 @@ select:focus-visible {
 
   border-radius: 50%;
 
-  background: radial-gradient(circle, rgba(89, 100, 74, 0.14), transparent 68%);
-
-  filter: blur(20px);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--bs-accent) 14%, transparent),
+    transparent 68%
+  );
 
   pointer-events: none;
 }
@@ -218,17 +285,27 @@ select:focus-visible {
 .eyebrow {
   margin: 0 0 22px;
 
-  color: rgba(242, 238, 227, 0.8);
+  color: var(--bs-forest-muted);
 
-  font-size: 12px;
+  font-size: 11px;
 
   font-weight: 700;
 
-  letter-spacing: 0.29em;
+  line-height: 1.6;
+
+  letter-spacing: 0.22em;
+
+  text-transform: uppercase;
+
+  text-wrap: balance;
 }
 
-.eyebrow span {
-  margin: 0 12px;
+.eyebrow-item {
+  white-space: nowrap;
+}
+
+.eyebrow-sep {
+  margin: 0 6px;
 
   opacity: 0.66;
 }
@@ -236,7 +313,7 @@ select:focus-visible {
 .hero-copy h1 {
   margin: 0;
 
-  color: #f5f0e5;
+  color: var(--bs-forest-ink);
 
   font-family: var(--serif);
 
@@ -246,7 +323,9 @@ select:focus-visible {
 
   line-height: 0.88;
 
-  letter-spacing: -0.055em;
+  letter-spacing: -0.045em;
+
+  text-wrap: balance;
 }
 
 .hero-description {
@@ -254,17 +333,24 @@ select:focus-visible {
 
   margin: 29px 0 25px;
 
-  color: rgba(246, 242, 232, 0.92);
+  color: color-mix(in srgb, var(--bs-forest-ink) 92%, transparent);
 
   font-family: var(--serif);
 
   font-size: 22px;
 
   line-height: 1.38;
+
+  text-wrap: pretty;
+}
+
+/* Every link on the photo uses the light focus ring. */
+.hero a:focus-visible {
+  outline-color: var(--bs-focus-on-dark);
 }
 
 /* =========================================================
-   DISCORD BUTTON
+   DISCORD BUTTON (green gradient kept as designed)
 ========================================================= */
 
 .discord-button {
@@ -299,24 +385,19 @@ select:focus-visible {
     0 10px 30px rgba(0, 0, 0, 0.15);
 
   transition:
-    transform 180ms ease,
-    background 180ms ease,
-    box-shadow 180ms ease;
-}
-
-.discord-button:hover {
-  transform: translateY(-2px);
-
-  background: linear-gradient(90deg, #5d704c, #48583c);
+    background var(--bs-dur-fast) ease,
+    box-shadow var(--bs-dur-fast) ease;
 }
 
 .discord-button svg {
   width: 28px;
 
   height: 28px;
+
+  flex: none;
 }
 
-.discord-button span:nth-child(2) {
+.discord-button-label {
   font-family: var(--serif);
 
   font-size: 24px;
@@ -329,7 +410,7 @@ select:focus-visible {
 }
 
 /* =========================================================
-   HERO SECONDARY BUTTONS
+   HERO SECONDARY BUTTONS (a darker translucent fill, no frosted glass)
 ========================================================= */
 
 .hero-secondary-buttons {
@@ -355,32 +436,49 @@ select:focus-visible {
 
   padding: 0 20px;
 
-  border: 1px solid rgba(240, 236, 225, 0.48);
+  border: 1px solid color-mix(in srgb, var(--bs-forest-ink) 48%, transparent);
 
   border-radius: 6px;
 
-  color: rgba(247, 243, 233, 0.96);
+  color: var(--bs-forest-ink);
 
-  background: rgba(5, 11, 7, 0.24);
-
-  backdrop-filter: blur(7px);
+  background: rgba(5, 11, 7, 0.42);
 
   font-family: var(--serif);
 
   font-size: 16px;
 
+  text-align: center;
+
   transition:
-    background 180ms ease,
-    transform 180ms ease,
-    border-color 180ms ease;
+    background var(--bs-dur-fast) ease,
+    border-color var(--bs-dur-fast) ease;
 }
 
-.hero-secondary-buttons a:hover {
-  transform: translateY(-2px);
+.hero-guide-link {
+  display: inline-flex;
 
-  border-color: rgba(240, 236, 225, 0.66);
+  align-items: baseline;
 
-  background: rgba(20, 29, 20, 0.54);
+  gap: 8px;
+
+  margin-top: 18px;
+
+  color: color-mix(in srgb, var(--bs-forest-ink) 88%, transparent);
+
+  font-family: var(--serif);
+
+  font-size: 15px;
+
+  line-height: 1.4;
+
+  text-decoration: underline;
+
+  text-decoration-color: color-mix(in srgb, var(--bs-forest-ink) 38%, transparent);
+
+  text-underline-offset: 4px;
+
+  transition: text-decoration-color var(--bs-dur-fast) ease;
 }
 
 /* =========================================================
@@ -400,9 +498,10 @@ select:focus-visible {
 
   justify-content: center;
 
-  color: var(--theme-text-240-236-226-1, var(--forest));
+  color: var(--bs-ink);
 }
 
+/* A plain radial gradient: a blurred 410px layer is costly to repaint. */
 .logo-glow {
   position: absolute;
 
@@ -414,12 +513,26 @@ select:focus-visible {
 
   background: radial-gradient(
     circle,
-    rgba(86, 99, 72, 0.17),
-    rgba(86, 99, 72, 0.055) 41%,
+    color-mix(in srgb, var(--bs-accent) 18%, transparent),
+    color-mix(in srgb, var(--bs-accent) 6%, transparent) 41%,
     transparent 72%
   );
 
-  filter: blur(15px);
+  pointer-events: none;
+}
+
+/* Always displayed (the theme swap toggles the marks inside it), so the
+   entrance animation runs once per page load, not on every theme switch. */
+.hero-logo-mark {
+  position: relative;
+
+  width: 100%;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
 }
 
 .hero-logo {
@@ -437,7 +550,13 @@ select:focus-visible {
 
   margin: -10px 0 0;
 
-  color: var(--theme-text-240-236-226-0_77, rgba(27, 36, 26, 0.77));
+  color: var(--bs-muted);
+
+  /* Light mode: a soft cream halo keeps the tagline readable where it
+     crosses the dark forest edge of the photo (removed in dark mode). */
+  text-shadow:
+    0 0 2px rgba(240, 236, 226, 0.95),
+    0 0 12px rgba(240, 236, 226, 0.9);
 
   text-align: center;
 
@@ -448,10 +567,16 @@ select:focus-visible {
   line-height: 1.8;
 
   letter-spacing: 0.34em;
+
+  text-transform: uppercase;
+}
+
+html[data-theme="dark"] .hero-tagline {
+  text-shadow: none;
 }
 
 /* =========================================================
-   RIGHT RAIL
+   RIGHT RAIL (decorative)
 ========================================================= */
 
 .hero-rail {
@@ -467,25 +592,29 @@ select:focus-visible {
 
   padding: 45px 12px;
 
-  border-left: 1px solid var(--theme-border-207-215-196-0_14, rgba(24, 32, 22, 0.14));
+  border-left: 1px solid var(--bs-line);
 
-  color: var(--theme-text-240-236-226-0_7, rgba(38, 45, 35, 0.7));
+  color: var(--bs-faint);
 
   font-size: 10px;
 
   line-height: 1.9;
 
   letter-spacing: 0.29em;
+
+  text-transform: uppercase;
 }
 
 .rail-line {
+  display: block;
+
   width: 1px;
 
   height: 64px;
 
   margin: 22px 0;
 
-  background: rgba(35, 44, 32, 0.25);
+  background: var(--bs-line-strong);
 }
 
 .rail-line.short {
@@ -495,7 +624,7 @@ select:focus-visible {
 }
 
 /* =========================================================
-   TRUST STRIP
+   TRUST STRIP (forest surface in both themes)
 ========================================================= */
 
 .trust-strip {
@@ -503,19 +632,27 @@ select:focus-visible {
 
   display: grid;
 
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 
-  color: var(--cream);
+  margin: 0;
 
-  background: linear-gradient(90deg, #111a12, #182218 48%, #111a12);
+  padding: 0;
 
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  list-style: none;
 
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  color: var(--bs-forest-ink);
+
+  background: var(--bs-forest);
+
+  border-top: 1px solid var(--bs-forest-line);
+
+  border-bottom: 1px solid var(--bs-forest-line);
 }
 
 .trust-item {
   position: relative;
+
+  min-width: 0;
 
   display: flex;
 
@@ -533,13 +670,17 @@ select:focus-visible {
 
   position: absolute;
 
+  top: 50%;
+
   right: 0;
 
   width: 1px;
 
   height: 40px;
 
-  background: rgba(255, 255, 255, 0.14);
+  margin-top: -20px;
+
+  background: var(--bs-forest-line);
 }
 
 .trust-icon {
@@ -556,7 +697,9 @@ select:focus-visible {
   height: 100%;
 }
 
-.trust-item div:last-child {
+.trust-item > div:last-child {
+  min-width: 0;
+
   display: flex;
 
   flex-direction: column;
@@ -573,27 +716,38 @@ select:focus-visible {
 }
 
 .trust-item span {
-  color: rgba(241, 237, 226, 0.7);
+  color: var(--bs-forest-muted);
 
   font-size: 10px;
 
-  font-weight: 600;
+  font-weight: 700;
 
   letter-spacing: 0.17em;
+
+  text-transform: uppercase;
 }
 
 /* =========================================================
    HOMEPAGE CATALOG
+
+   --catalog-pad is the only local variable: the mobile snap rows use it
+   for their negative margins, so they reach the shell edge exactly.
 ========================================================= */
 
 .catalog-area {
+  --catalog-pad: 72px;
+
   position: relative;
 
-  padding: 48px 72px 66px;
+  padding: 56px var(--catalog-pad) 72px;
 
   background:
-    linear-gradient(rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.045)),
-    var(--theme-surface-24-28-24-1, var(--cream));
+    radial-gradient(
+      1100px 520px at 88% 0%,
+      color-mix(in srgb, var(--bs-accent) 9%, transparent),
+      transparent 62%
+    ),
+    var(--bs-page);
 }
 
 .catalog-area::before {
@@ -605,11 +759,11 @@ select:focus-visible {
 
   pointer-events: none;
 
-  opacity: 0.25;
+  opacity: 0.1;
 
   background-image:
-    linear-gradient(rgba(35, 43, 31, 0.024) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(35, 43, 31, 0.024) 1px, transparent 1px);
+    linear-gradient(var(--bs-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bs-line) 1px, transparent 1px);
 
   background-size: 34px 34px;
 }
@@ -622,12 +776,16 @@ select:focus-visible {
   display: grid;
 
   grid-template-columns:
-    255px
-    1fr;
+    240px
+    minmax(0, 1fr);
 
-  gap: 48px;
+  gap: 40px;
 
   align-items: start;
+}
+
+.catalog-content {
+  min-width: 0;
 }
 
 .catalog-intro {
@@ -645,13 +803,15 @@ select:focus-visible {
 }
 
 .section-kicker span {
-  color: var(--theme-text-184-196-170-1, #46503f);
+  color: var(--bs-accent);
 
   font-size: 11px;
 
   font-weight: 700;
 
-  letter-spacing: 0.3em;
+  letter-spacing: 0.22em;
+
+  text-transform: uppercase;
 }
 
 .section-kicker i {
@@ -661,11 +821,13 @@ select:focus-visible {
 
   height: 1px;
 
-  background: rgba(51, 61, 47, 0.34);
+  background: var(--bs-line-strong);
 }
 
 .catalog-intro h2 {
   margin: 0;
+
+  color: var(--bs-ink);
 
   font-family: var(--serif);
 
@@ -673,9 +835,11 @@ select:focus-visible {
 
   font-weight: 400;
 
-  line-height: 0.93;
+  line-height: 0.95;
 
   letter-spacing: -0.04em;
+
+  text-wrap: balance;
 }
 
 .catalog-intro p {
@@ -683,13 +847,15 @@ select:focus-visible {
 
   margin: 20px 0 19px;
 
-  color: var(--theme-text-240-236-226-1, #40453d);
+  color: var(--bs-muted);
 
   font-family: var(--serif);
 
   font-size: 18px;
 
-  line-height: 1.34;
+  line-height: 1.38;
+
+  text-wrap: pretty;
 }
 
 .view-all {
@@ -701,15 +867,39 @@ select:focus-visible {
 
   padding-bottom: 5px;
 
-  border-bottom: 1px solid var(--theme-border-207-215-196-0_42, rgba(28, 34, 25, 0.42));
+  border-bottom: 1px solid var(--bs-line-strong);
+
+  color: var(--bs-ink);
 
   font-family: var(--serif);
 
   font-size: 16px;
+
+  transition: border-color var(--bs-dur-fast) ease;
+}
+
+.view-all span {
+  display: inline-block;
+}
+
+.catalog-divider {
+  position: relative;
+
+  z-index: 1;
+
+  height: 1px;
+
+  margin: 52px 0;
+
+  background: var(--bs-line);
 }
 
 /* =========================================================
    HOMEPAGE CARDS
+
+   data-count on .cards-grid picks the layout: 3 columns, 2 columns, or one
+   spotlight card. The title link is stretched over the whole card; the cart
+   button sits above it. Image areas are a dark well in both themes.
 ========================================================= */
 
 .cards-grid {
@@ -717,63 +907,219 @@ select:focus-visible {
 
   grid-template-columns: repeat(3, minmax(0, 1fr));
 
-  gap: 21px;
+  gap: 22px;
+
+  margin: 0;
+
+  padding: 0;
+
+  list-style: none;
+}
+
+.cards-grid[data-count="2"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cards-grid[data-count="1"] {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .store-card {
+  --seal-size: 112px;
+
+  position: relative;
+
+  isolation: isolate;
+
   min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
 
   overflow: hidden;
 
-  border: 1px solid var(--theme-border-207-215-196-0_13, rgba(29, 36, 26, 0.13));
+  border: 1px solid var(--bs-line);
 
-  border-radius: 9px;
+  border-radius: var(--bs-r-card);
 
-  background: var(--theme-surface-24-28-24-0_91, rgba(246, 243, 235, 0.91));
+  background: var(--bs-card);
 
-  box-shadow: 0 4px 14px rgba(31, 34, 27, 0.035);
+  box-shadow: var(--bs-shadow-card);
+
+  transition:
+    border-color var(--bs-dur-fast) ease,
+    box-shadow var(--bs-dur) var(--ease-standard);
 }
 
-/* =========================================================
-   HOMEPAGE PRODUCT AVAILABILITY
-========================================================= */
-
-.store-card-out-of-stock {
-  border-color: var(--theme-border-207-215-196-0_11, rgba(66, 70, 63, 0.11));
-
-  background: var(--theme-surface-24-28-24-0_76, rgba(235, 232, 224, 0.76));
-
-  box-shadow: none;
+.cards-grid[data-count="2"] .store-card {
+  --seal-size: 124px;
 }
 
-.store-card-out-of-stock .store-card-image {
-  opacity: 0.68;
-
-  filter: grayscale(0.8) saturate(0.5) contrast(0.94);
+/* Stretched link: one link per card, covering it. */
+.store-card-link {
+  color: inherit;
 }
 
-.store-card-out-of-stock h3,
-.store-card-out-of-stock .store-card-price {
-  color: var(--theme-text-184-196-170-1, #6f726c);
+.store-card-link::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 1;
+
+  border-radius: inherit;
+}
+
+@supports selector(:has(*)) {
+  .store-card-link:focus-visible {
+    outline: none;
+  }
+
+  .store-card:has(.store-card-link:focus-visible) {
+    outline: 2px solid var(--bs-focus);
+
+    outline-offset: 3px;
+  }
+}
+
+.store-card-image {
+  position: relative; /* required by next/image fill */
+
+  aspect-ratio: 16 / 10;
+
+  overflow: hidden;
+
+  display: grid;
+
+  place-items: center;
+
+  isolation: isolate;
+
+  background: var(--bs-well);
+}
+
+/* Keeps the chips readable on any photo. */
+.store-card-image::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 1;
+
+  background: linear-gradient(180deg, transparent 58%, rgba(8, 12, 8, 0.38));
+
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+
+  pointer-events: none;
+}
+
+.store-card-badge,
+.store-card-chip {
+  position: absolute;
+
+  z-index: 2;
+
+  left: 12px;
+
+  max-width: calc(100% - 24px);
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+  font-family: var(--sans);
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  line-height: 1;
+
+  text-transform: uppercase;
+}
+
+.store-card-badge {
+  top: 12px;
+
+  padding: 6px 9px;
+
+  border-radius: var(--bs-r-pill);
+
+  color: var(--bs-forest-btn-ink);
+
+  background: var(--bs-forest-btn-bg);
+
+  letter-spacing: 0.16em;
+
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.store-card-chip {
+  bottom: 12px;
+
+  padding: 5px 8px;
+
+  border: 1px solid var(--bs-forest-line);
+
+  border-radius: 4px;
+
+  color: var(--bs-forest-ink);
+
+  background: rgba(8, 12, 8, 0.6);
+
+  letter-spacing: 0.14em;
+}
+
+.store-card-chip--end {
+  right: 12px;
+
+  left: auto;
+}
+
+/* The platform and "Sold out" chips share the bottom edge. */
+.store-card-out-of-stock .store-card-chip {
+  max-width: calc(50% - 18px);
+}
+
+.store-card-body {
+  flex: 1;
+
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  gap: 14px;
+
+  padding: 16px 16px 16px 18px;
+}
+
+.store-card-copy {
+  min-width: 0;
+
+  flex: 1;
 }
 
 .store-card-meta-row {
-  width: 100%;
-
   display: flex;
 
   align-items: center;
 
   justify-content: space-between;
 
-  gap: 12px;
+  gap: 10px;
 
-  margin-bottom: 10px;
-}
+  min-height: 18px;
 
-.store-card .store-card-category,
-.store-card .store-card-stock {
-  margin: 0;
+  margin-bottom: 8px;
 }
 
 .store-card-category {
@@ -781,7 +1127,7 @@ select:focus-visible {
 
   overflow: hidden;
 
-  color: var(--theme-text-184-196-170-1, #646960);
+  color: var(--bs-accent);
 
   text-overflow: ellipsis;
 
@@ -791,132 +1137,179 @@ select:focus-visible {
 
   font-weight: 700;
 
+  line-height: 1.2;
+
   letter-spacing: 0.19em;
+
+  text-transform: uppercase;
 }
 
 .store-card-stock {
-  flex: 0 0 auto;
+  flex: none;
 
-  padding: 4px 6px;
+  padding: 4px 7px;
 
-  border-radius: 3px;
+  border-radius: var(--bs-r-pill);
 
-  font-size: 8px !important;
+  font-size: 10px;
 
   font-weight: 700;
 
-  letter-spacing: 0.11em !important;
-
   line-height: 1;
+
+  letter-spacing: 0.12em;
+
+  text-transform: uppercase;
+
+  white-space: nowrap;
 }
 
 .store-card-stock.stock-in {
-  color: var(--theme-text-184-196-170-1, #51614a);
+  color: var(--bs-success-ink);
 
-  background: rgba(89, 111, 80, 0.1);
+  background: var(--bs-success-bg);
 }
 
 .store-card-stock.stock-low {
-  color: var(--theme-text-232-169-150-1, #846847);
+  color: var(--bs-warn-ink);
 
-  background: rgba(145, 112, 70, 0.1);
+  background: var(--bs-warn-bg);
 }
 
 .store-card-stock.stock-out {
-  color: var(--theme-text-184-196-170-1, #81776b);
+  color: var(--bs-faint);
 
-  background: rgba(103, 96, 87, 0.1);
+  background: var(--bs-skeleton);
 }
 
-.store-card .store-card-price {
-  margin: 0;
-}
+.store-card-title {
+  display: -webkit-box;
 
-.store-card-image {
-  height: 158px;
+  -webkit-box-orient: vertical;
 
-  display: grid;
+  -webkit-line-clamp: 2;
 
-  place-items: center;
+  line-clamp: 2;
 
-  color: #ece8dc;
+  min-height: 2.44em;
 
-  background:
-    radial-gradient(
-      circle at 66% 35%,
-      rgba(112, 130, 97, 0.24),
-      transparent 38%
-    ),
-    #192319;
-}
+  margin: 0 0 8px;
 
-.store-card-image strong {
-  font-family: var(--serif);
+  overflow: hidden;
 
-  font-size: 49px;
+  overflow-wrap: anywhere;
 
-  font-weight: 400;
-
-  letter-spacing: -0.06em;
-}
-
-.store-card-bottom {
-  display: flex;
-
-  align-items: flex-end;
-
-  justify-content: space-between;
-
-  gap: 15px;
-
-  min-height: 107px;
-
-  padding: 16px 16px 15px;
-}
-
-.store-card-copy {
-  min-width: 0;
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: flex-start;
-}
-
-.store-card h3 {
-  margin: 0 0 6px;
+  color: var(--bs-ink);
 
   font-family: var(--serif);
 
   font-size: 18px;
 
   font-weight: 400;
+
+  line-height: 1.22;
+
+  letter-spacing: -0.02em;
 }
 
-.store-card span {
-  margin-bottom: 10px;
+.store-card-desc {
+  display: -webkit-box;
 
-  color: var(--theme-text-184-196-170-1, #646960);
+  -webkit-box-orient: vertical;
+
+  -webkit-line-clamp: 2;
+
+  line-clamp: 2;
+
+  margin: 0 0 12px;
+
+  overflow: hidden;
+
+  color: var(--bs-muted);
+
+  font-family: var(--serif);
+
+  font-size: 15px;
+
+  line-height: 1.5;
+}
+
+.store-card-price {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: baseline;
+
+  gap: 4px 8px;
+
+  margin: 0;
+
+  color: var(--bs-ink);
+
+  font-family: var(--serif);
+
+  font-size: 18px;
+
+  line-height: 1.2;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.store-card-price > * {
+  white-space: nowrap;
+}
+
+.store-card-price small {
+  color: var(--bs-accent);
+
+  font-family: var(--sans);
 
   font-size: 10px;
 
   font-weight: 700;
 
-  letter-spacing: 0.19em;
+  letter-spacing: 0.16em;
+
+  text-transform: uppercase;
 }
 
-.store-card strong {
-  color: var(--theme-text-240-236-226-1, #1b2019);
+.store-card-price s {
+  color: var(--bs-muted);
 
-  font-family: var(--serif);
-
-  font-size: 17px;
-
-  font-weight: 400;
+  font-size: 13px;
 }
 
+.store-card-save {
+  align-self: center;
+
+  padding: 3px 6px;
+
+  border-radius: var(--bs-r-pill);
+
+  color: var(--bs-success-ink);
+
+  background: var(--bs-success-bg);
+
+  font-family: var(--sans);
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  line-height: 1.1;
+
+  letter-spacing: 0.12em;
+
+  text-transform: uppercase;
+}
+
+/* Primary icon button (cream in dark mode). */
 .small-cart {
+  position: relative;
+
+  z-index: 2;
+
   width: 44px;
 
   height: 44px;
@@ -927,43 +1320,19 @@ select:focus-visible {
 
   place-items: center;
 
+  padding: 0;
+
   border: 0;
 
-  border-radius: 7px;
+  border-radius: var(--bs-r-control);
 
-  color: var(--cream);
+  color: var(--bs-btn-ink);
 
-  background: #47523e;
+  background: var(--bs-btn-bg);
 
   cursor: pointer;
 
-  transition:
-    background 180ms ease,
-    transform 180ms ease;
-}
-
-.small-cart:hover {
-  transform: translateY(-2px);
-
-  background: #58654c;
-}
-
-.small-cart:disabled {
-  opacity: 0.38;
-
-  color: rgba(240, 236, 226, 0.72);
-
-  background: #777b72;
-
-  cursor: not-allowed;
-
-  transform: none;
-}
-
-.small-cart:disabled:hover {
-  transform: none;
-
-  background: #777b72;
+  transition: background-color var(--bs-dur-fast) ease;
 }
 
 .small-cart svg {
@@ -972,16 +1341,648 @@ select:focus-visible {
   height: 21px;
 }
 
-.catalog-divider {
+/* Spotlight call to action (primary button). */
+.store-card-cta {
   position: relative;
 
-  z-index: 1;
+  z-index: 2;
 
-  height: 1px;
+  min-height: 48px;
 
-  margin: 44px 0;
+  display: inline-flex;
 
-  background: var(--line-light);
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 10px;
+
+  margin-top: 22px;
+
+  padding: 0 22px;
+
+  border: 0;
+
+  border-radius: var(--bs-r-control);
+
+  color: var(--bs-btn-ink);
+
+  background: var(--bs-btn-bg);
+
+  font-family: var(--serif);
+
+  font-size: 15px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition: background-color var(--bs-dur-fast) ease;
+}
+
+.store-card-cta svg {
+  width: 18px;
+
+  height: 18px;
+
+  flex: none;
+}
+
+.small-cart:disabled,
+.store-card-cta:disabled {
+  color: var(--bs-btn-disabled-ink);
+
+  background: var(--bs-btn-disabled-bg);
+
+  cursor: not-allowed;
+}
+
+/* The live catalog is still loading (a fraction of a second): keep the
+   normal look so the button does not flash grey on every page load. */
+.small-cart[data-loading]:disabled,
+.store-card-cta[data-loading]:disabled {
+  color: var(--bs-btn-ink);
+
+  background: var(--bs-btn-bg);
+
+  cursor: progress;
+}
+
+/* Service cards: the action is decorative and lets clicks reach the link. */
+.small-cart--decor,
+.store-card-cta--decor {
+  z-index: auto;
+
+  pointer-events: none;
+}
+
+.small-cart--decor svg,
+.store-card-cta--decor svg {
+  display: block;
+}
+
+/* Out of stock */
+.store-card-out-of-stock .store-card-image img,
+.store-card-out-of-stock .store-card-image .catalog-artwork-fallback {
+  opacity: 0.7;
+
+  filter: grayscale(0.8) saturate(0.5);
+}
+
+.store-card-out-of-stock .store-card-title,
+.store-card-out-of-stock .store-card-price {
+  color: var(--bs-muted);
+}
+
+/* ---------------------------------------------------------
+   Spotlight: a single item fills the row as a two-column card.
+--------------------------------------------------------- */
+
+.store-card--spotlight {
+  --seal-size: 160px;
+
+  display: grid;
+
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+
+  min-height: 340px;
+}
+
+.store-card--spotlight .store-card-image {
+  height: 100%;
+
+  min-height: 340px;
+
+  aspect-ratio: auto;
+}
+
+.store-card--spotlight .store-card-body {
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  justify-content: center;
+
+  gap: 0;
+
+  padding: 36px 40px;
+}
+
+.store-card--spotlight .store-card-copy {
+  flex: none;
+
+  width: 100%;
+}
+
+.store-card--spotlight .store-card-meta-row {
+  justify-content: flex-start;
+
+  gap: 14px;
+}
+
+.store-card--spotlight .store-card-title {
+  -webkit-line-clamp: 3;
+
+  line-clamp: 3;
+
+  min-height: 0;
+
+  margin: 10px 0 12px;
+
+  font-size: clamp(26px, 2.3vw, 34px);
+
+  line-height: 1.08;
+
+  letter-spacing: -0.025em;
+
+  text-wrap: balance;
+}
+
+.store-card--spotlight .store-card-desc {
+  -webkit-line-clamp: 3;
+
+  line-clamp: 3;
+
+  max-width: 46ch;
+
+  margin-bottom: 16px;
+
+  font-size: 16px;
+}
+
+.store-card--spotlight .store-card-price {
+  font-size: 26px;
+}
+
+.store-card--spotlight .store-card-price s {
+  font-size: 15px;
+}
+
+/* ---------------------------------------------------------
+   Loading, empty and error states
+--------------------------------------------------------- */
+
+.store-card--skeleton {
+  box-shadow: none;
+}
+
+.store-card--skeleton .store-card-image {
+  background: var(--bs-skeleton);
+}
+
+.store-card--skeleton .store-card-image::after {
+  display: none;
+}
+
+.store-card--skeleton .store-card-body {
+  min-height: 104px;
+
+  align-items: center;
+}
+
+.skeleton-line {
+  display: block;
+
+  width: 70%;
+
+  height: 12px;
+
+  border-radius: 4px;
+
+  background: var(--bs-skeleton);
+}
+
+.skeleton-line + .skeleton-line {
+  margin-top: 10px;
+}
+
+.skeleton-line:nth-child(2) {
+  width: 45%;
+}
+
+.skeleton-line:nth-child(3) {
+  width: 30%;
+}
+
+/* Forest surface in both themes. */
+.store-empty {
+  display: grid;
+
+  gap: 10px;
+
+  justify-items: start;
+
+  align-content: center;
+
+  min-height: 240px;
+
+  padding: 36px 40px;
+
+  border: 1px solid var(--bs-forest-line);
+
+  border-radius: var(--bs-r-card);
+
+  color: var(--bs-forest-ink);
+
+  background: var(--bs-forest);
+
+  box-shadow: var(--bs-shadow-card);
+}
+
+.store-empty .store-empty-eyebrow {
+  margin: 0;
+
+  color: var(--bs-forest-muted);
+
+  font-family: var(--sans);
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  line-height: 1.4;
+
+  letter-spacing: 0.22em;
+
+  text-transform: uppercase;
+}
+
+.store-empty h3 {
+  margin: 0;
+
+  font-family: var(--serif);
+
+  font-size: 28px;
+
+  font-weight: 400;
+
+  line-height: 1.15;
+
+  letter-spacing: -0.02em;
+
+  text-wrap: balance;
+}
+
+.store-empty p {
+  max-width: 48ch;
+
+  margin: 0;
+
+  color: var(--bs-forest-muted);
+
+  font-family: var(--serif);
+
+  font-size: 16px;
+
+  line-height: 1.5;
+}
+
+.store-empty-actions {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 12px 22px;
+
+  margin-top: 10px;
+}
+
+.store-empty-button {
+  min-height: 44px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 0 18px;
+
+  border: 0;
+
+  border-radius: var(--bs-r-control);
+
+  color: var(--bs-forest-btn-ink);
+
+  background: var(--bs-forest-btn-bg);
+
+  font-family: var(--serif);
+
+  font-size: 15px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition: background-color var(--bs-dur-fast) ease;
+}
+
+.store-empty-button[aria-disabled="true"] {
+  cursor: progress;
+}
+
+.store-empty-link {
+  color: var(--bs-forest-ink);
+
+  font-family: var(--serif);
+
+  font-size: 15px;
+
+  text-decoration: underline;
+
+  text-decoration-color: color-mix(in srgb, var(--bs-forest-ink) 40%, transparent);
+
+  text-underline-offset: 4px;
+
+  transition: text-decoration-color var(--bs-dur-fast) ease;
+}
+
+.store-empty :is(a, button):focus-visible {
+  outline-color: var(--bs-focus-on-dark);
+}
+
+/* =========================================================
+   HOW IT WORKS (shares the catalog row layout)
+========================================================= */
+
+.home-steps-list {
+  display: grid;
+
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 24px;
+
+  margin: 0;
+
+  padding: 0;
+
+  list-style: none;
+}
+
+.home-steps-list li {
+  min-width: 0;
+
+  padding-top: 22px;
+
+  border-top: 1px solid var(--bs-line-strong);
+}
+
+.home-step-number {
+  display: block;
+
+  color: var(--bs-accent);
+
+  font-family: var(--serif);
+
+  font-size: 15px;
+
+  letter-spacing: 0.08em;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.home-steps-list h3 {
+  margin: 10px 0 8px;
+
+  color: var(--bs-ink);
+
+  font-family: var(--serif);
+
+  font-size: 22px;
+
+  font-weight: 400;
+
+  line-height: 1.2;
+
+  letter-spacing: -0.02em;
+
+  text-wrap: balance;
+}
+
+.home-steps-list p {
+  max-width: 34ch;
+
+  margin: 0;
+
+  color: var(--bs-muted);
+
+  font-family: var(--serif);
+
+  font-size: 15px;
+
+  line-height: 1.55;
+
+  text-wrap: pretty;
+}
+
+.home-steps-list a {
+  color: var(--bs-ink);
+
+  text-decoration: underline;
+
+  text-decoration-color: var(--bs-line-strong);
+
+  text-underline-offset: 4px;
+
+  transition: text-decoration-color var(--bs-dur-fast) ease;
+}
+
+/* =========================================================
+   HOME HOVER (precise pointers only)
+========================================================= */
+
+@media (hover: hover) and (pointer: fine) {
+  .discord-button:hover {
+    background: linear-gradient(90deg, #5d704c, #48583c);
+  }
+
+  .hero-secondary-buttons a:hover {
+    border-color: color-mix(in srgb, var(--bs-forest-ink) 66%, transparent);
+
+    background: rgba(20, 29, 20, 0.62);
+  }
+
+  .hero-guide-link:hover,
+  .store-empty-link:hover,
+  .home-steps-list a:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .view-all:hover {
+    border-bottom-color: currentColor;
+  }
+
+  .store-card:not(.store-card--skeleton):hover {
+    border-color: var(--bs-line-strong);
+
+    box-shadow: var(--bs-shadow-raised);
+  }
+
+  .small-cart:not(:disabled):hover,
+  .store-card-cta:not(:disabled):hover,
+  .store-card:hover .small-cart--decor,
+  .store-card:hover .store-card-cta--decor {
+    background: var(--bs-btn-hover);
+  }
+
+  .store-empty-button:not([aria-disabled="true"]):hover {
+    background: var(--bs-forest-btn-hover);
+  }
+}
+
+/* =========================================================
+   HOME MOTION (transform and opacity only, never under reduce)
+========================================================= */
+
+@media (prefers-reduced-motion: no-preference) {
+  .discord-button,
+  .hero-secondary-buttons a {
+    transition-property: background, border-color, box-shadow, transform;
+
+    transition-duration: var(--bs-dur-fast);
+
+    transition-timing-function: var(--ease-standard);
+  }
+
+  .store-card {
+    transition:
+      transform var(--bs-dur) var(--ease-standard),
+      box-shadow var(--bs-dur) var(--ease-standard),
+      border-color var(--bs-dur-fast) ease;
+  }
+
+  .store-card-image img {
+    transition: transform var(--bs-dur-slow) var(--ease-standard);
+  }
+
+  .small-cart,
+  .store-card-cta,
+  .store-empty-button {
+    transition:
+      background-color var(--bs-dur-fast) ease,
+      transform var(--bs-dur-fast) var(--ease-standard);
+  }
+
+  .view-all span,
+  .small-cart--decor svg,
+  .store-card-cta--decor svg {
+    transition: translate var(--bs-dur-fast) var(--ease-standard);
+  }
+
+  .small-cart:not(:disabled):not(.small-cart--decor):active,
+  .store-card-cta:not(:disabled):not(.store-card-cta--decor):active,
+  .store-empty-button:not([aria-disabled="true"]):active {
+    transform: translateY(1px);
+  }
+
+  /* Hero entrance. Separate translate/scale properties with a backwards
+     fill, so the hover transform lifts keep working afterwards. The h1 and
+     description are not animated (they are the LCP candidates). */
+  .hero-logo-mark,
+  .hero-tagline {
+    animation: home-fade 900ms var(--ease-standard) 100ms backwards;
+  }
+
+  .discord-button {
+    animation: home-rise 640ms var(--ease-standard) 80ms backwards;
+  }
+
+  .hero-secondary-buttons {
+    animation: home-rise 640ms var(--ease-standard) 160ms backwards;
+  }
+
+  .hero-guide-link {
+    animation: home-rise 640ms var(--ease-standard) 240ms backwards;
+  }
+
+  .store-card--skeleton .store-card-image,
+  .skeleton-line {
+    animation: home-pulse 1.4s ease-in-out infinite alternate;
+  }
+
+  /* Scroll reveal, CSS only. Longhands, so a minifier cannot fold them into
+     a shorthand that resets animation-timeline. Applied to whole groups
+     (intro, grid, steps), never to cards inside a horizontal scroller. */
+  @supports (animation-timeline: view()) {
+    .home-reveal {
+      animation-name: home-reveal;
+
+      animation-duration: auto;
+
+      animation-timing-function: linear;
+
+      animation-fill-mode: backwards;
+
+      animation-timeline: view();
+
+      animation-range: entry 5% cover 28%;
+    }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .discord-button:hover,
+  .hero-secondary-buttons a:hover {
+    transform: translateY(-2px);
+  }
+
+  .view-all:hover span,
+  .store-card:hover .small-cart--decor svg,
+  .store-card:hover .store-card-cta--decor svg {
+    translate: 3px 0;
+  }
+
+  .store-card:not(.store-card--skeleton):hover {
+    transform: translateY(-3px);
+  }
+
+  .store-card:not(.store-card-out-of-stock):hover .store-card-image img {
+    transform: scale(1.035);
+  }
+
+  .small-cart:not(:disabled):not(.small-cart--decor):hover,
+  .store-card-cta:not(:disabled):not(.store-card-cta--decor):hover,
+  .store-empty-button:not([aria-disabled="true"]):hover {
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes home-rise {
+  from {
+    opacity: 0;
+
+    translate: 0 12px;
+  }
+}
+
+@keyframes home-fade {
+  from {
+    opacity: 0;
+
+    scale: 0.98;
+  }
+}
+
+@keyframes home-pulse {
+  from {
+    opacity: 0.55;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes home-reveal {
+  from {
+    opacity: 0;
+
+    translate: 0 22px;
+  }
 }
 
 /* =========================================================
@@ -999,7 +2000,7 @@ select:focus-visible {
 
   color: var(--cream);
 
-  background-image: url("/landscape2bottom.png");
+  background-image: url("/landscape2bottom.webp");
 
   background-size: cover;
 
@@ -1113,8 +2114,7 @@ select:focus-visible {
   border-left: 1px solid rgba(255, 255, 255, 0.17);
 }
 
-.footer-socials a,
-.footer-socials > span {
+.footer-socials a {
   width: 24px;
 
   height: 24px;
@@ -1122,12 +2122,6 @@ select:focus-visible {
   display: grid;
 
   place-items: center;
-}
-
-.footer-social-disabled {
-  cursor: default;
-
-  opacity: 0.42;
 }
 
 .footer-socials svg {
@@ -1172,6 +2166,63 @@ select:focus-visible {
    RESPONSIVE
 ========================================================= */
 
+/* Below 1281px the 240px intro column would leave three ~220px cards, so the
+   intro moves above the cards as a header (title left, link right). */
+@media (max-width: 1280px) {
+  .catalog-row {
+    grid-template-columns: minmax(0, 1fr);
+
+    gap: 28px;
+  }
+
+  .catalog-intro {
+    display: grid;
+
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    grid-template-areas:
+      "kicker kicker"
+      "title link"
+      "copy link";
+
+    align-items: end;
+
+    column-gap: 32px;
+
+    padding-top: 0;
+  }
+
+  .catalog-intro .section-kicker {
+    grid-area: kicker;
+  }
+
+  .catalog-intro h2 {
+    grid-area: title;
+
+    font-size: 38px;
+  }
+
+  .catalog-intro h2 br {
+    display: none;
+  }
+
+  .catalog-intro p {
+    grid-area: copy;
+
+    max-width: 560px;
+
+    margin: 12px 0 0;
+  }
+
+  .catalog-intro .view-all {
+    grid-area: link;
+
+    justify-self: end;
+
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 1200px) {
   .hero-content {
     grid-template-columns:
@@ -1190,17 +2241,7 @@ select:focus-visible {
   }
 
   .catalog-area {
-    padding-right: 46px;
-
-    padding-left: 46px;
-  }
-
-  .catalog-row {
-    grid-template-columns:
-      220px
-      1fr;
-
-    gap: 34px;
+    --catalog-pad: 46px;
   }
 
   .footer-content {
@@ -1232,22 +2273,70 @@ select:focus-visible {
     padding: 62px 34px 58px;
   }
 
+  /* One column: the copy now spans the full width, so the horizontal
+     dark-to-cream overlay would put cream text on cream. The whole photo is
+     darkened instead, and the logo block gets its own page-coloured fade. */
+  .hero::before {
+    background: linear-gradient(
+      180deg,
+      rgba(7, 12, 8, 0.9) 0%,
+      rgba(7, 12, 8, 0.84) 45%,
+      rgba(7, 12, 8, 0.8) 100%
+    );
+  }
+
+  .hero::after {
+    top: auto;
+
+    bottom: -120px;
+
+    right: 50%;
+
+    margin-right: -320px;
+  }
+
   .hero-logo-area {
     min-height: 370px;
 
     margin-top: 32px;
   }
 
+  /* Reaches the hero's sides and bottom (clipped by .hero). */
+  .hero-logo-area::before {
+    content: "";
+
+    position: absolute;
+
+    z-index: -1;
+
+    top: -8px;
+
+    right: -50vw;
+
+    bottom: -120px;
+
+    left: -50vw;
+
+    background: linear-gradient(
+      180deg,
+      transparent 0,
+      color-mix(in srgb, var(--bs-page) 86%, transparent) 72px,
+      color-mix(in srgb, var(--bs-page) 97%, transparent) 100%
+    );
+
+    pointer-events: none;
+  }
+
   .trust-strip {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .catalog-row {
-    grid-template-columns: 1fr;
+  .trust-item:nth-child(2n)::after {
+    display: none;
   }
 
-  .cards-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .trust-item:nth-child(n + 3) {
+    border-top: 1px solid var(--bs-forest-line);
   }
 
   .footer-content {
@@ -1264,6 +2353,38 @@ select:focus-visible {
 
   .footer-socials {
     border: 0;
+  }
+}
+
+/* Three cards become a swipeable row (padding = --catalog-pad, so the row
+   bleeds to the shell edge without page overflow). */
+@media (max-width: 860px) {
+  .cards-grid[data-count="3"] {
+    grid-template-columns: none;
+
+    grid-auto-flow: column;
+
+    grid-auto-columns: min(84%, 300px);
+
+    margin-inline: calc(var(--catalog-pad) * -1);
+
+    padding: 6px var(--catalog-pad) 20px;
+
+    overflow-x: auto;
+
+    overscroll-behavior-x: contain;
+
+    scroll-snap-type: x mandatory;
+
+    scroll-padding-inline: var(--catalog-pad);
+
+    scrollbar-width: thin;
+
+    scrollbar-color: var(--bs-line-strong) transparent;
+  }
+
+  .cards-grid[data-count="3"] > * {
+    scroll-snap-align: start;
   }
 }
 
@@ -1287,7 +2408,27 @@ select:focus-visible {
   }
 
   .hero-content {
-    padding: 47px 22px 48px;
+    padding: 40px 20px 36px;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+
+    line-height: 1.9;
+
+    letter-spacing: 0.2em;
+  }
+
+  .eyebrow-sep {
+    margin: 0 4px;
+  }
+
+  .eyebrow-sep--break {
+    display: none;
+  }
+
+  .eyebrow-item--last {
+    display: block;
   }
 
   .hero-copy h1 {
@@ -1298,32 +2439,150 @@ select:focus-visible {
     font-size: 19px;
   }
 
+  .discord-button {
+    min-height: 56px;
+
+    padding: 0 22px;
+  }
+
+  .discord-button-label {
+    font-size: 20px;
+  }
+
   .hero-secondary-buttons {
     grid-template-columns: 1fr;
   }
 
-  .trust-strip {
-    grid-template-columns: 1fr;
+  .hero-secondary-buttons a {
+    min-height: 46px;
+  }
+
+  .hero-logo-area {
+    min-height: 260px;
+
+    margin-top: 24px;
+  }
+
+  .hero-logo {
+    width: min(56%, 220px);
+  }
+
+  .logo-glow {
+    width: 300px;
+
+    height: 300px;
   }
 
   .trust-item {
+    flex-direction: column;
+
+    align-items: flex-start;
+
     justify-content: flex-start;
 
-    padding-left: 28px;
+    gap: 10px;
 
-    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+    padding: 18px 16px;
   }
 
-  .trust-item::after {
-    display: none;
+  .trust-item:not(:last-child)::after {
+    top: 18px;
+
+    bottom: 18px;
+
+    height: auto;
+
+    margin-top: 0;
+  }
+
+  .trust-icon {
+    width: 28px;
+
+    height: 28px;
+  }
+
+  .trust-item strong {
+    font-size: 16px;
   }
 
   .catalog-area {
-    padding: 38px 20px 48px;
+    --catalog-pad: 20px;
+
+    padding-top: 40px;
+
+    padding-bottom: 52px;
   }
 
-  .cards-grid {
-    grid-template-columns: 1fr;
+  .catalog-intro {
+    grid-template-columns: minmax(0, 1fr);
+
+    grid-template-areas:
+      "kicker"
+      "title"
+      "copy"
+      "link";
+  }
+
+  .catalog-intro h2 {
+    font-size: 32px;
+  }
+
+  .catalog-intro .view-all {
+    justify-self: start;
+
+    margin-top: 14px;
+  }
+
+  .catalog-divider {
+    margin: 40px 0;
+  }
+
+  .store-card--spotlight {
+    --seal-size: 120px;
+
+    grid-template-columns: minmax(0, 1fr);
+
+    min-height: 0;
+  }
+
+  .store-card--spotlight .store-card-image {
+    height: auto;
+
+    min-height: 0;
+
+    aspect-ratio: 16 / 10;
+  }
+
+  .store-card--spotlight .store-card-body {
+    padding: 22px 20px;
+  }
+
+  .store-card--spotlight .store-card-cta {
+    width: 100%;
+  }
+
+  .store-empty {
+    min-height: 0;
+
+    padding: 28px 22px;
+  }
+
+  .store-empty h3 {
+    font-size: 24px;
+  }
+
+  .home-steps-list {
+    grid-template-columns: minmax(0, 1fr);
+
+    gap: 0;
+  }
+
+  .home-steps-list li {
+    padding: 18px 0;
+  }
+
+  .home-steps-list li:last-child {
+    padding-bottom: 0;
   }
 
   .site-footer {
@@ -1334,6 +2593,60 @@ select:focus-visible {
     padding-right: 20px;
 
     padding-left: 20px;
+  }
+}
+
+/* Two cards become a swipeable row too. */
+@media (max-width: 600px) {
+  .cards-grid[data-count="2"] {
+    grid-template-columns: none;
+
+    grid-auto-flow: column;
+
+    grid-auto-columns: min(84%, 300px);
+
+    margin-inline: calc(var(--catalog-pad) * -1);
+
+    padding: 6px var(--catalog-pad) 20px;
+
+    overflow-x: auto;
+
+    overscroll-behavior-x: contain;
+
+    scroll-snap-type: x mandatory;
+
+    scroll-padding-inline: var(--catalog-pad);
+
+    scrollbar-width: thin;
+
+    scrollbar-color: var(--bs-line-strong) transparent;
+  }
+
+  .cards-grid[data-count="2"] > * {
+    scroll-snap-align: start;
+  }
+
+  .cards-grid[data-count="2"] .store-card {
+    --seal-size: 112px;
+  }
+}
+
+@media (max-width: 360px) {
+  .trust-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .trust-item::after,
+  .trust-item:not(:last-child)::after {
+    display: none;
+  }
+
+  .trust-item + .trust-item {
+    border-top: 1px solid var(--bs-forest-line);
+  }
+
+  .store-card-chip {
+    max-width: 60%;
   }
 }
 

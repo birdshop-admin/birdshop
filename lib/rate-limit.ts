@@ -30,17 +30,19 @@ export async function rateLimit(
     );
 }
 
+// Vercel sets this header at its trusted edge. Else use a conservative shared bucket.
+export function requestIdentity(request: Request) {
+  return process.env.VERCEL === "1"
+    ? request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ||
+        "unknown"
+    : "shared";
+}
+
 export async function limitRequest(
   request: Request,
   scope: string,
   limit: number,
   seconds: number,
 ) {
-  // Vercel sets this header at its trusted edge. Else use a conservative shared bucket.
-  const identity =
-    process.env.VERCEL === "1"
-      ? request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ||
-        "unknown"
-      : "shared";
-  await rateLimit(scope, identity, limit, seconds);
+  await rateLimit(scope, requestIdentity(request), limit, seconds);
 }

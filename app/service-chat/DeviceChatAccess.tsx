@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { CheckIcon } from "@/components/SiteIcons";
+import { BookmarkIcon, Spinner } from "./ChatUI";
 import styles from "./CustomerInbox.module.css";
 export default function DeviceChatAccess({
   conversationId,
@@ -19,7 +21,7 @@ export default function DeviceChatAccess({
           `/api/customer-device?conversationId=${encodeURIComponent(conversationId)}`,
           { cache: "no-store", signal: controller.signal },
         );
-        const data = await response.json();
+        const data = await response.json().catch(() => ({ error: "BirdShop is temporarily unavailable. Please retry in a moment." }));
         if (!response.ok) throw new Error("Saved access could not be checked.");
         if (!controller.signal.aborted) setSaved(data.remembered === true);
       } catch {
@@ -53,7 +55,7 @@ export default function DeviceChatAccess({
               body: JSON.stringify({ action: "remember", token }),
             },
       );
-      const data = await response.json();
+      const data = await response.json().catch(() => ({ error: "BirdShop is temporarily unavailable. Please retry in a moment." }));
       if (!response.ok)
         throw new Error(data.error ?? "Unable to update saved access.");
       setSaved(!saved);
@@ -68,8 +70,15 @@ export default function DeviceChatAccess({
     }
   }
   return (
-    <aside className={styles.deviceNotice}>
-      <div>
+    <aside
+      className={styles.deviceNotice}
+      data-state={saved === null ? "checking" : saved ? "saved" : "unsaved"}
+      aria-live="polite"
+    >
+      <span className={styles.deviceIcon} aria-hidden="true">
+        {saved === null ? <Spinner /> : saved ? <CheckIcon /> : <BookmarkIcon />}
+      </span>
+      <div className={styles.deviceText}>
         <strong>
           {saved === null
             ? "Checking saved access…"
@@ -79,14 +88,18 @@ export default function DeviceChatAccess({
         </strong>
         <p>
           {saved
-            ? "Return through Service Chat. Saved access lasts up to 30 days after remembering."
+            ? "Return anytime from My Service. Saved for up to 30 days."
             : "Remember this conversation on a device you trust. No email verification needed for this chat."}
         </p>
-        {error && <p role="alert">{error}</p>}
+        {error && (
+          <p className={styles.deviceError} role="alert">
+            {error}
+          </p>
+        )}
       </div>
       {saved !== null && (
         <button
-          className={styles.secondary}
+          className={saved ? styles.textButton : styles.primary}
           type="button"
           disabled={busy}
           onClick={change}
@@ -94,8 +107,8 @@ export default function DeviceChatAccess({
           {busy
             ? "Updating…"
             : saved
-              ? "Forget this chat"
-              : "Remember this chat"}
+              ? "Forget This Chat"
+              : "Remember This Chat"}
         </button>
       )}
     </aside>

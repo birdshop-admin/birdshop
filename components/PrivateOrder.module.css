@@ -1,10 +1,17 @@
+/* =========================================================
+   PRIVATE ORDER (checkout return, order access, order page)
+   Colours come from the --bs-* tokens (app/theme.css), so
+   light and dark share one set of rules.
+========================================================= */
+
 .page {
-  padding: calc(var(--header-height, 88px) + 64px) 6% 80px;
+  /* The header is sticky and in flow, so no header offset here. */
+  padding: 64px 6% 80px;
   min-height: 75vh;
   background:
-    radial-gradient(ellipse at 100% 0, var(--theme-surface-48-54-44-1, #e0e5d8), transparent 48%),
-    var(--theme-surface-24-28-24-1, #f1eee4);
-  color: var(--theme-text-240-236-226-1, #243022);
+    radial-gradient(ellipse at 100% 0, var(--bs-band), transparent 48%),
+    var(--bs-page);
+  color: var(--bs-ink);
   font-family: var(--sans, Arial, sans-serif);
 }
 
@@ -19,27 +26,27 @@
 
 .eyebrow {
   display: block;
-  color: var(--theme-text-184-196-170-1, #59684e);
+  color: var(--bs-accent);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.18em;
   line-height: 1.6;
+  text-transform: uppercase;
 }
 
 .title {
   max-width: 800px;
   margin: 18px 0;
-  font: 400 clamp(36px, 4.5vw, 62px) / 1.08
-    var(--serif, Georgia, serif);
+  font: 400 clamp(36px, 4.5vw, 62px) / 1.08 var(--serif, Georgia, serif);
   letter-spacing: -0.04em;
   text-wrap: balance;
 }
 
 .intro {
   margin: 0 0 32px;
-  color: var(--theme-text-184-196-170-1, #626a5d);
-  font-size: 14px;
-  line-height: 1.8;
+  color: var(--bs-muted);
+  font-size: 15px;
+  line-height: 1.75;
 }
 
 .layout {
@@ -52,22 +59,23 @@
 .card {
   min-width: 0;
   padding: 32px;
-  background: var(--theme-surface-37-42-35-1, #faf8f1);
-  border: 1px solid #d9ddcf;
-  border-radius: 14px;
-  box-shadow: 0 12px 36px #22302106;
+  border: 1px solid var(--bs-line);
+  border-radius: var(--bs-r-panel);
+  background: var(--bs-card);
+  box-shadow: var(--bs-shadow-card);
 }
 
 .card h2 {
   margin: 12px 0;
   font: 400 32px / 1.2 var(--serif, Georgia, serif);
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .card > p {
-  color: var(--theme-text-184-196-170-1, #626a5d);
-  font-size: 14px;
-  line-height: 1.8;
+  color: var(--bs-muted);
+  font-size: 15px;
+  line-height: 1.75;
 }
 
 .cardTop {
@@ -82,10 +90,10 @@
 .badge {
   display: inline-flex;
   padding: 8px 12px;
-  background: var(--theme-surface-24-28-24-1, #e6ebdf);
-  border: 1px solid #cbd4c1;
-  border-radius: 30px;
-  color: var(--theme-text-184-196-170-1, #405437);
+  border: 1px solid var(--bs-line);
+  border-radius: var(--bs-r-pill);
+  color: var(--bs-success-ink);
+  background: var(--bs-success-bg);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -93,7 +101,7 @@
 }
 
 .items {
-  border-top: 1px solid #dfe1d5;
+  border-top: 1px solid var(--bs-line);
 }
 
 .item {
@@ -102,7 +110,7 @@
   gap: 16px;
   align-items: center;
   padding: 24px 0;
-  border-bottom: 1px solid #dfe1d5;
+  border-bottom: 1px solid var(--bs-line);
 }
 
 .itemIcon {
@@ -110,9 +118,9 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  background: var(--theme-surface-24-28-24-1, #e8ecdf);
   border-radius: 10px;
-  color: var(--theme-text-184-196-170-1, #506244);
+  color: var(--bs-accent);
+  background: var(--bs-band);
   font-size: 22px;
 }
 
@@ -124,15 +132,16 @@
 
 .item p {
   margin: 0;
-  color: var(--theme-text-184-196-170-1, #69715f);
-  font-size: 11px;
-  line-height: 1.7;
+  color: var(--bs-muted);
+  font-size: 13px;
+  line-height: 1.65;
   overflow-wrap: anywhere;
 }
 
 .quantity {
-  color: var(--theme-text-184-196-170-1, #526047);
-  font-size: 11px;
+  color: var(--bs-muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
@@ -149,40 +158,41 @@
 }
 
 .totals dt {
-  color: var(--theme-text-184-196-170-1, #626a5d);
-  font-size: 12px;
+  color: var(--bs-muted);
+  font-size: 13px;
 }
 
 .totals dd {
   margin: 0;
   font: 400 27px / 1.3 var(--serif, Georgia, serif);
+  font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
   text-align: right;
 }
 
 .card .footnote {
   margin: 24px 0 0;
-  font-size: 11px;
-  line-height: 1.9;
+  font-size: 13px;
+  line-height: 1.8;
 }
 
 .delivery {
-  padding: 32px;
   min-width: 0;
-  border-radius: 14px;
-  border: 1px solid #cfd7c3;
-  background: var(--theme-surface-48-54-44-1, #e3e9da);
+  padding: 32px;
+  border: 1px solid var(--bs-line);
+  border-radius: var(--bs-r-panel);
+  background: var(--bs-band);
 }
 
 .deliveryMark {
   display: grid;
   place-items: center;
-  height: 48px;
   width: 48px;
+  height: 48px;
   margin: 24px 0 20px;
+  border: 1px solid var(--bs-line-strong);
   border-radius: 50%;
-  border: 1px solid #aab99a;
-  color: var(--theme-text-184-196-170-1, #3f5834);
+  color: var(--bs-accent);
   font-size: 23px;
 }
 
@@ -190,29 +200,30 @@
   margin: 0 0 14px;
   font: 400 31px / 1.15 var(--serif, Georgia, serif);
   letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 .delivery p {
   margin: 0;
-  color: var(--theme-text-184-196-170-1, #526047);
-  font-size: 13px;
-  line-height: 1.9;
+  color: var(--bs-muted);
+  font-size: 14px;
+  line-height: 1.8;
 }
 
 .deliveryNote {
   display: flex;
   gap: 12px;
-  border-top: 1px solid #c4ceb8;
   margin-top: 26px;
   padding-top: 20px;
+  border-top: 1px solid var(--bs-line-strong);
 }
 
 .deliveryNote p {
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .deliveryNote > span {
-  color: var(--theme-text-184-196-170-1, #506244);
+  color: var(--bs-accent);
 }
 
 .support {
@@ -222,10 +233,11 @@
   gap: 20px;
   min-height: 48px;
   margin-top: 22px;
-  border-bottom: 1px solid var(--theme-border-207-215-196-1, #9aab8b);
-  color: var(--theme-text-240-236-226-1, #30462a);
-  font-size: 12px;
+  border-bottom: 1px solid var(--bs-line-strong);
+  color: var(--bs-ink);
+  font-size: 14px;
   text-decoration: none;
+  transition: border-color var(--bs-dur-fast, 160ms) ease;
 }
 
 .bottom,
@@ -237,6 +249,7 @@
   margin-top: 30px;
 }
 
+/* Primary button. */
 .primary {
   display: inline-flex;
   align-items: center;
@@ -244,47 +257,69 @@
   gap: 32px;
   min-height: 50px;
   padding: 14px 22px;
-  border-radius: 6px;
-  background: #4d6044;
-  color: #fffdf4;
-  font-size: 12px;
+  border-radius: var(--bs-r-control, 8px);
+  background: var(--bs-btn-bg, #46513e);
+  color: var(--bs-btn-ink, #f6f2e8);
+  font-family: var(--serif, Georgia, serif);
+  font-size: 15px;
   text-decoration: none;
-  transition: background 0.18s ease;
+  transition:
+    background-color var(--bs-dur-fast, 160ms) ease,
+    transform var(--bs-dur-fast, 160ms) ease;
 }
 
-.primary:hover {
-  background: #374b30;
+.primary:active {
+  transform: translateY(1px);
 }
 
+/* Text link. */
 .secondary {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  color: var(--theme-text-184-196-170-1, #475a3e);
-  font-size: 12px;
+  color: var(--bs-ink, #1c241b);
+  font-family: var(--serif, Georgia, serif);
+  font-size: 15px;
   text-decoration: underline;
-  text-underline-offset: 5px;
+  text-decoration-color: var(--bs-line-strong, rgba(29, 36, 26, 0.26));
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--bs-dur-fast, 160ms) ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover {
+    background: var(--bs-btn-hover, #56644b);
+    transform: translateY(-1px);
+  }
+
+  .secondary:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .support:hover {
+    border-color: currentColor;
+  }
 }
 
 .page a:focus-visible {
-  outline: 2px solid #4d6044;
-  outline-offset: 5px;
+  outline: 2px solid var(--bs-focus, #46613a);
+  outline-offset: 3px;
 }
 
 .notice {
   margin: 0 0 20px;
   padding: 16px 20px;
-  background: var(--theme-surface-24-28-24-1, #f0e8d5);
-  border: 1px solid #d5c5a4;
-  border-radius: 8px;
-  color: var(--theme-text-184-196-170-1, #665335);
-  font-size: 13px;
-  line-height: 1.7;
+  border: 1px solid var(--bs-line);
+  border-radius: var(--bs-r-control);
+  color: var(--bs-warn-ink);
+  background: var(--bs-warn-bg);
+  font-size: 14px;
+  line-height: 1.65;
 }
 
 @media (max-width: 800px) {
   .layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .page {
@@ -294,7 +329,7 @@
 
 @media (max-width: 480px) {
   .page {
-    padding-top: calc(var(--header-height, 88px) + 36px);
+    padding-top: 40px;
     padding-bottom: 48px;
   }
 
@@ -334,7 +369,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .primary {
+  .primary,
+  .secondary,
+  .support {
     transition: none;
+  }
+
+  .primary:hover,
+  .primary:active {
+    transform: none;
   }
 }

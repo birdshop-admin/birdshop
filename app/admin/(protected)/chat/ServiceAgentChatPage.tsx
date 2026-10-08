@@ -19,6 +19,8 @@ import AdminLiveThread, {
 import PaymentActionForm, { PaymentFeedback } from "./PaymentActionForm";
 
 import paymentStyles from "@/components/ChatPaymentUI.module.css";
+import completeStyles from "./OwnerAdminChatPage.module.css";
+import { completeServiceOrderFromChat } from "./actions";
 import styles from "./chat.module.css";
 
 /* =========================================================
@@ -1083,7 +1085,27 @@ export default async function ServiceAgentChatPage({
                   <span>{staffName}</span>
                 </div>
 
-                <span>Owner access remains available at all times.</span>
+                {detail.order_id && detail.workflow_status === "completed" ? (
+                  <span className={completeStyles.completeNote}>
+                    ✓ Order completed · closes automatically 1 hour after
+                    completion
+                  </span>
+                ) : detail.order_id && paidPayment ? (
+                  <details className={completeStyles.completeOrder}>
+                    <summary>Complete Order</summary>
+                    <form action={completeServiceOrderFromChat}>
+                      <input type="hidden" name="conversation_id" value={detail.id} />
+                      <label>
+                        <input type="checkbox" name="confirm" value="yes" required />
+                        The work is finished. Email the customer that their
+                        order is complete and close this chat in 1 hour.
+                      </label>
+                      <SubmitButton type="submit">Complete Order</SubmitButton>
+                    </form>
+                  </details>
+                ) : (
+                  <span>Owner access remains available at all times.</span>
+                )}
               </footer>
             </section>
           )}

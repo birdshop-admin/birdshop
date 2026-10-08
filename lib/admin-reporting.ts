@@ -71,6 +71,19 @@ export type Overview = {
     href: string;
   }[];
 };
+// Owner work queues and today’s figures (birdshop_admin_operations).
+export type Operations = {
+  updated_at: string;
+  unclaimed_chats: number;
+  unpaid_requests: number;
+  stale_unpaid_requests: number;
+  pending_reviews: number;
+  open_support_requests: number;
+  services_ready: number;
+  services_waiting_customer: number;
+  today: { currency: string; orders: number; net: number }[];
+  today_visitors: number;
+};
 export const formatMoney = (value: number | string, currency = "USD") =>
   new Intl.NumberFormat("en-US", {
     style: "currency",

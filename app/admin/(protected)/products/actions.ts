@@ -2,6 +2,7 @@
 import { requireOwner } from "@/lib/staff-auth";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
@@ -31,6 +32,28 @@ function numberValue(formData: FormData, name: string) {
   }
 
   return parsed;
+}
+
+// Checkout rejects prices outside 0.50–999,999.99; send the owner back with the reason.
+function priceValue(formData: FormData, name: string, label: string) {
+  const parsed = Number(value(formData, name));
+
+  if (!Number.isFinite(parsed) || parsed < 0.5 || parsed > 999999.99) {
+    redirect(
+      `/admin/products?notice=${encodeURIComponent(
+        `${label} must be between 0.50 and 999,999.99. Nothing was saved.`,
+      )}`,
+    );
+  }
+
+  return Math.round(parsed * 100) / 100;
+}
+
+// An empty or zero "old price" means no strike-through price.
+function optionalPriceValue(formData: FormData, name: string, label: string) {
+  const raw = optionalValue(formData, name);
+
+  return raw && Number(raw) !== 0 ? priceValue(formData, name, label) : null;
 }
 
 function integerValue(formData: FormData, name: string) {
@@ -349,8 +372,11 @@ export async function syncLocalProducts() {
     sort_order: index,
   }));
 
+  // Only add missing catalog entries; never overwrite the owner’s live edits,
+  // prices, stock or hidden state for products that already exist.
   const { error } = await supabase.from("products").upsert(rows, {
     onConflict: "slug",
+    ignoreDuplicates: true,
   });
 
   if (error) {
@@ -379,6 +405,10 @@ export async function createProduct(formData: FormData) {
     throw new Error("A product name and slug are required.");
   }
 
+  // Validate before uploading images so a bad price leaves no orphaned files.
+  const price = priceValue(formData, "price", "Price");
+  const oldPrice = optionalPriceValue(formData, "old_price", "Original price");
+
   const initialsInput = value(formData, "initials");
 
   const initials = initialsInput || generateInitials(name);
@@ -401,11 +431,9 @@ export async function createProduct(formData: FormData) {
 
     region: value(formData, "region"),
 
-    price: numberValue(formData, "price"),
+    price,
 
-    old_price: optionalValue(formData, "old_price")
-      ? numberValue(formData, "old_price")
-      : null,
+    old_price: oldPrice,
 
     badge: optionalValue(formData, "badge"),
 
@@ -455,6 +483,9 @@ export async function updateProduct(formData: FormData) {
   if (!id || !name || !slug) {
     throw new Error("Product ID, name, and slug are required.");
   }
+
+  const price = priceValue(formData, "price", "Price");
+  const oldPrice = optionalPriceValue(formData, "old_price", "Original price");
 
   const initialsInput = value(formData, "initials");
 
@@ -506,11 +537,9 @@ export async function updateProduct(formData: FormData) {
 
       region: value(formData, "region"),
 
-      price: numberValue(formData, "price"),
+      price,
 
-      old_price: optionalValue(formData, "old_price")
-        ? numberValue(formData, "old_price")
-        : null,
+      old_price: oldPrice,
 
       badge: optionalValue(formData, "badge"),
 

@@ -1,6 +1,6 @@
 import { readBody } from "@/lib/server-config";
 import { assertSameOrigin, isUuid } from "@/lib/server-config";
-import { limitRequest } from "@/lib/rate-limit";
+import { limitRequest, rateLimit } from "@/lib/rate-limit";
 import { serverRpc } from "@/lib/payment-service";
 export async function POST(request: Request) {
   try {
@@ -14,6 +14,8 @@ export async function POST(request: Request) {
       body.path.startsWith("/admin")
     )
       return new Response(null, { status: 204 });
+    // A single browser session cannot inflate views or visitors beyond normal browsing.
+    await rateLimit("analytics-session", body.sessionId, 30, 60);
     const path = body.path.split(/[?#]/)[0];
     const allowed = [
       "/",

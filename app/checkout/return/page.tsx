@@ -3,7 +3,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { CheckoutReturn } from "@/components/PrivateOrder";
 export const metadata = {
-  title: "Checkout · BirdShop",
+  title: "Checkout",
   robots: { index: false, follow: false },
 };
 export default function Page() {

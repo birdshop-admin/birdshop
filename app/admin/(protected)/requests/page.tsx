@@ -1,3 +1,4 @@
+import { formatUSD } from "@/lib/money";
 import { requireOwner } from "@/lib/staff-auth";
 import AdminSidebar from "@/components/AdminSidebar";
 
@@ -297,7 +298,7 @@ export default async function AdminRequestsPage() {
                             <span>PACKAGE PRICE</span>
 
                             <strong>
-                              ${Number(request.package_price).toFixed(2)}
+                              {formatUSD(Number(request.package_price))}
                             </strong>
                           </div>
                         )}

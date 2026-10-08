@@ -1,5 +1,5 @@
-import { assertSameOrigin, readBody } from "@/lib/server-config";
-import { limitRequest, rateLimit } from "@/lib/rate-limit";
+import { assertSameOrigin, PublicError, readBody } from "@/lib/server-config";
+import { limitRequest, rateLimit, requestIdentity } from "@/lib/rate-limit";
 import { randomUUID } from "crypto";
 
 import { NextResponse } from "next/server";
@@ -49,7 +49,8 @@ function sessionCookieOptions() {
   return {
     httpOnly: true,
 
-    sameSite: "strict" as const,
+    // Lax so admin links opened from email keep the session; actions are Origin-checked POSTs.
+    sameSite: "lax" as const,
 
     secure: process.env.NODE_ENV === "production",
 
@@ -98,7 +99,12 @@ export async function POST(request: Request) {
     assertSameOrigin(request);
     await limitRequest(request, "staff-login", 20, 900);
     body = JSON.parse(await readBody(request, 8192)) as LoginBody;
-  } catch {
+  } catch (error) {
+    if (error instanceof PublicError && error.status === 429)
+      return NextResponse.json(
+        { error: "Too many login attempts. Wait a few minutes and retry." },
+        { status: 429 },
+      );
     return NextResponse.json(
       {
         error: "Invalid login request.",
@@ -125,7 +131,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    await rateLimit("staff-login-account", email.toLowerCase(), 10, 900);
+    // Per email+network limits guessing; the looser email-wide cap stops distributed
+    // guessing without letting one stranger lock the owner out with 10 bad attempts.
+    await rateLimit(
+      "staff-login-account-ip",
+      `${email.toLowerCase()}|${requestIdentity(request)}`,
+      10,
+      900,
+    );
+    await rateLimit("staff-login-account", email.toLowerCase(), 60, 900);
   } catch {
     return NextResponse.json(
       { error: "Too many login attempts. Wait a few minutes and retry." },
@@ -154,6 +168,22 @@ export async function POST(request: Request) {
 
   if (signInError || !signInData.user) {
     await clearBirdShopSession();
+
+    // Auth throttling or an outage is not a wrong password; say so.
+    if (signInError?.status === 429)
+      return NextResponse.json(
+        { error: "Too many login attempts. Wait a few minutes and retry." },
+        { status: 429 },
+      );
+
+    if (
+      signInError?.name === "AuthRetryableFetchError" ||
+      Number(signInError?.status) >= 500
+    )
+      return NextResponse.json(
+        { error: "Sign-in is temporarily unavailable. Please retry shortly." },
+        { status: 503 },
+      );
 
     return NextResponse.json(
       {

@@ -1,0 +1,281 @@
+/* =========================================================
+   MY SERVICE: SHARED TOKENS AND PRIMITIVES
+
+   Every /service-chat page root adds `ui.tokens` next to its own
+   `.page` class. Colours are aliases of the global --bs-* tokens
+   (app/theme.css), so light and dark follow the site palette.
+   Only the status tones and the chat bubble colours are local;
+   their dark values are derived from --bs-* tokens as well.
+========================================================= */
+
+.tokens {
+  /* Surfaces */
+  --sc-shell: var(--bs-band);
+  --sc-surface: var(--bs-card);
+  --sc-surface-hover: var(--bs-raised);
+  --sc-tray: var(--bs-band);
+  --sc-input: var(--bs-field);
+  --sc-input-line: color-mix(in srgb, var(--bs-faint) 78%, transparent);
+  --sc-skeleton: var(--bs-skeleton);
+
+  /* Lines and text */
+  --sc-line: var(--bs-line);
+  --sc-line-strong: var(--bs-line-strong);
+  --sc-line-active: var(--bs-line-active);
+  --sc-ink: var(--bs-ink);
+  --sc-muted: var(--bs-muted);
+  --sc-faint: var(--bs-faint);
+  --sc-text-accent: var(--bs-accent);
+  --sc-gold: var(--bs-gold);
+
+  /* Primary action (always used as a pair: background + ink) */
+  --sc-accent: var(--bs-btn-bg);
+  --sc-accent-hover: var(--bs-btn-hover);
+  --sc-on-accent: var(--bs-btn-ink);
+  --sc-accent-disabled: var(--bs-btn-disabled-bg);
+  --sc-on-accent-disabled: var(--bs-btn-disabled-ink);
+
+  /* Selected state (tabs) */
+  --sc-selected-bg: var(--bs-selected-bg);
+  --sc-selected-ink: var(--bs-selected-ink);
+  --sc-selected-line: var(--bs-selected-line);
+
+  /* Focus */
+  --sc-focus: var(--bs-focus);
+  --sc-focus-soft: color-mix(in srgb, var(--bs-focus) 24%, transparent);
+
+  /* Danger */
+  --sc-danger-ink: var(--bs-danger-ink);
+  --sc-danger-bg: var(--bs-danger-bg);
+  --sc-danger-line: color-mix(in srgb, var(--bs-danger-ink) 26%, transparent);
+
+  /* Depth */
+  --sc-shadow-1: var(--bs-shadow-card);
+  --sc-shadow-2: var(--bs-shadow-raised);
+
+  /* Shape, motion, type */
+  --sc-r-control: var(--bs-r-control, 8px);
+  --sc-r-card: var(--bs-r-card, 12px);
+  --sc-r-shell: 18px;
+  --sc-ease: var(--ease-standard, cubic-bezier(0.2, 0.75, 0.25, 1));
+  --sc-fast: var(--bs-dur-fast, 160ms);
+  --sc-dur: var(--bs-dur, 240ms);
+  --sc-serif: var(--serif, Georgia, "Times New Roman", serif);
+  --sc-sans: var(--sans, Arial, Helvetica, sans-serif);
+
+  /* Chat bubbles (local) */
+  --sc-me-bg: linear-gradient(160deg, #4f6548, #3f5439);
+  --sc-me-ink: #fbf8f0;
+  --sc-me-meta: rgba(251, 248, 240, 0.86);
+  --sc-me-shadow: 0 6px 16px rgba(47, 64, 41, 0.16);
+  --sc-them-bg: var(--bs-raised);
+  --sc-them-line: var(--bs-line);
+
+  /* Status tones (local): background / text / line / dot */
+  --tone-action-bg: #3f5439;
+  --tone-action-ink: #fffdf7;
+  --tone-action-line: #3f5439;
+  --tone-action-dot: #e3cf98;
+
+  --tone-payment-bg: #f8eed6;
+  --tone-payment-ink: #6b4e12;
+  --tone-payment-line: #e6cf98;
+  --tone-payment-dot: #b8862b;
+
+  --tone-progress-bg: #e6eddc;
+  --tone-progress-ink: #3a5232;
+  --tone-progress-line: #cfdcc2;
+  --tone-progress-dot: #5f7d52;
+
+  --tone-waiting-bg: #f0ede3;
+  --tone-waiting-ink: #535d4d;
+  --tone-waiting-line: #ddd8ca;
+  --tone-waiting-dot: #8b927f;
+
+  --tone-done-bg: transparent;
+  --tone-done-ink: #5a6554;
+  --tone-done-line: #d6d3c6;
+  --tone-done-dot: #a3a897;
+
+  color: var(--sc-ink);
+}
+
+/* Dark: bubble and tone values come from the global dark tokens. */
+:global(html[data-theme="dark"]) .tokens {
+  --sc-me-bg: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--bs-selected-bg) 80%, var(--bs-accent)),
+    var(--bs-selected-bg)
+  );
+  --sc-me-ink: var(--bs-selected-ink);
+  --sc-me-meta: color-mix(in srgb, var(--bs-selected-ink) 86%, transparent);
+  --sc-me-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+
+  --tone-action-bg: var(--bs-selected-bg);
+  --tone-action-ink: var(--bs-selected-ink);
+  --tone-action-line: var(--bs-selected-line);
+  --tone-action-dot: var(--bs-gold);
+
+  --tone-payment-bg: color-mix(in srgb, var(--bs-gold) 14%, transparent);
+  --tone-payment-ink: color-mix(in srgb, var(--bs-gold) 70%, var(--bs-ink));
+  --tone-payment-line: color-mix(in srgb, var(--bs-gold) 34%, transparent);
+  --tone-payment-dot: var(--bs-gold);
+
+  --tone-progress-bg: var(--bs-success-bg);
+  --tone-progress-ink: var(--bs-success-ink);
+  --tone-progress-line: color-mix(in srgb, var(--bs-success-ink) 28%, transparent);
+  --tone-progress-dot: var(--bs-accent);
+
+  --tone-waiting-bg: color-mix(in srgb, var(--bs-ink) 6%, transparent);
+  --tone-waiting-ink: var(--bs-muted);
+  --tone-waiting-line: var(--bs-line-strong);
+  --tone-waiting-dot: var(--bs-faint);
+
+  --tone-done-bg: transparent;
+  --tone-done-ink: var(--bs-muted);
+  --tone-done-line: var(--bs-line-strong);
+  --tone-done-dot: color-mix(in srgb, var(--bs-faint) 70%, transparent);
+}
+
+/* =========================================================
+   STATUS CHIP
+========================================================= */
+
+.chip {
+  --chip-bg: var(--tone-waiting-bg);
+  --chip-ink: var(--tone-waiting-ink);
+  --chip-line: var(--tone-waiting-line);
+  --chip-dot: var(--tone-waiting-dot);
+
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 7px;
+  min-height: 26px;
+  padding: 4px 10px 4px 9px;
+  border: 1px solid var(--chip-line);
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--chip-ink);
+  font: 700 10.5px/1.2 var(--sc-sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.chip::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--chip-dot);
+}
+
+.chip[data-tone="action"] {
+  --chip-bg: var(--tone-action-bg);
+  --chip-ink: var(--tone-action-ink);
+  --chip-line: var(--tone-action-line);
+  --chip-dot: var(--tone-action-dot);
+}
+
+.chip[data-tone="payment"] {
+  --chip-bg: var(--tone-payment-bg);
+  --chip-ink: var(--tone-payment-ink);
+  --chip-line: var(--tone-payment-line);
+  --chip-dot: var(--tone-payment-dot);
+}
+
+.chip[data-tone="progress"] {
+  --chip-bg: var(--tone-progress-bg);
+  --chip-ink: var(--tone-progress-ink);
+  --chip-line: var(--tone-progress-line);
+  --chip-dot: var(--tone-progress-dot);
+}
+
+.chip[data-tone="done"] {
+  --chip-bg: var(--tone-done-bg);
+  --chip-ink: var(--tone-done-ink);
+  --chip-line: var(--tone-done-line);
+  --chip-dot: var(--tone-done-dot);
+}
+
+.chip[data-size="lg"] {
+  min-height: 32px;
+  padding: 6px 13px 6px 12px;
+}
+
+/* On the forest summary card (identical in both themes). */
+.chip[data-surface="forest"] {
+  --chip-bg: rgba(244, 239, 230, 0.08);
+  --chip-line: rgba(244, 239, 230, 0.18);
+  --chip-ink: var(--bs-forest-ink, #f4efe6);
+  --chip-dot: #b9c1ad;
+}
+
+.chip[data-surface="forest"][data-tone="action"] {
+  --chip-dot: #e3cf98;
+}
+
+.chip[data-surface="forest"][data-tone="payment"] {
+  --chip-dot: #d6b778;
+}
+
+.chip[data-surface="forest"][data-tone="progress"] {
+  --chip-dot: #a9cc93;
+}
+
+.chip[data-surface="forest"][data-tone="done"] {
+  --chip-dot: #8f9985;
+}
+
+/* =========================================================
+   SPINNER
+========================================================= */
+
+.spinner {
+  box-sizing: border-box;
+  display: inline-block;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  opacity: 0.85;
+}
+
+/* =========================================================
+   MOTION (opt-in only)
+========================================================= */
+
+@keyframes uiSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes uiBreathe {
+  50% {
+    opacity: 0.7;
+    transform: scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .spinner {
+    animation: uiSpin 0.8s linear infinite;
+  }
+
+  .chip[data-pulse]::before {
+    animation: uiBreathe 2.4s var(--sc-ease) infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    border-right-color: currentColor;
+    opacity: 0.6;
+  }
+}

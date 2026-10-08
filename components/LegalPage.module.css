@@ -1,0 +1,317 @@
+/* =========================================================
+   BIRDSHOP LEGAL PAGES (Terms, Privacy, Refunds)
+   Colours come from the --bs-* tokens (app/theme.css), so
+   light and dark share one set of rules.
+========================================================= */
+
+.page {
+  --legal-gutter: clamp(16px, 5vw, 72px);
+
+  background: var(--bs-page);
+  color: var(--bs-ink);
+}
+
+/* --- Hero (forest surface in both themes) --- */
+
+.hero {
+  padding: clamp(44px, 6vw, 84px) var(--legal-gutter) clamp(32px, 4vw, 52px);
+  background:
+    radial-gradient(820px 380px at 92% 0%, rgba(173, 194, 154, 0.16), transparent 65%),
+    var(--bs-forest);
+  color: var(--bs-forest-ink);
+}
+
+.eyebrow {
+  display: block;
+  color: var(--bs-forest-muted);
+  font: 700 11px/1.2 var(--sans);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 16px 0 18px;
+  font: 400 clamp(40px, 5.4vw, 72px)/1.02 var(--serif);
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.summary {
+  max-width: 680px;
+  color: var(--bs-forest-muted);
+  font: 18px/1.6 var(--serif);
+  text-wrap: pretty;
+}
+
+.summary p {
+  margin: 0;
+}
+
+.updated {
+  margin: 22px 0 0;
+  color: var(--bs-forest-muted);
+  font: 12.5px/1.4 var(--sans);
+  letter-spacing: 0.04em;
+}
+
+/* --- Body --- */
+
+.layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(28px, 4vw, 64px);
+  padding: clamp(32px, 4vw, 56px) var(--legal-gutter) clamp(48px, 6vw, 80px);
+}
+
+.aside {
+  position: sticky;
+  top: 96px;
+  display: grid;
+  gap: 18px;
+}
+
+.toc,
+.policies {
+  padding: 18px;
+  border: 1px solid var(--bs-line);
+  border-radius: var(--bs-r-card);
+  background: var(--bs-card);
+}
+
+.toc strong {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--bs-faint);
+  font: 700 11px/1.2 var(--sans);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.toc ol {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+}
+
+.toc li {
+  counter-increment: toc;
+}
+
+.toc a {
+  display: flex;
+  gap: 10px;
+  padding: 6px 0;
+  color: var(--bs-muted);
+  font: 14px/1.4 var(--sans);
+  text-decoration: none;
+}
+
+.toc a::before {
+  content: counter(toc, decimal-leading-zero);
+  color: var(--bs-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.policies {
+  display: grid;
+  gap: 4px;
+}
+
+.policies a {
+  padding: 8px 10px;
+  border-radius: var(--bs-r-control);
+  color: var(--bs-muted);
+  font: 14px/1.3 var(--sans);
+  text-decoration: none;
+}
+
+.policies a[aria-current="page"] {
+  background: var(--bs-selected-bg);
+  color: var(--bs-selected-ink);
+  font-weight: 700;
+}
+
+.article {
+  min-width: 0;
+  max-width: 760px;
+}
+
+.section {
+  padding: 0 0 30px;
+  margin: 0 0 30px;
+  border-bottom: 1px solid var(--bs-line);
+  scroll-margin-top: 96px;
+}
+
+.section h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin: 0 0 14px;
+  font: 400 clamp(24px, 2.4vw, 30px)/1.2 var(--serif);
+  letter-spacing: -0.02em;
+}
+
+.section h2 span {
+  color: var(--bs-accent);
+  font: 700 13px/1 var(--sans);
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.section p,
+.section li {
+  color: var(--bs-muted);
+  font: 16px/1.7 var(--sans);
+  text-wrap: pretty;
+}
+
+.section p {
+  margin: 0 0 12px;
+}
+
+.section ul {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding-left: 22px;
+  /* The global reset removes list markers; policies read better with them. */
+  list-style: disc;
+}
+
+.section li {
+  display: list-item;
+  padding-left: 2px;
+}
+
+.section li::marker {
+  color: var(--bs-accent);
+}
+
+.section strong {
+  color: var(--bs-ink);
+}
+
+.section a,
+.summary a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.section a {
+  color: var(--bs-ink);
+}
+
+/* --- Help card --- */
+
+.help {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  padding: 22px 24px;
+  border: 1px solid var(--bs-line);
+  border-radius: var(--bs-r-panel);
+  background: var(--bs-card);
+  box-shadow: var(--bs-shadow-card);
+}
+
+.help strong {
+  display: block;
+  font: 400 20px/1.3 var(--serif);
+}
+
+.help p {
+  margin: 4px 0 0;
+  color: var(--bs-muted);
+  font: 14.5px/1.5 var(--sans);
+}
+
+.help a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: var(--bs-r-control);
+  background: var(--bs-btn-bg);
+  color: var(--bs-btn-ink);
+  font: 700 14px/1 var(--sans);
+  text-decoration: none;
+  transition: background var(--bs-dur-fast) ease;
+}
+
+.toc a:focus-visible,
+.policies a:focus-visible,
+.section a:focus-visible,
+.help a:focus-visible {
+  outline: 2px solid var(--bs-focus);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .toc a:hover,
+  .policies a:not([aria-current="page"]):hover {
+    color: var(--bs-ink);
+  }
+
+  .help a:hover {
+    background: var(--bs-btn-hover);
+  }
+}
+
+/* --- Tablet and phone --- */
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aside {
+    position: static;
+  }
+
+  .toc {
+    display: none;
+  }
+
+  /* Three equal tabs that always fit; long labels wrap instead of scrolling. */
+  .policies {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 6px;
+  }
+
+  .policies a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 6px 8px;
+    text-align: center;
+    line-height: 1.2;
+  }
+}
+
+@media (max-width: 520px) {
+  .section p,
+  .section li {
+    font-size: 15.5px;
+  }
+
+  .help a {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .help a {
+    transition: none;
+  }
+}

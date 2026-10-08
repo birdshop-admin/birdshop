@@ -416,13 +416,14 @@ export async function startCheckout(
   let params = attempt.stripe_params;
   let prepared = attempt;
   // Stripe rejects sessions expiring in under 30 minutes. An unstarted attempt (its first
-  // Stripe call never happened) gets one fresh hour before its parameters are persisted,
+  // Stripe call never happened) gets a fresh 35-minute hold (the same as a new attempt,
+  // see 20261009040000_shorter_checkout_hold.sql) before its parameters are persisted,
   // so a returning customer can pay instead of waiting for the old hold to lapse.
   if (
     !params &&
     new Date(attempt.expires_at).getTime() - Date.now() < 31 * 60 * 1000
   ) {
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + 35 * 60 * 1000).toISOString();
     const { data: extended, error: extendError } = await db
       .from("birdshop_checkout_attempts")
       .update({ expires_at: expiresAt })

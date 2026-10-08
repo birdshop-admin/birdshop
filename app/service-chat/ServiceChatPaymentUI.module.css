@@ -327,6 +327,13 @@
   margin: 0;
 }
 
+.requestFooter a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .safeNote {
   display: block;
   margin-top: 8px;

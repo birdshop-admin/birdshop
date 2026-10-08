@@ -1332,8 +1332,14 @@ function ServiceChatView({ token }: { token: string }) {
                                 </p>
                               )}
                               <span>
-                                {canPay
-                                  ? "Secure checkout powered by Stripe."
+                                {canPay ? (
+                                  <>
+                                    Secure checkout powered by Stripe. By
+                                    paying, you agree to our{" "}
+                                    <Link href="/terms">Terms</Link> and{" "}
+                                    <Link href="/refunds">Refund Policy</Link>.
+                                  </>
+                                )
                                   : awaitingConfirmation
                                     ? "Confirming your payment…"
                                   : request.status === "pending" && !chatOpen

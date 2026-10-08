@@ -5,7 +5,9 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useCart } from "@/app/cart-context";
 
 import styles from "@/app/cart/cart.module.css";
+import CheckoutConsent from "./CheckoutConsent";
 import recovery from "./ProductCheckout.module.css";
+import TurnstileWidget from "./TurnstileWidget";
 
 type Saved = {
   id: string;
@@ -28,6 +30,8 @@ const KEY = "birdshop-checkout-attempt";
 // Matches MAX_UNITS_PER_CHECKOUT in app/api/checkout/route.ts.
 const MAX_UNITS = 10;
 const CART_KEY = "birdshop-checkout-cart";
+// Optional Cloudflare Turnstile; the server enforces it only when both keys are set.
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 
 const closed = (status: string) =>
   ["expired", "cancelled", "failed"].includes(status);
@@ -65,8 +69,12 @@ export default function ProductCheckout() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [humanToken, setHumanToken] = useState<string | null>(null);
+  const [humanReset, setHumanReset] = useState(0);
+  const [humanUnavailable, setHumanUnavailable] = useState(false);
 
   const lock = useRef(false);
+  const needsHuman = Boolean(TURNSTILE_SITE_KEY) && !humanToken;
 
   useEffect(() => {
     let active = true;
@@ -250,6 +258,11 @@ export default function ProductCheckout() {
 
     if (!ready || saved || lock.current || !items.length || overLimit) return;
 
+    if (needsHuman) {
+      setError("Complete the security check, then check out.");
+      return;
+    }
+
     lock.current = true;
     setBusy(true);
     setError("");
@@ -276,6 +289,7 @@ export default function ProductCheckout() {
           items,
           email,
           name,
+          turnstileToken: humanToken ?? undefined,
         }),
       });
 
@@ -311,6 +325,8 @@ export default function ProductCheckout() {
       if (!redirecting) {
         lock.current = false;
         setBusy(false);
+        // Security-check tokens are single-use; get a fresh one for the next try.
+        if (TURNSTILE_SITE_KEY) setHumanReset((count) => count + 1);
       }
     }
   }
@@ -500,17 +516,42 @@ export default function ProductCheckout() {
         </p>
       )}
 
+      {TURNSTILE_SITE_KEY && (
+        <>
+          <TurnstileWidget
+            siteKey={TURNSTILE_SITE_KEY}
+            action="checkout"
+            resetKey={humanReset}
+            onToken={(token) => {
+              setHumanToken(token);
+              if (token) setHumanUnavailable(false);
+            }}
+            onUnavailable={() => setHumanUnavailable(true)}
+          />
+
+          {humanUnavailable && (
+            <p role="alert" className={styles.checkoutError}>
+              The security check could not load. Refresh the page, or allow
+              challenges.cloudflare.com if a content blocker is on.
+            </p>
+          )}
+        </>
+      )}
+
       <button
         className={styles.checkoutButton}
-        disabled={busy || overLimit}
+        disabled={busy || overLimit || needsHuman}
       >
         {busy ? "Preparing secure checkout…" : "Check Out Securely"}
       </button>
 
       <p className={styles.checkoutNote}>
-        Stock and prices are checked before payment. Your private delivery
-        link arrives by email after payment is confirmed.
+        Stock and prices are checked before payment. Your items are held for
+        about 30 minutes while you pay, and your private delivery link arrives
+        by email after payment is confirmed.
       </p>
+
+      <CheckoutConsent className={styles.checkoutNote} />
 
       {error && (
         <p role="alert" className={styles.checkoutError}>

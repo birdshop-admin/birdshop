@@ -104,6 +104,12 @@ export default function SiteFooter() {
 
         <span>Payments secured by Stripe · Private digital delivery</span>
 
+        <nav className="footer-legal" aria-label="Policies">
+          <Link href="/terms">Terms</Link>
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/refunds">Refunds</Link>
+        </nav>
+
         {/* "#top" scrolls to the very top; the sticky header is always in view,
             so linking to it would only nudge the page. */}
         <a href="#top">

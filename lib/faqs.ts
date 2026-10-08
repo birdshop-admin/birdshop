@@ -236,7 +236,7 @@ export const faqs: FAQ[] = [
     question: "How do I ask about a refund?",
 
     answer:
-      "Contact BirdShop in your private chat or choose Product Support with your order reference. Eligibility depends on the product or service and its delivery or progress. Ask about the applicable terms before paying.",
+      "Message us in your private chat, or use Contact and choose Product Support with your order reference. Codes that do not work are replaced or refunded, and services can be refunded in full before work starts. The Refund Policy page (linked at the bottom of every page) has the full details.",
 
     tags: ["refund", "return", "money", "policy"],
   },

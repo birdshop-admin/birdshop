@@ -111,6 +111,15 @@ migrations) and the logged-in admin screens. The checklist at the end covers the
   - Sales history is in **Analytics**.
   - Old `/admin/orders` links, including those in earlier admin emails, redirect automatically.
 
+## 2c. Launch preparation
+
+- **New migration 21** `20261009040000_shorter_checkout_hold.sql`: unpaid checkouts now hold codes for 35 minutes instead of 1 hour (Stripe's minimum is 30). Only the default for new checkouts changes.
+- **Tighter product-checkout limits:** 5 new checkouts per IP and 4 per email every 30 minutes (were 6 and 5). Still at most 10 codes per checkout and 2 unpaid checkouts per email.
+- **Optional bot check:** set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` (Cloudflare Turnstile) and redeploy. Product checkout then shows a security check, and the server verifies it before reserving any codes. With either key missing, nothing changes.
+- **Policy pages:** `/terms`, `/privacy` and `/refunds`, linked in the footer and next to every pay button. Review the wording before launch: they name no legal entity or governing law.
+- **robots.txt and sitemap.xml:** search engines are kept out of the admin, chats, orders and checkout pages; the sitemap lists public pages, products and services.
+- **Launch-day reset:** `supabase/launch/1-preview-test-data.sql` (read-only) and `supabase/launch/2-reset-test-data.sql` remove all test-mode orders, chats, checkouts, emails and Stripe events. They are not migrations. See LAUNCH-CHECKLIST.md.
+
 ## 3. Owner how-tos (Admin)
 
 - **Make a service custom-quote only**
@@ -192,9 +201,9 @@ Use Stripe **test mode** against a copy of the database first:
 - **Inbox email planting:** someone can start a chat using another person's email; it then appears
   in that person's verified inbox. Closing this needs a product decision: verify the email when the
   chat is created, or rotate the chat link on first verified open.
-- **Stock holds:** unpaid checkouts hold codes for up to an hour (capped as above). A determined
-  attacker with many IPs and emails could still hold stock; bot protection on checkout would be
-  the next step.
+- **Stock holds:** unpaid checkouts hold codes for up to 35 minutes (capped as above). A determined
+  attacker with many IPs and emails could still hold stock. Turning on the optional Turnstile bot
+  check makes that much harder.
 - **Private chat links live in URLs** (browser history, hosting logs, Stripe return URLs). Referrer
   leakage is blocked.
 - **Local QA analytics:** during local QA, the anonymous analytics tracker recorded a small number

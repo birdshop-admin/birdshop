@@ -829,6 +829,13 @@ html[data-theme="dark"] .site-header-mobile-nav .site-header-mobile-active {
   text-align: left;
 }
 
+.footer-legal {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 18px;
+}
+
 .footer-bottom a {
   display: inline-flex;
   align-items: center;

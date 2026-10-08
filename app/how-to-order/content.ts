@@ -242,7 +242,7 @@ export const GOOD_TO_KNOW: readonly { q: string; a: string }[] = [
   },
   {
     q: "I left checkout before paying.",
-    a: "Nothing is charged until Stripe confirms payment. For products, return to your cart to resume or cancel the saved checkout. Unpaid checkouts expire and reserved codes are released.",
+    a: "Nothing is charged until Stripe confirms payment. For products, return to your cart to resume or cancel the saved checkout. Unpaid checkouts expire after about 30 minutes and reserved codes are released.",
   },
   {
     q: "Refunds and support",

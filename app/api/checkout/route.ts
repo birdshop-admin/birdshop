@@ -8,7 +8,8 @@ import {
 } from "@/lib/server-config";
 
 import { orderToken, tokenHash } from "@/lib/order-access";
-import { limitRequest, rateLimit } from "@/lib/rate-limit";
+import { limitRequest, rateLimit, requestIdentity } from "@/lib/rate-limit";
+import { assertHuman } from "@/lib/turnstile";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 import {
@@ -67,7 +68,8 @@ export async function POST(request: Request) {
       }
     }
 
-    await limitRequest(request, "product-checkout", 6, 1800);
+    // Each new checkout holds codes for up to 35 minutes, so limits stay tight.
+    await limitRequest(request, "product-checkout", 5, 1800);
 
     const email = String(body.email ?? "")
       .trim()
@@ -83,7 +85,7 @@ export async function POST(request: Request) {
       throw new PublicError("Enter a valid email and cart.", 400);
     }
 
-    await rateLimit("product-checkout-email", email, 5, 1800);
+    await rateLimit("product-checkout-email", email, 4, 1800);
 
     const slugs: string[] = body.items.map((item: { slug?: unknown }) =>
       typeof item.slug === "string" ? item.slug : "",
@@ -164,6 +166,14 @@ export async function POST(request: Request) {
           409,
         );
       }
+
+      // Optional bot check (Cloudflare Turnstile) before any stock is reserved.
+      // Retries of a stored attempt skip it: they never reserve anything new.
+      await assertHuman(
+        body.turnstileToken,
+        requestIdentity(request),
+        "checkout",
+      );
     }
 
     const attempt = await serverRpc<CheckoutAttempt>(

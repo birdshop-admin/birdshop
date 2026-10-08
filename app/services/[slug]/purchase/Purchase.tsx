@@ -4,6 +4,7 @@ import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 
 import CatalogArtwork from "@/components/CatalogArtwork";
+import CheckoutConsent from "@/components/CheckoutConsent";
 import { ArrowIcon, CheckIcon, MessageIcon, ShieldIcon } from "@/components/SiteIcons";
 import { formatUSD } from "@/lib/money";
 import {
@@ -264,6 +265,8 @@ export default function Purchase({
               ? "Already Purchased"
               : "Pay Securely & Open Chat"}
         </button>
+
+        <CheckoutConsent className={s.consent} verb="paying" />
 
         <ul className={s.trust}>
           <li>

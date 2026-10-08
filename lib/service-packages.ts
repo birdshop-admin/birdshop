@@ -112,6 +112,7 @@ function buildCustomPackage(
 ========================================================= */
 
 export function buildServicePackages(service: Service): ServicePackageOption[] {
+  if (service.customOnly) return [buildCustomPackage(service)];
   const tiers = ["starter", "standard", "premium"] as const;
   return [
     ...tiers.map((id, index) => {
@@ -134,5 +135,5 @@ export function buildServicePackages(service: Service): ServicePackageOption[] {
 }
 
 export function getDefaultServicePackageId(packages: ServicePackageOption[]) {
-  return packages.find((option) => option.purchasable)?.id ?? "starter";
+  return packages.find((option) => option.purchasable)?.id ?? packages[0]?.id ?? "custom";
 }

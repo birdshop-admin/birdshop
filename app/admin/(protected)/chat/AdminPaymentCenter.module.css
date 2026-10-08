@@ -5,8 +5,8 @@
   margin: 10px 18px;
   border: 1px solid #d9d7cb;
   border-radius: 12px;
-  background: #faf8f1;
-  color: #29372b;
+  background: var(--theme-surface-37-42-35-1, #faf8f1);
+  color: var(--theme-text-240-236-226-1, #29372b);
   overflow: hidden;
 }
 .paymentDrawer,
@@ -27,7 +27,7 @@
   display: none;
 }
 .paymentDrawer > summary:hover {
-  background: #f0eee4;
+  background: var(--theme-surface-24-28-24-1, #f0eee4);
 }
 .paymentDrawer > summary > div {
   min-width: 0;
@@ -37,7 +37,7 @@
 .fieldLabel,
 .paidSummary span {
   display: block;
-  color: #626d5e;
+  color: var(--theme-text-184-196-170-1, #626d5e);
   font:
     700 10px/1.5 Arial,
     Helvetica,
@@ -58,7 +58,7 @@
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
-  color: #40543c;
+  color: var(--theme-text-184-196-170-1, #40543c);
   font:
     600 12px/1.4 Arial,
     Helvetica,
@@ -106,8 +106,8 @@
   min-width: 0;
   border: 1px solid #d0d3c6;
   border-radius: 7px;
-  background: #fffef9;
-  color: #29372b;
+  background: var(--theme-surface-37-42-35-1, #fffef9);
+  color: var(--theme-text-240-236-226-1, #29372b);
   font:
     400 14px/1.5 Arial,
     Helvetica,
@@ -128,7 +128,7 @@
 }
 .input::placeholder,
 .textarea::placeholder {
-  color: #73786d;
+  color: var(--theme-text-184-196-170-1, #73786d);
 }
 .input:focus-visible,
 .textarea:focus-visible,
@@ -150,7 +150,7 @@
 .actions > span,
 .requestFooter > span {
   max-width: 290px;
-  color: #606b5d;
+  color: var(--theme-text-184-196-170-1, #606b5d);
   font:
     400 12px/1.5 Arial,
     Helvetica,
@@ -160,7 +160,7 @@
 .secondaryButton {
   min-height: 44px;
   padding: 10px 16px;
-  border: 1px solid #43583d;
+  border: 1px solid var(--theme-border-207-215-196-1, #43583d);
   border-radius: 7px;
   background: #43583d;
   color: #fffdf6;
@@ -174,12 +174,12 @@
   background: #34472f;
 }
 .secondaryButton {
-  color: #714a3c;
+  color: var(--theme-text-232-169-150-1, #714a3c);
   border-color: #d4c5b9;
-  background: #faf4ee;
+  background: var(--theme-surface-24-28-24-1, #faf4ee);
 }
 .secondaryButton:hover:not(:disabled) {
-  background: #f0e5db;
+  background: var(--theme-surface-48-54-44-1, #f0e5db);
 }
 .button:disabled,
 .secondaryButton:disabled {
@@ -213,8 +213,8 @@
   flex-shrink: 0;
   padding: 6px 10px;
   border-radius: 20px;
-  background: #eee6d0;
-  color: #725a24;
+  background: var(--theme-surface-48-54-44-1, #eee6d0);
+  color: var(--theme-text-232-169-150-1, #725a24);
   font:
     600 11px/1.4 Arial,
     Helvetica,
@@ -223,7 +223,7 @@
 .requestDescription,
 .paidSummary p {
   margin: 8px 0;
-  color: #606b5d;
+  color: var(--theme-text-184-196-170-1, #606b5d);
   font:
     400 13px/1.6 Arial,
     Helvetica,
@@ -254,7 +254,7 @@
   flex-shrink: 0;
 }
 .noPaymentAction {
-  color: #606b5d;
+  color: var(--theme-text-184-196-170-1, #606b5d);
   font:
     400 13px/1.6 Arial,
     Helvetica,
@@ -306,17 +306,17 @@
 .paymentDrawer {
   border-radius: 10px;
   border-color: #d5d6c9;
-  background: #faf8f2;
+  background: var(--theme-surface-37-42-35-1, #faf8f2);
 }
 .paymentDrawer > summary {
   padding: 13px 18px;
 }
 .paymentDrawer > summary > div > span {
-  color: #59694f;
+  color: var(--theme-text-184-196-170-1, #59694f);
   letter-spacing: 0.13em;
 }
 .paymentDrawer > summary strong {
-  color: #34472e;
+  color: var(--theme-text-240-236-226-1, #34472e);
   font-size: 16px;
 }
 .toggle {
@@ -329,7 +329,7 @@
   width: 30px;
   height: 30px;
   padding: 0;
-  background: #fffdf7;
+  background: var(--theme-surface-37-42-35-1, #fffdf7);
 }
 .toggle svg {
   display: block;
@@ -341,7 +341,7 @@
   stroke-linejoin: round;
 }
 .paymentBody {
-  background: #f1efe5;
+  background: var(--theme-surface-24-28-24-1, #f1efe5);
   padding: 18px;
   max-height: min(340px, 40dvh);
 }
@@ -351,7 +351,7 @@
   padding: 18px;
   border: 1px solid #dedfd2;
   border-radius: 9px;
-  background: #faf8f2;
+  background: var(--theme-surface-37-42-35-1, #faf8f2);
 }
 .fields {
   grid-template-columns: minmax(0, 1fr) 180px;
@@ -363,7 +363,7 @@
 }
 .input,
 .textarea {
-  background: #fffefb;
+  background: var(--theme-surface-37-42-35-1, #fffefb);
   border-color: #d6d9cb;
   font-size: 14px;
 }
@@ -393,17 +393,17 @@
   margin: 4px 0;
   padding: 18px 20px;
   border: 1px solid #d4d8c8;
-  border-left: 3px solid #657654;
+  border-left: 3px solid var(--theme-border-207-215-196-1, #657654);
   border-radius: 10px;
-  background: #fffdf7;
-  color: #34472e;
+  background: var(--theme-surface-37-42-35-1, #fffdf7);
+  color: var(--theme-text-240-236-226-1, #34472e);
   box-shadow: 0 3px 12px #29372b06;
 }
 .request.request * {
   box-sizing: border-box;
 }
 .request.request .requestEyebrow {
-  color: #64715b;
+  color: var(--theme-text-184-196-170-1, #64715b);
   font:
     600 10px/1.4 Arial,
     Helvetica,
@@ -412,15 +412,15 @@
 }
 .request.request .requestTitle {
   margin-top: 7px;
-  color: #30442b;
+  color: var(--theme-text-240-236-226-1, #30442b);
   font:
     400 19px/1.4 Georgia,
     "Times New Roman",
     serif;
 }
 .request.request .requestStatus {
-  color: #6c592a;
-  background: #f2ecd9;
+  color: var(--theme-text-184-196-170-1, #6c592a);
+  background: var(--theme-surface-24-28-24-1, #f2ecd9);
   border: 1px solid #e5dcc1;
   font:
     600 10px/1.4 Arial,
@@ -434,7 +434,7 @@
     400 13px/1.6 Arial,
     Helvetica,
     sans-serif;
-  color: #626c5d;
+  color: var(--theme-text-184-196-170-1, #626c5d);
 }
 .paymentLine {
   display: flex;
@@ -448,7 +448,7 @@
 }
 .request.request .requestAmount {
   margin: 0;
-  color: #344c2c;
+  color: var(--theme-text-240-236-226-1, #344c2c);
   font:
     400 32px/1.2 Georgia,
     "Times New Roman",
@@ -463,7 +463,7 @@
 }
 .request.request .requestFooter > span,
 .request.request .requestFooter > strong {
-  color: #6a7362;
+  color: var(--theme-text-184-196-170-1, #6a7362);
   font:
     400 11px/1.5 Arial,
     Helvetica,
@@ -472,32 +472,32 @@
 .request.request .secondaryButton {
   min-height: 40px;
   padding: 9px 13px;
-  background: #fffdf7;
+  background: var(--theme-surface-37-42-35-1, #fffdf7);
   border: 1px solid #b8c2aa;
-  color: #435b36;
+  color: var(--theme-text-184-196-170-1, #435b36);
   font:
     400 12px/1.5 Georgia,
     "Times New Roman",
     serif;
 }
 .request.request .secondaryButton:hover:not(:disabled) {
-  background: #edf1e5;
+  background: var(--theme-surface-24-28-24-1, #edf1e5);
 }
 .request.request[data-status="paid"] .requestStatus {
-  background: #eaf0e1;
-  color: #445e37;
+  background: var(--theme-surface-24-28-24-1, #eaf0e1);
+  color: var(--theme-text-184-196-170-1, #445e37);
   border-color: #d6dfc8;
 }
 .request.request[data-status="cancelled"],
 .request.request[data-status="expired"] {
-  border-left-color: #a1a697;
-  background: #f5f4ed;
+  border-left-color: var(--theme-border-207-215-196-1, #a1a697);
+  background: var(--theme-surface-24-28-24-1, #f5f4ed);
 }
 .request.request[data-status="cancelled"] .requestStatus,
 .request.request[data-status="expired"] .requestStatus {
-  background: #e9e9e1;
+  background: var(--theme-surface-24-28-24-1, #e9e9e1);
   border-color: #dbded1;
-  color: #606858;
+  color: var(--theme-text-184-196-170-1, #606858);
 }
 @media (max-width: 700px) {
   .paymentBody {
@@ -559,14 +559,14 @@
 .actionStatus {
   display: block;
   margin-top: 8px;
-  color: #617056;
+  color: var(--theme-text-184-196-170-1, #617056);
   font:
     400 12px/1.5 Arial,
     sans-serif;
 }
 .actionError {
   margin: 8px 0 0;
-  color: #894633;
+  color: var(--theme-text-232-169-150-1, #894633);
   font:
     400 12px/1.5 Arial,
     sans-serif;
@@ -583,8 +583,8 @@
   padding: 14px 18px;
   border: 1px solid #b9c5ab;
   border-radius: 10px;
-  background: #fffdf7;
-  color: #3f5834;
+  background: var(--theme-surface-37-42-35-1, #fffdf7);
+  color: var(--theme-text-184-196-170-1, #3f5834);
   box-shadow: 0 8px 30px #2535201a;
   font:
     400 13px/1.5 Arial,

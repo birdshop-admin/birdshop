@@ -72,7 +72,7 @@ function RelatedServiceCard({ service }: { service: Service }) {
           <strong>
             {service.startingPrice !== null
               ? `From $${service.startingPrice.toFixed(2)}`
-              : "View packages"}
+              : service.customOnly ? "Custom quote" : "View packages"}
           </strong>
 
           <ArrowIcon />
@@ -341,15 +341,15 @@ export default function ServicePageContent({
                 <div>
                   <span className={styles.sectionEyebrow}>SERVICE OPTIONS</span>
 
-                  <h2>Choose your package.</h2>
+                  <h2>{service.customOnly ? "Made around your request." : "Choose your package."}</h2>
                 </div>
 
                 <p>
-                  Start with the base package, then compare exactly what each
-                  upgraded tier adds.
+                  {service.customOnly ? "Tell us what you need. We will agree on the scope, price and timing with you." : "Start with the base package, then compare exactly what each upgraded tier adds."}
                 </p>
               </div>
 
+              {!service.customOnly && <>
               <div className={styles.tierOverview}>
                 {packages.filter(p => p.tier !== "custom").map(p => <article key={p.id} className={p.id === currentPackage.id ? styles.selectedOverview : undefined}>
                   <span>{p.label}</span><h3>{p.name}</h3><strong>{p.price !== null ? `$${p.price.toFixed(2)}` : "Coming soon"}</strong>
@@ -361,6 +361,7 @@ export default function ServicePageContent({
               </div>
               <p className={styles.purchaseHint}>Choose a package, pay securely, and open your private chat after checkout. No ticket needed.</p>
               <div className={styles.customOption}><div><strong>Need something different?</strong><p>Discuss a tailored scope with BirdShop.</p></div><button type="button" aria-pressed={isCustomPackage} onClick={() => setSelectedPackage("custom")}>Explore Custom <ArrowIcon /></button></div>
+              </>}
               <div className={styles.packageExperience}>
                 {/* ===========================================
                     LARGE CURRENT PACKAGE
@@ -588,8 +589,7 @@ export default function ServicePageContent({
               </div>
 
               <p className={styles.packageNotice}>
-                Choose a ready-to-buy package, or discuss a tailored scope with
-                Custom.
+                {service.customOnly ? "Every request is quoted individually. Work starts after payment is confirmed." : "Choose a ready-to-buy package, or discuss a tailored scope with Custom."}
               </p>
             </section>
 
@@ -606,9 +606,9 @@ export default function ServicePageContent({
                 <div>
                   <span>01</span>
 
-                  <h3>Choose Your Plan</h3>
+                  <h3>{service.customOnly ? "Share Your Request" : "Choose Your Plan"}</h3>
 
-                  <p>Choose a fixed package or describe a custom request.</p>
+                  <p>{service.customOnly ? "Describe your goals and send any references." : "Choose a fixed package or describe a custom request."}</p>
                 </div>
 
                 <div>
@@ -617,8 +617,7 @@ export default function ServicePageContent({
                   <h3>Confirm the Details</h3>
 
                   <p>
-                    Fixed packages can be purchased immediately. Custom requests
-                    are reviewed before pricing.
+                    {service.customOnly ? "We confirm your scope, quote and turnaround before you pay." : "Fixed packages can be purchased immediately. Custom requests are reviewed before pricing."}
                   </p>
                 </div>
 
@@ -628,8 +627,7 @@ export default function ServicePageContent({
                   <h3>Service Begins</h3>
 
                   <p>
-                    After payment or quote approval, your private BirdShop
-                    service chat stays available.
+                    Work begins after payment is confirmed. Follow progress in your private BirdShop service chat.
                   </p>
                 </div>
 
@@ -720,7 +718,7 @@ export default function ServicePageContent({
                   </summary>
 
                   <p>
-                    Fixed packages show the price for their listed scope before checkout. Custom requests are quoted after BirdShop reviews your requirements.
+                    {service.customOnly ? "Your price is confirmed after BirdShop reviews your requirements. You approve the quote before paying." : "Fixed packages show the price for their listed scope before checkout. Custom requests are quoted after BirdShop reviews your requirements."}
                   </p>
                 </details>
 
@@ -731,9 +729,7 @@ export default function ServicePageContent({
                   </summary>
 
                   <p>
-                    Yes. Choose Custom to modify a normal package or describe a
-                    completely custom service. BirdShop can review it with you
-                    in the private service chat.
+                    Yes. Describe your requirements and share references. BirdShop can review your request with you in the private service chat.
                   </p>
                 </details>
 

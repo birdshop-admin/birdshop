@@ -11,15 +11,15 @@
 
   padding: 22px 14px 18px;
 
-  color: var(--admin-ink, #253024);
+  color: var(--admin-ink, var(--theme-text-240-236-226-1, #253024));
 
   background: linear-gradient(
     180deg,
-    var(--admin-panel, #f2eee4),
-    var(--admin-panel-soft, #e9e4d8)
+    var(--admin-panel, var(--theme-surface-24-28-24-1, #f2eee4)),
+    var(--admin-panel-soft, var(--theme-surface-48-54-44-1, #e9e4d8))
   );
 
-  border-right: 1px solid var(--admin-line-light, rgba(42, 54, 39, 0.13));
+  border-right: 1px solid var(--admin-line-light, var(--theme-border-207-215-196-0_13, rgba(42, 54, 39, 0.13)));
 
   box-shadow: 14px 0 34px rgba(0, 0, 0, 0.18);
 }
@@ -34,7 +34,7 @@
 
   padding: 0 10px 21px;
 
-  border-bottom: 1px solid var(--admin-line-light, rgba(42, 54, 39, 0.13));
+  border-bottom: 1px solid var(--admin-line-light, var(--theme-border-207-215-196-0_13, rgba(42, 54, 39, 0.13)));
 }
 
 .brand img {
@@ -52,7 +52,7 @@
 }
 
 .brand strong {
-  color: var(--admin-ink, #253024);
+  color: var(--admin-ink, var(--theme-text-240-236-226-1, #253024));
 
   font-family: Georgia, "Times New Roman", serif;
 
@@ -63,7 +63,7 @@
 }
 
 .brand span {
-  color: var(--admin-ink-muted, #7a8276);
+  color: var(--admin-ink-muted, var(--theme-text-184-196-170-1, #7a8276));
 
   font-size: 10px;
   font-weight: 700;
@@ -83,7 +83,7 @@
 .navLabel {
   margin: 0 11px 9px;
 
-  color: var(--admin-ink-muted, #7a8276);
+  color: var(--admin-ink-muted, var(--theme-text-184-196-170-1, #7a8276));
 
   font-size: 10px;
   font-weight: 700;
@@ -130,11 +130,11 @@
 }
 
 .active {
-  color: #253024;
+  color: var(--theme-text-240-236-226-1, #253024);
 
   border-color: rgba(242, 238, 228, 0.92);
 
-  background: linear-gradient(90deg, #f2eee4, #e6e1d5);
+  background: linear-gradient(90deg, var(--theme-surface-24-28-24-1, #f2eee4), var(--theme-surface-48-54-44-1, #e6e1d5));
 
   box-shadow:
     inset 3px 0 0 #ffffff,
@@ -152,7 +152,7 @@
 
   padding-top: 19px;
 
-  border-top: 1px solid var(--admin-line-light, rgba(42, 54, 39, 0.13));
+  border-top: 1px solid var(--admin-line-light, var(--theme-border-207-215-196-0_13, rgba(42, 54, 39, 0.13)));
 }
 
 .storeLink,
@@ -165,7 +165,7 @@
 
   padding: 0 13px;
 
-  border: 1px solid rgba(42, 54, 39, 0.14);
+  border: 1px solid var(--theme-border-207-215-196-0_14, rgba(42, 54, 39, 0.14));
 
   border-radius: 7px;
 
@@ -189,9 +189,9 @@
 
 .storeLink:hover,
 .logout button:hover {
-  color: #182118;
+  color: var(--theme-text-240-236-226-1, #182118);
 
-  border-color: rgba(69, 84, 62, 0.24);
+  border-color: var(--theme-border-207-215-196-0_24, rgba(69, 84, 62, 0.24));
 
   background: rgba(76, 94, 68, 0.08);
 }
@@ -205,7 +205,7 @@
     padding: 16px 16px 14px;
 
     border-right: 0;
-    border-bottom: 1px solid var(--admin-line-light, rgba(42, 54, 39, 0.13));
+    border-bottom: 1px solid var(--admin-line-light, var(--theme-border-207-215-196-0_13, rgba(42, 54, 39, 0.13)));
 
     box-shadow: none;
   }
@@ -276,7 +276,7 @@
     padding: 0;
     width: 100%;
     border-right: 0;
-    border-bottom: 1px solid #86957744;
+    border-bottom: 1px solid var(--theme-border-207-215-196-0_267, #86957744);
     box-shadow: 0 8px 24px #0003;
     display: block;
   }
@@ -317,15 +317,15 @@
   }
   .mobileMenu nav a {
     padding: 14px;
-    border: 1px solid #70835d55;
+    border: 1px solid var(--theme-border-207-215-196-0_333, #70835d55);
     border-radius: 8px;
     color: #d2dec7;
     font-size: 13px;
     min-height: 44px;
   }
   .mobileMenu nav a[aria-current="page"] {
-    background: #e4deca;
-    color: #203020;
+    background: var(--theme-surface-48-54-44-1, #e4deca);
+    color: var(--theme-text-240-236-226-1, #203020);
   }
   .mobileActions {
     display: flex;
@@ -341,4 +341,4 @@
   }
 }
 
-@media(max-width:1023px){.mobileSheet{position:fixed;top:66px;left:12px;right:12px;max-height:calc(100dvh - 82px);overflow:auto;z-index:150;padding:16px 0 max(8px,env(safe-area-inset-bottom));background:#15251a;border:1px solid #72836266;border-radius:16px;box-shadow:0 24px 60px #0009}.mobileMenu[open] summary{background:#263924}.mobileSheet nav{grid-template-columns:1fr 1fr}.mobileSheet a{font-size:15px}}
+@media(max-width:1023px){.mobileSheet{position:fixed;top:66px;left:12px;right:12px;max-height:calc(100dvh - 82px);overflow:auto;z-index:150;padding:16px 0 max(8px,env(safe-area-inset-bottom));background:#15251a;border:1px solid var(--theme-border-207-215-196-0_4, #72836266);border-radius:16px;box-shadow:0 24px 60px #0009}.mobileMenu[open] summary{background:#263924}.mobileSheet nav{grid-template-columns:1fr 1fr}.mobileSheet a{font-size:15px}}

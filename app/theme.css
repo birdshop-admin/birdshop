@@ -1,0 +1,116 @@
+/* Shared dark palette. Original light colours remain the fallbacks in each stylesheet. */
+html { color-scheme: light; }
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --theme-border-207-215-196-0_08: rgba(207, 215, 196, 0.08);
+  --theme-border-207-215-196-0_09: rgba(207, 215, 196, 0.09);
+  --theme-border-207-215-196-0_1: rgba(207, 215, 196, 0.1);
+  --theme-border-207-215-196-0_11: rgba(207, 215, 196, 0.11);
+  --theme-border-207-215-196-0_12: rgba(207, 215, 196, 0.12);
+  --theme-border-207-215-196-0_13: rgba(207, 215, 196, 0.13);
+  --theme-border-207-215-196-0_14: rgba(207, 215, 196, 0.14);
+  --theme-border-207-215-196-0_149: rgba(207, 215, 196, 0.14901960784313725);
+  --theme-border-207-215-196-0_15: rgba(207, 215, 196, 0.15);
+  --theme-border-207-215-196-0_16: rgba(207, 215, 196, 0.16);
+  --theme-border-207-215-196-0_17: rgba(207, 215, 196, 0.17);
+  --theme-border-207-215-196-0_18: rgba(207, 215, 196, 0.18);
+  --theme-border-207-215-196-0_19: rgba(207, 215, 196, 0.19);
+  --theme-border-207-215-196-0_2: rgba(207, 215, 196, 0.2);
+  --theme-border-207-215-196-0_22: rgba(207, 215, 196, 0.22);
+  --theme-border-207-215-196-0_23: rgba(207, 215, 196, 0.23);
+  --theme-border-207-215-196-0_24: rgba(207, 215, 196, 0.24);
+  --theme-border-207-215-196-0_25: rgba(207, 215, 196, 0.25);
+  --theme-border-207-215-196-0_26: rgba(207, 215, 196, 0.26);
+  --theme-border-207-215-196-0_267: rgba(207, 215, 196, 0.26666666666666666);
+  --theme-border-207-215-196-0_27: rgba(207, 215, 196, 0.27);
+  --theme-border-207-215-196-0_28: rgba(207, 215, 196, 0.28);
+  --theme-border-207-215-196-0_29: rgba(207, 215, 196, 0.29);
+  --theme-border-207-215-196-0_3: rgba(207, 215, 196, 0.3);
+  --theme-border-207-215-196-0_333: rgba(207, 215, 196, 0.3333333333333333);
+  --theme-border-207-215-196-0_34: rgba(207, 215, 196, 0.34);
+  --theme-border-207-215-196-0_35: rgba(207, 215, 196, 0.35);
+  --theme-border-207-215-196-0_4: rgba(207, 215, 196, 0.4);
+  --theme-border-207-215-196-0_42: rgba(207, 215, 196, 0.42);
+  --theme-border-207-215-196-0_5: rgba(207, 215, 196, 0.5);
+  --theme-border-207-215-196-0_52: rgba(207, 215, 196, 0.52);
+  --theme-border-207-215-196-0_55: rgba(207, 215, 196, 0.55);
+  --theme-border-207-215-196-0_6: rgba(207, 215, 196, 0.6);
+  --theme-border-207-215-196-0_62: rgba(207, 215, 196, 0.62);
+  --theme-border-207-215-196-0_65: rgba(207, 215, 196, 0.65);
+  --theme-border-207-215-196-1: #cfd7c4;
+  --theme-readable-accent: #b8c4aa;
+  --theme-surface-24-28-24-0_28: rgba(24, 28, 24, 0.28);
+  --theme-surface-24-28-24-0_34: rgba(24, 28, 24, 0.34);
+  --theme-surface-24-28-24-0_48: rgba(24, 28, 24, 0.48);
+  --theme-surface-24-28-24-0_6: rgba(24, 28, 24, 0.6);
+  --theme-surface-24-28-24-0_68: rgba(24, 28, 24, 0.68);
+  --theme-surface-24-28-24-0_72: rgba(24, 28, 24, 0.72);
+  --theme-surface-24-28-24-0_74: rgba(24, 28, 24, 0.74);
+  --theme-surface-24-28-24-0_76: rgba(24, 28, 24, 0.76);
+  --theme-surface-24-28-24-0_78: rgba(24, 28, 24, 0.78);
+  --theme-surface-24-28-24-0_8: rgba(24, 28, 24, 0.8);
+  --theme-surface-24-28-24-0_82: rgba(24, 28, 24, 0.82);
+  --theme-surface-24-28-24-0_85: rgba(24, 28, 24, 0.85);
+  --theme-surface-24-28-24-0_88: rgba(24, 28, 24, 0.88);
+  --theme-surface-24-28-24-0_9: rgba(24, 28, 24, 0.9);
+  --theme-surface-24-28-24-0_91: rgba(24, 28, 24, 0.91);
+  --theme-surface-24-28-24-0_92: rgba(24, 28, 24, 0.92);
+  --theme-surface-24-28-24-0_93: rgba(24, 28, 24, 0.93);
+  --theme-surface-24-28-24-0_94: rgba(24, 28, 24, 0.94);
+  --theme-surface-24-28-24-0_96: rgba(24, 28, 24, 0.96);
+  --theme-surface-24-28-24-0_98: rgba(24, 28, 24, 0.98);
+  --theme-surface-24-28-24-0_99: rgba(24, 28, 24, 0.99);
+  --theme-surface-24-28-24-0_995: rgba(24, 28, 24, 0.995);
+  --theme-surface-24-28-24-1: #181c18;
+  --theme-surface-37-42-35-0_24: rgba(37, 42, 35, 0.24);
+  --theme-surface-37-42-35-0_25: rgba(37, 42, 35, 0.25);
+  --theme-surface-37-42-35-0_32: rgba(37, 42, 35, 0.32);
+  --theme-surface-37-42-35-0_42: rgba(37, 42, 35, 0.42);
+  --theme-surface-37-42-35-0_45: rgba(37, 42, 35, 0.45);
+  --theme-surface-37-42-35-0_48: rgba(37, 42, 35, 0.48);
+  --theme-surface-37-42-35-0_62: rgba(37, 42, 35, 0.62);
+  --theme-surface-37-42-35-0_64: rgba(37, 42, 35, 0.64);
+  --theme-surface-37-42-35-0_72: rgba(37, 42, 35, 0.72);
+  --theme-surface-37-42-35-0_76: rgba(37, 42, 35, 0.76);
+  --theme-surface-37-42-35-0_8: rgba(37, 42, 35, 0.8);
+  --theme-surface-37-42-35-0_9: rgba(37, 42, 35, 0.9);
+  --theme-surface-37-42-35-0_94: rgba(37, 42, 35, 0.94);
+  --theme-surface-37-42-35-1: #252a23;
+  --theme-surface-48-54-44-0_64: rgba(48, 54, 44, 0.64);
+  --theme-surface-48-54-44-0_67: rgba(48, 54, 44, 0.67);
+  --theme-surface-48-54-44-0_7: rgba(48, 54, 44, 0.7);
+  --theme-surface-48-54-44-0_72: rgba(48, 54, 44, 0.72);
+  --theme-surface-48-54-44-1: #30362c;
+  --theme-text-184-196-170-0_23: rgba(184, 196, 170, 0.23);
+  --theme-text-184-196-170-1: #b8c4aa;
+  --theme-text-232-169-150-1: #e8a996;
+  --theme-text-240-236-226-0_55: rgba(240, 236, 226, 0.55);
+  --theme-text-240-236-226-0_58: rgba(240, 236, 226, 0.58);
+  --theme-text-240-236-226-0_61: rgba(240, 236, 226, 0.61);
+  --theme-text-240-236-226-0_64: rgba(240, 236, 226, 0.64);
+  --theme-text-240-236-226-0_68: rgba(240, 236, 226, 0.68);
+  --theme-text-240-236-226-0_7: rgba(240, 236, 226, 0.7);
+  --theme-text-240-236-226-0_75: rgba(240, 236, 226, 0.75);
+  --theme-text-240-236-226-0_77: rgba(240, 236, 226, 0.77);
+  --theme-text-240-236-226-0_78: rgba(240, 236, 226, 0.78);
+  --theme-text-240-236-226-1: #f0ece2;
+}
+
+.theme-toggle {
+  position: fixed; right: max(22px, env(safe-area-inset-right));
+  bottom: max(22px, env(safe-area-inset-bottom)); z-index: 80;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 44px; padding: 11px 15px; border-radius: 999px;
+  border: 1px solid #c5cbbb; background: #f4f0e6; color: #34432e;
+  box-shadow: 0 6px 24px #0003; cursor: pointer;
+  font: 600 12px Arial, sans-serif;
+}
+.theme-toggle:hover { background: #e3e8d9; }
+.theme-toggle:focus-visible { outline: 3px solid #94a77d; outline-offset: 4px; }
+html[data-theme="dark"] .theme-toggle { background: #282e24; color: #f0ece2; border-color: #65705b; }
+html[data-theme="dark"] .theme-toggle:hover { background: #394231; }
+@media(max-width: 650px) {
+  .theme-toggle { right: 12px; bottom: calc(88px + env(safe-area-inset-bottom)); width: 44px; padding: 10px; }
+  .theme-toggle span { display: none; }
+}
+@media(prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

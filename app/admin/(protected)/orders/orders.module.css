@@ -83,7 +83,7 @@
 
   color: #f2eee4;
 
-  background: #ede8dc;
+  background: var(--theme-surface-24-28-24-1, #ede8dc);
 
   font-size: 10px;
   font-weight: 700;
@@ -110,7 +110,7 @@
 .noticeSuccess {
   color: #dce8d7;
 
-  border: 1px solid rgba(128, 161, 115, 0.3);
+  border: 1px solid var(--theme-border-207-215-196-0_3, rgba(128, 161, 115, 0.3));
 
   background: rgba(93, 128, 80, 0.12);
 }
@@ -118,7 +118,7 @@
 .noticeError {
   color: #efd8d3;
 
-  border: 1px solid rgba(177, 96, 84, 0.3);
+  border: 1px solid var(--theme-border-207-215-196-0_3, rgba(177, 96, 84, 0.3));
 
   background: rgba(144, 72, 63, 0.12);
 }
@@ -148,13 +148,13 @@
   padding: 22px;
 
   border-radius: 7px;
-  color: #253024;
-  background: #f1ede3;
+  color: var(--theme-text-240-236-226-1, #253024);
+  background: var(--theme-surface-24-28-24-1, #f1ede3);
 }
 
 .stats span,
 .stats small {
-  color: #697364;
+  color: var(--theme-text-184-196-170-1, #697364);
 
   font-size: 10px;
   font-weight: 700;
@@ -223,9 +223,9 @@
 }
 
 .tabs .activeTab {
-  color: #142015;
+  color: var(--theme-text-240-236-226-1, #142015);
 
-  background: #efeadf;
+  background: var(--theme-surface-24-28-24-1, #efeadf);
 
   border-color: #efeadf;
 }
@@ -337,13 +337,13 @@
 .serviceCard {
   overflow: hidden;
 
-  color: #253024;
+  color: var(--theme-text-240-236-226-1, #253024);
 
-  border: 1px solid rgba(40, 51, 36, 0.14);
+  border: 1px solid var(--theme-border-207-215-196-0_14, rgba(40, 51, 36, 0.14));
 
   border-radius: 8px;
 
-  background: #f2eee4;
+  background: var(--theme-surface-24-28-24-1, #f2eee4);
 }
 
 .serviceTop {
@@ -355,7 +355,7 @@
 
   padding: 22px 24px;
 
-  border-bottom: 1px solid rgba(40, 51, 36, 0.1);
+  border-bottom: 1px solid var(--theme-border-207-215-196-0_1, rgba(40, 51, 36, 0.1));
 }
 
 .serviceTop span,
@@ -416,7 +416,7 @@
     1fr
     1fr;
 
-  border-bottom: 1px solid rgba(40, 51, 36, 0.1);
+  border-bottom: 1px solid var(--theme-border-207-215-196-0_1, rgba(40, 51, 36, 0.1));
 }
 
 .serviceMeta > div {
@@ -431,7 +431,7 @@
 
   padding: 15px 20px;
 
-  border-right: 1px solid rgba(40, 51, 36, 0.08);
+  border-right: 1px solid var(--theme-border-207-215-196-0_08, rgba(40, 51, 36, 0.08));
 }
 
 .serviceMeta > div:last-child {
@@ -458,13 +458,13 @@
 .note {
   padding: 16px 20px;
 
-  border-bottom: 1px solid rgba(40, 51, 36, 0.1);
+  border-bottom: 1px solid var(--theme-border-207-215-196-0_1, rgba(40, 51, 36, 0.1));
 }
 
 .note p {
   margin: 6px 0 0;
 
-  color: #5f665c;
+  color: var(--theme-text-184-196-170-1, #5f665c);
 
   font-family: Georgia, "Times New Roman", serif;
 
@@ -478,7 +478,7 @@
 .assignment {
   padding: 18px 20px;
 
-  border-bottom: 1px solid rgba(40, 51, 36, 0.1);
+  border-bottom: 1px solid var(--theme-border-207-215-196-0_1, rgba(40, 51, 36, 0.1));
 }
 
 .assignment label {
@@ -495,15 +495,15 @@
 
   padding: 0 12px;
 
-  border: 1px solid rgba(40, 51, 36, 0.17);
+  border: 1px solid var(--theme-border-207-215-196-0_17, rgba(40, 51, 36, 0.17));
 
   border-radius: 4px;
 
   outline: 0;
 
-  color: #242c22;
+  color: var(--theme-text-240-236-226-1, #242c22);
 
-  background: rgba(255, 255, 255, 0.48);
+  background: var(--theme-surface-37-42-35-0_48, rgba(255, 255, 255, 0.48));
 
   font-family: Georgia, "Times New Roman", serif;
 
@@ -526,13 +526,13 @@
 
   padding: 0 14px;
 
-  border: 1px solid rgba(42, 51, 38, 0.16);
+  border: 1px solid var(--theme-border-207-215-196-0_16, rgba(42, 51, 38, 0.16));
 
   border-radius: 4px;
 
-  color: #424a3f;
+  color: var(--theme-text-240-236-226-1, #424a3f);
 
-  background: rgba(255, 255, 255, 0.42);
+  background: var(--theme-surface-37-42-35-0_42, rgba(255, 255, 255, 0.42));
 
   cursor: pointer;
 
@@ -544,16 +544,16 @@
 .workflowButtons .primaryAction {
   color: #f1ede3;
 
-  border-color: #46543e;
+  border-color: var(--theme-border-207-215-196-1, #46543e);
 
   background: #46543e;
 }
 
 .workflowButtons .dangerAction,
 .deleteButton {
-  color: #87534b !important;
+  color: var(--theme-text-232-169-150-1, #87534b) !important;
 
-  border-color: rgba(137, 77, 69, 0.23) !important;
+  border-color: var(--theme-border-207-215-196-0_23, rgba(137, 77, 69, 0.23)) !important;
 
   background: rgba(145, 78, 68, 0.06) !important;
 }
@@ -595,7 +595,7 @@
 
   color: #f2eee4;
 
-  border: 1px solid rgba(40, 51, 36, 0.13);
+  border: 1px solid var(--theme-border-207-215-196-0_13, rgba(40, 51, 36, 0.13));
 
   border-radius: 6px;
 
@@ -617,7 +617,7 @@
 }
 
 .saleRow small {
-  color: #777c73;
+  color: var(--theme-text-184-196-170-1, #777c73);
 
   font-size: 11px;
 }
@@ -660,13 +660,13 @@
 
   padding: 0 12px;
 
-  border: 1px solid rgba(40, 51, 36, 0.17);
+  border: 1px solid var(--theme-border-207-215-196-0_17, rgba(40, 51, 36, 0.17));
 
   border-radius: 4px;
 
   outline: 0;
 
-  background: rgba(255, 255, 255, 0.48);
+  background: var(--theme-surface-37-42-35-0_48, rgba(255, 255, 255, 0.48));
 
   font-family: Georgia, "Times New Roman", serif;
 
@@ -766,33 +766,33 @@
 .statePill[data-state="paid"],
 .statePill[data-state="fulfilled"],
 .statePill[data-state="completed"] {
-  color: #4d6848;
-  background: #dfe9da;
-  border: 1px solid rgba(76, 105, 69, 0.16);
+  color: var(--theme-text-184-196-170-1, #4d6848);
+  background: var(--theme-surface-48-54-44-1, #dfe9da);
+  border: 1px solid var(--theme-border-207-215-196-0_16, rgba(76, 105, 69, 0.16));
 }
 
 .statePill[data-state="new"],
 .statePill[data-state="pending"],
 .statePill[data-state="waiting_customer"] {
-  color: #7b6743;
-  background: #eee5cf;
-  border: 1px solid rgba(127, 104, 58, 0.16);
+  color: var(--theme-text-184-196-170-1, #7b6743);
+  background: var(--theme-surface-48-54-44-1, #eee5cf);
+  border: 1px solid var(--theme-border-207-215-196-0_16, rgba(127, 104, 58, 0.16));
 }
 
 .statePill[data-state="assigned"],
 .statePill[data-state="in_progress"],
 .statePill[data-state="reserved"] {
-  color: #50666c;
-  background: #dde7e8;
-  border: 1px solid rgba(74, 102, 108, 0.16);
+  color: var(--theme-text-184-196-170-1, #50666c);
+  background: var(--theme-surface-48-54-44-1, #dde7e8);
+  border: 1px solid var(--theme-border-207-215-196-0_16, rgba(74, 102, 108, 0.16));
 }
 
 .statePill[data-state="cancelled"],
 .statePill[data-state="failed"],
 .statePill[data-state="refunded"] {
-  color: #7a5048;
-  background: #eedfd9;
-  border: 1px solid rgba(126, 75, 65, 0.16);
+  color: var(--theme-text-232-169-150-1, #7a5048);
+  background: var(--theme-surface-48-54-44-1, #eedfd9);
+  border: 1px solid var(--theme-border-207-215-196-0_16, rgba(126, 75, 65, 0.16));
 }
 
 /* Premium operations surfaces */

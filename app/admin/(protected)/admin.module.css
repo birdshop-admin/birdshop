@@ -119,13 +119,13 @@
 
   border-radius: 9px;
 
-  color: #253024;
+  color: var(--theme-text-240-236-226-1, #253024);
 
   background:
     linear-gradient(
       135deg,
-      #f3efe5,
-      #e6e1d4
+      var(--theme-surface-24-28-24-1, #f3efe5),
+      var(--theme-surface-48-54-44-1, #e6e1d4)
     );
 
   box-shadow:
@@ -171,7 +171,7 @@
 
   margin: 0;
 
-  color: #626b5d;
+  color: var(--theme-text-184-196-170-1, #626b5d);
 
   font-family:
     Georgia,
@@ -190,7 +190,7 @@
 
   gap: 9px;
 
-  color: #596650;
+  color: var(--theme-text-184-196-170-1, #596650);
 
   font-size: 10px;
   font-weight: 700;
@@ -250,15 +250,15 @@
 
   border-radius: 7px;
 
-  color: #253024;
+  color: var(--theme-text-240-236-226-1, #253024);
 
-  background: #f1ede3;
+  background: var(--theme-surface-24-28-24-1, #f1ede3);
 }
 
 .primaryStats span,
 .primaryStats small,
 .quickStats span {
-  color: #687462;
+  color: var(--theme-text-184-196-170-1, #687462);
 
   font-size: 10px;
   font-weight: 700;
@@ -376,12 +376,12 @@
 
   border-radius: 7px;
 
-  color: #253024;
-  background: #f2eee4;
+  color: var(--theme-text-240-236-226-1, #253024);
+  background: var(--theme-surface-24-28-24-1, #f2eee4);
 }
 
 .analyticsGrid article > span {
-  color: #697563;
+  color: var(--theme-text-184-196-170-1, #697563);
 
   font-size: 10px;
   font-weight: 700;
@@ -408,7 +408,7 @@
     0
     auto;
 
-  color: #687163;
+  color: var(--theme-text-184-196-170-1, #687163);
 
   font-family:
     Georgia,
@@ -419,7 +419,7 @@
 }
 
 .analyticsGrid small {
-  color: #7a8276;
+  color: var(--theme-text-184-196-170-1, #7a8276);
 
   font-size: 11px;
 }
@@ -455,11 +455,11 @@
     18px
     22px;
 
-  color: #253024;
+  color: var(--theme-text-240-236-226-1, #253024);
 
   border-radius: 6px;
 
-  background: #f2eee4;
+  background: var(--theme-surface-24-28-24-1, #f2eee4);
 }
 
 .quickStats strong {
@@ -536,11 +536,11 @@
 
   padding: 23px;
 
-  color: #253024;
+  color: var(--theme-text-240-236-226-1, #253024);
 
   border-radius: 7px;
 
-  background: #f2eee4;
+  background: var(--theme-surface-24-28-24-1, #f2eee4);
 
   transition:
     transform
@@ -570,7 +570,7 @@
 }
 
 .moduleGrid article > span {
-  color: #697563;
+  color: var(--theme-text-184-196-170-1, #697563);
 
   font-family:
     Georgia,
@@ -598,7 +598,7 @@
 .moduleGrid p {
   margin: 0;
 
-  color: #687163;
+  color: var(--theme-text-184-196-170-1, #687163);
 
   font-family:
     Georgia,
@@ -616,14 +616,14 @@
 
   border-top:
     1px solid
-    rgba(
+    var(--theme-border-207-215-196-0_1, rgba(
       41,
       52,
       38,
       0.1
-    );
+    ));
 
-  color: #66735f;
+  color: var(--theme-text-184-196-170-1, #66735f);
 
   font-size: 10px;
   font-weight: 700;
@@ -695,7 +695,7 @@
 .setupNotice {
   margin-top: 20px;
   padding: 14px 16px;
-  border: 1px solid rgba(190, 158, 91, 0.24);
+  border: 1px solid var(--theme-border-207-215-196-0_24, rgba(190, 158, 91, 0.24));
   border-radius: 6px;
   color: #eadfca;
   background: rgba(139, 111, 59, 0.12);
@@ -714,7 +714,7 @@
 .analyticsGrid article,
 .quickStats article,
 .moduleGrid article {
-  border: 1px solid rgba(42, 54, 39, 0.12);
+  border: 1px solid var(--theme-border-207-215-196-0_12, rgba(42, 54, 39, 0.12));
   border-radius: 12px;
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.12);
 }

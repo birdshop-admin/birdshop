@@ -73,16 +73,16 @@ export default function ServiceCardPlanControls({
       {/* HEADER */}
 
       <div className={styles.heading}>
-        <span>SERVICE PACKAGES</span>
+        <span>{service.customOnly ? "TAILORED TO YOU" : "SERVICE PACKAGES"}</span>
 
-        <small>Select to preview price</small>
+        {!service.customOnly && <small>Select to preview price</small>}
       </div>
 
       {/* ===================================================
           TIER BUTTONS
       =================================================== */}
 
-      <div className={styles.tiers}>
+      {!service.customOnly && <div className={styles.tiers}>
         {packages.map((option) => {
           const active = option.id === currentPackage.id;
 
@@ -117,6 +117,8 @@ export default function ServiceCardPlanControls({
         })}
       </div>
 
+      }
+
       {/* ===================================================
           LIVE PRICE PREVIEW
       =================================================== */}
@@ -143,7 +145,7 @@ export default function ServiceCardPlanControls({
 
       <div className={styles.actions}>
         <Link href={plansUrl} className={styles.viewPlans}>
-          View Plans
+          {service.customOnly ? "View Service" : "View Plans"}
           <ArrowIcon />
         </Link>
 

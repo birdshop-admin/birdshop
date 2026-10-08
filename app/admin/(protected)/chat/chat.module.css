@@ -115,7 +115,7 @@
 .notice {
   color: #dce6d6;
 
-  border: 1px solid rgba(124, 155, 111, 0.28);
+  border: 1px solid var(--theme-border-207-215-196-0_28, rgba(124, 155, 111, 0.28));
 
   background: rgba(86, 112, 75, 0.18);
 }
@@ -123,7 +123,7 @@
 .error {
   color: #f0d9d1;
 
-  border: 1px solid rgba(167, 99, 78, 0.28);
+  border: 1px solid var(--theme-border-207-215-196-0_28, rgba(167, 99, 78, 0.28));
 
   background: rgba(120, 70, 57, 0.18);
 }
@@ -202,11 +202,11 @@
 }
 
 .tabs .activeTab {
-  color: #283226;
+  color: var(--theme-text-240-236-226-1, #283226);
 
   border-color: #f2eee4;
 
-  background: #f2eee4;
+  background: var(--theme-surface-24-28-24-1, #f2eee4);
 }
 
 .tabs .activeTab span {
@@ -320,9 +320,9 @@
 }
 
 .activeConversation {
-  color: #273125;
+  color: var(--theme-text-240-236-226-1, #273125);
 
-  background: #f0ece1;
+  background: var(--theme-surface-24-28-24-1, #f0ece1);
 }
 
 .conversationItem > div {
@@ -420,9 +420,9 @@
 
   overflow: hidden;
 
-  color: #273125;
+  color: var(--theme-text-240-236-226-1, #273125);
 
-  background: linear-gradient(180deg, #f4f0e7, #f0ece2);
+  background: linear-gradient(180deg, var(--theme-surface-24-28-24-1, #f4f0e7), var(--theme-surface-24-28-24-1, #f0ece2));
 }
 
 /* =========================================================
@@ -440,11 +440,11 @@
 
   padding: 14px 21px;
 
-  border-bottom: 1px solid rgba(39, 49, 37, 0.11);
+  border-bottom: 1px solid var(--theme-border-207-215-196-0_11, rgba(39, 49, 37, 0.11));
 }
 
 .chatHeader > div:first-child > span {
-  color: #707b6c;
+  color: var(--theme-text-184-196-170-1, #707b6c);
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -466,7 +466,7 @@
 .chatHeader p {
   margin: 0;
 
-  color: #737d70;
+  color: var(--theme-text-184-196-170-1, #737d70);
 
   font-size: 12px;
 }
@@ -485,7 +485,7 @@
 
 .orderFacts span,
 .customerBar span {
-  color: #747e70;
+  color: var(--theme-text-184-196-170-1, #747e70);
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -517,9 +517,9 @@
 
   padding: 9px 21px;
 
-  border-bottom: 1px solid rgba(39, 49, 37, 0.09);
+  border-bottom: 1px solid var(--theme-border-207-215-196-0_09, rgba(39, 49, 37, 0.09));
 
-  background: #e9e5da;
+  background: var(--theme-surface-48-54-44-1, #e9e5da);
 }
 
 .customerBar > div {
@@ -536,12 +536,12 @@
 .customerBar small {
   font-size: 11px;
 
-  color: #707a6d;
+  color: var(--theme-text-184-196-170-1, #707a6d);
 }
 
 .customerBar a,
 .chatFooter a {
-  color: #485743;
+  color: var(--theme-text-184-196-170-1, #485743);
 
   font-size: 11px;
 
@@ -568,9 +568,9 @@
 
   padding: 9px 21px;
 
-  border-bottom: 1px solid rgba(39, 49, 37, 0.09);
+  border-bottom: 1px solid var(--theme-border-207-215-196-0_09, rgba(39, 49, 37, 0.09));
 
-  background: #f7f3ea;
+  background: var(--theme-surface-24-28-24-1, #f7f3ea);
 }
 
 .paymentBarInfo {
@@ -581,7 +581,7 @@
 }
 
 .paymentBarInfo > span {
-  color: #75806f;
+  color: var(--theme-text-184-196-170-1, #75806f);
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -599,7 +599,7 @@
 }
 
 .paymentBar > span {
-  color: #53634e;
+  color: var(--theme-text-184-196-170-1, #53634e);
 
   font-size: 11px;
 }
@@ -609,7 +609,7 @@
 
   padding: 0 12px;
 
-  border: 1px solid rgba(61, 76, 56, 0.2);
+  border: 1px solid var(--theme-border-207-215-196-0_2, rgba(61, 76, 56, 0.2));
 
   border-radius: 4px;
 
@@ -630,9 +630,9 @@
 
   padding: 15px 21px;
 
-  border-bottom: 1px solid rgba(39, 49, 37, 0.09);
+  border-bottom: 1px solid var(--theme-border-207-215-196-0_09, rgba(39, 49, 37, 0.09));
 
-  background: #ece8de;
+  background: var(--theme-surface-24-28-24-1, #ece8de);
 }
 
 /* =========================================================
@@ -673,9 +673,9 @@
 .customerMessage {
   align-self: flex-start;
 
-  border: 1px solid rgba(39, 49, 37, 0.13);
+  border: 1px solid var(--theme-border-207-215-196-0_13, rgba(39, 49, 37, 0.13));
 
-  background: #e7e3d8;
+  background: var(--theme-surface-48-54-44-1, #e7e3d8);
 }
 
 .adminMessage {
@@ -693,7 +693,7 @@
 
   padding: 7px 11px;
 
-  color: #747d70;
+  color: var(--theme-text-184-196-170-1, #747d70);
 
   background: transparent;
 
@@ -748,9 +748,9 @@
 .composer {
   padding: 11px 14px;
 
-  border-top: 1px solid rgba(39, 49, 37, 0.11);
+  border-top: 1px solid var(--theme-border-207-215-196-0_11, rgba(39, 49, 37, 0.11));
 
-  background: #ece7dc;
+  background: var(--theme-surface-48-54-44-1, #ece7dc);
 }
 
 .composer textarea {
@@ -763,14 +763,14 @@
 
   padding: 11px 12px;
 
-  border: 1px solid rgba(39, 49, 37, 0.17);
+  border: 1px solid var(--theme-border-207-215-196-0_17, rgba(39, 49, 37, 0.17));
 
   border-radius: 6px;
 
   outline: none;
 
-  color: #2d372b;
-  background: #fbf8f0;
+  color: var(--theme-text-240-236-226-1, #2d372b);
+  background: var(--theme-surface-37-42-35-1, #fbf8f0);
 
   font-family: Georgia, "Times New Roman", serif;
 
@@ -779,7 +779,7 @@
 }
 
 .composer textarea:focus {
-  border-color: #607258;
+  border-color: var(--theme-border-207-215-196-1, #607258);
 
   box-shadow: 0 0 0 3px rgba(86, 108, 77, 0.08);
 }
@@ -795,7 +795,7 @@
 }
 
 .composer span {
-  color: #737d70;
+  color: var(--theme-text-184-196-170-1, #737d70);
 
   font-size: 10px;
 }
@@ -820,7 +820,7 @@
 .composer button,
 .chatFooter button,
 .restoreButton {
-  border: 1px solid #4b5b45;
+  border: 1px solid var(--theme-border-207-215-196-1, #4b5b45);
 
   color: #f3eee5;
   background: #4b5b45;
@@ -841,9 +841,9 @@
 
   padding: 7px 14px;
 
-  border-top: 1px solid rgba(39, 49, 37, 0.11);
+  border-top: 1px solid var(--theme-border-207-215-196-0_11, rgba(39, 49, 37, 0.11));
 
-  background: #e7e2d7;
+  background: var(--theme-surface-48-54-44-1, #e7e2d7);
 }
 
 .footerActions {
@@ -854,23 +854,23 @@
 }
 
 .dangerButton {
-  border: 1px solid rgba(131, 73, 57, 0.27);
+  border: 1px solid var(--theme-border-207-215-196-0_27, rgba(131, 73, 57, 0.27));
 
-  color: #795347;
-  background: #f1e4de;
+  color: var(--theme-text-232-169-150-1, #795347);
+  background: var(--theme-surface-48-54-44-1, #f1e4de);
 }
 
 .dangerButton:hover {
-  background: #ead8d0;
+  background: var(--theme-surface-48-54-44-1, #ead8d0);
 }
 
 .closed {
   padding: 12px;
 
-  border-top: 1px solid rgba(39, 49, 37, 0.11);
+  border-top: 1px solid var(--theme-border-207-215-196-0_11, rgba(39, 49, 37, 0.11));
 
-  color: #737d70;
-  background: #e9e5da;
+  color: var(--theme-text-184-196-170-1, #737d70);
+  background: var(--theme-surface-48-54-44-1, #e9e5da);
 
   text-align: center;
 
@@ -890,9 +890,9 @@
 
   padding: 18px;
 
-  color: #283226;
+  color: var(--theme-text-240-236-226-1, #283226);
 
-  background: linear-gradient(180deg, #f3efe6, #eeeae0);
+  background: linear-gradient(180deg, var(--theme-surface-24-28-24-1, #f3efe6), var(--theme-surface-24-28-24-1, #eeeae0));
 }
 
 .compactCard {
@@ -907,11 +907,11 @@
 
   padding: 17px 19px;
 
-  border: 1px solid rgba(39, 49, 37, 0.13);
+  border: 1px solid var(--theme-border-207-215-196-0_13, rgba(39, 49, 37, 0.13));
 
   border-radius: 7px;
 
-  background: #faf7ef;
+  background: var(--theme-surface-37-42-35-1, #faf7ef);
 
   box-shadow: 0 8px 24px rgba(32, 42, 30, 0.035);
 }
@@ -927,7 +927,7 @@
 }
 
 .compactCard span {
-  color: #737d70;
+  color: var(--theme-text-184-196-170-1, #737d70);
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -947,7 +947,7 @@
 .compactCard p {
   margin: 0;
 
-  color: #6c7669;
+  color: var(--theme-text-184-196-170-1, #6c7669);
 
   font-size: 12px;
 }
@@ -968,12 +968,12 @@
 
   padding: 0 12px;
 
-  border: 1px solid rgba(49, 62, 45, 0.17);
+  border: 1px solid var(--theme-border-207-215-196-0_17, rgba(49, 62, 45, 0.17));
 
   border-radius: 4px;
 
-  color: #455240;
-  background: #efebe2;
+  color: var(--theme-text-184-196-170-1, #455240);
+  background: var(--theme-surface-24-28-24-1, #efebe2);
 
   cursor: pointer;
 
@@ -986,15 +986,15 @@
 
 .compactActions a:hover,
 .compactActions button:hover {
-  background: #e7e2d8;
+  background: var(--theme-surface-48-54-44-1, #e7e2d8);
 }
 
 .compactActions .dangerButton {
-  color: #795347;
+  color: var(--theme-text-232-169-150-1, #795347);
 
-  border-color: rgba(131, 73, 57, 0.25);
+  border-color: var(--theme-border-207-215-196-0_25, rgba(131, 73, 57, 0.25));
 
-  background: #f1e4de;
+  background: var(--theme-surface-48-54-44-1, #f1e4de);
 }
 
 /* =========================================================
@@ -1174,8 +1174,8 @@
 .paymentDrawer {
   flex-shrink: 0;
   border-bottom: 1px solid #d9ddcf;
-  background: #f4f0e7;
-  color: #263126;
+  background: var(--theme-surface-24-28-24-1, #f4f0e7);
+  color: var(--theme-text-240-236-226-1, #263126);
 }
 .paymentDrawer summary {
   display: flex;

@@ -11,7 +11,7 @@ export async function getServices(): Promise<Service[]> {
   if (error) throw new Error("Services could not be loaded. Please retry.");
   return (data ?? []).map((row) => {
     const packages = (row.packages as NonNullable<Service["packages"]>).map(
-      (p) => p.enabled && p.cents !== null ? p : { id: p.id, name: p.name, enabled: false, cents: null, scope: "", includes: [] },
+      (p) => !row.data.customOnly && p.enabled && p.cents !== null ? p : { id: p.id, name: p.name, enabled: false, cents: null, scope: "", includes: [] },
     );
     const published = packages.filter((p) => p.enabled && p.cents !== null);
     return {

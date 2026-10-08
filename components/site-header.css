@@ -36,7 +36,7 @@
     #061009 68%,
     #1d241d 77%,
     #67685f 88%,
-    #efecdf 100%
+    var(--theme-surface-24-28-24-1, #efecdf) 100%
   );
 
   box-shadow:
@@ -100,7 +100,7 @@
   width: 1px;
   height: 38px;
 
-  background: rgba(241, 236, 224, 0.48);
+  background: var(--theme-surface-24-28-24-0_48, rgba(241, 236, 224, 0.48));
 }
 
 .site-header-brand-word {
@@ -164,7 +164,7 @@
 
   transform: scaleX(0.45);
 
-  background: #f4efe4;
+  background: var(--theme-surface-24-28-24-1, #f4efe4);
 
   transition:
     opacity 160ms ease,
@@ -203,7 +203,7 @@
 
   border-radius: 999px;
 
-  color: #142014;
+  color: var(--theme-text-240-236-226-1, #142014);
 
   cursor: pointer;
 
@@ -532,7 +532,7 @@
 
 @media (max-width: 980px) {
   .site-header-cart {
-    color: #142014;
+    color: var(--theme-text-240-236-226-1, #142014);
   }
 }
 

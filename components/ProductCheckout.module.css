@@ -3,15 +3,15 @@
   padding: 22px;
   border: 1px solid #cbd1c1;
   border-radius: 14px;
-  background: #f5f3e9;
-  color: #293b29;
+  background: var(--theme-surface-24-28-24-1, #f5f3e9);
+  color: var(--theme-text-240-236-226-1, #293b29);
   text-align: left;
 }
 
 .eyebrow {
   font-size: 10px;
   letter-spacing: 0.16em;
-  color: #58694d;
+  color: var(--theme-text-184-196-170-1, #58694d);
 }
 
 .card h3 {
@@ -24,7 +24,7 @@
 .card p {
   font-size: 13px;
   line-height: 1.65;
-  color: #52604b;
+  color: var(--theme-text-184-196-170-1, #52604b);
   overflow-wrap: anywhere;
 }
 
@@ -54,7 +54,7 @@
 
 .card .total {
   font-size: 22px;
-  color: #293b29;
+  color: var(--theme-text-240-236-226-1, #293b29);
 }
 
 .actions {
@@ -73,7 +73,7 @@
   border: 1px solid #bac4ae;
   border-radius: 8px;
   background: transparent;
-  color: #344b30;
+  color: var(--theme-text-240-236-226-1, #344b30);
   font: inherit;
   font-size: 13px;
   text-decoration: none;
@@ -83,7 +83,7 @@
 .actions > :first-child {
   background: #475b3c;
   color: #fffdf5;
-  border-color: #475b3c;
+  border-color: var(--theme-border-207-215-196-1, #475b3c);
 }
 
 .actions > :hover {

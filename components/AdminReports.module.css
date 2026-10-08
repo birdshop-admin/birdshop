@@ -1,15 +1,15 @@
 .report {
   display: grid;
   gap: 22px;
-  color: #2d3d29;
+  color: var(--theme-text-240-236-226-1, #2d3d29);
 }
 .panel {
   padding: 26px;
   border: 1px solid #d8d9cd;
   border-radius: 16px;
-  background: #f8f5ec;
+  background: var(--theme-surface-24-28-24-1, #f8f5ec);
   min-width: 0;
-  color: #2d3d29;
+  color: var(--theme-text-240-236-226-1, #2d3d29);
 }
 .panel h2 {
   font:
@@ -26,7 +26,7 @@
 .panel p {
   font-size: 13px;
   line-height: 1.7;
-  color: #64705e;
+  color: var(--theme-text-184-196-170-1, #64705e);
 }
 .metrics {
   display: grid;
@@ -39,16 +39,16 @@
   gap: 13px;
   padding: 22px;
   border-radius: 14px;
-  background: #f8f5ec;
+  background: var(--theme-surface-24-28-24-1, #f8f5ec);
   border: 1px solid #d8d9cd;
   min-width: 0;
 }
 .metrics .primary {
-  background: #dce4d2;
+  background: var(--theme-surface-48-54-44-1, #dce4d2);
   border-color: #bdc9ad;
 }
 .metrics span {
-  color: #54634b;
+  color: var(--theme-text-184-196-170-1, #54634b);
   font:
     600 12px/1.5 Arial,
     sans-serif;
@@ -61,7 +61,7 @@
   font-variant-numeric: tabular-nums;
 }
 .metrics small {
-  color: #64705e;
+  color: var(--theme-text-184-196-170-1, #64705e);
   font:
     400 11px/1.6 Arial,
     sans-serif;
@@ -81,13 +81,13 @@
 }
 .heading a,
 .foot a {
-  color: #435b36;
+  color: var(--theme-text-184-196-170-1, #435b36);
   text-decoration: underline;
   text-underline-offset: 4px;
   font-size: 12px;
 }
 .eyebrow {
-  color: #6c775f;
+  color: var(--theme-text-184-196-170-1, #6c775f);
   font:
     600 10px/1.6 Arial,
     sans-serif;
@@ -107,7 +107,7 @@
   font-size: 13px;
 }
 a.actionRow:hover {
-  color: #65824f;
+  color: var(--theme-text-184-196-170-1, #65824f);
 }
 .actionRow b {
   flex-shrink: 0;
@@ -116,7 +116,7 @@ a.actionRow:hover {
 }
 .empty {
   padding: 20px 0;
-  color: #65715e;
+  color: var(--theme-text-184-196-170-1, #65715e);
   font-size: 14px;
   line-height: 1.7;
 }
@@ -134,7 +134,7 @@ a.actionRow:hover {
   font-size: 13px;
 }
 .facts dt {
-  color: #65715e;
+  color: var(--theme-text-184-196-170-1, #65715e);
 }
 .facts dd {
   margin: 0;
@@ -163,7 +163,7 @@ a.actionRow:hover {
   font-weight: 500;
 }
 .order small {
-  color: #65715e;
+  color: var(--theme-text-184-196-170-1, #65715e);
   line-height: 1.5;
 }
 .stock {
@@ -172,7 +172,7 @@ a.actionRow:hover {
   gap: 10px;
   padding: 16px;
   border-radius: 10px;
-  background: #eeeee3;
+  background: var(--theme-surface-24-28-24-1, #eeeee3);
 }
 .stock > div {
   display: grid;
@@ -186,7 +186,7 @@ a.actionRow:hover {
 .stock span {
   text-transform: capitalize;
   font-size: 11px;
-  color: #65715e;
+  color: var(--theme-text-184-196-170-1, #65715e);
 }
 .activity {
   padding: 0;
@@ -215,7 +215,7 @@ a.actionRow:hover {
 .activity time {
   font-size: 11px;
   line-height: 1.5;
-  color: #65715e;
+  color: var(--theme-text-184-196-170-1, #65715e);
 }
 .activity time {
   flex-shrink: 0;
@@ -230,11 +230,11 @@ a.actionRow:hover {
   color: #dce5ce;
 }
 .error {
-  background: #faf0e8;
+  background: var(--theme-surface-24-28-24-1, #faf0e8);
   border: 1px solid #dbc2ac;
   border-radius: 9px;
   padding: 14px;
-  color: #7e4a30;
+  color: var(--theme-text-232-169-150-1, #7e4a30);
   font-size: 13px;
 }
 .periods {
@@ -247,8 +247,8 @@ a.actionRow:hover {
   padding: 9px 15px;
   border: 1px solid #cad0bd;
   border-radius: 8px;
-  color: #3e5234;
-  background: #fffdf6;
+  color: var(--theme-text-184-196-170-1, #3e5234);
+  background: var(--theme-surface-37-42-35-1, #fffdf6);
   cursor: pointer;
   font:
     400 13px Arial,
@@ -257,7 +257,7 @@ a.actionRow:hover {
 .periods button[aria-pressed="true"] {
   background: #425b36;
   color: #fffdf6;
-  border-color: #425b36;
+  border-color: var(--theme-border-207-215-196-1, #425b36);
 }
 .revenue {
   display: grid;
@@ -271,7 +271,7 @@ a.actionRow:hover {
   gap: 8px;
 }
 .revenue span {
-  color: #64705e;
+  color: var(--theme-text-184-196-170-1, #64705e);
   font-size: 12px;
 }
 .revenue strong {
@@ -307,7 +307,7 @@ a.actionRow:hover {
   justify-content: space-between;
   gap: 12px;
   font-size: 11px;
-  color: #65715e;
+  color: var(--theme-text-184-196-170-1, #65715e);
 }
 .detailRows {
   max-height: 360px;

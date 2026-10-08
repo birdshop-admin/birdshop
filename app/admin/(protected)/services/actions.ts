@@ -27,6 +27,7 @@ export async function saveService(
       error: "Enter a URL slug, service name, game, category and description.",
       success: "",
     };
+  const customOnly = f.get("customOnly") === "on";
   const packages = [];
   for (const [id, label] of [
     ["starter", "Basic"],
@@ -52,7 +53,7 @@ export async function saveService(
       cents = Number(whole) * 100 + Number(decimal.padEnd(2, "0"));
     }
     if (
-      enabled &&
+      !customOnly && enabled &&
       (cents === null ||
         cents < 50 ||
         cents > 99999999 ||
@@ -68,6 +69,7 @@ export async function saveService(
     packages.push({ id, name: label, enabled, cents, scope, includes });
   }
   const data = {
+    customOnly,
     slug,
     name,
     game,
@@ -89,7 +91,7 @@ export async function saveService(
       .map((x) => x.trim())
       .filter(Boolean)
       .slice(0, 12),
-    startingPrice: packages
+    startingPrice: customOnly ? null : packages
       .filter((p) => p.enabled)
       .reduce<number | null>(
         (n, p) => (n === null ? p.cents! / 100 : Math.min(n, p.cents! / 100)),

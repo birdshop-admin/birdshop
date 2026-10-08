@@ -90,7 +90,7 @@
   border-radius: 14px;
 
   background:
-    #f2eee4;
+    var(--theme-surface-24-28-24-1, #f2eee4);
 
   box-shadow:
     0 40px 100px
@@ -214,7 +214,7 @@
   padding:
     65px 70px;
 
-  color: #263225;
+  color: var(--theme-text-240-236-226-1, #263225);
 }
 
 .formHeading {
@@ -222,7 +222,7 @@
 }
 
 .formHeading > span {
-  color: #65735e;
+  color: var(--theme-text-184-196-170-1, #65735e);
 }
 
 .formHeading h2 {
@@ -240,7 +240,7 @@
 .formHeading p {
   margin: 0;
 
-  color: #757d72;
+  color: var(--theme-text-184-196-170-1, #757d72);
 
   font-family: var(--serif);
 
@@ -262,7 +262,7 @@
 }
 
 .field label {
-  color: #5f6d58;
+  color: var(--theme-text-184-196-170-1, #5f6d58);
 
   font-size: 10px;
   font-weight: 700;
@@ -280,15 +280,15 @@
 
   border:
     1px solid
-    rgba(45, 57, 41, 0.16);
+    var(--theme-border-207-215-196-0_16, rgba(45, 57, 41, 0.16));
 
   border-radius: 5px;
 
   outline: none;
 
-  color: #303c2e;
+  color: var(--theme-text-240-236-226-1, #303c2e);
 
-  background: #f9f6ee;
+  background: var(--theme-surface-24-28-24-1, #f9f6ee);
 
   font-family: var(--serif);
 
@@ -300,7 +300,7 @@
 }
 
 .field input:focus {
-  border-color: #75866c;
+  border-color: var(--theme-border-207-215-196-1, #75866c);
 
   box-shadow:
     0 0 0 3px
@@ -317,7 +317,7 @@
 .passwordLabel button {
   border: 0;
 
-  color: #66755f;
+  color: var(--theme-text-184-196-170-1, #66755f);
 
   background: transparent;
 
@@ -331,10 +331,10 @@
 .sessionNotice {
   margin-bottom: 18px;
   padding: 11px 12px;
-  border: 1px solid rgba(107, 91, 54, 0.2);
+  border: 1px solid var(--theme-border-207-215-196-0_2, rgba(107, 91, 54, 0.2));
   border-radius: 5px;
-  color: #6f613f;
-  background: #efe8d4;
+  color: var(--theme-text-184-196-170-1, #6f613f);
+  background: var(--theme-surface-48-54-44-1, #efe8d4);
   font-family: var(--serif);
   font-size: 13px;
   line-height: 1.45;
@@ -346,13 +346,13 @@
 
   border:
     1px solid
-    rgba(123, 63, 52, 0.2);
+    var(--theme-border-207-215-196-0_2, rgba(123, 63, 52, 0.2));
 
   border-radius: 5px;
 
-  color: #74483f;
+  color: var(--theme-text-232-169-150-1, #74483f);
 
-  background: #eee2dc;
+  background: var(--theme-surface-48-54-44-1, #eee2dc);
 
   font-family: var(--serif);
 
@@ -417,7 +417,7 @@
 .securityNote {
   margin: -5px 0 0;
 
-  color: #8a9087;
+  color: var(--theme-text-184-196-170-1, #8a9087);
 
   text-align: center;
 

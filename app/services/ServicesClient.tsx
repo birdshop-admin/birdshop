@@ -64,7 +64,7 @@ function FeaturedServiceCard({ service }: { service: Service }) {
           </strong>
 
           <Link href={`/services/${service.slug}`}>
-            View Plans
+            {service.customOnly ? "View Service" : "View Plans"}
             <ArrowIcon />
           </Link>
         </div>
@@ -108,7 +108,7 @@ function ServiceCard({ service }: { service: Service }) {
 
           <span className={styles.available}>
             <CheckIcon />
-            AVAILABLE
+            {service.available ? "AVAILABLE" : "PAUSED"}
           </span>
         </div>
 
@@ -558,6 +558,7 @@ export default function ServicesPage({
         </div>
       </section>
 
+      <div className={styles.bottomScene}>
       {/* CUSTOM */}
 
       <section className={styles.customRequest}>
@@ -623,6 +624,7 @@ export default function ServicesPage({
       </section>
 
       <SiteFooter />
+      </div>
     </main>
   );
 }

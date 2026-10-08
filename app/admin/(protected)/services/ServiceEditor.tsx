@@ -1,5 +1,5 @@
 "use client";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { Service, ServicePlan } from "@/lib/services";
 import { saveService, deleteService } from "./actions";
 import s from "./services.module.css";
@@ -10,6 +10,7 @@ export default function ServiceEditor({
   service?: Service;
   visible?: boolean;
 }) {
+  const [customOnly, setCustomOnly] = useState(service?.customOnly ?? false);
   const [state, action, pending] = useActionState(saveService, {
     error: "",
     success: "",
@@ -122,12 +123,15 @@ export default function ServiceEditor({
               Featured on home
             </label>
           </div>
-          <p>
-            Custom requests stay available. Enable each fixed package only after
-            setting its price and exactly what the customer receives. Prices are
-            USD.
-          </p>
-          <div className={s.tiers}>
+          <label className={s.check}>
+            <input type="checkbox" name="customOnly" checked={customOnly}
+              onChange={event => setCustomOnly(event.target.checked)} />
+            Custom requests only — hide fixed-price tiers
+          </label>
+          <p>{customOnly
+            ? "Customers send their requirements for a personal quote. Existing package settings are saved for later; existing purchases remain valid."
+            : "Enable each fixed package after setting its price and included work. Custom requests remain available. Prices are USD."}</p>
+          <div className={s.tiers} style={{ display: customOnly ? "none" : undefined }}>
             {tiers.map((p) => (
               <section key={p.id}>
                 <h3>{p.name}</h3>

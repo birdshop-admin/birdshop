@@ -18,19 +18,19 @@
 }
 
 .notice[data-tone="success"] {
-  color: #486041;
+  color: var(--theme-text-184-196-170-1, #486041);
 
-  border: 1px solid rgba(75, 106, 66, 0.18);
+  border: 1px solid var(--theme-border-207-215-196-0_18, rgba(75, 106, 66, 0.18));
 
-  background: #e7ede3;
+  background: var(--theme-surface-24-28-24-1, #e7ede3);
 }
 
 .notice[data-tone="neutral"] {
-  color: #697266;
+  color: var(--theme-text-184-196-170-1, #697266);
 
-  border: 1px solid rgba(88, 94, 82, 0.15);
+  border: 1px solid var(--theme-border-207-215-196-0_15, rgba(88, 94, 82, 0.15));
 
-  background: #ece9e0;
+  background: var(--theme-surface-24-28-24-1, #ece9e0);
 }
 
 /* =========================================================
@@ -48,21 +48,21 @@
 
   padding: 17px 18px;
 
-  border: 1px solid rgba(55, 71, 50, 0.16);
+  border: 1px solid var(--theme-border-207-215-196-0_16, rgba(55, 71, 50, 0.16));
 
   border-radius: 9px;
 
-  color: #293327;
+  color: var(--theme-text-240-236-226-1, #293327);
 
-  background: linear-gradient(145deg, #faf7ef, #eeeade);
+  background: linear-gradient(145deg, var(--theme-surface-37-42-35-1, #faf7ef), var(--theme-surface-24-28-24-1, #eeeade));
 
   box-shadow: 0 10px 26px rgba(30, 41, 28, 0.055);
 }
 
 .request[data-status="paid"] {
-  border-color: rgba(78, 107, 69, 0.25);
+  border-color: var(--theme-border-207-215-196-0_25, rgba(78, 107, 69, 0.25));
 
-  background: linear-gradient(145deg, #f2f6ef, #e4eadf);
+  background: linear-gradient(145deg, var(--theme-surface-24-28-24-1, #f2f6ef), var(--theme-surface-48-54-44-1, #e4eadf));
 }
 
 .request[data-status="cancelled"],
@@ -85,7 +85,7 @@
 }
 
 .requestEyebrow {
-  color: #707b6c;
+  color: var(--theme-text-184-196-170-1, #707b6c);
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -96,7 +96,7 @@
 }
 
 .requestTitle {
-  color: #2b3629;
+  color: var(--theme-text-240-236-226-1, #2b3629);
 
   font-family: Georgia, "Times New Roman", serif;
 
@@ -111,11 +111,11 @@
 
   padding: 6px 9px;
 
-  border: 1px solid rgba(67, 85, 61, 0.16);
+  border: 1px solid var(--theme-border-207-215-196-0_16, rgba(67, 85, 61, 0.16));
 
   border-radius: 999px;
 
-  color: #596653;
+  color: var(--theme-text-184-196-170-1, #596653);
 
   background: rgba(83, 103, 76, 0.08);
 
@@ -132,7 +132,7 @@
 .requestDescription {
   margin: 11px 0 0;
 
-  color: #687365;
+  color: var(--theme-text-184-196-170-1, #687365);
 
   font-family: Georgia, "Times New Roman", serif;
 
@@ -157,11 +157,11 @@
 
   padding-top: 13px;
 
-  border-top: 1px solid rgba(43, 56, 40, 0.11);
+  border-top: 1px solid var(--theme-border-207-215-196-0_11, rgba(43, 56, 40, 0.11));
 }
 
 .requestAmount {
-  color: #293327;
+  color: var(--theme-text-240-236-226-1, #293327);
 
   font-family: Georgia, "Times New Roman", serif;
 
@@ -180,7 +180,7 @@
 
   padding: 0 15px;
 
-  border: 1px solid #485942;
+  border: 1px solid var(--theme-border-207-215-196-1, #485942);
 
   border-radius: 5px;
 
@@ -206,7 +206,7 @@
 }
 
 .paidLabel {
-  color: #4d6647;
+  color: var(--theme-text-184-196-170-1, #4d6647);
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -223,7 +223,7 @@
 }
 
 .requestFooter span {
-  color: #798274;
+  color: var(--theme-text-184-196-170-1, #798274);
 
   font-size: 10px;
 }
@@ -233,7 +233,7 @@
 
   margin-top: 7px;
 
-  color: #838b80;
+  color: var(--theme-text-184-196-170-1, #838b80);
 
   font-size: 9px;
   line-height: 1.4;
@@ -260,32 +260,32 @@
   box-sizing: border-box;
   flex-shrink: 0;
   max-width: 100%;
-  background: #fffdf7;
+  background: var(--theme-surface-37-42-35-1, #fffdf7);
   border: 1px solid #d4d8c8;
-  border-left: 3px solid #657654;
+  border-left: 3px solid var(--theme-border-207-215-196-1, #657654);
   border-radius: 10px;
   box-shadow: 0 3px 12px #29372b06;
-  color: #34472e;
+  color: var(--theme-text-240-236-226-1, #34472e);
 }
 .request.request .requestTitle {
-  color: #30442b;
+  color: var(--theme-text-240-236-226-1, #30442b);
   overflow-wrap: anywhere;
 }
 .request.request .requestEyebrow {
-  color: #64715b;
+  color: var(--theme-text-184-196-170-1, #64715b);
   font-size: 10px;
   font-weight: 600;
 }
 .request.request .requestAmount {
-  color: #344c2c;
+  color: var(--theme-text-240-236-226-1, #344c2c);
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
 .request.request .requestStatus {
   font-size: 10px;
   letter-spacing: 0.03em;
-  background: #f2ecd9;
-  color: #6c592a;
+  background: var(--theme-surface-24-28-24-1, #f2ecd9);
+  color: var(--theme-text-184-196-170-1, #6c592a);
   border-color: #e5dcc1;
 }
 .request.request .button {
@@ -293,44 +293,44 @@
   padding: 10px 17px;
   border: 1px solid #aaba99;
   border-radius: 7px;
-  background: #fffefb;
-  color: #3f5834;
+  background: var(--theme-surface-37-42-35-1, #fffefb);
+  color: var(--theme-text-184-196-170-1, #3f5834);
   font-size: 13px;
 }
 .request.request .button:hover:not(:disabled) {
-  background: #edf1e5;
-  border-color: #6c805b;
+  background: var(--theme-surface-24-28-24-1, #edf1e5);
+  border-color: var(--theme-border-207-215-196-1, #6c805b);
 }
 .request.request .button:focus-visible {
   outline: 2px solid #526a48;
   outline-offset: 3px;
 }
 .request.request .requestFooter span {
-  color: #65705e;
+  color: var(--theme-text-184-196-170-1, #65705e);
   font-size: 11px;
 }
 .request.request .safeNote {
-  color: #707868;
+  color: var(--theme-text-184-196-170-1, #707868);
   font-size: 10px;
 }
 .request.request[data-status="paid"] {
-  background: #fffdf7;
+  background: var(--theme-surface-37-42-35-1, #fffdf7);
 }
 .request.request[data-status="paid"] .requestStatus {
-  background: #eaf0e1;
-  color: #445e37;
+  background: var(--theme-surface-24-28-24-1, #eaf0e1);
+  color: var(--theme-text-184-196-170-1, #445e37);
   border-color: #d6dfc8;
 }
 .request.request[data-status="cancelled"],
 .request.request[data-status="expired"] {
   opacity: 1;
-  background: #f5f4ed;
-  border-left-color: #a1a697;
+  background: var(--theme-surface-24-28-24-1, #f5f4ed);
+  border-left-color: var(--theme-border-207-215-196-1, #a1a697);
 }
 .request.request[data-status="cancelled"] .requestStatus,
 .request.request[data-status="expired"] .requestStatus {
-  background: #e9e9e1;
-  color: #606858;
+  background: var(--theme-surface-24-28-24-1, #e9e9e1);
+  color: var(--theme-text-184-196-170-1, #606858);
   border-color: #dbded1;
 }
 .paymentLine {

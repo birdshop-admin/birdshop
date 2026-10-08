@@ -7,7 +7,7 @@
 
   --admin-panel: #101d13;
   --admin-panel-soft: #162318;
-  --admin-panel-bright: #f7f3e9;
+  --admin-panel-bright: var(--theme-surface-24-28-24-1, #f7f3e9);
 
   --admin-ink: #f2eee4;
   --admin-ink-soft: rgba(242, 238, 228, 0.72);
@@ -22,7 +22,7 @@
 
   --admin-accent: #4f6047;
   --admin-accent-hover: #607158;
-  --admin-accent-soft: #dfe6da;
+  --admin-accent-soft: var(--theme-surface-48-54-44-1, #dfe6da);
 
   --admin-success: #4f6949;
   --admin-warning: #7a6745;

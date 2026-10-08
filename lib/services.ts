@@ -7,6 +7,7 @@ export type ServicePlan = {
   includes: string[];
 };
 export type Service = {
+  customOnly?: boolean;
   packages?: ServicePlan[];
   slug: string;
   name: string;

@@ -1,6 +1,6 @@
 .page {
   padding: 36px 20px 70px;
-  color: #263326;
+  color: var(--theme-text-240-236-226-1, #263326);
 }
 .shell {
   box-sizing: border-box;
@@ -9,14 +9,14 @@
   padding: clamp(22px, 4vw, 48px);
   border: 1px solid #dad7cb;
   border-radius: 18px;
-  background: #f7f4eb;
+  background: var(--theme-surface-24-28-24-1, #f7f4eb);
   box-shadow: 0 12px 36px #27322508;
 }
 .eyebrow {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.18em;
-  color: #62705b;
+  color: var(--theme-text-184-196-170-1, #62705b);
 }
 .shell h1 {
   margin: 18px 0 24px;
@@ -29,7 +29,7 @@
   max-width: 600px;
   font-size: 17px;
   line-height: 1.75;
-  color: #5c6656;
+  color: var(--theme-text-184-196-170-1, #5c6656);
 }
 .form {
   display: grid;
@@ -48,11 +48,11 @@
   width: 100%;
   min-height: 50px;
   padding: 13px 15px;
-  background: #fffdf7;
+  background: var(--theme-surface-37-42-35-1, #fffdf7);
   border: 1px solid #cfcec2;
   border-radius: 9px;
   font: inherit;
-  color: #263326;
+  color: var(--theme-text-240-236-226-1, #263326);
 }
 .primary,
 .secondary {
@@ -71,7 +71,7 @@
   cursor: pointer;
 }
 .primary {
-  border: 1px solid #465b40;
+  border: 1px solid var(--theme-border-207-215-196-1, #465b40);
   background: #465b40;
   color: #fffdf7;
 }
@@ -81,10 +81,10 @@
 .secondary {
   border: 1px solid #c9cebd;
   background: transparent;
-  color: #354c38;
+  color: var(--theme-text-240-236-226-1, #354c38);
 }
 .secondary:hover {
-  background: #eaeadd;
+  background: var(--theme-surface-24-28-24-1, #eaeadd);
 }
 .shell button:disabled {
   opacity: 0.6;
@@ -98,26 +98,26 @@
   max-width: 550px;
   font-size: 12px;
   line-height: 1.75;
-  color: #66715e;
+  color: var(--theme-text-184-196-170-1, #66715e);
 }
 .textLink {
-  color: #354c38;
+  color: var(--theme-text-240-236-226-1, #354c38);
   text-underline-offset: 5px;
   font-size: 14px;
 }
 .notice {
   padding: 20px;
   margin: 20px 0;
-  background: #eeeade;
+  background: var(--theme-surface-24-28-24-1, #eeeade);
   border: 1px solid #d9d6c9;
-  border-left: 3px solid #465b40;
+  border-left: 3px solid var(--theme-border-207-215-196-1, #465b40);
   border-radius: 10px;
   line-height: 1.6;
 }
 .notice p {
   margin: 7px 0 0;
   font-size: 14px;
-  color: #596153;
+  color: var(--theme-text-184-196-170-1, #596153);
 }
 .toolbar {
   display: flex;
@@ -128,7 +128,7 @@
 }
 .toolbar p {
   font-size: 13px;
-  color: #596153;
+  color: var(--theme-text-184-196-170-1, #596153);
   overflow-wrap: anywhere;
   min-width: 0;
 }
@@ -149,7 +149,7 @@
   justify-content: space-between;
   gap: 24px;
   padding: 24px;
-  background: #fffdf7;
+  background: var(--theme-surface-37-42-35-1, #fffdf7);
   border: 1px solid #deded0;
   border-radius: 13px;
 }
@@ -164,7 +164,7 @@
 }
 .card p {
   font-size: 12px;
-  color: #66715e;
+  color: var(--theme-text-184-196-170-1, #66715e);
   line-height: 1.6;
 }
 .meta {
@@ -173,14 +173,14 @@
   gap: 12px;
   font-size: 11px;
   letter-spacing: 0.06em;
-  color: #65705b;
+  color: var(--theme-text-184-196-170-1, #65705b);
   flex-wrap: wrap;
 }
 .badge {
   padding: 4px 9px;
   border-radius: 20px;
-  background: #e9edde;
-  color: #354c38;
+  background: var(--theme-surface-24-28-24-1, #e9edde);
+  color: var(--theme-text-240-236-226-1, #354c38);
 }
 .card button {
   flex-shrink: 0;
@@ -189,8 +189,8 @@
   padding: 16px;
   border: 1px solid #dfc3b9;
   border-radius: 10px;
-  background: #f8e9e2;
-  color: #813e2b;
+  background: var(--theme-surface-24-28-24-1, #f8e9e2);
+  color: var(--theme-text-232-169-150-1, #813e2b);
   font-size: 14px;
   line-height: 1.6;
   margin: 18px 0;
@@ -255,7 +255,7 @@
 .tabs button[aria-pressed="true"] {
   background: #465b40;
   color: #fffdf7;
-  border-color: #465b40;
+  border-color: var(--theme-border-207-215-196-1, #465b40);
 }
 .cardActions {
   display: grid;
@@ -270,7 +270,7 @@
 .recovery summary {
   cursor: pointer;
   font-size: 17px;
-  color: #354c38;
+  color: var(--theme-text-240-236-226-1, #354c38);
   padding: 10px 0;
 }
 .recovery summary:focus-visible {
@@ -284,10 +284,10 @@
   gap: 20px;
   padding: 16px 20px;
   margin: 0 0 18px;
-  background: #f4f0e6;
+  background: var(--theme-surface-24-28-24-1, #f4f0e6);
   border: 1px solid #d9d6c9;
   border-radius: 12px;
-  color: #263326;
+  color: var(--theme-text-240-236-226-1, #263326);
 }
 .deviceNotice strong {
   font-size: 14px;
@@ -295,7 +295,7 @@
 }
 .deviceNotice p {
   font-size: 12px;
-  color: #596153;
+  color: var(--theme-text-184-196-170-1, #596153);
   margin: 5px 0 0;
   line-height: 1.7;
 }

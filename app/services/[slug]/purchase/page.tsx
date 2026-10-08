@@ -17,7 +17,7 @@ export default async function Page({
   const plan = service?.packages?.find(
     (p) => p.id === tier && p.enabled && p.cents !== null,
   );
-  if (!service || !service.available || !plan) notFound();
+  if (!service || !service.available || service.customOnly || !plan) notFound();
   return (
     <main className="page-shell">
       <SiteHeader />

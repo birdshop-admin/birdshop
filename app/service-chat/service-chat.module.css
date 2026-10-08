@@ -11,16 +11,16 @@
 
   padding: 30px 36px 32px;
 
-  color: #20291f;
+  color: var(--theme-text-240-236-226-1, #20291f);
 
   background: linear-gradient(
-    rgba(246, 242, 233, 0.98),
-    rgba(241, 237, 226, 0.99)
+    var(--theme-surface-24-28-24-0_98, rgba(246, 242, 233, 0.98)),
+    var(--theme-surface-24-28-24-0_99, rgba(241, 237, 226, 0.99))
   );
 }
 
 .eyebrow {
-  color: #64705f;
+  color: var(--theme-text-184-196-170-1, #64705f);
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -41,11 +41,11 @@
 
   padding: 44px;
 
-  border: 1px solid rgba(43, 56, 40, 0.16);
+  border: 1px solid var(--theme-border-207-215-196-0_16, rgba(43, 56, 40, 0.16));
 
   border-radius: 9px;
 
-  background: #f8f4eb;
+  background: var(--theme-surface-24-28-24-1, #f8f4eb);
 
   box-shadow: 0 25px 65px rgba(24, 34, 23, 0.08);
 }
@@ -67,7 +67,7 @@
 .accessCard > p {
   margin: 0;
 
-  color: #657060;
+  color: var(--theme-text-184-196-170-1, #657060);
 
   font-family: Georgia, "Times New Roman", serif;
 
@@ -80,7 +80,7 @@
 
   margin-top: 19px;
 
-  color: #798276;
+  color: var(--theme-text-184-196-170-1, #798276);
 
   font-size: 12px;
   line-height: 1.5;
@@ -101,7 +101,7 @@
 }
 
 .accessForm label > span {
-  color: #687362;
+  color: var(--theme-text-184-196-170-1, #687362);
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -115,15 +115,15 @@
 .composer textarea {
   width: 100%;
 
-  border: 1px solid rgba(43, 56, 40, 0.17);
+  border: 1px solid var(--theme-border-207-215-196-0_17, rgba(43, 56, 40, 0.17));
 
   border-radius: 6px;
 
   outline: none;
 
-  color: #283226;
+  color: var(--theme-text-240-236-226-1, #283226);
 
-  background: #fffdf7;
+  background: var(--theme-surface-37-42-35-1, #fffdf7);
 
   font-family: Georgia, "Times New Roman", serif;
 }
@@ -138,7 +138,7 @@
 
 .accessForm input:focus,
 .composer textarea:focus {
-  border-color: #66785e;
+  border-color: var(--theme-border-207-215-196-1, #66785e);
 
   box-shadow: 0 0 0 3px rgba(89, 109, 81, 0.08);
 }
@@ -148,7 +148,7 @@
 .composer button {
   min-height: 46px;
 
-  border: 1px solid #465840;
+  border: 1px solid var(--theme-border-207-215-196-1, #465840);
 
   border-radius: 5px;
 
@@ -173,13 +173,13 @@
 .error {
   padding: 12px 14px;
 
-  border: 1px solid rgba(135, 77, 60, 0.22);
+  border: 1px solid var(--theme-border-207-215-196-0_22, rgba(135, 77, 60, 0.22));
 
   border-radius: 5px;
 
-  color: #774c40;
+  color: var(--theme-text-232-169-150-1, #774c40);
 
-  background: #f4e7e1;
+  background: var(--theme-surface-24-28-24-1, #f4e7e1);
 
   font-size: 13px;
 }
@@ -191,11 +191,11 @@
 
   padding: 52px;
 
-  border: 1px solid rgba(43, 56, 40, 0.14);
+  border: 1px solid var(--theme-border-207-215-196-0_14, rgba(43, 56, 40, 0.14));
 
   border-radius: 8px;
 
-  background: #f7f3ea;
+  background: var(--theme-surface-24-28-24-1, #f7f3ea);
 
   text-align: center;
 
@@ -384,11 +384,11 @@
 
   overflow: hidden;
 
-  border: 1px solid rgba(43, 56, 40, 0.15);
+  border: 1px solid var(--theme-border-207-215-196-0_15, rgba(43, 56, 40, 0.15));
 
   border-radius: 12px;
 
-  background: #f7f3ea;
+  background: var(--theme-surface-24-28-24-1, #f7f3ea);
 
   box-shadow: 0 16px 38px rgba(31, 40, 29, 0.055);
 }
@@ -410,9 +410,9 @@
 
   padding: 0 24px;
 
-  border-bottom: 1px solid rgba(43, 56, 40, 0.12);
+  border-bottom: 1px solid var(--theme-border-207-215-196-0_12, rgba(43, 56, 40, 0.12));
 
-  background: rgba(250, 247, 239, 0.9);
+  background: var(--theme-surface-37-42-35-0_9, rgba(250, 247, 239, 0.9));
 }
 
 .chatHeader > div {
@@ -422,7 +422,7 @@
 }
 
 .chatHeader > div span {
-  color: #73806d;
+  color: var(--theme-text-184-196-170-1, #73806d);
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -442,13 +442,13 @@
 .online {
   padding: 8px 11px;
 
-  border: 1px solid rgba(68, 88, 61, 0.17);
+  border: 1px solid var(--theme-border-207-215-196-0_17, rgba(68, 88, 61, 0.17));
 
   border-radius: 999px;
 
-  color: #52634c;
+  color: var(--theme-text-184-196-170-1, #52634c);
 
-  background: #e6ece2;
+  background: var(--theme-surface-24-28-24-1, #e6ece2);
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -524,7 +524,7 @@
 
   color: #f5f0e6;
 
-  border: 1px solid rgba(64, 82, 58, 0.1);
+  border: 1px solid var(--theme-border-207-215-196-0_1, rgba(64, 82, 58, 0.1));
 
   background: linear-gradient(145deg, #53674d, #465b40);
 }
@@ -532,11 +532,11 @@
 .adminMessage {
   align-self: flex-start;
 
-  color: #283226;
+  color: var(--theme-text-240-236-226-1, #283226);
 
-  border: 1px solid rgba(43, 56, 40, 0.13);
+  border: 1px solid var(--theme-border-207-215-196-0_13, rgba(43, 56, 40, 0.13));
 
-  background: #ebe7dc;
+  background: var(--theme-surface-48-54-44-1, #ebe7dc);
 }
 
 .systemMessage {
@@ -546,7 +546,7 @@
 
   padding: 7px 10px;
 
-  color: #6e776a;
+  color: var(--theme-text-184-196-170-1, #6e776a);
 
   background: transparent;
 
@@ -602,7 +602,7 @@
 .empty {
   margin: auto;
 
-  color: #778173;
+  color: var(--theme-text-184-196-170-1, #778173);
 
   font-family: Georgia, "Times New Roman", serif;
 
@@ -620,9 +620,9 @@
 
   padding: 12px 14px;
 
-  border-top: 1px solid rgba(43, 56, 40, 0.12);
+  border-top: 1px solid var(--theme-border-207-215-196-0_12, rgba(43, 56, 40, 0.12));
 
-  background: #eee9df;
+  background: var(--theme-surface-24-28-24-1, #eee9df);
 }
 
 .composer textarea {
@@ -648,7 +648,7 @@
 }
 
 .composer > div > span {
-  color: #7b8477;
+  color: var(--theme-text-184-196-170-1, #7b8477);
 
   font-size: 10px;
 }
@@ -660,7 +660,7 @@
 }
 
 .errorText {
-  color: #854f43 !important;
+  color: var(--theme-text-232-169-150-1, #854f43) !important;
 }
 
 .closed {
@@ -668,11 +668,11 @@
 
   padding: 17px;
 
-  border-top: 1px solid rgba(43, 56, 40, 0.13);
+  border-top: 1px solid var(--theme-border-207-215-196-0_13, rgba(43, 56, 40, 0.13));
 
-  color: #737c70;
+  color: var(--theme-text-184-196-170-1, #737c70);
 
-  background: #eee9df;
+  background: var(--theme-surface-24-28-24-1, #eee9df);
 
   text-align: center;
 
@@ -775,10 +775,10 @@
   margin: 0 0 18px;
   padding: 17px 20px;
   border: 1px solid #d9d6c9;
-  border-left: 3px solid #465b40;
+  border-left: 3px solid var(--theme-border-207-215-196-1, #465b40);
   border-radius: 12px;
-  background: #f4f0e6;
-  color: #263326;
+  background: var(--theme-surface-24-28-24-1, #f4f0e6);
+  color: var(--theme-text-240-236-226-1, #263326);
 }
 .chatNotice strong {
   font-family: inherit;
@@ -788,7 +788,7 @@
 }
 .chatNotice p {
   margin: 6px 0 0;
-  color: #596153;
+  color: var(--theme-text-184-196-170-1, #596153);
   font-family: inherit;
   font-size: 13px;
   line-height: 1.65;
@@ -805,12 +805,12 @@
   border: 1px solid #d9d6c9;
   border-radius: 8px;
   background: transparent;
-  color: #354c38;
+  color: var(--theme-text-240-236-226-1, #354c38);
   font-size: 24px;
   cursor: pointer;
 }
 .chatNotice > button:hover {
-  background: #e7e4d9;
+  background: var(--theme-surface-48-54-44-1, #e7e4d9);
 }
 .chatNotice > button:focus-visible {
   outline: 2px solid #465b40;
@@ -834,8 +834,8 @@
   padding: 8px 14px;
   border: 1px solid #d9d6c9;
   border-radius: 8px;
-  background: #f4f0e6;
-  color: #354c38;
+  background: var(--theme-surface-24-28-24-1, #f4f0e6);
+  color: var(--theme-text-240-236-226-1, #354c38);
   font-size: 13px;
   text-decoration: none;
 }

@@ -39,7 +39,7 @@
       90deg,
       rgba(5, 11, 7, 0.96),
       rgba(8, 15, 9, 0.89) 48%,
-      rgba(234, 231, 219, 0.64)
+      var(--theme-surface-48-54-44-0_64, rgba(234, 231, 219, 0.64))
     );
 }
 
@@ -276,12 +276,12 @@
   justify-self: center;
 
   color:
-    rgba(
+    var(--theme-text-240-236-226-0_78, rgba(
       22,
       31,
       20,
       0.78
-    );
+    ));
 
   font-family:
     Georgia,

@@ -2,8 +2,10 @@ import SubmitButton from "@/components/SubmitButton";
 import Link from "next/link";
 
 import AdminSidebar from "@/components/AdminSidebar";
+import AdminRefreshButton from "@/components/AdminRefreshButton";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 import {
   acceptServiceConversation,
@@ -287,6 +289,10 @@ export default async function ServiceAgentChatPage({
 
   let paymentRequests: PaymentRequest[] = [];
 
+  // The order behind this chat, read on the server (see below).
+  let orderState: { payment_status: string; service_status: string | null } | null =
+    null;
+
   if (selected && selectedIsMine) {
     const {
       data: detailData,
@@ -385,6 +391,32 @@ export default async function ServiceAgentChatPage({
       paymentRequests = (paymentResult.data ??
         []) as unknown as PaymentRequest[];
 
+      // Agents' database access can hide payment rows, which hid the Complete
+      // Order button. For a chat confirmed as this agent's own, read the payment
+      // and order status on the server, the same way the owner page decides.
+      if (profile?.user_id && detail.assigned_staff_user_id === profile.user_id) {
+        const admin = createAdminClient();
+        const [payments, order] = await Promise.all([
+          admin
+            .from("service_payment_requests")
+            .select(
+              "id, conversation_id, order_id, amount, currency, title, description, status, stripe_checkout_session_id, stripe_payment_status, refund_status, refunded_amount, paid_at, cancelled_at, created_at",
+            )
+            .eq("conversation_id", detail.id)
+            .order("created_at", { ascending: false }),
+          detail.order_id
+            ? admin
+                .from("orders")
+                .select("payment_status,service_status")
+                .eq("id", detail.order_id)
+                .maybeSingle()
+            : Promise.resolve({ data: null, error: null }),
+        ]);
+        if (!payments.error && payments.data)
+          paymentRequests = payments.data as unknown as PaymentRequest[];
+        if (!order.error) orderState = order.data;
+      }
+
       if (detail.last_sender_type === "customer") {
         await supabase.rpc("birdshop_staff_mark_service_chat_read", {
           p_conversation_id: detail.id,
@@ -430,6 +462,8 @@ export default async function ServiceAgentChatPage({
               and send secure BirdShop payment requests.
             </p>
           </div>
+
+          <AdminRefreshButton />
         </header>
         <nav
           aria-label="Service queue pages"
@@ -1087,12 +1121,19 @@ export default async function ServiceAgentChatPage({
                   <span>{staffName}</span>
                 </div>
 
-                {detail.order_id && detail.workflow_status === "completed" ? (
+                {detail.order_id &&
+                (orderState?.service_status === "completed" ||
+                  detail.workflow_status === "completed") ? (
                   <span className={completeStyles.completeNote}>
                     ✓ Order completed · closes automatically 1 hour after
                     completion
                   </span>
-                ) : detail.order_id && paidPayment ? (
+                ) : detail.order_id &&
+                  (orderState
+                    ? ["paid", "partially_refunded"].includes(
+                        orderState.payment_status,
+                      )
+                    : paidPayment) ? (
                   <details className={completeStyles.completeOrder}>
                     <summary>Complete Order</summary>
                     <form action={completeServiceOrderFromChat}>

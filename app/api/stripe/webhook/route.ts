@@ -1,7 +1,7 @@
 import type Stripe from "stripe";
 import { after } from "next/server";
 import { getStripe } from "@/lib/stripe";
-import { env, readBody } from "@/lib/server-config";
+import { env, logServerError, readBody } from "@/lib/server-config";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { processStripeEvent } from "@/lib/stripe-events";
 import { drainEmailJobs } from "@/lib/email-jobs";
@@ -52,7 +52,9 @@ export async function POST(request: Request) {
     if (error) throw new Error("Could not read Stripe event state.");
     if (!data.processed_at) await processStripeEvent(event);
     after(async () => {
-      await drainEmailJobs(2).catch(() => undefined);
+      await drainEmailJobs(2).catch((error: unknown) =>
+        logServerError("webhook email send", error),
+      );
     });
     return Response.json({ received: true });
   } catch (error) {

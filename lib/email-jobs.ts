@@ -1,5 +1,7 @@
 import "server-only";
 
+import { createHash } from "node:crypto";
+
 import {
   decryptInventoryCode,
   encryptInventoryCode,
@@ -8,7 +10,7 @@ import {
 import { orderToken } from "@/lib/order-access";
 import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { env, siteUrl } from "@/lib/server-config";
+import { env, logServerError, siteUrl } from "@/lib/server-config";
 import { serverRpc } from "@/lib/payment-service";
 
 import {
@@ -535,6 +537,7 @@ export async function drainEmailJobs(
     // Set once the provider accepts this envelope; later failures are bookkeeping only.
     let accepted = false;
     let providerCode: string | null = null;
+    let providerMessage = "";
 
     try {
       if (!(await maySend(job))) continue;
@@ -597,15 +600,27 @@ export async function drainEmailJobs(
 
       if (!lease) continue;
 
+      // Saved envelopes keep the sender from when they were first built. Always
+      // send from the current BIRDSHOP_EMAIL_FROM so fixing that setting fixes
+      // retries. A changed sender was never accepted by the provider, so it gets
+      // its own idempotency key; an unchanged one keeps the original key.
+      const currentFrom = env("BIRDSHOP_EMAIL_FROM");
+      const outgoing = { ...envelope, from: currentFrom };
+      const idempotencyKey =
+        envelope.from === currentFrom
+          ? `birdshop-job-${job.id}`
+          : `birdshop-job-${job.id}-${createHash("sha256").update(currentFrom).digest("hex").slice(0, 10)}`;
+
       const { data, error } = await new Resend(
         env("RESEND_API_KEY"),
-      ).emails.send(envelope, {
-        idempotencyKey: `birdshop-job-${job.id}`,
+      ).emails.send(outgoing, {
+        idempotencyKey,
       });
 
       if (error || !data?.id) {
         // Provider error codes (e.g. validation_error) contain no secrets or recipient data.
         providerCode = error?.name ?? "missing_message_id";
+        providerMessage = error?.message ?? "";
         throw new Error("Email provider rejected the message.");
       }
 
@@ -644,7 +659,13 @@ export async function drainEmailJobs(
       }
 
       sent++;
-    } catch {
+    } catch (problem) {
+      // The saved note stays generic; the log names the real cause (for example a
+      // missing setting or an unverified sending domain). Never logs email content.
+      logServerError(
+        `email ${job.kind}`,
+        providerCode ? `${providerCode}: ${providerMessage}` : problem,
+      );
       const { error: saveError } = await db
         .from("birdshop_email_jobs")
         .update({

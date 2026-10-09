@@ -763,7 +763,7 @@ export default function AdminLiveThread({
           value={body}
           onChange={(event) => setBody(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Reply to the customer..."
+          placeholder="Reply to the customer… (Enter sends, Shift + Enter adds a line)"
           rows={2}
           maxLength={4000}
           autoComplete="off"

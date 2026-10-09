@@ -1698,54 +1698,119 @@
 }
 
 /* =========================================================
-   DESKTOP: NEVER CRUSH THE MESSAGES
+   DESKTOP (1024px and wider): COMPACT CHROME, ROOMY MESSAGES
+   Together with fit-to-screen scaling (lib/admin-fit.ts), everything
+   above and below the messages is kept compact so the message list
+   gets most of the panel, and the reply box always stays on screen.
    The composer's base rules (around line 1060) use !important, so the
    reply-box overrides below do too.
-   The chat panel stacks a header, customer bar, payment
-   center and composer. On shorter windows they used to take
-   all the room and leave the message list a sliver. The
-   thread (messages + composer) now keeps at least 440px, and
-   if the panel is still too short it scrolls as a whole.
 ========================================================= */
 
 @media (min-width: 1024px) {
+  /* Page header: smaller title, description on one line. */
+  .header {
+    min-height: 0;
+    align-items: center;
+    padding-bottom: 10px;
+  }
+
+  .header h1 {
+    margin: 2px 0;
+    font-size: 32px;
+    line-height: 1.05;
+  }
+
+  .header p {
+    max-width: none;
+    margin: 2px 0 0;
+    overflow: hidden;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The links row sets its margin inline. */
+  .content > nav:not([class]) {
+    margin: 8px 0 !important;
+    font-size: 13px;
+  }
+
+  .workflowTabs {
+    margin-top: 4px;
+  }
+
+  .categoryTabs {
+    margin: 6px 0 8px;
+  }
+
+  /* If the panel is ever too short, it scrolls rather than hiding the
+     reply box; the thread keeps a sensible minimum. */
   .chat {
     overflow-y: auto;
   }
 
   .liveThread {
-    min-height: 440px;
+    min-height: 260px;
   }
 
-  /* A tighter order header and reply box leave more room for messages. */
+  /* Order header: eyebrow on top, then reference, title and type on one line. */
   .chatHeader {
     min-height: 0;
-    padding-top: 16px;
-    padding-bottom: 14px;
+    padding-top: 12px;
+    padding-bottom: 10px;
+  }
+
+  .chatIdentity {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 12px;
+  }
+
+  .chatIdentity > span {
+    flex-basis: 100%;
   }
 
   .chatIdentity .chatReference {
-    margin: 4px 0;
-    font-size: 20px;
+    margin: 2px 0;
+    font-size: 18px;
   }
 
   .chatIdentity h2 {
-    margin: 2px 0;
-    font-size: 24px;
+    margin: 0;
+    font-size: 22px;
   }
 
+  .chatIdentity > p {
+    margin: 0;
+    font-size: 12px;
+  }
+
+  /* Reply box: Send sits beside the text box instead of on a row below. */
   .liveThread > form {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: 12px;
     padding-top: 10px !important;
     padding-bottom: 10px !important;
   }
 
   .liveThread > form textarea[data-admin-chat-composer="true"] {
+    grid-column: 1;
+    min-height: 58px !important;
     padding-top: 11px !important;
     padding-bottom: 11px !important;
   }
 
   .liveThread > form > div {
-    margin-top: 8px !important;
+    grid-column: 2;
+    margin-top: 0 !important;
+  }
+
+  /* The keyboard hint now lives in the text box placeholder. */
+  .liveThread > form > div > span {
+    display: none;
   }
 }
 

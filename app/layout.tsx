@@ -8,6 +8,7 @@ import "../components/site-header.css";
 import { CartProvider } from "./cart-context";
 import SiteAnalyticsTracker from "@/components/SiteAnalyticsTracker";
 import { siteConfig } from "@/lib/site-config";
+import { ADMIN_FIT_HEAD_SCRIPT } from "@/lib/admin-fit";
 
 // Absolute base for share images and canonical URLs. lib/server-config's
 // siteUrl() throws when the variable is missing, so it is not used here: an
@@ -94,6 +95,8 @@ export default function RootLayout({
     // changes while in-page anchors keep the CSS smooth scrolling.
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
+        {/* Staff admin fit-to-screen scale, before first paint (lib/admin-fit.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: ADMIN_FIT_HEAD_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: `(function(){var d=document.documentElement,t='light';try{var a=location.pathname.indexOf('/admin')===0,s=localStorage.getItem(a?'birdshop-admin-theme':'birdshop-theme');if(a&&s===null){s=localStorage.getItem('birdshop-theme')||'light';localStorage.setItem('birdshop-admin-theme',s)}if(s==='dark')t='dark';if(!s&&!a){var n=Number(localStorage.getItem('birdshop-theme-hint')||0);if(n<3){d.dataset.themeHint='1';localStorage.setItem('birdshop-theme-hint',String(n+1))}}}catch(e){}d.dataset.theme=t})();` }} />
       </head>
 

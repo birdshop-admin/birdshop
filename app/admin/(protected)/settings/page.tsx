@@ -7,6 +7,7 @@ import { requireOwner } from "@/lib/staff-auth";
 import {
   retryBackgroundWork,
   reconcileSavedCheckout,
+  resendDeliveryCopy,
   resendReviewedEmail,
   retryProductDelivery,
 } from "./actions";
@@ -40,9 +41,9 @@ export const maxDuration = 60;
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ notice?: string }>;
+  searchParams: Promise<{ notice?: string; resend?: string }>;
 }) {
-  const { notice } = await searchParams;
+  const { notice, resend } = await searchParams;
   const { supabase, profile } = await requireOwner();
   const { data, error } = await supabase.rpc("birdshop_v2_admin_health");
   const health = data as Health | null;
@@ -152,6 +153,55 @@ export default async function Page({
               </article>
             ))}
             {deliveries.length === 0 && <p>All paid digital orders have been delivered.</p>}
+          </div>
+        </section>
+        <section className={local.section} id="resend">
+          <h2>Send codes to a different email</h2>
+          <p>
+            For a customer who typed the wrong email at checkout. Emails the
+            same codes already delivered for that order to the address you
+            enter. No new codes are used, and the order keeps its original
+            email. First confirm it is really the buyer: match the order
+            reference, amount, purchase time and the card&apos;s last 4 digits
+            in Stripe.
+          </p>
+          <div className={local.jobs}>
+            <article>
+              {resend && (
+                <p role="status" className={local.resendNotice}>
+                  {resend}
+                </p>
+              )}
+              <form action={resendDeliveryCopy}>
+                <label>
+                  Order reference
+                  <input
+                    name="reference"
+                    placeholder="BS-100059"
+                    required
+                    maxLength={20}
+                    autoComplete="off"
+                  />
+                </label>
+                <label>
+                  Correct email address
+                  <input
+                    name="email"
+                    type="email"
+                    placeholder="customer@example.com"
+                    required
+                    maxLength={320}
+                    autoComplete="off"
+                  />
+                </label>
+                <label>
+                  <input type="checkbox" name="verified" value="yes" required /> I
+                  verified this is the buyer (reference, amount, time and card&apos;s
+                  last 4 digits match Stripe).
+                </label>
+                <SubmitButton>Send codes to this email</SubmitButton>
+              </form>
+            </article>
           </div>
         </section>
         <section className={local.section}>

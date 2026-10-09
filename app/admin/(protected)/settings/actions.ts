@@ -135,3 +135,43 @@ export async function retryProductDelivery(form: FormData) {
   revalidatePath("/admin/settings");
   redirect("/admin/settings?notice=" + encodeURIComponent(message) + "#deliveries");
 }
+
+// Owner-only: email a copy of an order's already-delivered codes to a corrected
+// address. The order itself (and its original email) never changes.
+export async function resendDeliveryCopy(form: FormData) {
+  const { user } = await requireOwner();
+  const reference = String(form.get("reference") ?? "").trim().toUpperCase();
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const back = (text: string) =>
+    "/admin/settings?resend=" + encodeURIComponent(text) + "#resend";
+
+  if (!/^BS-\d{3,12}$/.test(reference))
+    redirect(back("Enter the order reference, for example BS-100059."));
+  if (email.length > 320 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    redirect(back("Enter a valid email address."));
+  if (form.get("verified") !== "yes")
+    redirect(back("Confirm you verified the buyer before resending codes."));
+
+  const { queueDeliveryCopy } = await import("@/lib/email-jobs");
+  let message: string;
+  try {
+    const jobId = await queueDeliveryCopy(reference, email, user.id);
+    await drainEmailJobs(1, jobId);
+    const { data: job } = await createAdminClient()
+      .from("birdshop_email_jobs")
+      .select("status")
+      .eq("id", jobId)
+      .single();
+    message =
+      job?.status === "sent"
+        ? `Sent: the codes for ${reference} were emailed to ${email}.`
+        : `Queued: the codes for ${reference} will be emailed to ${email}. Check Recent email jobs below.`;
+  } catch (error) {
+    message =
+      error instanceof Error && error.message.length < 200
+        ? error.message
+        : "The copy could not be sent. Retry shortly.";
+  }
+  revalidatePath("/admin/settings");
+  redirect(back(message));
+}

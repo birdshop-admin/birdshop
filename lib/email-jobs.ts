@@ -517,6 +517,74 @@ async function renderJob(job: EmailJob): Promise<Envelope> {
   };
 }
 
+/**
+ * Owner tool: email a copy of an order's ALREADY-SENT codes to a different
+ * address (for a customer who mistyped their email). Never allocates new codes
+ * and never changes the order: it renders the same delivery email the customer
+ * got, addressed to `email`, and queues it encrypted like a normal delivery.
+ * Only orders whose codes were already delivered qualify, so this can't reveal
+ * codes that a later refund could still return to stock.
+ */
+export async function queueDeliveryCopy(
+  reference: string,
+  email: string,
+  actorId: string,
+): Promise<string> {
+  const db = createAdminClient();
+  const { data: order, error } = await db
+    .from("orders")
+    .select("id,reference,payment_status,delivery_status,order_type")
+    .eq("reference", reference)
+    .maybeSingle();
+
+  if (error) throw new Error("Order lookup failed.");
+  if (!order) throw new Error("No order has that reference.");
+  if (order.order_type && order.order_type !== "product")
+    throw new Error("Only digital product orders have codes to resend.");
+  if (!["paid", "partially_refunded"].includes(order.payment_status))
+    throw new Error("Only paid orders can be resent.");
+  if (order.delivery_status !== "sent")
+    throw new Error(
+      "This order's codes were never delivered. Use Retry on the order in Digital deliveries instead.",
+    );
+
+  const envelope = await renderJob({
+    id: "",
+    kind: "product_delivery",
+    entity_id: order.id,
+    payload: null,
+    encrypted_payload: null,
+    lease_id: "",
+    attempts: 0,
+  });
+
+  const { data: job, error: insertError } = await db
+    .from("birdshop_email_jobs")
+    .insert({
+      // Unique per request, so the same copy can be sent again later if needed.
+      dedupe_key: `delivery-copy/${order.id}/${email}/${Date.now()}`,
+      kind: "product_delivery_copy",
+      entity_id: order.id,
+      encrypted_payload: encryptInventoryCode(
+        JSON.stringify({ ...envelope, to: email }),
+      ),
+    })
+    .select("id")
+    .single();
+
+  if (insertError || !job) throw new Error("The copy could not be queued.");
+
+  // Record who sent which order's codes where. No code values are logged.
+  await db.from("birdshop_audit_log").insert({
+    actor_id: actorId,
+    action: "delivery_copy_sent",
+    entity_id: order.id,
+    details: { reference: order.reference, to: email },
+  });
+
+  return job.id;
+}
+
 export async function drainEmailJobs(
   limit = 4,
   jobId: string | null = null,

@@ -107,7 +107,8 @@ export default function TurnstileWidget({
   return (
     <div
       ref={box}
-      style={{ minHeight: 65, maxWidth: "100%" }}
+      // No reserved height: in Cloudflare's Invisible mode nothing renders here.
+      style={{ maxWidth: "100%" }}
       aria-label="Security check"
     />
   );

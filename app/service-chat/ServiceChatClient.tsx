@@ -23,7 +23,7 @@ import {
   saveServiceChatToken,
   SERVICE_CHAT_LIVE_EVENT,
 } from "@/lib/service-chat-session";
-import { ArrowIcon, CheckIcon, CopyIcon } from "@/components/SiteIcons";
+import { ArrowIcon, CheckIcon, ClockIcon, CopyIcon } from "@/components/SiteIcons";
 import CustomerInbox from "./CustomerInbox";
 import DeviceChatAccess from "./DeviceChatAccess";
 import Link from "next/link";
@@ -130,6 +130,9 @@ type ChatData = {
   payment_status: string;
 
   service_status: string | null;
+
+  // Set once the order is completed: the chat closes at this time.
+  completion_closes_at?: string | null;
 
   messages: ChatMessage[];
   has_older?: boolean;
@@ -744,6 +747,31 @@ function ServiceChatView({ token }: { token: string }) {
     return () => window.clearInterval(timer);
   }, [awaitingConfirmation, loadChat]);
 
+  // Completed orders: tick a clock so the countdown and the composer update.
+  const closesAt = chat?.completion_closes_at
+    ? new Date(chat.completion_closes_at).getTime()
+    : null;
+  const [clock, setClock] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (closesAt === null) return;
+    const timer = window.setInterval(() => setClock(Date.now()), 15_000);
+    // When the hour is up, reload so the server closes the chat and adds its notice.
+    const closing = window.setTimeout(
+      () => {
+        setClock(Date.now());
+        void loadChat(true);
+      },
+      Math.max(0, closesAt - Date.now()) + 1500,
+    );
+    return () => {
+      window.clearInterval(timer);
+      window.clearTimeout(closing);
+    };
+  }, [closesAt, loadChat]);
+
+  const completionExpired = closesAt !== null && clock >= closesAt;
+
   /* =======================================================
      COPY REFERENCE (presentation only)
   ======================================================= */
@@ -833,7 +861,10 @@ function ServiceChatView({ token }: { token: string }) {
 
   // Checkout only starts for open chats; a closed chat must not
   // offer a button the server will refuse.
-  const chatOpen = chat.conversation_status === "open";
+  const chatOpen = chat.conversation_status === "open" && !completionExpired;
+
+  const minutesLeft =
+    closesAt !== null ? Math.max(1, Math.ceil((closesAt - clock) / 60_000)) : 0;
 
   const paymentMap = new Map(
     chat.payment_requests.map((request) => [request.id, request]),
@@ -1463,6 +1494,22 @@ function ServiceChatView({ token }: { token: string }) {
 
           {chatOpen ? (
             <form onSubmit={handleSend} className={styles.composer}>
+              {closesAt !== null && (
+                <p className={styles.closingNotice} role="status">
+                  <ClockIcon />
+                  <span>
+                    <strong>Order complete.</strong> This chat closes in{" "}
+                    {minutesLeft === 1 ? "about 1 minute" : `${minutesLeft} minutes`}{" "}
+                    (at{" "}
+                    {new Date(closesAt).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                    ). Send any last questions now.
+                  </span>
+                </p>
+              )}
+
               <div className={styles.composerField}>
                 <textarea
                   value={message}

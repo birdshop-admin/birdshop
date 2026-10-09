@@ -1,4 +1,6 @@
-const invite = process.env.NEXT_PUBLIC_DISCORD_INVITE_URL?.trim() ?? "";
+// Real BirdShop community invite; NEXT_PUBLIC_DISCORD_INVITE_URL can override it.
+const invite =
+  process.env.NEXT_PUBLIC_DISCORD_INVITE_URL?.trim() || "https://discord.gg/7Cup9uu3Gx";
 const discordUrl =
   /^https:\/\/(discord\.gg\/[A-Za-z0-9-]+|discord\.com\/invite\/[A-Za-z0-9-]+)$/.test(
     invite,

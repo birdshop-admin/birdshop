@@ -14,6 +14,7 @@ import {
 } from "react";
 
 import CatalogArtwork from "@/components/CatalogArtwork";
+import DiscordInvite from "@/components/DiscordInvite";
 import ProductThumbnail from "@/components/ProductThumbnail";
 import PublicProductCounter from "@/components/PublicProductCounter";
 import SiteFooter from "@/components/SiteFooter";
@@ -444,6 +445,8 @@ export default function HomeClient({
       </div>
 
       <SiteFooter />
+
+      <DiscordInvite />
     </main>
   );
 }

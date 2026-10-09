@@ -11,6 +11,10 @@ import {
   type CheckoutAttempt,
 } from "@/lib/payment-service";
 import { drainEmailJobs } from "@/lib/email-jobs";
+import {
+  CLOSE_AFTER_COMPLETION_MS,
+  closeCompletedChat,
+} from "@/lib/completed-chat";
 
 export async function recoverCheckoutAttempt(
   attempt: CheckoutAttempt,
@@ -103,10 +107,7 @@ export async function recoverCheckoutAttempt(
   await reconcileCheckout(session);
 }
 
-const CLOSE_AFTER_COMPLETION_MS = 60 * 60 * 1000;
-
-// A completed service chat stays open for an hour so the customer can say thanks
-// or ask a last question, then closes with a short system message.
+// Backstop for the chat page, which also closes a chat the moment its hour is up.
 async function closeCompletedChats() {
   const db = createAdminClient();
   const { data: chats, error } = await db
@@ -134,22 +135,7 @@ async function closeCompletedChats() {
   let closed = 0;
   for (const chat of chats) {
     if (!due.has(chat.order_id)) continue;
-    const { data: updated, error: closeError } = await db
-      .from("service_conversations")
-      .update({ status: "closed" })
-      .eq("id", chat.id)
-      .eq("status", "open")
-      .select("id");
-    if (closeError || !updated?.length) continue;
-    closed++;
-    await db.from("service_messages").insert({
-      conversation_id: chat.id,
-      sender_type: "system",
-      sender_label: "BirdShop",
-      body: "This order is complete and this chat is now closed. Need anything else? Start a new conversation from My Service.",
-      message_type: "system",
-      metadata: { event: "chat_auto_closed" },
-    });
+    if (await closeCompletedChat(chat.id)) closed++;
   }
   return closed;
 }

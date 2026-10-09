@@ -8,12 +8,30 @@ import {
 } from "@/lib/server-config";
 import { limitRequest, rateLimit } from "@/lib/rate-limit";
 import { serverRpc } from "@/lib/payment-service";
+import { closeCompletedChat, completionClosesAt } from "@/lib/completed-chat";
 type Context = { params: Promise<{ token: string }> };
 type ChatPayload = {
   customer_email?: unknown;
   customer_contact?: unknown;
   messages?: { metadata?: Record<string, unknown> | null }[];
 } & Record<string, unknown>;
+
+// A completed order's chat stays open for one hour. The page shows a countdown
+// from completion_closes_at, and the chat closes here the moment the hour is up,
+// without waiting for the background job.
+async function withCompletionWindow(chat: ChatPayload): Promise<ChatPayload> {
+  if (chat.workflow_status !== "completed" || typeof chat.order_id !== "string")
+    return chat;
+  const closesAt = await completionClosesAt(chat.order_id);
+  if (!closesAt) return chat;
+  const view = { ...chat, completion_closes_at: closesAt.toISOString() };
+  if (chat.conversation_status === "open" && closesAt.getTime() <= Date.now()) {
+    if (typeof chat.conversation_id === "string")
+      await closeCompletedChat(chat.conversation_id);
+    return { ...view, conversation_status: "closed" };
+  }
+  return view;
+}
 
 const NOT_FOUND = /^Conversation (not found|unavailable)\.$/;
 
@@ -64,7 +82,9 @@ export async function GET(request: Request, context: Context) {
       },
       [NOT_FOUND],
     );
-    return Response.json(customerView(chat), { headers: privateHeaders });
+    return Response.json(customerView(await withCompletionWindow(chat)), {
+      headers: privateHeaders,
+    });
   } catch (error) {
     if (error instanceof PublicError && error.status === 429) {
       return Response.json(
@@ -97,6 +117,15 @@ export async function POST(request: Request, context: Context) {
       body.message.length > 4000
     )
       throw new PublicError("Write a message of up to 4,000 characters.", 400);
+    const current = await withCompletionWindow(
+      await serverRpc<ChatPayload>("birdshop_get_service_chat", { p_token: token }),
+    );
+    // Chats closed by staff keep the existing refusal from the send RPC.
+    if (current.conversation_status !== "open" && current.completion_closes_at)
+      throw new PublicError(
+        "This order is complete and the chat has closed. Start a new conversation from My Service if you need anything else.",
+        409,
+      );
     await serverRpc("birdshop_v3_send_message", {
       p_token: token,
       p_body: body.message.trim(),
@@ -104,9 +133,11 @@ export async function POST(request: Request, context: Context) {
     });
     return Response.json(
       customerView(
-        await serverRpc<ChatPayload>("birdshop_get_service_chat", {
-          p_token: token,
-        }),
+        await withCompletionWindow(
+          await serverRpc<ChatPayload>("birdshop_get_service_chat", {
+            p_token: token,
+          }),
+        ),
       ),
       { headers: privateHeaders },
     );

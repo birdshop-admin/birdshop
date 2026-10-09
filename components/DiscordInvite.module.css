@@ -1,0 +1,387 @@
+/* =========================================================
+   DISCORD INVITE (home page popup)
+   Same language as the home hero: misty forest photo, forest
+   gradient, cream serif type and a cream primary button.
+   The card is a forest surface in both themes.
+========================================================= */
+
+.dialog {
+  width: min(420px, calc(100vw - 32px));
+  max-width: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: var(--bs-forest-ink);
+  overflow: visible;
+}
+
+.dialog::backdrop {
+  background:
+    radial-gradient(circle at 50% 45%, rgba(10, 20, 13, 0.45), rgba(3, 7, 4, 0.78));
+  backdrop-filter: blur(3px);
+}
+
+.dialog[open] {
+  animation: invite-in 460ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.dialog[open]::backdrop {
+  animation: invite-fade 360ms ease-out;
+}
+
+/* --- Card --- */
+
+.card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(240, 236, 226, 0.16);
+  border-radius: 18px;
+  background: #0b150e;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 34px 80px rgba(0, 0, 0, 0.55),
+    0 0 60px rgba(173, 194, 154, 0.08);
+}
+
+/* Misty forest photo, slowly drifting, as in the home hero. */
+.photo {
+  position: absolute;
+  inset: -12px;
+  z-index: -2;
+  background: url("/landscape1.webp") center 40% / cover no-repeat;
+  opacity: 0.55;
+  animation: invite-drift 18s ease-in-out infinite alternate;
+}
+
+.mist {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(360px 200px at 50% 0%, rgba(173, 194, 154, 0.22), transparent 70%),
+    linear-gradient(180deg, rgba(8, 16, 10, 0.55) 0%, rgba(8, 16, 10, 0.86) 42%, #0a140d 100%);
+}
+
+.body {
+  display: grid;
+  justify-items: center;
+  padding: 38px 30px 22px;
+  text-align: center;
+}
+
+/* Content settles in one line after another. */
+.body > * {
+  animation: invite-rise 520ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+.body > :nth-child(2) { animation-delay: 70ms; }
+.body > :nth-child(3) { animation-delay: 120ms; }
+.body > :nth-child(4) { animation-delay: 170ms; }
+.body > :nth-child(5) { animation-delay: 220ms; }
+.body > :nth-child(6) { animation-delay: 280ms; }
+
+/* --- Close --- */
+
+.close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(240, 236, 226, 0.14);
+  border-radius: 50%;
+  color: var(--bs-forest-muted);
+  background: rgba(8, 16, 10, 0.4);
+  cursor: pointer;
+  font: 22px/1 var(--sans);
+  transition:
+    background var(--bs-dur-fast) ease,
+    color var(--bs-dur-fast) ease,
+    transform var(--bs-dur-fast) ease;
+}
+
+/* --- Icon badge with a soft breathing ring --- */
+
+.badge {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+  border: 1px solid rgba(240, 236, 226, 0.32);
+  border-radius: 50%;
+  color: #f4efe6;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(240, 236, 226, 0.16), transparent 70%),
+    rgba(15, 30, 19, 0.85);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.badge svg {
+  width: 28px;
+  height: 28px;
+}
+
+.ring {
+  position: absolute;
+  inset: -7px;
+  border: 1px solid rgba(173, 194, 154, 0.55);
+  border-radius: 50%;
+  animation: invite-ring 2.8s ease-out infinite;
+}
+
+/* --- Type --- */
+
+.eyebrow {
+  color: var(--bs-forest-muted);
+  font: 700 10px/1.2 var(--sans);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.body h2 {
+  margin: 12px 0 12px;
+  font: 400 34px/1.05 var(--serif);
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.body h2 em {
+  color: #c9d8b6;
+  font-style: italic;
+}
+
+.body p {
+  max-width: 310px;
+  margin: 0 0 24px;
+  color: var(--bs-forest-muted);
+  font: 15.5px/1.6 var(--serif);
+}
+
+/* --- Actions --- */
+
+.actions {
+  width: 100%;
+  display: grid;
+  gap: 6px;
+}
+
+.join {
+  position: relative;
+  overflow: hidden;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px;
+  border-radius: 10px;
+  color: var(--bs-forest-btn-ink);
+  background: var(--bs-forest-btn-bg);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  font: 16px/1 var(--serif);
+  text-decoration: none;
+  transition:
+    background var(--bs-dur-fast) ease,
+    transform var(--bs-dur-fast) ease,
+    box-shadow var(--bs-dur-fast) ease;
+}
+
+.join svg {
+  flex: none;
+  width: 19px;
+  height: 19px;
+}
+
+.join span {
+  flex: 1;
+  text-align: left;
+}
+
+.join svg:last-child {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--bs-dur-fast) ease;
+}
+
+/* A light sweep crosses the button on hover. */
+.join::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -60%;
+  width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-18deg);
+  opacity: 0;
+}
+
+.later {
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  color: var(--bs-forest-muted);
+  background: transparent;
+  cursor: pointer;
+  font: 14px/1 var(--serif);
+  transition: color var(--bs-dur-fast) ease, background var(--bs-dur-fast) ease;
+}
+
+/* --- Sign-off --- */
+
+.sign {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(240, 236, 226, 0.1);
+  color: rgba(239, 235, 225, 0.55);
+  font: 700 9px/1 var(--sans);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.sign img {
+  opacity: 0.8;
+}
+
+/* --- Focus and hover --- */
+
+.close:focus-visible,
+.join:focus-visible,
+.later:focus-visible {
+  outline: 2px solid var(--bs-focus-on-dark);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .close:hover {
+    color: var(--bs-forest-ink);
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(90deg);
+  }
+
+  .later:hover {
+    color: var(--bs-forest-ink);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .join:hover {
+    background: var(--bs-forest-btn-hover);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.42), 0 0 0 4px rgba(240, 236, 226, 0.08);
+    transform: translateY(-1px);
+  }
+
+  .join:hover svg:last-child {
+    transform: translateX(3px);
+  }
+
+  .join:hover::after {
+    animation: invite-sweep 750ms ease-out;
+  }
+}
+
+.join:active {
+  transform: translateY(1px);
+}
+
+/* --- Phones --- */
+
+@media (max-width: 420px) {
+  .body {
+    padding: 34px 22px 20px;
+  }
+
+  .body h2 {
+    font-size: 30px;
+  }
+}
+
+/* --- Motion --- */
+
+@keyframes invite-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+}
+
+@keyframes invite-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes invite-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes invite-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.92);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.28);
+  }
+}
+
+@keyframes invite-drift {
+  from {
+    transform: scale(1.04) translate3d(-6px, 0, 0);
+  }
+  to {
+    transform: scale(1.1) translate3d(6px, -4px, 0);
+  }
+}
+
+@keyframes invite-sweep {
+  from {
+    left: -60%;
+    opacity: 1;
+  }
+  to {
+    left: 120%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog[open],
+  .dialog[open]::backdrop,
+  .body > *,
+  .photo,
+  .ring,
+  .join:hover::after {
+    animation: none;
+  }
+
+  .ring {
+    opacity: 0.5;
+  }
+
+  .close,
+  .join,
+  .join svg:last-child {
+    transition: none;
+  }
+
+  .close:hover,
+  .join:hover,
+  .join:hover svg:last-child {
+    transform: none;
+  }
+}

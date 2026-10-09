@@ -26,6 +26,17 @@ jobs:
             echo "Set the BIRDSHOP_SITE_URL and CRON_SECRET repository secrets."
             exit 1
           fi
-          curl --fail --silent --show-error --max-time 60 --retry 2 --retry-delay 10 \
+          # A redirect (for example birdshop.store -> www.birdshop.store) is not an
+          # HTTP error, so check for an explicit 200 instead of trusting --fail.
+          status=$(curl --silent --show-error --max-time 60 --retry 2 --retry-delay 10 \
+            --output response.txt --write-out "%{http_code}" \
             --header "Authorization: Bearer $CRON_SECRET" \
-            "${BIRDSHOP_SITE_URL%/}/api/maintenance"
+            "${BIRDSHOP_SITE_URL%/}/api/maintenance")
+          if [[ "$status" != "200" ]]; then
+            echo "Maintenance returned HTTP $status, so nothing ran."
+            if [[ "$status" == 3* ]]; then
+              echo "BIRDSHOP_SITE_URL redirects. Set it to the final address, e.g. https://www.birdshop.store"
+            fi
+            exit 1
+          fi
+          cat response.txt

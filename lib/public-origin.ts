@@ -8,5 +8,5 @@ export function publicOrigin(): string {
   } catch {
     // Fall through to the production domain.
   }
-  return "https://birdshop.store";
+  return "https://www.birdshop.store";
 }

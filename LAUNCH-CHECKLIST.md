@@ -1,5 +1,10 @@
 # BirdShop launch checklist
 
+> **Use the www address everywhere.** `birdshop.store` forwards to
+> `https://www.birdshop.store`. Stripe webhooks and the background job do not follow that
+> forward, so every setting below that asks for the site address must be
+> `https://www.birdshop.store`.
+
 These steps need your own logins (Stripe, Vercel, Supabase, Resend, GitHub,
 Cloudflare), so they can't be done from the code. Do part A any time, and
 part B in one sitting on launch day.
@@ -55,7 +60,7 @@ part B in one sitting on launch day.
 ### 5. Background job (GitHub Actions)
 - [ ] Open the repository on GitHub, then Settings → Secrets and variables → Actions.
 - [ ] Add these two repository secrets:
-  - `BIRDSHOP_SITE_URL` = `https://birdshop.store`
+  - `BIRDSHOP_SITE_URL` = `https://www.birdshop.store` (with www)
   - `CRON_SECRET` = the same value as in Vercel
 - [ ] Open Actions → **BirdShop background maintenance** → Run workflow, and check that it
   succeeds.
@@ -66,7 +71,7 @@ scheduled jobs off after 60 days with no repository activity, so check it now an
 ### 6. Optional: bot check on checkout (Cloudflare Turnstile)
 This stops scripts from holding your stock with fake checkouts.
 1. Make a free Cloudflare account, then open Turnstile → Add widget.
-2. Add `birdshop.store` as the hostname and choose the **Managed** mode.
+2. Add both `www.birdshop.store` and `birdshop.store` as hostnames and choose the **Managed** mode.
 3. In Vercel → Production, add two variables:
    - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` = the site key
    - `TURNSTILE_SECRET_KEY` = the secret key
@@ -90,7 +95,7 @@ The check only turns on when both variables are set.
 2. **Get your live Stripe keys.** Switch the Stripe dashboard out of test mode, then:
    - Copy the live **secret key** (starts `sk_live_`) from Developers → API keys.
    - Open Developers → Webhooks → Add destination. Use the URL
-     `https://birdshop.store/api/stripe/webhook` and select these 8 events:
+     `https://www.birdshop.store/api/stripe/webhook` (with www; Stripe does not follow redirects) and select these 8 events:
      - `checkout.session.completed`
      - `checkout.session.expired`
      - `checkout.session.async_payment_succeeded`
@@ -104,7 +109,7 @@ The check only turns on when both variables are set.
 3. **Vercel → Settings → Environment Variables (Production):**
    - Replace `STRIPE_SECRET_KEY` with the live secret key.
    - Replace `STRIPE_WEBHOOK_SECRET` with the live signing secret.
-   - Check that `BIRDSHOP_SITE_URL` is exactly `https://birdshop.store`.
+   - Check that `BIRDSHOP_SITE_URL` is exactly `https://www.birdshop.store`.
    - **Do not change** `INVENTORY_ENCRYPTION_KEY` or `BIRDSHOP_ORDER_TOKEN_SECRET`. Changing
      them makes stored codes and order links unreadable.
 

@@ -1,4 +1,4 @@
-import { assertSameOrigin, isUuid, readBody, privateHeaders, publicErrorResponse, PublicError } from "@/lib/server-config";
+import { assertSameOrigin, isUuid, logServerError, readBody, privateHeaders, publicErrorResponse, PublicError } from "@/lib/server-config";
 import { limitRequest, rateLimit } from "@/lib/rate-limit";
 import { serverRpc, startCheckout, type CheckoutAttempt } from "@/lib/payment-service";
 import { orderToken, tokenHash } from "@/lib/order-access";
@@ -50,7 +50,8 @@ export async function POST(request: Request) {
     try {
       const url = await startCheckout(attempt);
       return Response.json({ url: url || statusUrl }, { headers: privateHeaders });
-    } catch {
+    } catch (error) {
+      logServerError("package checkout start", error);
       // Show a payment-only recovery page; never reveal an unpaid chat.
       return Response.json({ url: statusUrl }, { headers: privateHeaders });
     }

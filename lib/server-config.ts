@@ -92,6 +92,14 @@ export class PublicError extends Error {
   }
 }
 
+export function logServerError(context: string, error: unknown) {
+  const detail =
+    error instanceof Error
+      ? `${error.name}: ${error.message}`
+      : String(error);
+  console.error(`BirdShop error [${context.slice(0, 60)}]`, detail.slice(0, 500));
+}
+
 // Only explicitly public errors cross the browser boundary.
 export function publicErrorResponse(
   error: unknown,
@@ -99,6 +107,9 @@ export function publicErrorResponse(
   fallbackStatus = 400,
 ) {
   const known = error instanceof PublicError;
+  // Unexpected failures reach the browser only as the fallback text, so record
+  // the real cause in the server log (Vercel → Logs). Messages only, no stacks.
+  if (!known) logServerError(fallback, error);
   return Response.json(
     { error: known ? error.message : fallback },
     {

@@ -1696,3 +1696,248 @@
     height: 780px;
   }
 }
+
+/* =========================================================
+   DESKTOP: NEVER CRUSH THE MESSAGES
+   The composer's base rules (around line 1060) use !important, so the
+   reply-box overrides below do too.
+   The chat panel stacks a header, customer bar, payment
+   center and composer. On shorter windows they used to take
+   all the room and leave the message list a sliver. The
+   thread (messages + composer) now keeps at least 440px, and
+   if the panel is still too short it scrolls as a whole.
+========================================================= */
+
+@media (min-width: 1024px) {
+  .chat {
+    overflow-y: auto;
+  }
+
+  .liveThread {
+    min-height: 440px;
+  }
+
+  /* A tighter order header and reply box leave more room for messages. */
+  .chatHeader {
+    min-height: 0;
+    padding-top: 16px;
+    padding-bottom: 14px;
+  }
+
+  .chatIdentity .chatReference {
+    margin: 4px 0;
+    font-size: 20px;
+  }
+
+  .chatIdentity h2 {
+    margin: 2px 0;
+    font-size: 24px;
+  }
+
+  .liveThread > form {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .liveThread > form textarea[data-admin-chat-composer="true"] {
+    padding-top: 11px !important;
+    padding-bottom: 11px !important;
+  }
+
+  .liveThread > form > div {
+    margin-top: 8px !important;
+  }
+}
+
+/* =========================================================
+   PHONES AND TABLETS (under 1024px)
+   The admin top bar sat in an auto-sized grid row that
+   stretched it to half the screen (431px of empty bar on a
+   375x812 phone), pushing the chat down. It now takes only
+   its own height.
+========================================================= */
+
+@media (max-width: 1023px) {
+  .page {
+    grid-template-rows: auto minmax(0, 1fr);
+    align-content: start;
+  }
+
+  .page > aside {
+    align-self: start;
+  }
+}
+
+/* =========================================================
+   PHONES AND TABLETS: AN OPEN CONVERSATION IS A FULL-SCREEN CHAT
+   With a conversation open, the page title, page links and
+   both tab rows (446px together) are hidden; "← Conversations"
+   goes back to them. The chat fills the screen under the top
+   bar, and the parts around the messages are compacted so the
+   message list gets most of the room (44px before, ~290px
+   after, on a 375x812 phone).
+========================================================= */
+
+@media (max-width: 1023px) {
+  /* Tablets used a fixed 270px list beside the chat, which left the chat
+     too narrow (the title wrapped word by word). One column here too. */
+  .workspace[data-mobile-detail="true"] {
+    display: block;
+  }
+
+  .workspace[data-mobile-detail="true"] .inbox {
+    display: none;
+  }
+
+  .workspace[data-mobile-detail="true"] .mobileBack {
+    display: block;
+  }
+
+  .content:has(> .workspace[data-mobile-detail="true"]) {
+    height: auto;
+    min-height: 0;
+    padding: 8px 8px 0 !important;
+  }
+
+  /* !important: the page-links row sets its display inline. */
+  .content:has(> .workspace[data-mobile-detail="true"]) > :not(.workspace) {
+    display: none !important;
+  }
+
+  .workspace[data-mobile-detail="true"] {
+    height: auto;
+    min-height: 0;
+  }
+
+  /* 59px admin top bar + 8px padding. */
+  .workspace[data-mobile-detail="true"] .chat {
+    height: calc(100dvh - 67px);
+  }
+
+  .workspace[data-mobile-detail="true"] .mobileBack {
+    min-height: 44px;
+    padding: 11px 14px;
+  }
+
+  .workspace[data-mobile-detail="true"] .chatHeader {
+    min-height: 0;
+    padding: 10px 14px;
+    gap: 0;
+  }
+
+  /* Status is already shown in the list and in the payment center. */
+  .workspace[data-mobile-detail="true"] .chatFacts,
+  .workspace[data-mobile-detail="true"] .chatIdentity > span,
+  .workspace[data-mobile-detail="true"] .chatIdentity > p {
+    display: none;
+  }
+
+  .workspace[data-mobile-detail="true"] .chatIdentity {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .workspace[data-mobile-detail="true"] .chatReference {
+    font-size: 15px;
+  }
+
+  .workspace[data-mobile-detail="true"] .chatIdentity h2 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.25;
+  }
+
+  .workspace[data-mobile-detail="true"] .customerBar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 6px 14px;
+  }
+
+  .workspace[data-mobile-detail="true"] .customerActions {
+    gap: 6px;
+  }
+
+  .workspace[data-mobile-detail="true"] .customerActions summary,
+  .workspace[data-mobile-detail="true"] .customerActions > * {
+    min-height: 36px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    font-size: 11px;
+  }
+
+  .workspace[data-mobile-detail="true"] .paymentDrawer summary {
+    min-height: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .workspace[data-mobile-detail="true"] .liveThread > form {
+    padding: 8px 10px !important;
+  }
+
+  /* One row on phones (a desktop rule forces 70px with !important).
+     Longer replies scroll inside the box. */
+  .workspace[data-mobile-detail="true"] .liveThread > form textarea {
+    height: 46px !important;
+    min-height: 46px !important;
+    padding: 11px 14px !important;
+  }
+
+  .workspace[data-mobile-detail="true"] .liveThread > form > div {
+    margin-top: 6px !important;
+  }
+
+  /* "Enter to send · Shift + Enter" doesn't apply on a phone keyboard. */
+  .workspace[data-mobile-detail="true"] .liveThread > form > div > span {
+    display: none;
+  }
+
+  .workspace[data-mobile-detail="true"] .liveThread > form button {
+    min-height: 40px !important;
+  }
+
+  .workspace[data-mobile-detail="true"] .chatFooter {
+    min-height: 0;
+    padding: 6px 10px;
+  }
+}
+
+/* The "History page · tab counts" links row sits on the dark page
+   background in both themes, but inherited the dark card text colour, so
+   it was unreadable in light mode. */
+.content > nav:not([class]) {
+  color: rgba(239, 235, 225, 0.82);
+}
+
+/* Phones, conversation list: the list grows with its content and the page
+   scrolls, instead of a fixed-height inner scroll box that overflowed its
+   container and looked cut off. */
+@media (max-width: 767px) {
+  .content:has(> .workspace[data-mobile-detail="false"]) {
+    height: auto;
+  }
+
+  .workspace[data-mobile-detail="false"] {
+    flex: none;
+    height: auto;
+    min-height: 0;
+  }
+
+  .workspace[data-mobile-detail="false"] .inbox {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .workspace[data-mobile-detail="false"] .conversationList {
+    flex: none;
+    height: auto;
+    overflow: visible;
+  }
+}

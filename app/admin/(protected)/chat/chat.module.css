@@ -1277,3 +1277,28 @@
   padding-top: 0;
   padding-bottom: 0;
 }
+
+/* Desktop agent desk: same guarantee as the owner chat. */
+@media (min-width: 1024px) {
+  .agentChat {
+    overflow-y: auto;
+  }
+
+  .agentChat > .messages {
+    min-height: 280px;
+  }
+}
+
+/* Phones and tablets: like the owner chat, the admin top bar sits in an
+   auto-sized grid row that could stretch to half the screen. Keep it at its
+   own height so the service desk starts right under it. */
+@media (max-width: 1023px) {
+  .page {
+    grid-template-rows: auto minmax(0, 1fr);
+    align-content: start;
+  }
+
+  .page > aside {
+    align-self: start;
+  }
+}

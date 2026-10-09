@@ -33,6 +33,7 @@ WHAT I NEED TO DO NOW
    19. 20261009020000_explicit_owner_checks.sql
    20. 20261009030000_paid_chat_first_reply.sql
    21. 20261009040000_shorter_checkout_hold.sql
+   22. 20261009050000_exclude_test_mode_sales.sql
 
    The authoritative list is every file in supabase/migrations in filename order. After the last
    one, run supabase/verify-production-readiness.sql (read-only); every row should say PASS.

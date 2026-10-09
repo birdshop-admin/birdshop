@@ -1667,3 +1667,32 @@
   color: var(--bs-success-ink, #3f5236);
   font-size: 13px;
 }
+
+/* =========================================================
+   SHORT DESKTOP SCREENS (laptops, zoomed browsers)
+   Fitting everything into one screen height crushed the
+   message list on screens under ~960px tall. Here the page
+   scrolls instead and the workspace keeps a comfortable
+   fixed height, so it looks like it does on a big monitor.
+   The sidebar is sticky, so it stays in place.
+========================================================= */
+
+@media (min-width: 1024px) and (max-height: 960px) {
+  .page {
+    position: relative;
+    inset: auto;
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .content {
+    height: auto;
+    overflow: visible;
+  }
+
+  .workspace {
+    flex: none;
+    height: 780px;
+  }
+}

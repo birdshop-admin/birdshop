@@ -17,6 +17,7 @@ import AdminLiveThread, {
   type AdminLivePaymentRequest,
 } from "./AdminLiveThread";
 import PaymentActionForm, { PaymentFeedback } from "./PaymentActionForm";
+import AgentQueueRefresh from "./AgentQueueRefresh";
 
 import paymentStyles from "@/components/ChatPaymentUI.module.css";
 import completeStyles from "./OwnerAdminChatPage.module.css";
@@ -411,6 +412,7 @@ export default async function ServiceAgentChatPage({
   return (
     <main className={styles.page}>
       <AdminSidebar role="service_agent" />
+      <AgentQueueRefresh />
 
       <section className={styles.content}>
         {/* =================================================
@@ -601,7 +603,7 @@ export default async function ServiceAgentChatPage({
                AVAILABLE REQUEST PREVIEW
             ============================================= */
 
-            <section className={styles.chat}>
+            <section className={`${styles.chat} ${styles.agentChat}`}>
               <Link
                 className={styles.mobileBack}
                 href="/admin/chat?view=active&type=service"
@@ -707,7 +709,7 @@ export default async function ServiceAgentChatPage({
                MY SERVICE
             ============================================= */
 
-            <section className={styles.chat}>
+            <section className={`${styles.chat} ${styles.agentChat}`}>
               <Link
                 className={styles.mobileBack}
                 href="/admin/chat?view=active&type=service"

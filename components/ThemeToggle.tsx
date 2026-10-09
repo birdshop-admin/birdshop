@@ -1,13 +1,20 @@
 "use client";
 
-import { useSyncExternalStore, type MouseEvent } from "react";
+import { useEffect, useSyncExternalStore, type MouseEvent } from "react";
 
 type Theme = "light" | "dark";
 
 const themeEvent = "birdshop-theme-change";
+// The admin panel keeps its own light/dark choice, so switching one never flips
+// the other in another tab. app/layout.tsx's boot script uses the same keys.
+const SITE_KEY = "birdshop-theme";
+const ADMIN_KEY = "birdshop-admin-theme";
+function themeKey() {
+  return window.location.pathname.startsWith("/admin") ? ADMIN_KEY : SITE_KEY;
+}
 function subscribe(callback: () => void) {
   const storage = (event: StorageEvent) => {
-    if (event.key !== "birdshop-theme") return;
+    if (event.key !== themeKey()) return;
     document.documentElement.dataset.theme = event.newValue === "dark" ? "dark" : "light";
     callback();
   };
@@ -34,7 +41,7 @@ function currentTheme(): Theme {
 
 function commitTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
-  try { localStorage.setItem("birdshop-theme", theme); } catch { /* Works without storage. */ }
+  try { localStorage.setItem(themeKey(), theme); } catch { /* Works without storage. */ }
   window.dispatchEvent(new Event(themeEvent));
 }
 
@@ -106,6 +113,17 @@ export default function ThemeToggle({
   placement?: "floating" | "header" | "menu" | "sidebar";
 }) {
   const dark = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  // Moving between the storefront and the admin in one tab skips the boot
+  // script, so apply this area's own saved choice when the toggle appears.
+  useEffect(() => {
+    let saved: string | null = null;
+    try { saved = localStorage.getItem(themeKey()); } catch { /* Works without storage. */ }
+    const theme = saved === "dark" ? "dark" : "light";
+    if (document.documentElement.dataset.theme !== theme) {
+      document.documentElement.dataset.theme = theme;
+      window.dispatchEvent(new Event(themeEvent));
+    }
+  }, []);
   return <button type="button" role="switch" aria-checked={dark}
     className={`theme-toggle theme-toggle-${placement}`} onClick={handleToggle}>
     <svg className="theme-toggle-icon" viewBox="0 0 24 24" width="18" height="18" fill="none"

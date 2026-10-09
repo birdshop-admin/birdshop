@@ -8,47 +8,38 @@ import { hasDiscordInvite, siteConfig } from "@/lib/site-config";
 
 import s from "./DiscordInvite.module.css";
 
-const STORAGE_KEY = "birdshop-discord-invite";
-// After "Maybe later" the invite stays away for a few days; after joining, for good.
-const SNOOZE_MS = 3 * 24 * 60 * 60 * 1000;
 const SHOW_DELAY_MS = 1200;
 
-function shouldShow() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "joined") return false;
-    return !saved || Date.now() - Number(saved) > SNOOZE_MS;
-  } catch {
-    // Storage blocked: show it, closing still works for this visit.
-    return true;
-  }
-}
-
-function remember(value: string) {
-  try {
-    localStorage.setItem(STORAGE_KEY, value);
-  } catch {
-    // Works without storage; it may simply show again next visit.
-  }
-}
-
 // Home page only: a small invite to the BirdShop Discord, styled like the
-// site's forest hero. Closes with the X, "Maybe later", Escape, or a click
-// anywhere outside the card.
+// site's forest hero. It opens on every home page visit: a fresh load, a
+// refresh, client navigation to Home, and Back/Forward (which can restore the
+// page from the browser cache without re-running effects, hence pageshow).
+// Closes with the X, "Maybe later", Escape, or a click outside the card.
 export default function DiscordInvite() {
   const dialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    if (!hasDiscordInvite || !shouldShow()) return;
-    const timer = window.setTimeout(() => {
-      const box = dialog.current;
-      if (box && !box.open) box.showModal();
-    }, SHOW_DELAY_MS);
-    return () => window.clearTimeout(timer);
+    if (!hasDiscordInvite) return;
+    let timer = 0;
+    const open = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        const box = dialog.current;
+        if (box && !box.open) box.showModal();
+      }, SHOW_DELAY_MS);
+    };
+    const restored = (event: PageTransitionEvent) => {
+      if (event.persisted) open();
+    };
+    open();
+    window.addEventListener("pageshow", restored);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("pageshow", restored);
+    };
   }, []);
 
-  function close(joined = false) {
-    remember(joined ? "joined" : String(Date.now()));
+  function close() {
     dialog.current?.close();
   }
 
@@ -65,7 +56,6 @@ export default function DiscordInvite() {
       className={s.dialog}
       aria-labelledby="discord-invite-title"
       onClick={onBackdropClick}
-      onCancel={() => remember(String(Date.now()))}
     >
       <div className={s.card}>
         <div className={s.photo} aria-hidden="true" />
@@ -103,7 +93,7 @@ export default function DiscordInvite() {
               target="_blank"
               rel="noreferrer"
               className={s.join}
-              onClick={() => close(true)}
+              onClick={() => close()}
             >
               <DiscordIcon />
               <span>Join the Discord</span>

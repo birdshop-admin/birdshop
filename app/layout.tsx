@@ -94,7 +94,7 @@ export default function RootLayout({
     // changes while in-page anchors keep the CSS smooth scrolling.
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `(function(){var d=document.documentElement,t='light';try{var s=localStorage.getItem('birdshop-theme');if(s==='dark')t='dark';if(!s){var n=Number(localStorage.getItem('birdshop-theme-hint')||0);if(n<3){d.dataset.themeHint='1';localStorage.setItem('birdshop-theme-hint',String(n+1))}}}catch(e){}d.dataset.theme=t})();` }} />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var d=document.documentElement,t='light';try{var a=location.pathname.indexOf('/admin')===0,s=localStorage.getItem(a?'birdshop-admin-theme':'birdshop-theme');if(a&&s===null){s=localStorage.getItem('birdshop-theme')||'light';localStorage.setItem('birdshop-admin-theme',s)}if(s==='dark')t='dark';if(!s&&!a){var n=Number(localStorage.getItem('birdshop-theme-hint')||0);if(n<3){d.dataset.themeHint='1';localStorage.setItem('birdshop-theme-hint',String(n+1))}}}catch(e){}d.dataset.theme=t})();` }} />
       </head>
 
       <body>

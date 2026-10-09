@@ -80,7 +80,7 @@
   border-bottom: 1px solid #dfded2;
 }
 .paymentBody {
-  max-height: min(320px, 38dvh);
+  max-height: min(320px, calc(38dvh / var(--admin-zoom, 1)));
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 16px 18px;
@@ -343,7 +343,7 @@
 .paymentBody {
   background: var(--theme-surface-24-28-24-1, #f1efe5);
   padding: 18px;
-  max-height: min(340px, 40dvh);
+  max-height: min(340px, calc(40dvh / var(--admin-zoom, 1)));
 }
 .form {
   max-width: 900px;

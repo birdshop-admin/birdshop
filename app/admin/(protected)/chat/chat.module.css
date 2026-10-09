@@ -4,7 +4,7 @@
 ========================================================= */
 
 .page {
-  height: 100vh;
+  height: calc(100vh / var(--admin-zoom, 1));
   min-height: 0;
 
   display: grid;
@@ -30,7 +30,7 @@
 ========================================================= */
 
 .content {
-  height: 100vh;
+  height: calc(100vh / var(--admin-zoom, 1));
   min-width: 0;
   min-height: 0;
 
@@ -1016,7 +1016,7 @@
 @media (max-width: 900px) {
   .page {
     height: auto;
-    min-height: 100vh;
+    min-height: calc(100vh / var(--admin-zoom, 1));
 
     grid-template-columns: 1fr;
 
@@ -1025,7 +1025,7 @@
 
   .content {
     height: auto;
-    min-height: 100vh;
+    min-height: calc(100vh / var(--admin-zoom, 1));
 
     overflow: visible;
 
@@ -1202,7 +1202,7 @@
   transform: rotate(180deg);
 }
 .paymentDrawer > div {
-  max-height: 38dvh;
+  max-height: calc(38dvh / var(--admin-zoom, 1));
   overflow-y: auto;
 }
 .paymentDrawer summary:focus-visible {
@@ -1253,10 +1253,10 @@
    squeezing everything into one screen.
 ========================================================= */
 
-@media (min-width: 1024px) and (max-height: 960px) {
+@media (min-width: 1024px) and (max-height: 600px) {
   .page {
     height: auto;
-    min-height: 100vh;
+    min-height: calc(100vh / var(--admin-zoom, 1));
     overflow: visible;
   }
 

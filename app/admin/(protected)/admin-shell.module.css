@@ -28,7 +28,7 @@
   --admin-warning: #7a6745;
   --admin-danger: #815148;
 
-  min-height: 100vh;
+  min-height: calc(100vh / var(--admin-zoom, 1));
   color: var(--admin-text);
   background: var(--admin-bg);
 }
@@ -61,7 +61,7 @@
   .shell :global(main) {
     grid-template-columns: minmax(0, 1fr);
     height: auto;
-    min-height: 100dvh;
+    min-height: calc(100dvh / var(--admin-zoom, 1));
     overflow: visible;
   }
   .shell :global(main) > section {
@@ -94,7 +94,7 @@
 }
 
 .shell {
-  min-height: 100dvh;
+  min-height: calc(100dvh / var(--admin-zoom, 1));
   overflow-x: clip;
 }
 .shell :global(*) {
@@ -139,7 +139,7 @@
 @media (max-width: 1023px) {
   .shell :global(main) {
     height: auto;
-    min-height: 100dvh;
+    min-height: calc(100dvh / var(--admin-zoom, 1));
     overflow: visible;
   }
   .shell :global(main) > section {
@@ -157,4 +157,19 @@
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* =========================================================
+   FIT-TO-SCREEN SCALING (desktop widths only)
+   The admin is laid out for roughly a 1600 x 880 window. On
+   smaller or Windows-scaled screens (for example 1080p at
+   125-150%), a small script in layout.tsx sets
+   --admin-zoom below 1 so the whole panel scales down and
+   looks like it does on a large monitor, instead of growing
+   and crushing the chat. Full-height rules divide by
+   --admin-zoom so they still fill the screen exactly.
+========================================================= */
+
+.shell {
+  zoom: var(--admin-zoom, 1);
 }

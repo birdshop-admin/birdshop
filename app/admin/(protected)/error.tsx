@@ -4,7 +4,7 @@ export default function ErrorPage({ retry }: { retry: () => void }) {
     <section
       style={{
         padding: 32,
-        minHeight: "60dvh",
+        minHeight: "calc(60dvh / var(--admin-zoom, 1))",
         color: "#eee8d8",
         background: "#101d13",
       }}

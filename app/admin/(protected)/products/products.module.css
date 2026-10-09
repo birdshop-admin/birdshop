@@ -1,5 +1,5 @@
 .page {
-  min-height: 100vh;
+  min-height: calc(100vh / var(--admin-zoom, 1));
   display: grid;
   grid-template-columns:
     var(--admin-sidebar-width, 264px)

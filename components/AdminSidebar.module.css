@@ -4,7 +4,7 @@
   z-index: 30;
 
   width: 100%;
-  height: 100vh;
+  height: calc(100vh / var(--admin-zoom, 1));
 
   display: flex;
   flex-direction: column;

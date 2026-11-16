@@ -1266,3 +1266,30 @@
     transform: none;
   }
 }
+
+/* Owner-approved Christmas detail CTA: icon and text on ONE centered line. */
+.purchaseButtons .addButton {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  min-height: 56px;
+  padding: 12px 16px;
+  line-height: 1.2;
+  color: #fff;
+  background: #921027;
+  border: 1px solid #b5223a;
+  border-radius: 3px;
+  white-space: normal;
+  text-align: center;
+}
+.purchaseButtons .addButton svg { display:block; flex:0 0 20px; width:20px; height:20px; }
+.purchaseButtons .addButton span { display:block; min-width:0; margin:0; font:600 14px/1.25 Arial,Helvetica,sans-serif; }
+.purchaseButtons .addButton:not(:disabled):hover {background:#b31b37}
+@media(max-width:520px) {
+  .purchaseButtons .addButton {gap:8px; padding:11px 12px}
+  .purchaseButtons .addButton span {font-size:13px}
+}

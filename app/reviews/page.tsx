@@ -335,11 +335,11 @@ export default function ReviewsPage() {
         eyebrow="BIRDSHOP / COMMUNITY"
         title="Reviews"
         subtitle="REAL COMMUNITY FEEDBACK"
-        description="Customer experiences and service feedback — presented clearly, without invented reviews or ratings."
+        description="Real customer experiences and service feedback, shared by the BirdShop community."
         primary={{ href: "#reviews", label: "VIEW REVIEWS" }}
         secondary={{ href: "/contact?topic=review", label: "LEAVE A REVIEW" }}
-        imageSrc="/birdshop-owner-christmas-dinner.svg"
-        imageAlt="Christmas dinner photograph supplied by BirdShop owner"
+        imageSrc="/birdshop-reviews-vortex.svg"
+        imageAlt="Dark extraterrestrial mountains beneath a luminous swirling cosmic portal"
       />
 
       {/* Holds the featured slot while loading, so the page does not jump. */}

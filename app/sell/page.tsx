@@ -45,7 +45,7 @@ export default async function SellerRegistration({
       <header className={styles.hero}>
         <span className={styles.eyebrow}>BIRDSHOP / MARKETPLACE</span>
         <h1>Sell with BirdShop.</h1>
-        <p>Apply for a verified seller storefront. List eligible gaming services and digital products, manage inquiries, and build your own presence within BirdShop.</p>
+        <p>Apply for an owner-approved seller storefront. List eligible gaming services and digital products, manage inquiries, and build your own presence within BirdShop.</p>
         <div className={styles.actions}>
           <Link className={styles.outline} href="/marketplace">Explore marketplace</Link>
           {profile && <Link className={styles.button} href="/sell/dashboard">Seller dashboard</Link>}
@@ -78,7 +78,7 @@ export default async function SellerRegistration({
           <section className={styles.card}>
             <h2>How selling works</h2>
             <ol>
-              <li>Verify your identity using your email.</li>
+              <li>Verify your email address.</li>
               <li>Submit your shop details and eligible categories.</li>
               <li>Wait for BirdShop owner approval.</li>
               <li>Create listings; every listing is reviewed before publishing.</li>

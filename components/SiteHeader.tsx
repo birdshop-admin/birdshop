@@ -169,7 +169,7 @@ export default function SiteHeader() {
           className="site-header-nav"
           aria-label="Primary navigation"
         >
-          {siteConfig.navigation.filter((item) => ["/", "/products", "/services", "/referrals", "/reviews", "/contact"].includes(item.href)).map((item) => {
+          {siteConfig.navigation.filter((item) => ["/", "/products", "/services", "/marketplace", "/referrals", "/reviews", "/contact"].includes(item.href)).map((item) => {
             const active = isActive(item.href);
 
             return (

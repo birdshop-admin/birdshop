@@ -227,3 +227,67 @@
 @media(prefers-reduced-motion:reduce) {
  .hero *, .information * { transition:none !important; }
 }
+
+/* Christmas accent: paired silver bells hanging above the hero artwork.
+   Slow independent swings; hover causes a livelier movement without sound. */
+.christmasBells {
+  position:absolute;
+  top:0;
+  right:clamp(30px,5vw,90px);
+  width:120px;
+  height:188px;
+  pointer-events:auto;
+  z-index:3;
+}
+.bellString {
+  position:relative;
+  width:100%;
+  height:100%;
+  transform-origin:50% 0%;
+  animation:birdshop-bell-sway 5.5s ease-in-out infinite alternate;
+}
+.bellString::before,
+.bellString::after {
+  content:"";
+  position:absolute;
+  top:0;
+  width:1px;
+  background:linear-gradient(#ddd,#777);
+}
+.bellString::before {left:42%; height:120px;}
+.bellString::after {left:63%; height:135px;}
+.bellRibbon {
+  position:absolute;
+  top:96px;
+  left:44%;
+  width:38px;
+  height:17px;
+  transform:rotate(-13deg);
+  z-index:1;
+  background:#891522;
+  border-radius:70% 25% 50% 30%;
+  box-shadow:0 0 0 2px #b72a36 inset;
+}
+.bellPair {position:absolute;top:115px;left:12px;display:flex;align-items:start;gap:0}
+.bellLeft {width:58px;height:66px;transform:rotate(-13deg);filter:drop-shadow(0 6px 3px #0008)}
+.bellRight {width:58px;height:66px;transform:rotate(12deg) translateY(7px);filter:drop-shadow(0 6px 3px #0008)}
+@keyframes birdshop-bell-sway {
+  0% {transform:rotate(-4deg)}
+  50% {transform:rotate(2deg)}
+  100% {transform:rotate(5deg)}
+}
+@media (hover:hover) and (prefers-reduced-motion:no-preference) {
+  .christmasBells:hover .bellString {
+    animation:birdshop-bell-jingle .58s ease-in-out infinite alternate;
+  }
+}
+@keyframes birdshop-bell-jingle {
+  from { transform:rotate(-13deg) }
+  to { transform:rotate(13deg) }
+}
+@media (max-width:640px) {
+  .christmasBells {right:14px;width:88px;height:160px; transform:scale(.75);transform-origin:top right}
+}
+@media (prefers-reduced-motion:reduce) {
+  .bellString {animation:none!important;transform:rotate(0deg)}
+}

@@ -37,6 +37,7 @@ export default function StorefrontHero({ services }: { services: HomeService[] |
         </div>
         <div className={s.artwork} aria-hidden="true">
           <Image src="/birdshop-approved-christmas-portrait.svg" alt="" width={510} height={537} priority className={s.portrait} />
+          <div className={s.snow} aria-hidden="true" />
         </div>
         <div className={s.bottomLine}>
           <span>BIRDSHOP.STORE</span>

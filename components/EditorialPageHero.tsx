@@ -18,7 +18,7 @@ type EditorialPageHeroProps = {
  * Shared subpage masthead based on the OWNER-APPROVED Christmas homepage.
  * The hero portrait is intentionally NOT generated or substituted: a blank
  * black image well is preferable to a mismatched face or synthetic person.
- * The reviews page uses the separately provided actual dinner photograph.
+ * The Reviews page uses the owner's supplied cosmic landscape with subtle CSS animation.
  */
 export default function EditorialPageHero({
   section, eyebrow, title, subtitle, description,
@@ -43,7 +43,14 @@ export default function EditorialPageHero({
         <div className="bs-editorial-photowell">
           <Image src={imageSrc} alt={imageAlt} width={1024} height={640}
             className="bs-editorial-photo" unoptimized />
-        </div>
+          {section === "reviews" && (
+            <>
+              <div className="bs-reviews-vortex" aria-hidden="true" />
+              <div className="bs-reviews-stars" aria-hidden="true" />
+              <div className="bs-reviews-portal-glow" aria-hidden="true" />
+            </>
+          )}
+         </div>
       )}
       <div className="bs-editorial-bells" aria-hidden="true">
         <Image src="/birdshop-christmas-bells-reference.svg" alt=""

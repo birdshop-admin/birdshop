@@ -8,6 +8,7 @@ import styles from "@/app/cart/cart.module.css";
 import CheckoutConsent from "./CheckoutConsent";
 import recovery from "./ProductCheckout.module.css";
 import TurnstileWidget from "./TurnstileWidget";
+import AlternativePaymentInfo from "./AlternativePaymentInfo";
 
 type Saved = {
   id: string;
@@ -550,6 +551,8 @@ export default function ProductCheckout() {
         about 30 minutes while you pay, and your private delivery link arrives
         by email after payment is confirmed.
       </p>
+
+      <AlternativePaymentInfo />
 
       <CheckoutConsent className={styles.checkoutNote} />
 

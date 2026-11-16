@@ -309,3 +309,27 @@ main.referrals-page select {
  .bs-referral-steps span {border-right:0;border-bottom:1px solid #ffffff25}
  .bs-referral-steps span:last-child{border-bottom:0}
 }
+
+main.bs-editorial-page [class*="_cardCart__"] {
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:auto!important;min-width:125px!important;max-width:100%;
+  padding:0 12px!important;gap:7px!important;
+  font:700 10px Arial,Helvetica,sans-serif!important;letter-spacing:.04em!important;
+}
+main.bs-editorial-page [class*="_cardCart__"]:disabled {
+  background:#292626!important;color:#b9b2ab!important;border-color:#484141!important;
+}
+.bs-cart-button-label {white-space:nowrap}
+.bs-service-unavailable {
+  display:flex;flex-wrap:wrap;align-items:center;gap:11px 20px;
+  background:#15070a;border:1px solid #9c283a;color:#efe5e6;
+  padding:20px clamp(22px,6vw,70px);font:13px/1.5 Arial,Helvetica,sans-serif;
+}
+.bs-service-unavailable strong {color:#fff}
+.bs-service-unavailable a {
+  color:#fff;display:inline-block;padding:8px 12px;background:#821025;
+  border:1px solid #b61c39;
+}
+@media(max-width:420px){
+ main.bs-editorial-page [class*="_cardCart__"]{min-width:100px!important;padding:0 7px!important;font-size:9px!important}
+}

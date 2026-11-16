@@ -24,6 +24,7 @@ export async function updateSession(request: NextRequest) {
     },
   );
   const { data, error } = await supabase.auth.getClaims();
+  if (!path.startsWith("/admin")) return response;
   if (
     error &&
     (error.name === "AuthRetryableFetchError" || Number(error.status) >= 500)

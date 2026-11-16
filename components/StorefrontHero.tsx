@@ -12,19 +12,17 @@ export default function StorefrontHero({ services }: { services: HomeService[] |
   return (
     <>
       <section className={s.hero} aria-labelledby="home-hero-title">
+        <nav className={s.heroSteps} aria-label="Homepage sections">
+          <span aria-current="true">01</span><span>02</span><span>03</span>
+        </nav>
         <div className={s.copy}>
-          <p className={s.eyebrow}><span className={s.rule} /> BIRD SHOP — DIGITAL GOODS &amp; GAME SERVICES</p>
-          <span className={s.issue}>INDEPENDENT / PLAYER-FOCUSED / EST. 2024</span>
-          <h1 id="home-hero-title">Less waiting.<br /><em>More playing.</em></h1>
-          <p className={s.description}>Digital products and game services, without the runaround. Browse what&apos;s available or open a private conversation about what you need.</p>
+          <p className={s.eyebrow}>THIS CHRISTMAS AT</p>
+          <h1 id="home-hero-title">BIRD SHOP</h1>
+          <p className={s.issue}>PREMIUM SERVICES <span aria-hidden="true">&amp;</span> DIGITAL GOODS</p>
+          <p className={s.description}>Trusted game services, digital products and more — all season long.</p>
           <div className={s.actions}>
-            <Link href="/products" className={s.primary}>Browse products <span aria-hidden="true">↗</span></Link>
-            <Link href="/services" className={s.secondary}>Explore services <span aria-hidden="true">↗</span></Link>
-          </div>
-          <div className={s.utility}>
-            <Link href="/how-to-order">How ordering works <span aria-hidden="true">↗</span></Link>
-            <span aria-hidden="true" className={s.utilityDivider} />
-            <Link href="/service-chat">My service chat <span aria-hidden="true">↗</span></Link>
+            <Link href="/products" className={s.primary}>SHOP NOW <span aria-hidden="true">↗</span></Link>
+            <Link href="/services" className={s.secondary}>OUR SERVICES <span aria-hidden="true">↗</span></Link>
           </div>
         </div>
         <div className={s.christmasBells} aria-hidden="true">
@@ -48,17 +46,12 @@ export default function StorefrontHero({ services }: { services: HomeService[] |
             </span>
           </div>
         </div>
-        <div className={s.artwork} aria-label="Raven ink artwork">
-          <div className={s.paper}>
-            <span className={s.artIndex}>FIG. 01 / THE RAVEN</span>
-            <div className={s.inkDust} aria-hidden="true" />
-            <Image src="/birdshop-raven-ink.svg" alt="Original raven ink illustration supplied by BirdShop" width={615} height={800} className={s.raven} priority />
-            <span className={s.artCaption}>BIRD SHOP <span>—</span> INK STUDIES</span>
-          </div>
+        <div className={s.artwork} aria-hidden="true">
+          <Image src="/birdshop-approved-christmas-portrait.svg" alt="" width={510} height={537} priority className={s.portrait} />
         </div>
         <div className={s.bottomLine}>
-          <span>01 / INDEPENDENT GAME STORE</span>
-          <span>SCROLL TO EXPLORE ↓</span>
+          <span>BIRDSHOP.STORE</span>
+          <span>EST. {siteConfig.established}</span>
         </div>
       </section>
       <section className={s.information} aria-label="BirdShop shortcuts">

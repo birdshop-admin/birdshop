@@ -64,7 +64,7 @@ export default async function RewarbleAdminPage() {
                 {request.review_note && <p>Review note: {request.review_note}</p>}
                 {request.status === "pending_review" && (
                   <>
-                    <Link href={`/admin/rewarble/${request.id}`}
+                    <Link prefetch={false} href={`/admin/rewarble/${request.id}`}
                       style={{color:"#f4a8b4",textDecoration:"underline"}}>
                       Reveal code (owner only, audited)
                     </Link>

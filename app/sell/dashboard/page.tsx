@@ -73,7 +73,7 @@ export default async function SellerDashboard({searchParams}:{
                   <td>{listing.stock}</td><td><span className={styles.status}>{listing.status.replaceAll("_"," ")}</span></td>
                   <td>
                     <div className={styles.actions} style={{margin:0}}>
-                      <Link className={styles.outline} href={`/sell/dashboard?edit=${listing.id}#listing-editor`}>Edit</Link>
+                      {listing.status!=="archived"&&<Link className={styles.outline} href={`/sell/dashboard?edit=${listing.id}#listing-editor`}>Edit</Link>}
                       {["draft","rejected","paused"].includes(listing.status)&&listing.stock>0&&
                         <form action={changeMyListingState}>
                           <input type="hidden" name="id" value={listing.id}/>

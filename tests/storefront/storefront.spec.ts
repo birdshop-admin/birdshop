@@ -15,6 +15,7 @@ for (const width of [320, 390, 768, 1024, 1440]) {
     await expect(page.getByRole("heading", { name: "BIRD SHOP" })).toBeVisible();
     await expect(page.getByRole("link", { name: /OUR SERVICES/i }).first()).toBeVisible();
     await expect(page.locator("img[src*='birdshop-approved-christmas-portrait']")).toBeVisible();
+    await expect(page.locator("img[src*='birdshop-christmas-bells-reference']")).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     if (width <= 1100) {
       const menu = page.getByRole("button", { name: "Open menu", exact: true });

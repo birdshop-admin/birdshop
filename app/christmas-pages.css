@@ -269,3 +269,43 @@ main.referrals-page [role="status"] {color:#fff;background:#1c1013!important;bor
  main.referrals-page > div {padding:35px 22px!important}
 }
 @media(prefers-reduced-motion:reduce){.bs-editorial-bells-image{animation:none!important}}
+
+/* Referral onboarding layout from the approved concept. */
+.bs-referral-intro {border-bottom:1px solid #ffffff27;padding-bottom:25px}
+.bs-referral-intro span {
+  display:block;margin-bottom:12px;color:#c1243d;font:600 10px Arial,Helvetica,sans-serif;
+  letter-spacing:.3em;
+}
+.bs-referral-intro h2 {
+  font:italic 400 clamp(32px,3.1vw,46px)/1.1 Georgia,"Times New Roman",serif;
+  letter-spacing:-.045em;color:#f6f2ed;margin:0 0 16px;
+}
+.bs-referral-intro p {font:15px/1.65 Arial,Helvetica,sans-serif;color:#bcb7b2;max-width:730px;margin:0}
+.bs-referral-steps {
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;
+  border:1px solid #ffffff30;background:#050505;
+}
+.bs-referral-steps span {
+  display:flex;align-items:center;gap:12px;padding:20px 15px;min-width:0;
+  border-right:1px solid #ffffff25;color:#d1ccc8;
+  font:11px/1.45 Arial,Helvetica,sans-serif;
+}
+.bs-referral-steps span:last-child {border-right:0}
+.bs-referral-steps strong {
+  display:inline-grid;place-items:center;flex:0 0 29px;width:29px;height:29px;
+  border-radius:50%;border:1px solid #a8233c;color:#fff;background:#620916;
+  font:11px Arial,Helvetica,sans-serif;
+}
+main.referrals-page select {
+  background:#070707!important;color:#f6f3ee!important;border:1px solid #ffffff58!important;
+}
+@media(max-width:760px) {
+  .bs-referral-steps {grid-template-columns:1fr 1fr}
+  .bs-referral-steps span:nth-child(2){border-right:0}
+  .bs-referral-steps span:nth-child(-n+2){border-bottom:1px solid #ffffff25}
+}
+@media(max-width:390px) {
+ .bs-referral-steps {grid-template-columns:1fr}
+ .bs-referral-steps span {border-right:0;border-bottom:1px solid #ffffff25}
+ .bs-referral-steps span:last-child{border-bottom:0}
+}

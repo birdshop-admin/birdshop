@@ -23,7 +23,7 @@ export default async function MarketplacePage({
   let listings:MarketplaceListing[]=[];
   if(approved.length){
     let request=db.from("birdshop_marketplace_listings")
-      .select("id,seller_id,slug,title,description,listing_type,category,image_url,price_cents,stock,fulfillment_method,delivery_hours,status,created_at")
+      .select("id,seller_id,slug,title,description,listing_type,category,image_url,price_cents,stock,fulfillment_method,service_options,delivery_hours,status,created_at")
       .eq("status","published").in("seller_id",approved.map(s=>s.id))
       .order("created_at",{ascending:false}).limit(200);
     if(filter)request=request.eq("category",filter);
@@ -83,6 +83,7 @@ export default async function MarketplacePage({
                 <h3 className={styles.itemTitle}>{listing.title}</h3>
                 <p>By <Link href={`/shops/${seller?.handle}`}>{seller?.display_name||"Approved seller"}</Link></p>
                 <p>{listing.description.slice(0,150)}{listing.description.length>150?"…":""}</p>
+                {listing.service_options?.length>0&&<p className={styles.small}>Options: {listing.service_options.join(" · ")}</p>}
                 <p className={styles.price}>{marketplaceMoney(listing.price_cents)}</p>
                 <p className={styles.small}>{listing.stock} available · Estimated delivery {listing.delivery_hours}h</p>
                 <div className={styles.actions}>

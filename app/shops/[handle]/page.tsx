@@ -18,7 +18,7 @@ export default async function SellerStorefront({params}:{params:Promise<{handle:
   if(error||!data)notFound();
   const seller=data as SellerProfile;
   const result=await db.from("birdshop_marketplace_listings")
-    .select("id,seller_id,slug,title,description,listing_type,category,image_url,price_cents,stock,fulfillment_method,delivery_hours,status,created_at")
+    .select("id,seller_id,slug,title,description,listing_type,category,image_url,price_cents,stock,fulfillment_method,service_options,delivery_hours,status,created_at")
     .eq("seller_id",seller.id).eq("status","published").order("created_at",{ascending:false}).limit(100);
   if(result.error)throw new Error("Seller listings are temporarily unavailable.");
   const listings=(result.data||[]) as MarketplaceListing[];
@@ -52,6 +52,7 @@ export default async function SellerStorefront({params}:{params:Promise<{handle:
               <p className={styles.meta}>{listing.category} / {listing.listing_type.replace("_"," ")}</p>
               <h3 className={styles.itemTitle}>{listing.title}</h3>
               <p style={{whiteSpace:"pre-wrap"}}>{listing.description}</p>
+              {listing.service_options?.length>0&&<p className={styles.small}>Available options: {listing.service_options.join(" · ")}</p>}
               <p className={styles.price}>{marketplaceMoney(listing.price_cents)}</p>
               <p className={styles.small}>{listing.stock} available · Estimated delivery {listing.delivery_hours}h</p>
               <Link className={styles.button} href={`/marketplace/inquire/${listing.id}`}>Ask seller about this listing</Link>

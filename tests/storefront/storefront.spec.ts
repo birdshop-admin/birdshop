@@ -19,7 +19,7 @@ for (const width of [320, 390, 768, 1024, 1440]) {
       const menu = page.getByRole("button", { name: "Open menu", exact: true });
       await menu.click();
       await expect(page.getByRole("navigation", { name: "Mobile navigation" }).getByRole("link", { name: "Rewards", exact: true })).toBeVisible();
-      await menu.press("Escape");
+      await page.keyboard.press("Escape");
       await expect(menu).toBeFocused();
     } else {
       await page.getByRole("button", { name: "Open all navigation" }).click();

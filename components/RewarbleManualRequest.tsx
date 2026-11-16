@@ -61,7 +61,7 @@ export default function RewarbleManualRequest() {
   }
 
   return (
-    <section className={styles.panel} aria-labelledby="manual-voucher-heading">
+    <section id="rewarble-voucher-request" className={styles.panel} aria-labelledby="manual-voucher-heading">
       <p className={styles.eyebrow}>OPTIONAL / MANUAL REVIEW</p>
       <h4 id="manual-voucher-heading">Pay with a Rewarble voucher</h4>
       <p className={styles.disclaimer}>

@@ -417,3 +417,20 @@
 .later {color:#d4cec9;border-radius:2px;}
 .later:hover {color:#fff;background:#1e1e1e;}
 .sign {color:#99918c;border-color:#ffffff27;}
+
+/* OWNER UPDATE: translucent black glass, so the actual page remains visible behind the modal. */
+.dialog { background:transparent!important; }
+.dialog::backdrop { background:rgba(0,0,0,.55)!important; backdrop-filter:blur(2px); }
+.card {
+  background:rgba(5,5,5,.62)!important;
+  border:1px solid rgba(238,232,227,.47)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(.75);
+  backdrop-filter:blur(18px) saturate(.75);
+  box-shadow:0 25px 75px rgba(0,0,0,.7)!important;
+}
+.mist {
+  background:linear-gradient(165deg,rgba(6,6,6,.36),rgba(0,0,0,.38))!important;
+}
+@media(prefers-reduced-transparency:reduce) {
+  .card {background:rgba(3,3,3,.94)!important}
+}

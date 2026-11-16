@@ -46,6 +46,13 @@ test("inventory, cart persistence, and sold-out protection survive the redesign"
   await expect(page).toHaveURL(/\/cart$/);
   await expect(page.getByText("Digital key", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Other ways to pay" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Pay with a Rewarble voucher" }))
+    .toBeVisible();
+  await expect(page.getByText(/Secure voucher submissions are being set up/))
+    .toBeVisible();
+  await expect(page.getByRole("button", { name: "Submit for manual review" }))
+    .toHaveCount(0);
+
   await page.getByText("Rewarble prepaid card").click();
   await expect(page.getByRole("link", { name: /Redeem on Rewarble/i }))
     .toHaveAttribute("href", "https://rewarble.com/redeem");

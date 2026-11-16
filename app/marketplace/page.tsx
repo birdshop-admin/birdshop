@@ -37,7 +37,7 @@ export default async function MarketplacePage({
     <SiteHeader/>
     <div className={styles.wrap}>
       <header className={styles.hero}>
-        <span className={styles.eyebrow}>BIRDSHOP / VERIFIED RESELLERS</span>
+        <span className={styles.eyebrow}>BIRDSHOP / OWNER-APPROVED RESELLERS</span>
         <h1>The marketplace.</h1>
         <p>Independent sellers, owner-reviewed listings, and private communication. Seller checkout and payouts are being prepared separately; never pay a seller outside an approved BirdShop order.</p>
         <div className={styles.actions}>

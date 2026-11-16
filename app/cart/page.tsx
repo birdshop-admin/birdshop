@@ -7,6 +7,7 @@ import ProductThumbnail from "@/components/ProductThumbnail";
 import ProductCheckout from "@/components/ProductCheckout";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import EditorialPageHero from "@/components/EditorialPageHero";
 import { useCart } from "@/app/cart-context";
 
 import styles from "./cart.module.css";
@@ -15,13 +16,14 @@ const CLEAR_CONFIRM_MS = 4000;
 
 function CartHero({ description }: { description: string }) {
   return (
-    <section className={styles.topSection}>
-      <div className={styles.cartHero}>
-        <span>Your order</span>
-        <h1>Shopping Cart</h1>
-        <p>{description}</p>
-      </div>
-    </section>
+    <EditorialPageHero
+      section="cart"
+      eyebrow="BIRDSHOP / YOUR ORDER"
+      title="Shopping Cart"
+      subtitle="REVIEW YOUR PRODUCTS"
+      description={description}
+      secondary={{ href: "/products", label: "CONTINUE SHOPPING" }}
+    />
   );
 }
 
@@ -119,7 +121,7 @@ export default function CartPage() {
 
   if (!productsLoaded) {
     return (
-      <main className="page-shell">
+      <main className="page-shell bs-editorial-page bs-cart-page">
         <SiteHeader />
 
         <CartHero description="Loading your BirdShop cart…" />
@@ -139,7 +141,7 @@ export default function CartPage() {
 
   if (productsError) {
     return (
-      <main className="page-shell">
+      <main className="page-shell bs-editorial-page bs-cart-page">
         <SiteHeader />
 
         <CartHero description="We could not load the latest product information." />
@@ -169,7 +171,7 @@ export default function CartPage() {
   }
 
   return (
-    <main className="page-shell">
+    <main className="page-shell bs-editorial-page bs-cart-page">
       <SiteHeader />
 
       <CartHero description="Review your BirdShop products before continuing to checkout." />

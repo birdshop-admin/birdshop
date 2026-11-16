@@ -431,3 +431,43 @@
 .secondary {background:#000!important;color:#f7f4ef!important;border-color:#ffffff58!important}
 .quickLink {background:#070707!important;color:#eee!important;border-color:#ffffff3b!important}
 .actions button,.actions a {border-radius:2px!important}
+
+/* Owner-approved black Christmas error / not-found treatment. */
+.hero {
+  color:#f6f2ed!important;
+  background:#000!important;
+  background-image:none!important;
+}
+.overlay {background:transparent!important}
+.glow {display:none!important}
+.eyebrow {
+  color:#c4253e!important;
+  font-family:Arial,Helvetica,sans-serif;
+}
+.content h1 {
+  color:#f7f3ef!important;
+  font-style:italic!important;
+  letter-spacing:-.055em;
+}
+.description {color:#d4cec8!important;font-style:italic}
+.primary {
+  background:#941128!important;
+  border:1px solid #b3233c!important;
+  color:#fff!important;
+  border-radius:2px!important;
+}
+.secondary {
+  background:transparent!important;
+  border:1px solid #d8d1ca!important;
+  color:#f6f1ea!important;
+  border-radius:2px!important;
+}
+.monogram {
+  color:rgba(255,255,255,.035)!important;
+  opacity:1;
+  font-style:normal;
+}
+@media(max-width:680px) {
+  .hero {padding:70px 25px!important}
+  .monogram {opacity:.34}
+}

@@ -104,3 +104,6 @@ html .page-shell .footer-overlay { background: #161618; }
   html .page-shell .site-header-mobile-policies { grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; gap: 15px; padding-top: 14px; font-size: 11px; color: #c0b8a9; }
   html .page-shell .site-header-mobile-policies a { border: 0; }
 }
+
+/* Catalog content stays visible without requiring scroll-driven animation. */
+.page-shell .home-reveal { animation: none; opacity: 1; transform: none; }

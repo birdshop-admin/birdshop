@@ -258,7 +258,7 @@
   min-height: 50px;
   padding: 14px 22px;
   border-radius: var(--bs-r-control, 8px);
-  background: var(--bs-btn-bg, #46513e);
+  background: var(--bs-btn-bg, #4d4d4d);
   color: var(--bs-btn-ink, #f6f2e8);
   font-family: var(--serif, Georgia, serif);
   font-size: 15px;
@@ -277,18 +277,18 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  color: var(--bs-ink, #1c241b);
+  color: var(--bs-ink, #222222);
   font-family: var(--serif, Georgia, serif);
   font-size: 15px;
   text-decoration: underline;
-  text-decoration-color: var(--bs-line-strong, rgba(29, 36, 26, 0.26));
+  text-decoration-color: var(--bs-line-strong, rgba(34, 34, 34, 0.26));
   text-underline-offset: 4px;
   transition: text-decoration-color var(--bs-dur-fast, 160ms) ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .primary:hover {
-    background: var(--bs-btn-hover, #56644b);
+    background: var(--bs-btn-hover, #5f5f5f);
     transform: translateY(-1px);
   }
 
@@ -302,7 +302,7 @@
 }
 
 .page a:focus-visible {
-  outline: 2px solid var(--bs-focus, #46613a);
+  outline: 2px solid var(--bs-focus, #585858);
   outline-offset: 3px;
 }
 

@@ -8,10 +8,10 @@
   background:
     radial-gradient(
       circle at 84% 7%,
-      rgba(113, 137, 97, 0.13),
+      rgba(129, 129, 129, 0.13),
       transparent 29%
     ),
-    linear-gradient(145deg, #0b130d, #132016);
+    linear-gradient(145deg, #111111, #1d1d1d);
 }
 
 .content {
@@ -77,9 +77,9 @@
 }
 
 .noticeSuccess {
-  border: 1px solid var(--theme-border-207-215-196-0_3, rgba(128, 161, 115, 0.3));
-  color: #dce8d7;
-  background: rgba(93, 128, 80, 0.12);
+  border: 1px solid var(--theme-border-207-215-196-0_3, rgba(151, 151, 151, 0.3));
+  color: #e4e4e4;
+  background: rgba(117, 117, 117, 0.12);
 }
 
 .noticeError {
@@ -101,16 +101,16 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 22px;
-  border: 1px solid var(--admin-line-light, var(--theme-border-207-215-196-0_13, rgba(42, 54, 39, 0.13)));
+  border: 1px solid var(--admin-line-light, var(--theme-border-207-215-196-0_13, rgba(50, 50, 50, 0.13)));
   border-radius: 7px;
-  color: var(--theme-text-240-236-226-1, #253024);
+  color: var(--theme-text-240-236-226-1, #2d2d2d);
   background: var(--theme-surface-24-28-24-1, #f2eee4);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.07);
 }
 
 .stats span,
 .stats small {
-  color: var(--theme-text-184-196-170-1, #697563);
+  color: var(--theme-text-184-196-170-1, #717171);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.13em;
@@ -134,10 +134,10 @@
   background:
     radial-gradient(
       circle at 88% 18%,
-      rgba(126, 149, 107, 0.18),
+      rgba(141, 141, 141, 0.18),
       transparent 31%
     ),
-    linear-gradient(135deg, #101a12, #213022);
+    linear-gradient(135deg, #171717, #2c2c2c);
 }
 
 .securityCard span {
@@ -173,9 +173,9 @@
 
 .addPanel,
 .modePanel {
-  border: 1px solid var(--admin-line-light, var(--theme-border-207-215-196-0_13, rgba(42, 54, 39, 0.13)));
+  border: 1px solid var(--admin-line-light, var(--theme-border-207-215-196-0_13, rgba(50, 50, 50, 0.13)));
   border-radius: 8px;
-  color: var(--theme-text-240-236-226-1, #253024);
+  color: var(--theme-text-240-236-226-1, #2d2d2d);
   background: var(--theme-surface-24-28-24-1, #f2eee4);
 }
 
@@ -189,7 +189,7 @@
 
 .addPanel .sectionHeading > span,
 .modePanel .sectionHeading > span {
-  color: var(--theme-text-184-196-170-1, #64725e);
+  color: var(--theme-text-184-196-170-1, #6e6e6e);
 }
 
 .sectionHeading h2,
@@ -203,7 +203,7 @@
 
 .addPanel .sectionHeading p,
 .modePanel .sectionHeading p {
-  color: var(--theme-text-184-196-170-1, #66705f);
+  color: var(--theme-text-184-196-170-1, #6d6d6d);
 }
 
 .sectionHeading p,
@@ -234,14 +234,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--theme-text-184-196-170-1, #5f6c59);
+  color: var(--theme-text-184-196-170-1, #686868);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.13em;
 }
 
 .addForm label small {
-  color: var(--theme-text-184-196-170-1, #8b9287);
+  color: var(--theme-text-184-196-170-1, #909090);
   font-size: 10px;
   letter-spacing: 0.08em;
 }
@@ -251,10 +251,10 @@
 .addForm textarea,
 .filters select {
   width: 100%;
-  border: 1px solid var(--theme-border-207-215-196-0_17, rgba(47, 59, 43, 0.17));
+  border: 1px solid var(--theme-border-207-215-196-0_17, rgba(55, 55, 55, 0.17));
   border-radius: 5px;
   outline: none;
-  color: var(--theme-text-240-236-226-1, #303b2e);
+  color: var(--theme-text-240-236-226-1, #383838);
   background: var(--admin-panel-bright, var(--theme-surface-37-42-35-1, #faf7ef));
   font-family: Georgia, "Times New Roman", serif;
   font-size: 14px;
@@ -280,8 +280,8 @@
 .addForm input:focus,
 .addForm textarea:focus,
 .filters select:focus {
-  border-color: var(--theme-border-207-215-196-1, #788a70);
-  box-shadow: 0 0 0 3px rgba(94, 113, 84, 0.09);
+  border-color: var(--theme-border-207-215-196-1, #848484);
+  box-shadow: 0 0 0 3px rgba(107, 107, 107, 0.09);
 }
 
 .primaryButton {
@@ -293,14 +293,14 @@
   border: 0;
   border-radius: 5px;
   color: #f2eee4;
-  background: var(--admin-accent, #4f6047);
+  background: var(--admin-accent, #5b5b5b);
   cursor: pointer;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 14px;
 }
 
 .primaryButton:hover {
-  background: var(--admin-accent-hover, #607158);
+  background: var(--admin-accent-hover, #6c6c6c);
 }
 
 .primaryButton span {
@@ -323,9 +323,9 @@
   align-items: center;
   gap: 14px;
   padding: 14px;
-  border: 1px solid var(--theme-border-207-215-196-0_13, rgba(51, 64, 46, 0.13));
+  border: 1px solid var(--theme-border-207-215-196-0_13, rgba(60, 60, 60, 0.13));
   border-radius: 6px;
-  background: var(--admin-panel-soft, #162318);
+  background: var(--admin-panel-soft, #1f1f1f);
 }
 
 .modeCard > div {
@@ -374,15 +374,15 @@
 .modeCard button,
 .secondaryButton,
 .revealButton {
-  border: 1px solid var(--theme-border-207-215-196-0_2, rgba(61, 75, 55, 0.2));
-  color: var(--theme-text-184-196-170-1, #465442);
+  border: 1px solid var(--theme-border-207-215-196-0_2, rgba(71, 71, 71, 0.2));
+  color: var(--theme-text-184-196-170-1, #505050);
   background: var(--admin-panel-bright, var(--theme-surface-37-42-35-1, #faf7ef));
 }
 
 .modeCard button:hover,
 .secondaryButton:hover,
 .revealButton:hover {
-  border-color: var(--theme-border-207-215-196-1, #788a70);
+  border-color: var(--theme-border-207-215-196-1, #848484);
 }
 
 .inventorySection {
@@ -410,9 +410,9 @@
   gap: 12px;
   margin-top: 17px;
   padding: 16px;
-  border: 1px solid var(--admin-line-light, var(--theme-border-207-215-196-0_13, rgba(42, 54, 39, 0.13)));
+  border: 1px solid var(--admin-line-light, var(--theme-border-207-215-196-0_13, rgba(50, 50, 50, 0.13)));
   border-radius: 7px;
-  color: var(--admin-ink, var(--theme-text-240-236-226-1, #253024));
+  color: var(--admin-ink, var(--theme-text-240-236-226-1, #2d2d2d));
   background: var(--admin-panel, var(--theme-surface-24-28-24-1, #f2eee4));
 }
 
@@ -425,9 +425,9 @@
 
 .inventoryCard {
   overflow: hidden;
-  border: 1px solid var(--admin-line-light, var(--theme-border-207-215-196-0_13, rgba(42, 54, 39, 0.13)));
+  border: 1px solid var(--admin-line-light, var(--theme-border-207-215-196-0_13, rgba(50, 50, 50, 0.13)));
   border-radius: 7px;
-  color: var(--theme-text-240-236-226-1, #253024);
+  color: var(--theme-text-240-236-226-1, #2d2d2d);
   background: var(--theme-surface-24-28-24-1, #f2eee4);
 }
 
@@ -447,7 +447,7 @@
   place-items: center;
   border-radius: 6px;
   color: #f0ece2;
-  background: linear-gradient(145deg, #101a12, #293a2a);
+  background: linear-gradient(145deg, #171717, #353535);
   font-family: Georgia, "Times New Roman", serif;
   font-size: 13px;
   letter-spacing: 0.08em;
@@ -461,7 +461,7 @@
 }
 
 .codeIdentity span {
-  color: var(--theme-text-184-196-170-1, #65735f);
+  color: var(--theme-text-184-196-170-1, #6f6f6f);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.11em;
@@ -475,7 +475,7 @@
 }
 
 .codeIdentity small {
-  color: var(--theme-text-184-196-170-1, #80877d);
+  color: var(--theme-text-184-196-170-1, #858585);
   font-size: 11px;
 }
 
@@ -493,9 +493,9 @@
 }
 
 .status_available {
-  color: var(--theme-text-184-196-170-1, #4d6448);
-  background: var(--theme-surface-48-54-44-1, #dfe9da);
-  border: 1px solid var(--theme-border-207-215-196-0_15, rgba(72, 96, 65, 0.15));
+  color: var(--theme-text-184-196-170-1, #5d5d5d);
+  background: var(--theme-surface-48-54-44-1, #e6e6e6);
+  border: 1px solid var(--theme-border-207-215-196-0_15, rgba(89, 89, 89, 0.15));
 }
 
 .status_reserved {
@@ -505,9 +505,9 @@
 }
 
 .status_sold {
-  color: var(--theme-text-184-196-170-1, #5d655a);
-  background: var(--theme-surface-48-54-44-1, #e5e7e1);
-  border: 1px solid var(--theme-border-207-215-196-0_14, rgba(74, 80, 71, 0.14));
+  color: var(--theme-text-184-196-170-1, #636363);
+  background: var(--theme-surface-48-54-44-1, #e6e6e6);
+  border: 1px solid var(--theme-border-207-215-196-0_14, rgba(78, 78, 78, 0.14));
 }
 
 .status_disabled {
@@ -519,8 +519,8 @@
 .inventoryDetails {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  border-top: 1px solid var(--theme-border-207-215-196-0_09, rgba(42, 53, 38, 0.09));
-  border-bottom: 1px solid var(--theme-border-207-215-196-0_09, rgba(42, 53, 38, 0.09));
+  border-top: 1px solid var(--theme-border-207-215-196-0_09, rgba(50, 50, 50, 0.09));
+  border-bottom: 1px solid var(--theme-border-207-215-196-0_09, rgba(50, 50, 50, 0.09));
   background: var(--theme-surface-48-54-44-1, #e9e4d8);
 }
 
@@ -534,11 +534,11 @@
 }
 
 .inventoryDetails > div + div {
-  border-left: 1px solid var(--theme-border-207-215-196-0_09, rgba(42, 53, 38, 0.09));
+  border-left: 1px solid var(--theme-border-207-215-196-0_09, rgba(50, 50, 50, 0.09));
 }
 
 .inventoryDetails span {
-  color: var(--theme-text-184-196-170-1, #778074);
+  color: var(--theme-text-184-196-170-1, #7d7d7d);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -546,7 +546,7 @@
 
 .inventoryDetails strong {
   overflow: hidden;
-  color: var(--theme-text-240-236-226-1, #3b4738);
+  color: var(--theme-text-240-236-226-1, #434343);
   font-family: Georgia, "Times New Roman", serif;
   font-size: 12px;
   font-weight: 400;
@@ -573,7 +573,7 @@
   align-items: center;
   gap: 8px;
   padding: 9px 10px;
-  border: 1px solid var(--theme-border-207-215-196-0_15, rgba(60, 74, 55, 0.15));
+  border: 1px solid var(--theme-border-207-215-196-0_15, rgba(70, 70, 70, 0.15));
   border-radius: 4px;
   background: var(--theme-surface-48-54-44-1, #e9e6dd);
 }
@@ -589,7 +589,7 @@
   border: 0;
   border-radius: 3px;
   color: #f1ede2;
-  background: var(--admin-accent, #4f6047);
+  background: var(--admin-accent, #5b5b5b);
   cursor: pointer;
   font-size: 10px;
 }
@@ -624,9 +624,9 @@
   display: inline-flex;
   align-items: center;
   padding: 0 11px;
-  border: 1px solid var(--theme-border-207-215-196-0_13, rgba(77, 86, 73, 0.13));
+  border: 1px solid var(--theme-border-207-215-196-0_13, rgba(83, 83, 83, 0.13));
   border-radius: 4px;
-  color: var(--theme-text-184-196-170-1, #777d74);
+  color: var(--theme-text-184-196-170-1, #7b7b7b);
   background: var(--theme-surface-24-28-24-1, #e9e9e4);
   font-size: 10px;
   font-weight: 700;
@@ -736,7 +736,7 @@
 
   .inventoryDetails > div + div {
     border-left: 0;
-    border-top: 1px solid var(--theme-border-207-215-196-0_09, rgba(42, 53, 38, 0.09));
+    border-top: 1px solid var(--theme-border-207-215-196-0_09, rgba(50, 50, 50, 0.09));
   }
 }
 

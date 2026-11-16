@@ -6,7 +6,7 @@
   border: 1px solid #d9d7cb;
   border-radius: 12px;
   background: var(--theme-surface-37-42-35-1, #faf8f1);
-  color: var(--theme-text-240-236-226-1, #29372b);
+  color: var(--theme-text-240-236-226-1, #333333);
   overflow: hidden;
 }
 .paymentDrawer,
@@ -37,7 +37,7 @@
 .fieldLabel,
 .paidSummary span {
   display: block;
-  color: var(--theme-text-184-196-170-1, #626d5e);
+  color: var(--theme-text-184-196-170-1, #6a6a6a);
   font:
     700 10px/1.5 Arial,
     Helvetica,
@@ -58,7 +58,7 @@
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
-  color: var(--theme-text-184-196-170-1, #40543c);
+  color: var(--theme-text-184-196-170-1, #4e4e4e);
   font:
     600 12px/1.4 Arial,
     Helvetica,
@@ -69,7 +69,7 @@
   place-items: center;
   width: 28px;
   height: 28px;
-  border: 1px solid #d1d5c7;
+  border: 1px solid #d3d3d3;
   border-radius: 50%;
   font-size: 18px;
 }
@@ -104,10 +104,10 @@
 .textarea {
   width: 100%;
   min-width: 0;
-  border: 1px solid #d0d3c6;
+  border: 1px solid #d1d1d1;
   border-radius: 7px;
   background: var(--theme-surface-37-42-35-1, #fffef9);
-  color: var(--theme-text-240-236-226-1, #29372b);
+  color: var(--theme-text-240-236-226-1, #333333);
   font:
     400 14px/1.5 Arial,
     Helvetica,
@@ -128,14 +128,14 @@
 }
 .input::placeholder,
 .textarea::placeholder {
-  color: var(--theme-text-184-196-170-1, #73786d);
+  color: var(--theme-text-184-196-170-1, #767676);
 }
 .input:focus-visible,
 .textarea:focus-visible,
 .paymentDrawer > summary:focus-visible,
 .button:focus-visible,
 .secondaryButton:focus-visible {
-  outline: 2px solid #526a48;
+  outline: 2px solid #626262;
   outline-offset: 3px;
 }
 .actions,
@@ -150,7 +150,7 @@
 .actions > span,
 .requestFooter > span {
   max-width: 290px;
-  color: var(--theme-text-184-196-170-1, #606b5d);
+  color: var(--theme-text-184-196-170-1, #686868);
   font:
     400 12px/1.5 Arial,
     Helvetica,
@@ -160,9 +160,9 @@
 .secondaryButton {
   min-height: 44px;
   padding: 10px 16px;
-  border: 1px solid var(--theme-border-207-215-196-1, #43583d);
+  border: 1px solid var(--theme-border-207-215-196-1, #525252);
   border-radius: 7px;
-  background: #43583d;
+  background: #525252;
   color: #fffdf6;
   font:
     600 12px/1.4 Arial,
@@ -171,7 +171,7 @@
   cursor: pointer;
 }
 .button:hover:not(:disabled) {
-  background: #34472f;
+  background: #414141;
 }
 .secondaryButton {
   color: var(--theme-text-232-169-150-1, #714a3c);
@@ -223,7 +223,7 @@
 .requestDescription,
 .paidSummary p {
   margin: 8px 0;
-  color: var(--theme-text-184-196-170-1, #606b5d);
+  color: var(--theme-text-184-196-170-1, #686868);
   font:
     400 13px/1.6 Arial,
     Helvetica,
@@ -254,7 +254,7 @@
   flex-shrink: 0;
 }
 .noPaymentAction {
-  color: var(--theme-text-184-196-170-1, #606b5d);
+  color: var(--theme-text-184-196-170-1, #686868);
   font:
     400 13px/1.6 Arial,
     Helvetica,
@@ -305,18 +305,18 @@
 /* Refined cream-and-forest payment surfaces. */
 .paymentDrawer {
   border-radius: 10px;
-  border-color: #d5d6c9;
+  border-color: #d5d5d5;
   background: var(--theme-surface-37-42-35-1, #faf8f2);
 }
 .paymentDrawer > summary {
   padding: 13px 18px;
 }
 .paymentDrawer > summary > div > span {
-  color: var(--theme-text-184-196-170-1, #59694f);
+  color: var(--theme-text-184-196-170-1, #646464);
   letter-spacing: 0.13em;
 }
 .paymentDrawer > summary strong {
-  color: var(--theme-text-240-236-226-1, #34472e);
+  color: var(--theme-text-240-236-226-1, #414141);
   font-size: 16px;
 }
 .toggle {
@@ -349,7 +349,7 @@
   max-width: 900px;
   margin: 0 auto;
   padding: 18px;
-  border: 1px solid #dedfd2;
+  border: 1px solid #dedede;
   border-radius: 9px;
   background: var(--theme-surface-37-42-35-1, #faf8f2);
 }
@@ -364,7 +364,7 @@
 .input,
 .textarea {
   background: var(--theme-surface-37-42-35-1, #fffefb);
-  border-color: #d6d9cb;
+  border-color: #d7d7d7;
   font-size: 14px;
 }
 .actions > span {
@@ -392,18 +392,18 @@
   align-self: flex-start;
   margin: 4px 0;
   padding: 18px 20px;
-  border: 1px solid #d4d8c8;
-  border-left: 3px solid var(--theme-border-207-215-196-1, #657654);
+  border: 1px solid #d6d6d6;
+  border-left: 3px solid var(--theme-border-207-215-196-1, #707070);
   border-radius: 10px;
   background: var(--theme-surface-37-42-35-1, #fffdf7);
-  color: var(--theme-text-240-236-226-1, #34472e);
-  box-shadow: 0 3px 12px #29372b06;
+  color: var(--theme-text-240-236-226-1, #414141);
+  box-shadow: 0 3px 12px #33333306;
 }
 .request.request * {
   box-sizing: border-box;
 }
 .request.request .requestEyebrow {
-  color: var(--theme-text-184-196-170-1, #64715b);
+  color: var(--theme-text-184-196-170-1, #6d6d6d);
   font:
     600 10px/1.4 Arial,
     Helvetica,
@@ -412,7 +412,7 @@
 }
 .request.request .requestTitle {
   margin-top: 7px;
-  color: var(--theme-text-240-236-226-1, #30442b);
+  color: var(--theme-text-240-236-226-1, #3e3e3e);
   font:
     400 19px/1.4 Georgia,
     "Times New Roman",
@@ -434,7 +434,7 @@
     400 13px/1.6 Arial,
     Helvetica,
     sans-serif;
-  color: var(--theme-text-184-196-170-1, #626c5d);
+  color: var(--theme-text-184-196-170-1, #696969);
 }
 .paymentLine {
   display: flex;
@@ -444,11 +444,11 @@
   gap: 12px;
   margin-top: 16px;
   padding-top: 14px;
-  border-top: 1px solid #e0e2d5;
+  border-top: 1px solid #e1e1e1;
 }
 .request.request .requestAmount {
   margin: 0;
-  color: var(--theme-text-240-236-226-1, #344c2c);
+  color: var(--theme-text-240-236-226-1, #454545);
   font:
     400 32px/1.2 Georgia,
     "Times New Roman",
@@ -458,12 +458,12 @@
 .request.request .requestFooter {
   margin-top: 14px;
   padding-top: 10px;
-  border-color: #e6e7dd;
+  border-color: #e6e6e6;
   flex-wrap: wrap;
 }
 .request.request .requestFooter > span,
 .request.request .requestFooter > strong {
-  color: var(--theme-text-184-196-170-1, #6a7362);
+  color: var(--theme-text-184-196-170-1, #707070);
   font:
     400 11px/1.5 Arial,
     Helvetica,
@@ -473,31 +473,31 @@
   min-height: 40px;
   padding: 9px 13px;
   background: var(--theme-surface-37-42-35-1, #fffdf7);
-  border: 1px solid #b8c2aa;
-  color: var(--theme-text-184-196-170-1, #435b36);
+  border: 1px solid #bebebe;
+  color: var(--theme-text-184-196-170-1, #535353);
   font:
     400 12px/1.5 Georgia,
     "Times New Roman",
     serif;
 }
 .request.request .secondaryButton:hover:not(:disabled) {
-  background: var(--theme-surface-24-28-24-1, #edf1e5);
+  background: var(--theme-surface-24-28-24-1, #efefef);
 }
 .request.request[data-status="paid"] .requestStatus {
-  background: var(--theme-surface-24-28-24-1, #eaf0e1);
-  color: var(--theme-text-184-196-170-1, #445e37);
-  border-color: #d6dfc8;
+  background: var(--theme-surface-24-28-24-1, #eeeeee);
+  color: var(--theme-text-184-196-170-1, #565656);
+  border-color: #dbdbdb;
 }
 .request.request[data-status="cancelled"],
 .request.request[data-status="expired"] {
-  border-left-color: var(--theme-border-207-215-196-1, #a1a697);
+  border-left-color: var(--theme-border-207-215-196-1, #a4a4a4);
   background: var(--theme-surface-24-28-24-1, #f5f4ed);
 }
 .request.request[data-status="cancelled"] .requestStatus,
 .request.request[data-status="expired"] .requestStatus {
   background: var(--theme-surface-24-28-24-1, #e9e9e1);
-  border-color: #dbded1;
-  color: var(--theme-text-184-196-170-1, #606858);
+  border-color: #dcdcdc;
+  color: var(--theme-text-184-196-170-1, #656565);
 }
 @media (max-width: 700px) {
   .paymentBody {
@@ -559,7 +559,7 @@
 .actionStatus {
   display: block;
   margin-top: 8px;
-  color: var(--theme-text-184-196-170-1, #617056);
+  color: var(--theme-text-184-196-170-1, #6b6b6b);
   font:
     400 12px/1.5 Arial,
     sans-serif;
@@ -581,11 +581,11 @@
   bottom: 24px;
   max-width: min(360px, calc(100vw - 32px));
   padding: 14px 18px;
-  border: 1px solid #b9c5ab;
+  border: 1px solid #c1c1c1;
   border-radius: 10px;
   background: var(--theme-surface-37-42-35-1, #fffdf7);
-  color: var(--theme-text-184-196-170-1, #3f5834);
-  box-shadow: 0 8px 30px #2535201a;
+  color: var(--theme-text-184-196-170-1, #505050);
+  box-shadow: 0 8px 30px #3030301a;
   font:
     400 13px/1.5 Arial,
     sans-serif;

@@ -31,15 +31,15 @@ function render(data: PaymentConfirmedEmailData, adminUrl?: string) {
   return {
     subject,
     text: `${title}\n\n${intro}\n\n${rows.map(([key, value]) => `${key}: ${value}`).join("\n")}\n\n${label}: ${url}\n\nKeep your private link safe.`,
-    html: `<div style="background:#08140e;padding:28px 12px;font:14px/1.7 Arial,sans-serif;color:#213629">
-<table role="presentation" style="width:100%;max-width:620px;margin:auto;border:1px solid #c8cdbc;border-radius:18px;overflow:hidden;border-spacing:0;background:#f2efe4">
-<tr><td style="padding:25px 30px;background:#11241a;color:#eae7d8;letter-spacing:4px;font-size:11px">BIRDSHOP · PAYMENT CONFIRMED</td></tr>
+    html: `<div style="background:#111111;padding:28px 12px;font:14px/1.7 Arial,sans-serif;color:#313131">
+<table role="presentation" style="width:100%;max-width:620px;margin:auto;border:1px solid #cbcbcb;border-radius:18px;overflow:hidden;border-spacing:0;background:#f2efe4">
+<tr><td style="padding:25px 30px;background:#1f1f1f;color:#eae7d8;letter-spacing:4px;font-size:11px">BIRDSHOP · PAYMENT CONFIRMED</td></tr>
 <tr><td style="padding:30px"><h1 style="font:32px/1.2 Georgia,serif;margin:0 0 18px">${escape(title)}</h1>
-<p style="color:#52624e">${escape(intro)}</p>
+<p style="color:#5d5d5d">${escape(intro)}</p>
 <table role="presentation" style="width:100%;border-spacing:0;margin:24px 0;background:#e9e6da;border-radius:12px;padding:12px">
-${rows.map(([key,value]) => `<tr><td style="padding:12px 6px;border-bottom:1px solid #d5d8c9;color:#617058;font-size:11px">${escape(key)}</td><td style="padding:12px 6px;border-bottom:1px solid #d5d8c9;font-weight:600">${escape(value)}</td></tr>`).join("")}
-</table><p style="margin:26px 0"><a href="${escape(url)}" style="display:block;padding:15px;text-align:center;background:#435b3c;color:#fffdf4;text-decoration:none;border-radius:9px;font-weight:600">${label}</a></p>
-<p style="font-size:12px;color:#687461">Your payment is confirmed. Service delivery is arranged in your private chat, and we will email you when the order is completed. Keep this link safe.</p></td></tr></table></div>`,
+${rows.map(([key,value]) => `<tr><td style="padding:12px 6px;border-bottom:1px solid #d6d6d6;color:#6b6b6b;font-size:11px">${escape(key)}</td><td style="padding:12px 6px;border-bottom:1px solid #d6d6d6;font-weight:600">${escape(value)}</td></tr>`).join("")}
+</table><p style="margin:26px 0"><a href="${escape(url)}" style="display:block;padding:15px;text-align:center;background:#921027;color:#fffdf4;text-decoration:none;border-radius:9px;font-weight:600">${label}</a></p>
+<p style="font-size:12px;color:#707070">Your payment is confirmed. Service delivery is arranged in your private chat, and we will email you when the order is completed. Keep this link safe.</p></td></tr></table></div>`,
   };
 }
 export function paymentConfirmedCustomerEmail(data: PaymentConfirmedEmailData) { return render(data); }

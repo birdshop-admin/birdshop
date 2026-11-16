@@ -593,12 +593,12 @@ export default async function ServiceAgentChatPage({
                         : ""
                     }`}
                     style={{
-                      borderLeft: "3px solid #82927a",
+                      borderLeft: "3px solid #8d8d8d",
 
                       background:
                         selected?.id === conversation.id
                           ? undefined
-                          : "rgba(114, 135, 105, 0.08)",
+                          : "rgba(128, 128, 128, 0.08)",
                     }}
                   >
                     <div>
@@ -708,7 +708,7 @@ export default async function ServiceAgentChatPage({
 
                     lineHeight: 1.7,
 
-                    color: "#4d584c",
+                    color: "#555555",
                   }}
                 >
                   {selected.request_message ||
@@ -911,7 +911,7 @@ export default async function ServiceAgentChatPage({
 
                               fontSize: "30px",
 
-                              color: "#263126",
+                              color: "#2e2e2e",
                             }}
                           >
                             {money(paidPayment.amount, paidPayment.currency)}
@@ -967,7 +967,7 @@ export default async function ServiceAgentChatPage({
 
                               fontSize: "30px",
 
-                              color: "#263126",
+                              color: "#2e2e2e",
                             }}
                           >
                             {money(
@@ -1016,7 +1016,7 @@ export default async function ServiceAgentChatPage({
                       style={{
                         padding: "20px 0",
 
-                        color: "#5c665a",
+                        color: "#636363",
 
                         fontFamily: "Georgia, 'Times New Roman', serif",
                       }}

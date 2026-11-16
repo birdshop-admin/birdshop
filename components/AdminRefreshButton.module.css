@@ -13,12 +13,8 @@
 
   border:
     1px solid
-    rgba(
-      220,
-      226,
-      211,
-      0.16
-    );
+    rgba(224, 224, 224,
+      0.16);
 
   border-radius: 7px;
 
@@ -62,12 +58,8 @@
 
 .button:hover:not(:disabled) {
   border-color:
-    rgba(
-      196,
-      207,
-      185,
-      0.34
-    );
+    rgba(203, 203, 203,
+      0.34);
 
   background:
     rgba(

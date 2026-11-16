@@ -4,10 +4,10 @@
    1. --bs-* design tokens. Light values on :root, dark values on
       html[data-theme="dark"]. Modules use these directly; never put a
       literal dark hex in a module.
-   2. Legacy --theme-* tokens (dark only). Every stylesheet keeps its
-      light colour as the var() fallback, so light mode never reads them.
+   2. Legacy --theme-* tokens for dark mode and every public route.
+      Staff light mode keeps its neutral light var() fallbacks.
       NOTE: the names still encode the OLD dark RGB values (for example
-      --theme-surface-24-28-24-1 is now the page colour #0b130e). They are
+      --theme-surface-24-28-24-1 is now the page colour #111111). They are
       only IDs now. Do not rename them; dozens of files use them.
    3. Global dark rules: canvas, selection, native controls, shell.
    4. ThemeToggle (floating, header, menu, sidebar) and the theme switch.
@@ -20,59 +20,59 @@ html { color-scheme: light; }
 --------------------------------------------------------- */
 
 :root {
-  --bs-canvas: #10170f;
+  --bs-canvas: #000;
   --bs-page: #f0ece2;
   --bs-band: #e9e5da;
   --bs-card: #f8f5ec;
   --bs-raised: #fffdf8;
   --bs-field: #fffdf7;
   --bs-well:
-    radial-gradient(circle at 66% 32%, rgba(112, 130, 97, 0.26), transparent 42%),
-    linear-gradient(160deg, #1f2b1e, #141c14);
+    radial-gradient(circle at 66% 32%, rgba(124, 124, 124, 0.26), transparent 42%),
+    linear-gradient(160deg, #282828, #1a1a1a);
 
-  --bs-ink: #1c241b;
-  --bs-muted: #4a5345;
-  --bs-faint: #5f6859;
-  --bs-accent: #4d6044;
+  --bs-ink: #222222;
+  --bs-muted: #505050;
+  --bs-faint: #656565;
+  --bs-accent: #921027;
 
-  --bs-line: rgba(29, 36, 26, 0.13);
-  --bs-line-strong: rgba(29, 36, 26, 0.26);
-  --bs-line-active: rgba(70, 97, 58, 0.6);
+  --bs-line: rgba(34, 34, 34, 0.13);
+  --bs-line-strong: rgba(34, 34, 34, 0.26);
+  --bs-line-active: rgba(88, 88, 88, 0.6);
 
-  --bs-btn-bg: #46513e;
-  --bs-btn-hover: #56644b;
-  --bs-btn-ink: #f6f2e8;
-  --bs-btn-disabled-bg: rgba(70, 81, 62, 0.14);
-  --bs-btn-disabled-ink: rgba(28, 36, 27, 0.45);
+  --bs-btn-bg: #921027;
+  --bs-btn-hover: #ad1933;
+  --bs-btn-ink: #f5f2ed;
+  --bs-btn-disabled-bg: rgba(77, 77, 77, 0.14);
+  --bs-btn-disabled-ink: rgba(34, 34, 34, 0.45);
 
-  --bs-selected-bg: #2f3e2a;
-  --bs-selected-ink: #f6f2e8;
-  --bs-selected-line: #2f3e2a;
+  --bs-selected-bg: #810b1d;
+  --bs-selected-ink: #f5f2ed;
+  --bs-selected-line: #393939;
 
-  --bs-focus: #46613a;
+  --bs-focus: #df4964;
   --bs-focus-on-dark: #ece5cf;
 
   --bs-gold: #8a6a2a;
-  --bs-star: #7d8a63;
+  --bs-star: #848484;
 
-  --bs-success-ink: #3f5236;
-  --bs-success-bg: rgba(89, 111, 80, 0.12);
+  --bs-success-ink: #4c4c4c;
+  --bs-success-bg: rgba(104, 104, 104, 0.12);
   --bs-warn-ink: #7a5a34;
   --bs-warn-bg: rgba(145, 112, 70, 0.13);
   --bs-danger-ink: #7d3a28;
   --bs-danger-bg: #f9ebe5;
-  --bs-skeleton: rgba(29, 36, 26, 0.08);
+  --bs-skeleton: rgba(34, 34, 34, 0.08);
 
-  --bs-shadow-card: 0 1px 2px rgba(16, 23, 15, 0.04), 0 10px 28px rgba(16, 23, 15, 0.06);
-  --bs-shadow-raised: 0 2px 4px rgba(16, 23, 15, 0.05), 0 20px 44px rgba(16, 23, 15, 0.12);
+  --bs-shadow-card: 0 1px 2px rgba(21, 21, 21, 0.04), 0 10px 28px rgba(21, 21, 21, 0.06);
+  --bs-shadow-raised: 0 2px 4px rgba(21, 21, 21, 0.05), 0 20px 44px rgba(21, 21, 21, 0.12);
 
   /* Forest / photo surfaces (hero, summary cards, help bands, sticky CTAs). */
-  --bs-forest: linear-gradient(155deg, #0f1e13, #1a2c1e);
+  --bs-forest: linear-gradient(155deg, #1a1a1a, #272727);
   --bs-forest-ink: #f4efe6;
   --bs-forest-muted: rgba(244, 239, 230, 0.74);
   --bs-forest-line: rgba(244, 239, 230, 0.14);
   --bs-forest-btn-bg: #f0ece2;
-  --bs-forest-btn-ink: #142012;
+  --bs-forest-btn-ink: #1c1c1c;
   --bs-forest-btn-hover: #fffaf0;
 
   /* Radii (the page shell stays 18px). */
@@ -89,46 +89,46 @@ html { color-scheme: light; }
 
 html[data-theme="dark"] {
   color-scheme: dark;
-  accent-color: #adc29a;
-  scrollbar-color: rgba(173, 194, 154, 0.3) transparent;
+  accent-color: #bbbbbb;
+  scrollbar-color: rgba(187, 187, 187, 0.3) transparent;
 
-  --bs-canvas: #050a07;
-  --bs-page: #0b130e;
-  --bs-band: #111d15;
-  --bs-card: #16211a;
-  --bs-raised: #1d2a21;
-  --bs-field: #101a13;
+  --bs-canvas: #000;
+  --bs-page: #000;
+  --bs-band: #080808;
+  --bs-card: #090909;
+  --bs-raised: #101010;
+  --bs-field: #070707;
   --bs-well:
-    radial-gradient(circle at 66% 30%, rgba(173, 194, 154, 0.16), transparent 46%),
-    linear-gradient(160deg, #16231a, #0a120d);
+    radial-gradient(circle at 66% 30%, rgba(187, 187, 187, 0.16), transparent 46%),
+    linear-gradient(160deg, #202020, #101010);
 
   --bs-ink: #f1ebdd;
   --bs-muted: #bdb8a6;
-  --bs-faint: #9a9c8e;
-  --bs-accent: #adc29a;
+  --bs-faint: #9b9b9b;
+  --bs-accent: #dd667b;
 
   --bs-line: rgba(226, 216, 186, 0.12);
   --bs-line-strong: rgba(226, 216, 186, 0.22);
-  --bs-line-active: rgba(173, 194, 154, 0.5);
+  --bs-line-active: rgba(187, 187, 187, 0.5);
 
-  /* Cream primary on dark: always pair --bs-btn-bg with --bs-btn-ink. */
-  --bs-btn-bg: #e9e4d6;
-  --bs-btn-hover: #f6f2e8;
-  --bs-btn-ink: #142012;
+  /* Burgundy primary: always pair --bs-btn-bg with --bs-btn-ink. */
+  --bs-btn-bg: #921027;
+  --bs-btn-hover: #ad1933;
+  --bs-btn-ink: #f5f2ed;
   --bs-btn-disabled-bg: rgba(226, 216, 186, 0.07);
   --bs-btn-disabled-ink: rgba(241, 235, 221, 0.4);
 
-  --bs-selected-bg: #34472e;
-  --bs-selected-ink: #f1ebdd;
-  --bs-selected-line: rgba(173, 194, 154, 0.5);
+  --bs-selected-bg: #810b1d;
+  --bs-selected-ink: #f5f2ed;
+  --bs-selected-line: rgba(187, 187, 187, 0.5);
 
-  --bs-focus: #c9d8b4;
+  --bs-focus: #df4964;
 
   --bs-gold: #d6b778;
   --bs-star: #d8c690;
 
-  --bs-success-ink: #c3d1b2;
-  --bs-success-bg: rgba(150, 175, 130, 0.14);
+  --bs-success-ink: #cccccc;
+  --bs-success-bg: rgba(166, 166, 166, 0.14);
   --bs-warn-ink: #eaab95;
   --bs-warn-bg: rgba(234, 171, 149, 0.12);
   --bs-danger-ink: #f0b4a2;
@@ -147,18 +147,18 @@ html[data-theme="dark"] {
   --bs-forest-line: rgba(226, 216, 186, 0.14);
 
   /* RGB channels for the legacy alpha tokens below (private to this file). */
-  --dark-line-rgb: 226, 216, 186;   /* champagne hairline */
-  --dark-accent-rgb: 173, 194, 154; /* sage: hover, active and focus borders */
-  --dark-card-rgb: 22, 33, 26;
-  --dark-raised-rgb: 29, 42, 33;
-  --dark-band-rgb: 17, 29, 21;
-  --dark-text-rgb: 241, 235, 221;
-  --dark-text-2-rgb: 189, 184, 166;
+  --dark-line-rgb: 245,242,237;   /* champagne hairline */
+  --dark-accent-rgb: 198,49,72; /* burgundy: hover, active and focus borders */
+  --dark-card-rgb: 9,9,9;
+  --dark-raised-rgb: 16,16,16;
+  --dark-band-rgb: 8,8,8;
+  --dark-text-rgb: 245,242,237;
+  --dark-text-2-rgb: 194,191,187;
 
-  /* ---------------------------------------------------------
-     2. LEGACY --theme-* TOKENS (names are IDs, see header note)
-  --------------------------------------------------------- */
+}
 
+/* Shared legacy aliases: public editorial pages also need them in light mode. */
+html[data-theme="dark"], html:has(.site-header) {
   /* Borders below .3 alpha: champagne hairlines. */
   --theme-border-207-215-196-0_08: rgba(var(--dark-line-rgb), 0.08);
   --theme-border-207-215-196-0_09: rgba(var(--dark-line-rgb), 0.09);
@@ -196,8 +196,8 @@ html[data-theme="dark"] {
   --theme-border-207-215-196-0_6: rgba(var(--dark-accent-rgb), 0.6);
   --theme-border-207-215-196-0_62: rgba(var(--dark-accent-rgb), 0.62);
   --theme-border-207-215-196-0_65: rgba(var(--dark-accent-rgb), 0.65);
-  /* Selected, active and left-accent borders (was a near-white #cfd7c4). */
-  --theme-border-207-215-196-1: #869d76;
+  /* Selected, active and left-accent borders (was a near-white #d4d4d4). */
+  --theme-border-207-215-196-1: #b31c35;
 
   --theme-readable-accent: var(--bs-accent);
 
@@ -298,7 +298,7 @@ html[data-theme="dark"] body {
 
 html[data-theme="dark"] ::selection {
   color: #f6f1e4;
-  background: #3e5537;
+  background: #4e4e4e;
 }
 
 html[data-theme="dark"] .page-shell {
@@ -362,8 +362,8 @@ html[data-theme="dark"] .theme-toggle-icon {
   height: 18px;
   flex: none;
   border-radius: var(--bs-r-pill);
-  background: var(--tt-track, rgba(52, 67, 46, 0.16));
-  box-shadow: inset 0 0 0 1px var(--tt-track-line, rgba(52, 67, 46, 0.22));
+  background: var(--tt-track, rgba(62, 62, 62, 0.16));
+  box-shadow: inset 0 0 0 1px var(--tt-track-line, rgba(62, 62, 62, 0.22));
 }
 .theme-toggle-track i {
   position: absolute;
@@ -372,7 +372,7 @@ html[data-theme="dark"] .theme-toggle-icon {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: var(--tt-knob, #34432e);
+  background: var(--tt-knob, #3e3e3e);
   transition: transform var(--bs-dur) var(--ease-standard), background-color var(--bs-dur) ease;
 }
 html[data-theme="dark"] .theme-toggle-track {
@@ -408,11 +408,11 @@ html[data-theme="dark"] .theme-toggle-track i {
   z-index: 80;
   min-height: 44px;
   padding: 0 12px 0 14px;
-  border: 1px solid #c5cbbb;
+  border: 1px solid #c9c9c9;
   border-radius: var(--bs-r-pill);
   background: rgba(244, 240, 230, 0.94);
-  color: #34432e;
-  box-shadow: 0 10px 30px rgba(16, 23, 15, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  color: #3e3e3e;
+  box-shadow: 0 10px 30px rgba(21, 21, 21, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 .theme-toggle.theme-toggle-floating:focus-visible {
   outline: 2px solid var(--bs-focus);
@@ -538,8 +538,8 @@ html[data-theme="dark"] .theme-toggle.theme-toggle-header {
 /* --- Hover and press (precise pointers only) -------------- */
 @media (hover: hover) and (pointer: fine) {
   .theme-toggle.theme-toggle-floating:hover {
-    border-color: #a9b49c;
-    background: #e9ecdf;
+    border-color: #b0b0b0;
+    background: #eaeaea;
   }
   html[data-theme="dark"] .theme-toggle.theme-toggle-floating:hover {
     border-color: rgba(var(--dark-accent-rgb), 0.42);
@@ -656,7 +656,7 @@ html[data-theme-hint] .theme-toggle.theme-toggle-header::after {
   padding: 7px 12px;
   border: 1px solid rgba(234, 227, 206, 0.35);
   border-radius: 999px;
-  background: #0b140e;
+  background: #121212;
   color: #f0ece2;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35), 0 0 18px rgba(216, 201, 163, 0.35);
   font: 600 12px/1 Georgia, "Times New Roman", serif;

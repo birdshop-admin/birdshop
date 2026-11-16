@@ -1,12 +1,12 @@
 .shell {
   --admin-sidebar-width: 264px;
 
-  --admin-bg: #0b130d;
-  --admin-bg-elevated: #111d13;
-  --admin-bg-soft: #162318;
+  --admin-bg: #111111;
+  --admin-bg-elevated: #1a1a1a;
+  --admin-bg-soft: #1f1f1f;
 
-  --admin-panel: #101d13;
-  --admin-panel-soft: #162318;
+  --admin-panel: #1a1a1a;
+  --admin-panel-soft: #1f1f1f;
   --admin-panel-bright: var(--theme-surface-24-28-24-1, #f7f3e9);
 
   --admin-ink: #f2eee4;
@@ -20,11 +20,11 @@
   --admin-line-dark: rgba(242, 238, 228, 0.13);
   --admin-line-light: rgba(242, 238, 228, 0.13);
 
-  --admin-accent: #4f6047;
-  --admin-accent-hover: #607158;
-  --admin-accent-soft: var(--theme-surface-48-54-44-1, #dfe6da);
+  --admin-accent: #5b5b5b;
+  --admin-accent-hover: #6c6c6c;
+  --admin-accent-soft: var(--theme-surface-48-54-44-1, #e4e4e4);
 
-  --admin-success: #4f6949;
+  --admin-success: #616161;
   --admin-warning: #7a6745;
   --admin-danger: #815148;
 
@@ -54,7 +54,7 @@
 .shell :global(input:focus-visible),
 .shell :global(select:focus-visible),
 .shell :global(textarea:focus-visible) {
-  outline: 2px solid #d8e5bd;
+  outline: 2px solid #dfdfdf;
   outline-offset: 3px;
 }
 @media (max-width: 900px) {

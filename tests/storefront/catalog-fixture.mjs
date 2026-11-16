@@ -3,8 +3,8 @@ import http from 'node:http';
 
 const services = ['Deepwoken progression', 'Custom build', 'Boss carry'].map((name, index) => ({
   slug: ['deepwoken-progression', 'custom-build', 'boss-carry'][index],
-  data: { name, game: 'Deepwoken', category: 'Roblox services', initials: 'BS', shortDescription: 'Plan your next adventure with the BirdShop team.', description: 'A local QA fixture.', available: true, featured: true, customOnly: true, image: null },
-  packages: [],
+  data: { name, game: 'Deepwoken', category: 'Roblox services', initials: 'BS', shortDescription: 'Plan your next adventure with the BirdShop team.', description: 'A local QA fixture.', available: true, featured: true, customOnly: index !== 0, image: null },
+  packages: index === 0 ? [{ id: "standard", name: "Standard", enabled: true, cents: 3500, scope: "QA fixed service package", includes: ["Progression planning", "Private service chat"] }] : [],
 }));
 const products = ['Digital key', 'Game credit', 'Sold-out key'].map((name, index) => ({
   id: String(index), slug: 'qa-key-' + index, name, category: 'Digital products', platform: 'PC', region: 'Global',

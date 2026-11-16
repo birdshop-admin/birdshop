@@ -39,10 +39,10 @@
 
   background: linear-gradient(
     90deg,
-    #061009 0%,
-    #061009 68%,
-    #1d241d 77%,
-    #67685f 88%,
+    #0d0d0d 0%,
+    #0d0d0d 68%,
+    #222222 77%,
+    #676767 88%,
     var(--theme-surface-24-28-24-1, #efecdf) 100%
   );
 
@@ -219,7 +219,7 @@
 
   border-radius: 999px;
 
-  color: var(--theme-text-240-236-226-1, #142014);
+  color: var(--theme-text-240-236-226-1, #1d1d1d);
 
   cursor: pointer;
 
@@ -266,7 +266,7 @@
 
   color: #f0ece2;
 
-  background: #405137;
+  background: #4c4c4c;
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -301,7 +301,7 @@
 /* Two-tone ring: dark ink plus a cream halo stays visible whether the cart
    sits on the forest, the grey transition or the cream end of the header. */
 .site-header .site-header-cart:focus-visible {
-  outline: 2px solid #142014;
+  outline: 2px solid #1d1d1d;
   outline-offset: 2px;
 
   box-shadow: 0 0 0 4px var(--bs-focus-on-dark, #ece5cf);
@@ -323,7 +323,7 @@
 
   border-radius: var(--bs-r-control, 8px);
 
-  color: var(--bs-forest-btn-ink, #142012);
+  color: var(--bs-forest-btn-ink, #1c1c1c);
   background: var(--bs-forest-btn-bg, #f0ece2);
 
   box-shadow: var(--bs-shadow-raised);
@@ -414,9 +414,9 @@
   .site-header {
     background: linear-gradient(
       90deg,
-      #061009 0%,
-      #08130c 64%,
-      #121c14 100%
+      #0d0d0d 0%,
+      #101010 64%,
+      #191919 100%
     );
   }
 
@@ -508,8 +508,8 @@
     color: #f0ece2;
     background: linear-gradient(
       135deg,
-      rgba(6, 16, 9, 0.995),
-      rgba(17, 27, 18, 0.99)
+      rgba(13, 13, 13, 0.995),
+      rgba(24, 24, 24, 0.99)
     );
 
     box-shadow: 0 20px 38px rgba(0, 0, 0, 0.22);
@@ -742,7 +742,7 @@
    HEADER — DARK MODE
 
    Written at html[data-theme] specificity so they win over the
-   light rules above regardless of order. The grey #67685f stop
+   light rules above regardless of order. The grey #676767 stop
    and the bright cream top edge are removed; the header stays
    one continuous deep forest surface.
 ========================================================= */
@@ -750,10 +750,10 @@
 html[data-theme="dark"] .site-header {
   background: linear-gradient(
     90deg,
-    #050d08 0%,
-    #07110b 58%,
-    #0c1711 82%,
-    #101c15 100%
+    #0b0b0b 0%,
+    #0e0e0e 58%,
+    #141414 82%,
+    #191919 100%
   );
 
   box-shadow:
@@ -771,15 +771,15 @@ html[data-theme="dark"] .site-header.site-header-scrolled {
 }
 
 html[data-theme="dark"] .site-header-nav a::after {
-  background: #adc29a;
+  background: #bbbbbb;
 }
 
 html[data-theme="dark"] .site-header-cart-count {
-  background: #3e5537;
+  background: #4e4e4e;
 
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 0 0 1px rgba(173, 194, 154, 0.25);
+    0 0 0 1px rgba(187, 187, 187, 0.25);
 }
 
 html[data-theme="dark"] .site-header-mobile-nav {
@@ -787,17 +787,17 @@ html[data-theme="dark"] .site-header-mobile-nav {
 
   background: linear-gradient(
     160deg,
-    rgba(6, 13, 9, 0.995),
-    rgba(14, 24, 17, 0.99)
+    rgba(11, 11, 11, 0.995),
+    rgba(21, 21, 21, 0.99)
   );
 
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
 }
 
 html[data-theme="dark"] .site-header-mobile-nav .site-header-mobile-active {
-  border-color: rgba(173, 194, 154, 0.32);
+  border-color: rgba(187, 187, 187, 0.32);
 
-  box-shadow: inset 2px 0 0 #adc29a;
+  box-shadow: inset 2px 0 0 #bbbbbb;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1027,9 +1027,9 @@ html[data-theme="dark"] .site-footer {
 html[data-theme="dark"] .footer-overlay {
   background: linear-gradient(
     90deg,
-    rgba(4, 8, 5, 0.95),
-    rgba(6, 12, 8, 0.8) 50%,
-    rgba(6, 12, 8, 0.92)
+    rgba(7, 7, 7, 0.95),
+    rgba(10, 10, 10, 0.8) 50%,
+    rgba(10, 10, 10, 0.92)
   );
 }
 

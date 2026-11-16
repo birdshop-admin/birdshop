@@ -1,15 +1,15 @@
 .report {
   display: grid;
   gap: 22px;
-  color: var(--theme-text-240-236-226-1, #2d3d29);
+  color: var(--theme-text-240-236-226-1, #383838);
 }
 .panel {
   padding: 26px;
-  border: 1px solid #d8d9cd;
+  border: 1px solid #d8d8d8;
   border-radius: 16px;
   background: var(--theme-surface-24-28-24-1, #f8f5ec);
   min-width: 0;
-  color: var(--theme-text-240-236-226-1, #2d3d29);
+  color: var(--theme-text-240-236-226-1, #383838);
 }
 .panel h2 {
   font:
@@ -26,7 +26,7 @@
 .panel p {
   font-size: 13px;
   line-height: 1.7;
-  color: var(--theme-text-184-196-170-1, #64705e);
+  color: var(--theme-text-184-196-170-1, #6c6c6c);
 }
 .metrics {
   display: grid;
@@ -40,15 +40,15 @@
   padding: 22px;
   border-radius: 14px;
   background: var(--theme-surface-24-28-24-1, #f8f5ec);
-  border: 1px solid #d8d9cd;
+  border: 1px solid #d8d8d8;
   min-width: 0;
 }
 .metrics .primary {
-  background: var(--theme-surface-48-54-44-1, #dce4d2);
-  border-color: #bdc9ad;
+  background: var(--theme-surface-48-54-44-1, #e1e1e1);
+  border-color: #c4c4c4;
 }
 .metrics span {
-  color: var(--theme-text-184-196-170-1, #54634b);
+  color: var(--theme-text-184-196-170-1, #5e5e5e);
   font:
     600 12px/1.5 Arial,
     sans-serif;
@@ -61,7 +61,7 @@
   font-variant-numeric: tabular-nums;
 }
 .metrics small {
-  color: var(--theme-text-184-196-170-1, #64705e);
+  color: var(--theme-text-184-196-170-1, #6c6c6c);
   font:
     400 11px/1.6 Arial,
     sans-serif;
@@ -81,13 +81,13 @@
 }
 .heading a,
 .foot a {
-  color: var(--theme-text-184-196-170-1, #435b36);
+  color: var(--theme-text-184-196-170-1, #535353);
   text-decoration: underline;
   text-underline-offset: 4px;
   font-size: 12px;
 }
 .eyebrow {
-  color: var(--theme-text-184-196-170-1, #6c775f);
+  color: var(--theme-text-184-196-170-1, #737373);
   font:
     600 10px/1.6 Arial,
     sans-serif;
@@ -103,11 +103,11 @@
   justify-content: space-between;
   gap: 14px;
   padding: 13px 0;
-  border-bottom: 1px solid #ddded2;
+  border-bottom: 1px solid #dddddd;
   font-size: 13px;
 }
 a.actionRow:hover {
-  color: var(--theme-text-184-196-170-1, #65824f);
+  color: var(--theme-text-184-196-170-1, #787878);
 }
 .actionRow b {
   flex-shrink: 0;
@@ -116,7 +116,7 @@ a.actionRow:hover {
 }
 .empty {
   padding: 20px 0;
-  color: var(--theme-text-184-196-170-1, #65715e);
+  color: var(--theme-text-184-196-170-1, #6d6d6d);
   font-size: 14px;
   line-height: 1.7;
 }
@@ -130,11 +130,11 @@ a.actionRow:hover {
   gap: 15px;
   justify-content: space-between;
   padding: 13px 0;
-  border-bottom: 1px solid #ddded2;
+  border-bottom: 1px solid #dddddd;
   font-size: 13px;
 }
 .facts dt {
-  color: var(--theme-text-184-196-170-1, #65715e);
+  color: var(--theme-text-184-196-170-1, #6d6d6d);
 }
 .facts dd {
   margin: 0;
@@ -148,7 +148,7 @@ a.actionRow:hover {
   grid-template-columns: 1fr 1.3fr 0.8fr;
   gap: 20px;
   padding: 16px 0;
-  border-top: 1px solid #ddded2;
+  border-top: 1px solid #dddddd;
   font-size: 13px;
 }
 .order > div {
@@ -163,7 +163,7 @@ a.actionRow:hover {
   font-weight: 500;
 }
 .order small {
-  color: var(--theme-text-184-196-170-1, #65715e);
+  color: var(--theme-text-184-196-170-1, #6d6d6d);
   line-height: 1.5;
 }
 .stock {
@@ -186,7 +186,7 @@ a.actionRow:hover {
 .stock span {
   text-transform: capitalize;
   font-size: 11px;
-  color: var(--theme-text-184-196-170-1, #65715e);
+  color: var(--theme-text-184-196-170-1, #6d6d6d);
 }
 .activity {
   padding: 0;
@@ -199,7 +199,7 @@ a.actionRow:hover {
   justify-content: space-between;
   gap: 15px;
   padding: 12px 0;
-  border-bottom: 1px solid #ddded2;
+  border-bottom: 1px solid #dddddd;
 }
 .activity a {
   display: grid;
@@ -215,19 +215,19 @@ a.actionRow:hover {
 .activity time {
   font-size: 11px;
   line-height: 1.5;
-  color: var(--theme-text-184-196-170-1, #65715e);
+  color: var(--theme-text-184-196-170-1, #6d6d6d);
 }
 .activity time {
   flex-shrink: 0;
   text-align: right;
 }
 .foot {
-  color: #c1c8b7;
+  color: #c5c5c5;
   font-size: 11px;
   line-height: 1.8;
 }
 .foot a {
-  color: #dce5ce;
+  color: #e1e1e1;
 }
 .error {
   background: var(--theme-surface-24-28-24-1, #faf0e8);
@@ -245,9 +245,9 @@ a.actionRow:hover {
 .periods button {
   min-height: 44px;
   padding: 9px 15px;
-  border: 1px solid #cad0bd;
+  border: 1px solid #cdcdcd;
   border-radius: 8px;
-  color: var(--theme-text-184-196-170-1, #3e5234);
+  color: var(--theme-text-184-196-170-1, #4c4c4c);
   background: var(--theme-surface-37-42-35-1, #fffdf6);
   cursor: pointer;
   font:
@@ -255,23 +255,23 @@ a.actionRow:hover {
     sans-serif;
 }
 .periods button[aria-pressed="true"] {
-  background: #425b36;
+  background: #535353;
   color: #fffdf6;
-  border-color: var(--theme-border-207-215-196-1, #425b36);
+  border-color: var(--theme-border-207-215-196-1, #535353);
 }
 .revenue {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   padding: 18px 0;
-  border-top: 1px solid #ddded2;
+  border-top: 1px solid #dddddd;
 }
 .revenue article {
   display: grid;
   gap: 8px;
 }
 .revenue span {
-  color: var(--theme-text-184-196-170-1, #64705e);
+  color: var(--theme-text-184-196-170-1, #6c6c6c);
   font-size: 12px;
 }
 .revenue strong {
@@ -287,7 +287,7 @@ a.actionRow:hover {
   align-items: end;
   padding-top: 12px;
   margin: 20px 0 12px;
-  border-bottom: 1px solid #cbd1bf;
+  border-bottom: 1px solid #cecece;
 }
 .bar {
   flex: 1;
@@ -299,7 +299,7 @@ a.actionRow:hover {
 .bar span {
   display: block;
   width: 100%;
-  background: #859974;
+  background: #929292;
   border-radius: 3px 3px 0 0;
 }
 .chartLabels {
@@ -307,7 +307,7 @@ a.actionRow:hover {
   justify-content: space-between;
   gap: 12px;
   font-size: 11px;
-  color: var(--theme-text-184-196-170-1, #65715e);
+  color: var(--theme-text-184-196-170-1, #6d6d6d);
 }
 .detailRows {
   max-height: 360px;
@@ -319,7 +319,7 @@ a.actionRow:hover {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 10px;
-  border-bottom: 1px solid #ddded2;
+  border-bottom: 1px solid #dddddd;
   padding: 10px 0;
 }
 .report summary {
@@ -330,7 +330,7 @@ a.actionRow:hover {
 .report button:focus-visible,
 .report a:focus-visible,
 .report summary:focus-visible {
-  outline: 2px solid #798e62;
+  outline: 2px solid #868686;
   outline-offset: 4px;
 }
 @media (max-width: 1100px) {

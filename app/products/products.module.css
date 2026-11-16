@@ -15,11 +15,11 @@
   background-image:
     linear-gradient(
       90deg,
-      rgba(7, 12, 8, 0.93) 0%,
-      rgba(7, 12, 8, 0.82) 54%,
+      rgba(11, 11, 11, 0.93) 0%,
+      rgba(11, 11, 11, 0.82) 54%,
       var(--theme-surface-24-28-24-0_72, rgba(239, 235, 223, 0.72)) 100%
     ),
-    url("/landscape1.webp");
+    linear-gradient(#080808,#000);
   background-size: cover;
   background-position: center 46%;
   background-repeat: no-repeat;
@@ -81,7 +81,7 @@
   border: 1px solid rgba(245, 241, 231, 0.2);
   border-radius: var(--bs-r-pill);
   color: rgba(244, 240, 230, 0.88);
-  background: rgba(6, 11, 7, 0.36);
+  background: rgba(10, 10, 10, 0.36);
   font-size: 12px;
   letter-spacing: 0.04em;
 }
@@ -140,8 +140,8 @@
   pointer-events: none;
   opacity: 0.22;
   background-image:
-    linear-gradient(rgba(35, 43, 31, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(35, 43, 31, 0.025) 1px, transparent 1px);
+    linear-gradient(rgba(40, 40, 40, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(40, 40, 40, 0.025) 1px, transparent 1px);
   background-size: 34px 34px;
 }
 
@@ -372,8 +372,8 @@
   border-radius: var(--bs-r-card);
   color: var(--bs-forest-ink);
   background:
-    linear-gradient(rgba(8, 15, 10, 0.85), rgba(8, 15, 10, 0.9)),
-    url("/landscape2bottom.webp");
+    linear-gradient(rgba(13, 13, 13, 0.85), rgba(13, 13, 13, 0.9)),
+    linear-gradient(#080808,#000);
   background-size: cover;
   background-position: center;
 }
@@ -637,7 +637,7 @@
   border: 1px solid rgba(244, 240, 230, 0.17);
   border-radius: 4px;
   color: #eee9de;
-  background: rgba(8, 14, 9, 0.72);
+  background: rgba(12, 12, 12, 0.72);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -667,7 +667,7 @@
   border: 1px solid rgba(240, 236, 226, 0.16);
   border-radius: 4px;
   color: rgba(238, 234, 223, 0.86);
-  background: rgba(26, 29, 25, 0.82);
+  background: rgba(28, 28, 28, 0.82);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.15em;
@@ -1127,10 +1127,10 @@
     background-image:
       linear-gradient(
         180deg,
-        rgba(7, 12, 8, 0.9) 0%,
-        rgba(7, 12, 8, 0.82) 100%
+        rgba(11, 11, 11, 0.9) 0%,
+        rgba(11, 11, 11, 0.82) 100%
       ),
-      url("/landscape1.webp");
+      linear-gradient(#080808,#000);
   }
 
   .catalogHero {

@@ -3,16 +3,16 @@
 .card {
   margin-top: 24px;
   padding: 22px;
-  border: 1px solid var(--bs-line, rgba(29, 36, 26, 0.13));
+  border: 1px solid var(--bs-line, rgba(34, 34, 34, 0.13));
   border-radius: var(--bs-r-card, 12px);
   background: var(--bs-raised, #fffdf8);
-  color: var(--bs-ink, #1c241b);
+  color: var(--bs-ink, #222222);
   box-shadow: var(--bs-shadow-card);
   text-align: left;
 }
 
 .eyebrow {
-  color: var(--bs-accent, #4d6044);
+  color: var(--bs-accent, #5a5a5a);
   font-family: Arial, Helvetica, sans-serif;
   font-size: 10px;
   font-weight: 700;
@@ -30,7 +30,7 @@
 }
 
 .card p {
-  color: var(--bs-muted, #4a5345);
+  color: var(--bs-muted, #505050);
   font-size: 14px;
   line-height: 1.6;
   overflow-wrap: anywhere;
@@ -40,7 +40,7 @@
   list-style: none;
   padding: 12px 0;
   margin: 14px 0;
-  border-block: 1px solid var(--bs-line, rgba(29, 36, 26, 0.13));
+  border-block: 1px solid var(--bs-line, rgba(34, 34, 34, 0.13));
 }
 
 .card li {
@@ -63,7 +63,7 @@
 }
 
 .card .total {
-  color: var(--bs-ink, #1c241b);
+  color: var(--bs-ink, #222222);
   font-family: Georgia, "Times New Roman", serif;
   font-size: 22px;
   font-variant-numeric: tabular-nums;
@@ -83,10 +83,10 @@
   align-items: center;
   min-height: 44px;
   padding: 11px 16px;
-  border: 1px solid var(--bs-line-strong, rgba(29, 36, 26, 0.26));
+  border: 1px solid var(--bs-line-strong, rgba(34, 34, 34, 0.26));
   border-radius: var(--bs-r-control, 8px);
   background: transparent;
-  color: var(--bs-ink, #1c241b);
+  color: var(--bs-ink, #222222);
   font-family: Georgia, "Times New Roman", serif;
   font-size: 15px;
   text-decoration: none;
@@ -99,7 +99,7 @@
 
 .actions > :first-child {
   border-color: transparent;
-  background: var(--bs-btn-bg, #46513e);
+  background: var(--bs-btn-bg, #4d4d4d);
   color: var(--bs-btn-ink, #f6f2e8);
 }
 
@@ -109,16 +109,16 @@
 
 @media (hover: hover) and (pointer: fine) {
   .actions > :first-child:not(:disabled):hover {
-    background: var(--bs-btn-hover, #56644b);
+    background: var(--bs-btn-hover, #5f5f5f);
   }
 
   .actions > :not(:first-child):not(:disabled):hover {
-    background: var(--bs-line, rgba(29, 36, 26, 0.13));
+    background: var(--bs-line, rgba(34, 34, 34, 0.13));
   }
 }
 
 .actions > :focus-visible {
-  outline: 2px solid var(--bs-focus, #46613a);
+  outline: 2px solid var(--bs-focus, #585858);
   outline-offset: 3px;
 }
 

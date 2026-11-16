@@ -16,11 +16,11 @@
   background:
     linear-gradient(
       90deg,
-      rgba(7, 12, 8, 0.96),
-      rgba(8, 14, 9, 0.84) 54%,
-      rgba(32, 38, 31, 0.72)
+      rgba(11, 11, 11, 0.96),
+      rgba(12, 12, 12, 0.84) 54%,
+      rgba(36, 36, 36, 0.72)
     ),
-    url("/landscape1.webp");
+    linear-gradient(#080808,#000);
 
   background-size: cover;
   background-position: center 42%;

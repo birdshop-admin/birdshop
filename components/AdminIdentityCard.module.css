@@ -36,7 +36,7 @@
 
   border:
     1px solid
-    var(--theme-border-207-215-196-0_14, rgba(55, 73, 53, 0.14));
+    var(--theme-border-207-215-196-0_14, rgba(68, 68, 68, 0.14));
 
   border-radius: 9px;
 
@@ -44,7 +44,7 @@
     var(--theme-surface-24-28-24-0_98, rgba(241, 237, 226, 0.98));
 
   color:
-    var(--theme-text-240-236-226-1, #1d291e);
+    var(--theme-text-240-236-226-1, #262626);
 
   box-shadow:
     0
@@ -83,7 +83,7 @@
     #f3efe6;
 
   background:
-    #354c39;
+    #464646;
 
   font-family:
     Arial,
@@ -113,7 +113,7 @@
   margin: 0;
 
   color:
-    var(--theme-text-240-236-226-1, #202c21);
+    var(--theme-text-240-236-226-1, #292929);
 
   font-family:
     Georgia,
@@ -146,7 +146,7 @@
   margin: 0;
 
   color:
-    var(--theme-text-184-196-170-1, #717d70);
+    var(--theme-text-184-196-170-1, #7a7a7a);
 
   font-family:
     Arial,

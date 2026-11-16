@@ -244,7 +244,7 @@
   border: 0;
   border-radius: var(--sc-r-control);
   background: var(--sc-accent);
-  box-shadow: 0 8px 20px rgba(16, 23, 15, 0.16);
+  box-shadow: 0 8px 20px rgba(21, 21, 21, 0.16);
   color: var(--sc-on-accent);
   font: 400 15px/1.2 var(--sc-serif);
   cursor: pointer;

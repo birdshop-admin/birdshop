@@ -77,7 +77,7 @@ function simpleEmail(
   return {
     subject,
     text: `${text}\n\n${label}: ${link}\n\nKeep your private link safe.`,
-    html: `<div style="background:#101e16;color:#f1eddf;padding:32px;font:16px/1.7 Arial,sans-serif"><p style="letter-spacing:.15em">BIRDSHOP</p><h1 style="font-size:25px">${escape(subject)}</h1><p>${escape(text).replaceAll("\n", "<br>")}</p><p><a style="display:inline-block;background:#eae3ce;color:#13261b;padding:14px 22px;border-radius:8px;text-decoration:none" href="${escape(link)}">${escape(label)}</a></p><p style="font-size:12px">Keep this private link safe.</p></div>`,
+    html: `<div style="background:#1a1a1a;color:#f1eddf;padding:32px;font:16px/1.7 Arial,sans-serif"><p style="letter-spacing:.15em">BIRDSHOP</p><h1 style="font-size:25px">${escape(subject)}</h1><p>${escape(text).replaceAll("\n", "<br>")}</p><p><a style="display:inline-block;background:#eae3ce;color:#212121;padding:14px 22px;border-radius:8px;text-decoration:none" href="${escape(link)}">${escape(label)}</a></p><p style="font-size:12px">Keep this private link safe.</p></div>`,
   };
 }
 

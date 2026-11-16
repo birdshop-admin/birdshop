@@ -19,8 +19,8 @@
   min-height: 560px;
   color: var(--bs-forest-ink);
   background:
-    radial-gradient(circle at 82% 35%, rgba(107, 126, 94, 0.17), transparent 31%),
-    linear-gradient(115deg, #06110c 0%, #09180f 45%, #14271b 100%);
+    radial-gradient(circle at 82% 35%, rgba(120, 120, 120, 0.17), transparent 31%),
+    linear-gradient(115deg, #0e0e0e 0%, #141414 45%, #222222 100%);
 }
 
 .hero::before {
@@ -173,7 +173,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   color: var(--bs-forest-ink);
-  background: #06110c;
+  background: #0e0e0e;
 }
 
 .processStrip > div {
@@ -198,7 +198,7 @@
 }
 
 .processStrip > div > span {
-  color: #a9bd96;
+  color: #b6b6b6;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 28px;
   font-variant-numeric: tabular-nums;
@@ -1202,7 +1202,7 @@
 .supportSection {
   padding: 75px clamp(28px, 6vw, 84px) 95px;
   color: var(--bs-forest-ink);
-  background: #07120c;
+  background: #0f0f0f;
 }
 
 .supportHeading {
@@ -1211,7 +1211,7 @@
 }
 
 .supportHeading > span {
-  color: #a9bd96;
+  color: #b6b6b6;
 }
 
 .supportHeading h2 {
@@ -1255,7 +1255,7 @@
   display: grid;
   place-items: center;
   border-radius: 10px;
-  color: #b9c9a8;
+  color: #c3c3c3;
   background: rgba(255, 255, 255, 0.06);
 }
 
@@ -1298,7 +1298,7 @@
 .supportGrid > a > svg {
   width: 16px;
   height: 16px;
-  color: #b9c9a8;
+  color: #c3c3c3;
   transition: transform var(--bs-dur-fast) var(--ease-standard);
 }
 
@@ -1338,8 +1338,8 @@
   border-radius: 22px;
   color: var(--bs-forest-ink);
   background:
-    radial-gradient(circle at 88% 35%, rgba(128, 150, 112, 0.21), transparent 27%),
-    linear-gradient(118deg, #06120c 0%, #0a1c12 51%, #1b2d1e 100%);
+    radial-gradient(circle at 88% 35%, rgba(143, 143, 143, 0.21), transparent 27%),
+    linear-gradient(118deg, #0f0f0f 0%, #171717 51%, #282828 100%);
   box-shadow: var(--bs-shadow-raised);
 }
 
@@ -1370,7 +1370,7 @@
 .successEyebrow {
   display: block;
   margin-bottom: 17px;
-  color: #a9bd96;
+  color: #b6b6b6;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 10px;
   font-weight: 700;
@@ -1419,7 +1419,7 @@
   border: 1px solid rgba(241, 236, 224, 0.1);
   border-radius: 50%;
   color: var(--bs-forest-ink);
-  background: #52694b;
+  background: #626262;
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.13);
 }
 
@@ -1610,14 +1610,14 @@
   border-radius: var(--bs-r-card);
   color: var(--bs-forest-ink);
   background:
-    radial-gradient(circle at 95% 0%, rgba(120, 142, 105, 0.12), transparent 27%),
-    linear-gradient(130deg, #08170f, #10251a);
+    radial-gradient(circle at 95% 0%, rgba(135, 135, 135, 0.12), transparent 27%),
+    linear-gradient(130deg, #131313, #202020);
 }
 
 .successTimelineCard > span {
   display: block;
   margin-bottom: 20px;
-  color: #a9bd96;
+  color: #b6b6b6;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 10px;
   font-weight: 700;
@@ -1659,7 +1659,7 @@
   place-items: center;
   border: 1px solid var(--bs-forest-line);
   border-radius: 11px;
-  color: #b9c9a8;
+  color: #c3c3c3;
   background: rgba(255, 255, 255, 0.045);
 }
 
@@ -1785,7 +1785,7 @@
 .successDiscordButton {
   border: 1px solid var(--bs-forest-line);
   color: var(--bs-forest-ink);
-  background: linear-gradient(120deg, #08170f, #14291b);
+  background: linear-gradient(120deg, #131313, #242424);
 }
 
 .successDiscordButton:focus-visible {

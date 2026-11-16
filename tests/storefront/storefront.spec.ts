@@ -52,6 +52,7 @@ test("inventory, cart persistence, and sold-out protection survive the redesign"
   await page.getByText("Cryptocurrency").click();
   await expect(page.getByText(/not active yet/i)).toBeVisible();
   await expect(page.getByRole("button", { name: "Check Out Securely" })).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("rewarble-payment-information.png"), fullPage: true });
 
 });
 

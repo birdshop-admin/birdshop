@@ -53,7 +53,7 @@ test("referral sign-in, service list, and staff login stay reachable", async ({ 
   await expect(page.getByLabel("Your email", { exact: true })).toBeVisible();
   await page.screenshot({ path: test.info().outputPath("referrals.png"), fullPage: true });
   await page.goto("/services");
-  await expect(page.getByRole("link", { name: /Deepwoken progression/ }).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Deepwoken progression", exact: true }).first()).toBeVisible();
   await page.screenshot({ path: test.info().outputPath("services.png"), fullPage: true });
   await page.goto("/admin/login");
   await expect(page.locator(".storefront-rail")).toHaveCount(0);

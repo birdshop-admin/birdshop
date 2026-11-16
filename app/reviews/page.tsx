@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import SiteHeader from "@/components/SiteHeader";
+import EditorialPageHero from "@/components/EditorialPageHero";
 import SiteFooter from "@/components/SiteFooter";
 
 import {
@@ -327,62 +328,18 @@ export default function ReviewsPage() {
   }
 
   return (
-    <main className="page-shell">
+    <main className="page-shell bs-editorial-page">
       <SiteHeader />
 
-      <section className={styles.hero}>
-        <div className={styles.heroOverlay} />
-
-        <div className={styles.heroLayout}>
-          <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>BirdShop / Community</p>
-
-            <h1>
-              What people
-              <br />
-              say.
-            </h1>
-
-            <p className={styles.heroDescription}>
-              Product experiences, service feedback, and stories from the
-              BirdShop community — presented clearly and without the noise.
-            </p>
-
-            <div className={styles.heroActions}>
-              <a href="#reviews" className={styles.heroPrimary}>
-                Browse Reviews
-                <ArrowIcon />
-              </a>
-
-              <Link
-                href="/contact?topic=review"
-                className={styles.heroSecondary}
-              >
-                Leave a Review
-              </Link>
-            </div>
-          </div>
-
-          <div className={styles.heroEditorial} aria-hidden="true">
-            <div className={styles.heroMark}>
-              <span>BS</span>
-              <div />
-              <strong>Community</strong>
-              <small>
-                Experiences
-                <br />
-                worth sharing
-              </small>
-            </div>
-
-            <div className={styles.heroSideCopy}>
-              <span>Real</span>
-              <span>Simple</span>
-              <span>Clear</span>
-            </div>
-          </div>
-        </div>
-      </section>
+      <EditorialPageHero
+        section="reviews"
+        eyebrow="BIRDSHOP / COMMUNITY"
+        title="Reviews"
+        subtitle="REAL COMMUNITY FEEDBACK"
+        description="Customer experiences and service feedback — presented clearly, without invented reviews or ratings."
+        primary={{ href: "#reviews", label: "VIEW REVIEWS" }}
+        secondary={{ href: "/contact?topic=review", label: "LEAVE A REVIEW" }}
+      />
 
       <section className={styles.communityStrip}>
         <div>

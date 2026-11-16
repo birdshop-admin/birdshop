@@ -60,7 +60,7 @@ export default async function SellerStorefront({params}:{params:Promise<{handle:
         </section>
         <div className={styles.card}>
           <h2>Ordering</h2>
-          <p>Marketplace purchases are not enabled yet. Please use the inquiry feature for product questions only; don't send off-platform payments or sensitive account details.</p>
+          <p>Marketplace purchases are not enabled yet. Please use the inquiry feature for product questions only; do not send off-platform payments or sensitive account details.</p>
         </div>
       </div>
     </div>

@@ -27,6 +27,8 @@ export async function saveMarketplaceListing(form:FormData){
   const price_cents=Math.round(price*100);
   const stock=Number(stringValue(form,"stock"));
   const delivery_hours=Number(stringValue(form,"delivery_hours"));
+  const service_options=stringValue(form,"service_options").split(/\r?\n/)
+    .map(s=>s.trim()).filter(Boolean);
 
   if(title.length<3||title.length>120||
     description.length<20||description.length>3000||
@@ -36,20 +38,23 @@ export async function saveMarketplaceListing(form:FormData){
     !Number.isFinite(price)||price<.5||price>999999.99||
     Math.abs(price*100-price_cents)>.00001||
     !Number.isInteger(stock)||stock<0||stock>10000||
-    !Number.isInteger(delivery_hours)||delivery_hours<1||delivery_hours>720)
+    !Number.isInteger(delivery_hours)||delivery_hours<1||delivery_hours>720||
+    service_options.length>12||service_options.some(o=>o.length>80))
     throw new Error("Check the listing title, category, image URL, price, stock and delivery time.");
 
   const db=createAdminClient();
   const values={
     title,description,listing_type,category,image_url,price_cents,stock,delivery_hours,
     fulfillment_method:listing_type==="digital_product"?"seller_manual":"service_scheduled",
+    service_options,
     status:"draft",moderated_by:null,moderated_at:null,rejection_reason:null,
     updated_at:new Date().toISOString(),
   };
   let listingId:string;
   if(id){
     const {data,error}=await db.from("birdshop_marketplace_listings")
-      .update(values).eq("id",id).eq("seller_id",profile.id).select("id").maybeSingle();
+      .update(values).eq("id",id).eq("seller_id",profile.id)
+      .neq("status","archived").select("id").maybeSingle();
     if(error||!data)throw new Error("Unable to edit this listing. Check ownership and try again.");
     listingId=data.id;
   } else {
@@ -111,4 +116,22 @@ export async function updateMyShop(form:FormData){
   if(error)throw new Error("Could not save shop details.");
   revalidatePath("/sell/dashboard");
   revalidatePath("/shops/"+profile.handle);
+}
+
+export async function archiveMyListing(form:FormData){
+  const {user,profile}=await requireApprovedSeller();
+  const id=stringValue(form,"id");
+  if(!uuid(id))throw new Error("Invalid listing ID.");
+  const db=createAdminClient();
+  const {data,error}=await db.from("birdshop_marketplace_listings")
+    .update({status:"archived",updated_at:new Date().toISOString()})
+    .eq("id",id).eq("seller_id",profile.id).neq("status","archived")
+    .select("id").maybeSingle();
+  if(error||!data)throw new Error("Listing was not archived. Refresh and retry.");
+  await db.from("birdshop_marketplace_audit").insert({
+    entity_type:"listing",entity_id:id,actor_id:user.id,action:"archived",
+  });
+  revalidatePath("/sell/dashboard");
+  revalidatePath("/marketplace");
+  revalidatePath("/admin/resellers");
 }

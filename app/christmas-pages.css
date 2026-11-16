@@ -404,3 +404,64 @@ main.bs-editorial-page [class*="customRequest"] [class*="customCopy"] *,
 main.bs-editorial-page [class*="feedbackCta"] [class*="feedbackCopy"] * {
   color:#f4f0ea!important;
 }
+
+/* Cart / checkout summary gets the same look without changing the Stripe form. */
+main.bs-cart-page [class*="_cartArea__"] {
+  background:#000!important;color:#f5f2ed!important;
+}
+main.bs-cart-page [class*="_cartHeading__"] h2 {
+  font:italic 400 clamp(27px,3vw,39px) Georgia,"Times New Roman",serif!important;
+  color:#f5f2ed!important;
+}
+main.bs-cart-page [class*="_cartHeading__"],
+main.bs-cart-page [class*="_cartItem__"] {border-color:#ffffff2b!important}
+main.bs-cart-page [class*="_itemVisual__"] {
+  background:#0b0b0b!important;border-color:#ffffff30!important;
+}
+main.bs-cart-page [class*="_itemInfo__"] h3,
+main.bs-cart-page [class*="_itemPrice__"] {
+  color:#f5f2ed!important;
+}
+main.bs-cart-page [class*="_itemInfo__"] > span {
+  color:#d14058!important;
+}
+main.bs-cart-page [class*="_itemInfo__"] p,
+main.bs-cart-page [class*="_itemInfo__"] button {
+  color:#bbb5ae!important;
+}
+main.bs-cart-page [class*="_quantityControl__"] {
+  border:1px solid #ffffff44!important;
+  background:#080808!important;color:#fff!important;
+}
+main.bs-cart-page [class*="_quantityControl__"] button,
+main.bs-cart-page [class*="_quantityControl__"] > span {
+  color:#f9f6f2!important;border-color:#ffffff29!important;
+}
+main.bs-cart-page [class*="_summary__"] {
+  background:#090909!important;border:1px solid #ffffff39!important;
+  box-shadow:none!important;color:#f5f2ed!important;border-radius:3px!important;
+}
+main.bs-cart-page [class*="_summary__"] h2 {
+  color:#f5f2ed!important;font:italic 400 34px Georgia,"Times New Roman",serif!important;
+}
+main.bs-cart-page [class*="_summary__"] > span:first-child {
+  color:#be2940!important;
+}
+main.bs-cart-page [class*="_summaryLine__"],
+main.bs-cart-page [class*="_summaryLine__"] strong,
+main.bs-cart-page [class*="_totalLine__"],
+main.bs-cart-page [class*="_totalLine__"] strong {
+  color:#f5f2ed!important;border-color:#ffffff39!important;
+}
+main.bs-cart-page [class*="_checkoutForm__"] label {color:#c4beba!important}
+main.bs-cart-page [class*="_checkoutButton__"],
+main.bs-cart-page [class*="_emptyAction__"] {
+  background:#951128!important;border:1px solid #b81d39!important;
+  color:#fff!important;border-radius:2px!important;box-shadow:none!important;
+}
+main.bs-cart-page [class*="_emptyCart__"] {
+  background:#070707!important;color:#f5f2ed!important;
+  border:1px solid #ffffff30!important;
+}
+main.bs-cart-page [class*="_emptyCart__"] h2 {color:#f5f2ed!important}
+main.bs-cart-page [class*="_emptyCart__"] p {color:#c7c2bb!important}

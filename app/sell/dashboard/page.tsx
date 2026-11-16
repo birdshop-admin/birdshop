@@ -3,7 +3,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { marketplaceMoney, MARKETPLACE_CATEGORIES, requireApprovedSeller, type MarketplaceListing } from "@/lib/marketplace";
-import { changeMyListingState, saveMarketplaceListing, updateMyShop } from "./actions";
+import { archiveMyListing, changeMyListingState, saveMarketplaceListing, updateMyShop } from "./actions";
 import styles from "@/app/marketplace/marketplace.module.css";
 
 export const dynamic="force-dynamic";
@@ -20,7 +20,7 @@ export default async function SellerDashboard({searchParams}:{
   const db=createAdminClient();
   const [listingResult,orderResult,ledgerResult,threadResult,disputeResult,payoutResult]=await Promise.all([
     db.from("birdshop_marketplace_listings")
-      .select("id,seller_id,slug,title,description,listing_type,category,image_url,price_cents,stock,fulfillment_method,delivery_hours,status,created_at")
+      .select("id,seller_id,slug,title,description,listing_type,category,image_url,price_cents,stock,fulfillment_method,service_options,delivery_hours,status,created_at")
       .eq("seller_id",profile.id).order("created_at",{ascending:false}).limit(200),
     db.from("birdshop_marketplace_orders")
       .select("id,state,subtotal_cents,commission_cents,created_at").eq("seller_id",profile.id).limit(100),
@@ -79,6 +79,10 @@ export default async function SellerDashboard({searchParams}:{
                           <input type="hidden" name="id" value={listing.id}/>
                           <button className={styles.button} name="action" value="submit">Request approval</button>
                         </form>}
+                      {listing.status!=="archived"&&<form action={archiveMyListing}>
+                        <input type="hidden" name="id" value={listing.id}/>
+                        <button className={styles.outline} type="submit">Remove</button>
+                      </form>}
                       {listing.status==="published"&&<form action={changeMyListingState}>
                         <input type="hidden" name="id" value={listing.id}/>
                         <button className={styles.outline} name="action" value="pause">Pause</button>
@@ -115,6 +119,11 @@ export default async function SellerDashboard({searchParams}:{
               <input className={styles.field} id="listing-stock" type="number" name="stock" min="0" max="10000" step="1" required defaultValue={selected?.stock??1}/>
               <label className={styles.label} htmlFor="listing-hours">Estimated delivery (hours)</label>
               <input className={styles.field} id="listing-hours" type="number" name="delivery_hours" min="1" max="720" step="1" required defaultValue={selected?.delivery_hours??24}/>
+              <label className={styles.label} htmlFor="listing-options">Service options (optional; one per line)</label>
+              <textarea className={styles.field} id="listing-options" name="service_options" maxLength={1000}
+                placeholder={"Priority delivery\\nProgression help\\nCoaching session"}
+                defaultValue={(selected?.service_options||[]).join("\\n")}/>
+              <p className={styles.small}>Up to 12 options, 80 characters each. Options are informational until seller checkout supports them.</p>
               <label className={styles.label} htmlFor="listing-image">Image HTTPS URL (optional)</label>
               <input className={styles.field} id="listing-image" type="url" name="image_url" maxLength={1000} placeholder="https://..." defaultValue={selected?.image_url||""}/>
               <p className={styles.small}>Upload only images you own or have permission to use. All listings require moderation. No automatic purchases until seller checkout is approved.</p>

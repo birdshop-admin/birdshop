@@ -33,9 +33,9 @@ export default function StorefrontHero({ services }: { services: HomeService[] |
           <Image src="/cremebs.png" alt="" width={600} height={600} sizes="(max-width: 700px) 240px, 32vw" />
         </div>}
         <div className={s.copy}>
-          <p className={s.eyebrow}>FOR YOUR NEXT ADVENTURE</p>
-          <h1 id="home-hero-title">Play<br />beyond.</h1>
-          <p className={s.description}>Your next chapter starts here. Discover Roblox game services, digital products, and a community that plays together.</p>
+          <p className={s.eyebrow}>BIRDSHOP / THE NEXT LEVEL</p>
+          <h1 id="home-hero-title">Your game.<br /><em>Elevated.</em></h1>
+          <p className={s.description}>Premium Roblox services and digital essentials, built around your next adventure.</p>
           <Link href="/services" className={s.cta}>Explore services <span aria-hidden="true">↗</span></Link>
           <Link href="/products" className={s.secondary}>Shop digital products <span aria-hidden="true">→</span></Link>
         </div>

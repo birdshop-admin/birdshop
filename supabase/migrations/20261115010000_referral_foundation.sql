@@ -60,7 +60,7 @@ create or replace function public.birdshop_award_referral_on_order()
 returns trigger language plpgsql security definer set search_path=pg_catalog,public,pg_temp as $$
 declare v_referrer uuid; v_email text;
 begin
- if new.payment_status <> 'paid' or new.paid_at is null then return new; end if;
+ if new.payment_status <> 'paid' or new.paid_at is null or coalesce(new.refunded_amount,0)>0 then return new; end if;
  if new.fulfillment_status not in ('fulfilled','completed') then return new; end if;
  if new.source = 'admin_test' then return new; end if;
  if exists(select 1 from public.birdshop_checkout_attempts t where t.order_id=new.id and t.stripe_session_id like 'cs\_test\_%') then return new; end if;
@@ -74,7 +74,10 @@ begin
  -- Only genuinely new paying customers qualify, even if their first order was un-referred.
  if exists(select 1 from public.orders o where lower(o.customer_email)=v_email and o.id<>new.id
  and o.paid_at is not null and o.created_at<=new.created_at
- and o.payment_status in ('paid','partially_refunded','refunded')) then return new; end if;
+ and o.payment_status in ('paid','partially_refunded','refunded')
+ and o.source is distinct from 'admin_test'
+ and not exists (select 1 from public.birdshop_checkout_attempts prior
+ where prior.order_id=o.id and prior.stripe_session_id like 'cs\\_test\\_%')) then return new; end if;
  insert into public.birdshop_referral_rewards(referrer_id,order_id,referred_email)
  values(v_referrer,new.id,v_email) on conflict do nothing;
  return new;

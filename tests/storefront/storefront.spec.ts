@@ -72,7 +72,14 @@ for (const width of [390, 1440]) {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1, name: heading, exact: true })).toBeVisible();
       await expect(page.locator("img[src*='birdshop-christmas-bells-reference']")).toBeVisible();
-      if (imageName) await expect(page.locator(`img[src*='${imageName}']`)).toBeVisible();
+      if (imageName) {
+        const photo = page.locator(`img[src*='${imageName}']`);
+        await expect(photo).toBeVisible();
+        await expect(page.locator(".bs-editorial-hero--reviews .bs-editorial-bells")).toBeHidden();
+        const photoAsset = await page.request.get("/birdshop-owner-christmas-dinner.svg");
+        expect(photoAsset.ok()).toBe(true);
+        expect(await photoAsset.text()).toContain('width="681" height="383"');
+      }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await page.screenshot({
         path: test.info().outputPath(`${path.slice(1)}-${width}.png`),

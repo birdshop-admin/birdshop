@@ -48,7 +48,7 @@ export type MarketplaceListing = {
   fulfillment_method: "seller_manual" | "service_scheduled";
   service_options: string[];
   delivery_hours: number;
-  status: "draft" | "pending_review" | "published" | "paused" | "rejected";
+  status: "draft" | "pending_review" | "published" | "paused" | "rejected" | "archived";
   created_at: string;
 };
 

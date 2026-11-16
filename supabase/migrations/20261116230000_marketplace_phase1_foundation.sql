@@ -191,4 +191,46 @@ comment on table public.birdshop_marketplace_orders is
 comment on table public.birdshop_marketplace_ledger is
   'Schema-only pending marketplace financial integration. Never credit seller balances from unverified payment.';
 
+-- Atomic approval: never mark an application approved without creating a seller.
+-- Only authenticated server code holding service_role can invoke this RPC.
+create or replace function public.birdshop_review_seller_application(
+  p_id uuid, p_action text, p_owner uuid, p_note text default ''
+) returns void language plpgsql security definer set search_path = ''
+as $seller_review$
+declare v_app public.birdshop_seller_applications%rowtype;
+begin
+  perform private.birdshop_require_server();
+  if p_owner is null or p_action not in ('approved','rejected') or
+     p_note is null or length(p_note)>1000 then
+    raise exception 'Invalid seller review request';
+  end if;
+  select * into v_app from public.birdshop_seller_applications
+    where id=p_id for update;
+  if not found or v_app.status <> 'pending' then
+    raise exception 'Application is no longer pending';
+  end if;
+  if p_action='approved' then
+    insert into public.birdshop_seller_profiles(
+      application_id,user_id,handle,display_name,description,status,commission_bps
+    ) values (
+      v_app.id,v_app.user_id,v_app.requested_handle,
+      v_app.business_name,v_app.description,'active',1000
+    );
+  end if;
+  update public.birdshop_seller_applications
+    set status=p_action,review_note=nullif(trim(p_note),''),
+      reviewed_at=now(),reviewed_by=p_owner,updated_at=now()
+    where id=p_id;
+  insert into public.birdshop_marketplace_audit(
+    entity_type,entity_id,actor_id,action,details
+  ) values (
+    'seller_application',p_id,p_owner,p_action,
+    jsonb_build_object('handle',v_app.requested_handle)
+  );
+end $seller_review$;
+revoke all on function public.birdshop_review_seller_application(uuid,text,uuid,text)
+  from public,anon,authenticated;
+grant execute on function public.birdshop_review_seller_application(uuid,text,uuid,text)
+  to service_role;
+
 commit;

@@ -69,54 +69,56 @@ export default function RewarbleManualRequest() {
         arrangement. Submitting a code does not pay for an order, reserve stock,
         or trigger digital delivery. Only submit a code you own and intend to transfer.
       </p>
-      {!ENABLED ? (
-        <p role="status" className={styles.notice}>
-          Secure voucher submissions are being set up. For now, use Stripe or{" "}
-          <Link href="/contact?topic=rewarble-payment">contact support</Link>.
-          Do not send voucher codes in ordinary chat.
-        </p>
-      ) : statusUrl ? (
+      {statusUrl ? (
         <div role="status" className={styles.confirmation}>
           <strong>Request submitted for review.</strong>
           <p>Save the private tracking link. Your voucher has not been confirmed as payment.</p>
           <Link href={statusUrl} rel="nofollow">View your review status</Link>
         </div>
       ) : (
+        <>
+          {!ENABLED && <p role="status" className={styles.notice}>
+            Secure voucher submissions are being set up. The fields below are a
+            disabled preview until owner review is configured. Use Stripe or{" "}
+            <Link href="/contact?topic=rewarble-payment">contact support</Link>.
+            Do not send voucher codes in ordinary chat.
+          </p>}
         <form className={styles.form} onSubmit={submit} autoComplete="off">
           <label>
             Your name
             <input type="text" maxLength={120} value={name}
-              onChange={event => setName(event.target.value)} required />
+              onChange={event => setName(event.target.value)} required disabled={!ENABLED} />
           </label>
           <label>
             Contact email
             <input type="email" maxLength={320} value={email}
-              onChange={event => setEmail(event.target.value)} required />
+              onChange={event => setEmail(event.target.value)} required disabled={!ENABLED} />
           </label>
           <label>
             Voucher face value (USD)
             <input type="number" min="0.50" max="999999.99" step="0.01"
               value={claimedValue} onChange={event => setClaimedValue(event.target.value)}
-              required placeholder="25.00" />
+              required placeholder="25.00" disabled={!ENABLED} />
           </label>
           <label>
             Unused Rewarble voucher code
             <input type="password" inputMode="numeric" maxLength={30}
               autoComplete="off" spellCheck={false} value={code}
               onChange={event => setCode(event.target.value)}
-              required placeholder="16-digit code" />
+              required placeholder="16-digit code" disabled={!ENABLED} />
           </label>
-          {TURNSTILE_SITE_KEY && (
+          {ENABLED && TURNSTILE_SITE_KEY && (
             <TurnstileWidget siteKey={TURNSTILE_SITE_KEY}
               action="rewarble" resetKey={tokenReset}
               onToken={setToken}
               onUnavailable={() => setError("The security check is unavailable. Please retry later.")} />
           )}
-          <button type="submit" disabled={busy || !items.length || Boolean(TURNSTILE_SITE_KEY && !token)}>
+          <button type="submit" disabled={!ENABLED || busy || !items.length || Boolean(TURNSTILE_SITE_KEY && !token)}>
             {busy ? "Submitting securely…" : "Submit for manual review"}
           </button>
           {error && <p role="alert" className={styles.error}>{error}</p>}
         </form>
+        </>
       )}
     </section>
   );

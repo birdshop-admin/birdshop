@@ -339,6 +339,8 @@ export default function ReviewsPage() {
         description="Customer experiences and service feedback — presented clearly, without invented reviews or ratings."
         primary={{ href: "#reviews", label: "VIEW REVIEWS" }}
         secondary={{ href: "/contact?topic=review", label: "LEAVE A REVIEW" }}
+        imageSrc="/birdshop-owner-christmas-dinner.svg"
+        imageAlt="Christmas dinner photograph supplied by BirdShop owner"
       />
 
       <section className={styles.communityStrip}>

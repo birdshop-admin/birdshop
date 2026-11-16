@@ -1,0 +1,25 @@
+name: Referral feature checks
+on:
+  pull_request:
+    paths:
+      - "app/ref/**"
+      - "app/api/checkout/**"
+      - "app/admin/**"
+      - "lib/referral-attribution.ts"
+      - "supabase/migrations/20261115010000_referral_foundation.sql"
+      - ".github/workflows/referral-checks.yml"
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck

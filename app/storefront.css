@@ -226,3 +226,15 @@ html .page-shell .site-header-nav a::after { background:#a3172b; }
 @media (max-width:700px) {
   html .page-shell .site-header {min-height:72px;}
 }
+
+/* Do not paint closed disclosure content underneath transparent hero images.
+   Keep the open panel in the normal stacking context for keyboard access. */
+html .page-shell .site-header:not(.site-header-menu-open) .site-header-mobile-nav {
+  display:none!important;
+}
+html .page-shell .site-header.site-header-menu-open .site-header-mobile-nav {
+  display:grid;
+  z-index:100;
+  background:#101010;
+  border:1px solid #ffffff26;
+}

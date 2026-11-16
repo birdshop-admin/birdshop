@@ -188,3 +188,41 @@ html .page-shell .footer-overlay { background:#090909; }
 @media(prefers-reduced-motion:reduce) {
  .page-shell * { scroll-behavior:auto; }
 }
+/* Christmas refinement: consistent pitch-black surfaces and burgundy accents. */
+html:has(.home-page) {
+  --bs-canvas:#000;
+  --bs-page:#080808;
+  --bs-band:#090909;
+  --bs-card:#111;
+  --bs-raised:#171717;
+  --bs-accent:#b11c31;
+  --bs-focus:#f0f0f0;
+  --bs-selected-bg:#301015;
+  --bs-selected-line:#891b2b;
+}
+body:has(.home-page) { background:#000; }
+html .page-shell .site-header,
+html[data-theme="dark"] .page-shell .site-header {
+  background:#000;
+  min-height:76px;
+  border-bottom:1px solid #ffffff25;
+}
+html .page-shell .site-header-brand-word { letter-spacing:.32em;font-weight:400;font-family:Georgia,"Times New Roman",serif; }
+html .page-shell .site-header-nav { gap:clamp(13px,2vw,31px); }
+html .page-shell .site-header-nav a { letter-spacing:.12em; }
+html .page-shell .site-header-nav .site-header-active { color:#fff; }
+html .page-shell .site-header-nav a::after { background:#a3172b; }
+.page-shell .catalog-area {background:#050505;}
+.page-shell .store-card {background:#101010;border-color:#ffffff26;}
+.page-shell .store-card:hover {border-color:#992137;}
+.page-shell .trust-strip {background:#070707;}
+.page-shell .trust-icon {color:#d4c7c6;}
+.page-shell .catalog-divider {background:linear-gradient(90deg,transparent,#ffffff22,transparent);}
+.ink-referral {background:#f0ebe5;border:1px solid #f0ebe5;}
+.ink-referral__eyebrow {color:#7d1627;}
+.ink-referral__actions a {background:#8c1729;color:#fff;border-color:#8c1729;}
+.ink-referral__actions a+a {background:#080808;color:#fff;border-color:#080808;}
+.ink-referral__actions a:hover {background:#b32238;border-color:#b32238;}
+@media (max-width:700px) {
+  html .page-shell .site-header {min-height:72px;}
+}

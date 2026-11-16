@@ -1,4 +1,6 @@
 import Link from "next/link";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { registerMyReferral, sendReferralLogin, verifyReferralCode, signOutReferral } from "./actions";
@@ -17,20 +19,20 @@ const messages: Record<string,string> = {
 };
 
 const boxStyle: React.CSSProperties = {
-  border: "1px solid rgba(145,166,130,.4)",
-  borderRadius: 18,
+  border: "1px solid var(--bs-line-strong)",
+  borderRadius: 2,
   padding: 24,
-  background: "rgba(15,30,19,.83)",
-  color: "#f3f2e9",
+  background: "var(--bs-card)",
+  color: "var(--bs-ink)",
 };
 const inputStyle: React.CSSProperties = {
   display: "block", width: "100%", maxWidth: 450, padding: "12px 14px",
-  borderRadius: 10, marginTop: 8, marginBottom: 14,
-  border: "1px solid #99ac91", background: "#f7f5eb", color: "#172219"
+  borderRadius: 2, marginTop: 8, marginBottom: 14,
+  border: "1px solid var(--bs-line-strong)", background: "var(--bs-field)", color: "var(--bs-ink)"
 };
 const buttonStyle: React.CSSProperties = {
-  display: "inline-block", padding: "12px 20px", borderRadius: 10,
-  border: 0, fontWeight: 700, background: "#d7e6bc", color: "#142016", cursor: "pointer"
+  display: "inline-block", padding: "12px 20px", borderRadius: 2,
+  border: 0, fontWeight: 700, background: "var(--bs-btn-bg)", color: "var(--bs-btn-ink)", cursor: "pointer"
 };
 
 export default async function ReferralDashboard({
@@ -68,10 +70,11 @@ export default async function ReferralDashboard({
   const sum = (rows:typeof rewards) => rows.reduce((n,r)=>n+r.amount_cents,0);
   const origin = (process.env.BIRDSHOP_SITE_URL ?? "https://birdshop.store").replace(/\/$/,"");
 
-  return <main style={{minHeight:"100vh",padding:"clamp(24px,5vw,64px) 16px",background:"#0b150e",color:"#f3f2e9"}}>
-    <div style={{maxWidth:900,margin:"0 auto",display:"grid",gap:22}}>
-      <nav><Link href="/" style={{color:"#d7e6bc"}}>← BirdShop storefront</Link></nav>
-      <header><span style={{color:"#c7d9a8",letterSpacing:".15em"}}>BIRDSHOP / REWARDS</span>
+  return <main className="page-shell referrals-page">
+    <SiteHeader />
+    <div style={{maxWidth:960,margin:"0 auto",display:"grid",gap:22,padding:"clamp(28px,5vw,64px) 24px"}}>
+      <nav><Link href="/" style={{color:"var(--bs-accent)"}}>← BirdShop storefront</Link></nav>
+      <header><span style={{color:"var(--bs-accent)",letterSpacing:".15em"}}>BIRDSHOP / REWARDS</span>
         <h1 style={{fontSize:"clamp(32px,5vw,52px)",margin:"10px 0"}}>Refer friends. Earn rewards.</h1>
         <p>Earn $0.50 USD when a new referred customer makes their first eligible paid, fulfilled product purchase. Rewards require review and are not guaranteed payouts.</p>
       </header>
@@ -142,5 +145,6 @@ export default async function ReferralDashboard({
         </>}
       </>}
     </div>
+    <SiteFooter />
   </main>;
 }

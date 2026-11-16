@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   useEffect,
@@ -12,7 +13,7 @@ import {
 import { useCart } from "@/app/cart-context";
 import PublicServiceChatNotifier from "@/components/PublicServiceChatNotifier";
 import { CartIcon } from "@/components/SiteIcons";
-import { siteConfig } from "@/lib/site-config";
+import { discordLinkProps, siteConfig } from "@/lib/site-config";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function SiteHeader() {
@@ -23,6 +24,7 @@ export default function SiteHeader() {
 
   const headerRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  const railToggleRef = useRef<HTMLButtonElement>(null);
   const countRef = useRef<HTMLSpanElement>(null);
   // Last count seen by this header. A remount starts from the current value,
   // so the bump never fires on hydration or page navigation.
@@ -59,7 +61,7 @@ export default function SiteHeader() {
       if (event.key !== "Escape") return;
 
       setMenuOpen(false);
-      toggleRef.current?.focus();
+      (window.innerWidth > 1100 ? railToggleRef : toggleRef).current?.focus();
     }
 
     function closeOnOutsidePress(event: PointerEvent) {
@@ -68,7 +70,8 @@ export default function SiteHeader() {
       if (
         header &&
         event.target instanceof Node &&
-        !header.contains(event.target)
+        !header.contains(event.target) &&
+        !railToggleRef.current?.contains(event.target)
       ) {
         setMenuOpen(false);
       }
@@ -132,6 +135,20 @@ export default function SiteHeader() {
         Skip to content
       </a>
 
+      <aside className="storefront-rail" aria-label="Store shortcuts">
+        <Link href="/" className="rail-brand" aria-label="BirdShop home">
+          <Image src="/cremebs.png" alt="" width={44} height={44} />
+        </Link>
+        <button ref={railToggleRef} type="button" className="rail-menu" aria-label={menuOpen ? "Close all navigation" : "Open all navigation"} aria-expanded={menuOpen} aria-controls="birdshop-mobile-navigation" onClick={() => setMenuOpen((open) => !open)}><span aria-hidden="true">{menuOpen ? "×" : "☰"}</span></button>
+        <span className="rail-edition">BIRDSHOP / EST. {siteConfig.established}</span>
+        <nav aria-label="Quick links">
+          <Link href="/service-chat">My Service</Link>
+          <Link href="/referrals">Rewards</Link>
+          <Link href={siteConfig.discordUrl} {...discordLinkProps}>Discord ↗</Link>
+        </nav>
+        <span className="rail-number" aria-hidden="true">BS / 01</span>
+      </aside>
+
       <header
         id="site-top"
         ref={headerRef}
@@ -144,18 +161,15 @@ export default function SiteHeader() {
           className="site-header-brand"
           aria-label={`${siteConfig.name} home`}
         >
-          <span className="site-header-bs">BS</span>
-          <span className="site-header-brand-rule" />
-          <span className="site-header-brand-word">
-            {siteConfig.displayName}
-          </span>
+          <Image src="/cremebs.png" alt="" width={46} height={46} className="site-header-logo" />
+          <span className="site-header-brand-word">{siteConfig.displayName}</span>
         </Link>
 
         <nav
           className="site-header-nav"
           aria-label="Primary navigation"
         >
-          {siteConfig.navigation.map((item) => {
+          {siteConfig.navigation.filter((item) => ["/", "/products", "/services", "/referrals"].includes(item.href)).map((item) => {
             const active = isActive(item.href);
 
             return (

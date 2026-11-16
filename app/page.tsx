@@ -1,5 +1,3 @@
-import { preload } from "react-dom";
-
 import {
   mapDatabaseProduct,
   PRODUCT_COLUMNS,
@@ -90,13 +88,6 @@ function toHomeService(service: Service): HomeService {
 }
 
 export default async function Page() {
-  // The hero photo is a CSS background, so the browser would find it late.
-  preload("/landscape1.webp", {
-    as: "image",
-    fetchPriority: "high",
-    type: "image/webp",
-  });
-
   const [products, services] = await Promise.all([
     loadProducts(),
     loadServices(),

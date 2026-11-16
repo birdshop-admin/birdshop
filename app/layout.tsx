@@ -4,6 +4,7 @@ import "./globals.css";
 import "./theme.css";
 import ThemeToggle from "@/components/ThemeToggle";
 import "../components/site-header.css";
+import "./storefront.css";
 
 import { CartProvider } from "./cart-context";
 import SiteAnalyticsTracker from "@/components/SiteAnalyticsTracker";
@@ -80,7 +81,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b120d",
+  themeColor: "#1c1c1e",
   // Keep chat composers and forms above the Android on-screen keyboard.
   interactiveWidget: "resizes-content",
 };
@@ -97,7 +98,7 @@ export default function RootLayout({
       <head>
         {/* Staff admin fit-to-screen scale, before first paint (lib/admin-fit.ts). */}
         <script dangerouslySetInnerHTML={{ __html: ADMIN_FIT_HEAD_SCRIPT }} />
-        <script dangerouslySetInnerHTML={{ __html: `(function(){var d=document.documentElement,t='light';try{var a=location.pathname.indexOf('/admin')===0,s=localStorage.getItem(a?'birdshop-admin-theme':'birdshop-theme');if(a&&s===null){s=localStorage.getItem('birdshop-theme')||'light';localStorage.setItem('birdshop-admin-theme',s)}if(s==='dark')t='dark';if(!s&&!a){var n=Number(localStorage.getItem('birdshop-theme-hint')||0);if(n<3){d.dataset.themeHint='1';localStorage.setItem('birdshop-theme-hint',String(n+1))}}}catch(e){}d.dataset.theme=t})();` }} />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var d=document.documentElement,a=location.pathname.indexOf('/admin')===0,t=a?'light':'dark';try{var s=localStorage.getItem(a?'birdshop-admin-theme':'birdshop-theme');if(a&&s===null){s=localStorage.getItem('birdshop-theme')||'light';localStorage.setItem('birdshop-admin-theme',s)}if(s==='dark'||s==='light')t=s;if(!s&&!a){var n=Number(localStorage.getItem('birdshop-theme-hint')||0);if(n<3){d.dataset.themeHint='1';localStorage.setItem('birdshop-theme-hint',String(n+1))}}}catch(e){}d.dataset.theme=t})();` }} />
       </head>
 
       <body>

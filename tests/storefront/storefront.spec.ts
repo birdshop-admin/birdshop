@@ -51,7 +51,8 @@ test("inventory, cart persistence, and sold-out protection survive the redesign"
   await expect(page.getByText(/Secure voucher submissions are being set up/))
     .toBeVisible();
   await expect(page.getByRole("button", { name: "Submit for manual review" }))
-    .toHaveCount(0);
+    .toBeDisabled();
+  await expect(page.getByPlaceholder("16-digit code")).toBeDisabled();
 
   await page.getByText("Rewarble prepaid card").click();
   await expect(page.getByRole("link", { name: /Redeem on Rewarble/i }))

@@ -109,7 +109,8 @@ export default function RewarbleManualRequest() {
           {TURNSTILE_SITE_KEY && (
             <TurnstileWidget siteKey={TURNSTILE_SITE_KEY}
               action="rewarble" resetKey={tokenReset}
-              onToken={setToken} />
+              onToken={setToken}
+              onUnavailable={() => setError("The security check is unavailable. Please retry later.")} />
           )}
           <button type="submit" disabled={busy || !items.length || Boolean(TURNSTILE_SITE_KEY && !token)}>
             {busy ? "Submitting securely…" : "Submit for manual review"}

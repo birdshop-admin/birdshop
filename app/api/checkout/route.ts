@@ -11,6 +11,7 @@ import { orderToken, tokenHash } from "@/lib/order-access";
 import { limitRequest, rateLimit, requestIdentity } from "@/lib/rate-limit";
 import { assertHuman } from "@/lib/turnstile";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { attachReferralToCheckout } from "@/lib/referral-attribution";
 
 import {
   serverRpc,
@@ -194,6 +195,11 @@ export async function POST(request: Request) {
     );
 
     knownUnrecorded = false;
+
+    // Bind only new attempts. A resumed checkout keeps its original attribution.
+    if (!existing) {
+      await attachReferralToCheckout(attempt.id, request.headers.get("cookie"));
+    }
 
     if (["expired", "failed", "cancelled"].includes(attempt.status)) {
       return Response.json(

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
 
 import CatalogArtwork from "@/components/CatalogArtwork";
+import EditorialPageHero from "@/components/EditorialPageHero";
 import ServiceCardPlanControls from "@/components/ServiceCardPlanControls";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
@@ -290,59 +291,20 @@ export default function ServicesPage({
   }
 
   return (
-    <main className="page-shell">
+    <main className="page-shell bs-editorial-page">
       <SiteHeader />
 
       {/* HERO */}
 
-      <section className={styles.hero}>
-        <div className={styles.heroOverlay} />
-
-        <div className={styles.heroContent}>
-          <div>
-            <p className={styles.eyebrow}>BirdShop / Game services</p>
-
-            <h1>Services</h1>
-
-            <p className={styles.heroDescription}>
-              Custom progression, building, coaching, and game services handled
-              around your request — with clear communication from start to
-              finish.
-            </p>
-
-            <div className={styles.heroFacts}>
-              <span>
-                <MessageIcon />
-                Personal support
-              </span>
-
-              <span>
-                <ClockIcon />
-                Clear turnaround
-              </span>
-
-              <span>
-                <ShieldIcon />
-                Trusted service
-              </span>
-            </div>
-          </div>
-
-          <div className={styles.heroMark} aria-hidden="true">
-            <span>BS</span>
-
-            <div />
-
-            <p>Game services</p>
-
-            <small>
-              Built around
-              <br />
-              your request
-            </small>
-          </div>
-        </div>
-      </section>
+      <EditorialPageHero
+        section="services"
+        eyebrow="BIRDSHOP / GAME SERVICES"
+        title="Services"
+        subtitle="PREMIUM SERVICES & SUPPORT"
+        description="Personal assistance and game progression, handled through your existing private service-chat flow."
+        primary={{ href: "#services-catalog", label: "EXPLORE SERVICES" }}
+        secondary={{ href: "/contact?topic=service", label: "OPEN PRIVATE CHAT" }}
+      />
 
       {/* PROCESS */}
 

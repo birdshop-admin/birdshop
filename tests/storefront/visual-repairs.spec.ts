@@ -149,37 +149,39 @@ test("Reviews announce loading while an approved-review request is pending", asy
 });
 
 async function layerTransforms(page: Page) {
-  return page.locator("[data-cosmic-layer]").evaluateAll(elements => elements.map(element => ({
-    layer: element.getAttribute("data-cosmic-layer"), transform: getComputedStyle(element).transform,
+  return page.locator("[data-christmas-layer]").evaluateAll(elements => elements.map(element => ({
+    layer: element.getAttribute("data-christmas-layer"), transform: getComputedStyle(element).transform,
   })));
 }
 
-test("vortex, rocks, clouds and camera animate independently and pause offscreen", async ({ page }) => {
+test("Santa flies slowly with a separate sleigh motion and pauses offscreen", async ({ page }) => {
   await page.goto("/reviews");
-  await expect(page.locator("[data-cosmic-layer='vortex']").first()).toBeVisible();
+  await expect(page.locator("[data-christmas-layer='flight']").first()).toBeVisible();
+  const duration = await page.locator("[data-christmas-layer='flight']").evaluate(e => parseFloat(getComputedStyle(e).animationDuration));
+  expect(duration).toBeGreaterThanOrEqual(60);
   const before = await layerTransforms(page);
   await page.waitForTimeout(1200);
   const after = await layerTransforms(page);
-  for (const layer of ["vortex", "rock", "cloud", "stars", "camera"]) {
+  for (const layer of ["flight", "sleigh"]) {
     const indices = before.flatMap((value, index) => value.layer === layer ? [index] : []);
     expect(indices.length, `${layer} exists`).toBeGreaterThan(0);
     expect(indices.some(index => after[index].transform !== before[index].transform), `${layer} changes transform`).toBe(true);
   }
   await page.locator("footer").scrollIntoViewIfNeeded();
-  await expect.poll(async () => page.locator("[data-cosmic-layer='vortex']").first().evaluate(element => getComputedStyle(element).animationPlayState)).toBe("paused");
+  await expect.poll(async () => page.locator("[data-christmas-layer='flight']").first().evaluate(element => getComputedStyle(element).animationPlayState)).toBe("paused");
 });
 
 test("reduced motion keeps a sharp static scene without animated layers", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/reviews");
-  await expect(page.locator("[data-cosmic-scene]")).toBeVisible();
+  await expect(page.locator("[data-christmas-scene]")).toBeVisible();
   expect(await page.evaluate(async () => {
     const image = new Image();
-    image.src = "/reviews-cosmos-landscape.webp";
+    image.src = "/reviews-christmas-reference.webp";
     await image.decode();
-    return image.naturalWidth > 1440;
+    return image.naturalWidth >= 1400;
   })).toBe(true);
-  expect(await page.locator("[data-cosmic-layer]").evaluateAll(elements => elements.every(element => getComputedStyle(element).animationName === "none"))).toBe(true);
+  expect(await page.locator("[data-christmas-layer]").evaluateAll(elements => elements.every(element => getComputedStyle(element).animationName === "none"))).toBe(true);
   const before = await layerTransforms(page);
   await page.waitForTimeout(300);
   expect(await layerTransforms(page)).toEqual(before);
@@ -190,8 +192,8 @@ test("Reviews keep a static cinematic fallback when JavaScript is unavailable", 
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:3100/reviews");
   await expect(page.getByRole("heading", { level: 1, name: "Reviews", exact: true })).toBeVisible();
-  await expect(page.locator("[data-cosmic-scene]")).toBeVisible();
-  expect(await page.locator("[data-cosmic-layer='vortex']").first().evaluate(element => getComputedStyle(element).animationPlayState)).toBe("paused");
+  await expect(page.locator("[data-christmas-scene]")).toBeVisible();
+  expect(await page.locator("[data-christmas-layer='flight']").first().evaluate(element => getComputedStyle(element).animationPlayState)).toBe("paused");
   await context.close();
 });
 
@@ -247,14 +249,14 @@ test("hero review links reveal and focus a long review hidden by the feed filter
 
 test("the cinematic scene pauses and resumes on document visibility changes", async ({ page }) => {
   await page.goto("/reviews");
-  const scene = page.locator("[data-cosmic-scene]");
+  const scene = page.locator("[data-christmas-scene]");
   await expect(scene).toHaveAttribute("data-active", "true");
   await page.evaluate(() => {
     Object.defineProperty(document, "hidden", { configurable: true, get: () => true });
     document.dispatchEvent(new Event("visibilitychange"));
   });
   await expect(scene).toHaveAttribute("data-active", "false");
-  expect(await page.locator("[data-cosmic-layer]").evaluateAll(elements => elements.every(element => getComputedStyle(element).animationPlayState === "paused"))).toBe(true);
+  expect(await page.locator("[data-christmas-layer]").evaluateAll(elements => elements.every(element => getComputedStyle(element).animationPlayState === "paused"))).toBe(true);
   await page.evaluate(() => {
     Reflect.deleteProperty(document, "hidden");
     document.dispatchEvent(new Event("visibilitychange"));

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRef } from "react";
 
 import type { Review } from "@/lib/reviews";
-import CosmicReviewsScene from "./CosmicReviewsScene";
+import ChristmasReviewsScene from "./ChristmasReviewsScene";
 import { ArrowIcon, CheckIcon, PeopleIcon } from "./SiteIcons";
 import styles from "./ReviewsHero.module.css";
 
@@ -32,7 +32,7 @@ export default function ReviewsHero({ reviews, loading, error, summary, onReveal
 
   return (
     <section className={styles.hero} aria-labelledby="bs-reviews-title">
-      <CosmicReviewsScene />
+      <ChristmasReviewsScene />
       <div className={styles.copy}>
         <p className={styles.eyebrow}>BIRDSHOP COMMUNITY</p>
         <h1 id="bs-reviews-title">Reviews</h1>

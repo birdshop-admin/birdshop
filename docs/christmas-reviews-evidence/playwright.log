@@ -1,0 +1,6 @@
+npm run test:storefront -- --reporter=line
+System Chromium; loopback fixtures; production Next.js build.
+25 passed (1.9m)
+Exit code: 0
+
+[Individual test names and internal behavior details omitted.]

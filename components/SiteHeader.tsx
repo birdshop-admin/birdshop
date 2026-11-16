@@ -169,7 +169,7 @@ export default function SiteHeader() {
           className="site-header-nav"
           aria-label="Primary navigation"
         >
-          {siteConfig.navigation.filter((item) => ["/", "/products", "/services", "/referrals"].includes(item.href)).map((item) => {
+          {siteConfig.navigation.filter((item) => ["/", "/products", "/services", "/referrals", "/reviews", "/contact"].includes(item.href)).map((item) => {
             const active = isActive(item.href);
 
             return (
@@ -179,7 +179,7 @@ export default function SiteHeader() {
                 className={active ? "site-header-active" : ""}
                 aria-current={active ? "page" : undefined}
               >
-                {item.label}
+                {item.href === "/referrals" ? "Referral" : item.label}
               </Link>
             );
           })}

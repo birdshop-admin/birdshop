@@ -12,7 +12,7 @@ for (const width of [320, 390, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto("/");
     await dismissInvite(page);
-    await expect(page.getByRole("heading", { name: /Play\s*beyond\./ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Less waiting\.\s*More playing\./ })).toBeVisible();
     await expect(page.getByRole("link", { name: /Explore services/i }).first()).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     if (width <= 1100) {

@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - "app/ref/**"
+      - "app/referrals/**"
+      - "lib/supabase/proxy.ts"
+      - "proxy.ts"
+      - "components/AdminSidebar.tsx"
       - "app/api/checkout/**"
       - "app/admin/**"
       - "lib/referral-attribution.ts"

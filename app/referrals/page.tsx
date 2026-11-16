@@ -4,6 +4,7 @@ import EditorialPageHero from "@/components/EditorialPageHero";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { registerMyReferral, sendReferralLogin, verifyReferralCode, signOutReferral } from "./actions";
+import styles from "./referrals.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -16,23 +17,6 @@ const messages: Record<string,string> = {
   "invalid-registration": "Please enter a display name with 2–80 characters.",
   "already-registered": "This email already has a referral account.",
   "registered": "Registration complete. Your referral details appear below.",
-};
-
-const boxStyle: React.CSSProperties = {
-  border: "1px solid var(--bs-line-strong)",
-  borderRadius: 2,
-  padding: 24,
-  background: "var(--bs-card)",
-  color: "var(--bs-ink)",
-};
-const inputStyle: React.CSSProperties = {
-  display: "block", width: "100%", maxWidth: 450, padding: "12px 14px",
-  borderRadius: 2, marginTop: 8, marginBottom: 14,
-  border: "1px solid var(--bs-line-strong)", background: "var(--bs-field)", color: "var(--bs-ink)"
-};
-const buttonStyle: React.CSSProperties = {
-  display: "inline-block", padding: "12px 20px", borderRadius: 2,
-  border: 0, fontWeight: 700, background: "var(--bs-btn-bg)", color: "var(--bs-btn-ink)", cursor: "pointer"
 };
 
 export default async function ReferralDashboard({
@@ -70,7 +54,7 @@ export default async function ReferralDashboard({
   const sum = (rows:typeof rewards) => rows.reduce((n,r)=>n+r.amount_cents,0);
   const origin = (process.env.BIRDSHOP_SITE_URL ?? "https://birdshop.store").replace(/\/$/,"");
 
-  return <main className="page-shell referrals-page">
+  return <main className="page-shell bs-editorial-page referrals-page">
     <SiteHeader />
     <EditorialPageHero
       section="referrals"
@@ -79,7 +63,7 @@ export default async function ReferralDashboard({
       subtitle="SHARE A LINK / EARN APPROVED REWARDS"
       description="Earn $0.50 USD for each qualifying new customer's first eligible paid and fulfilled product purchase, subject to review."
     />
-    <div className="bs-referral-content" style={{maxWidth:960,margin:"0 auto",display:"grid",gap:22,padding:"clamp(28px,5vw,64px) 24px"}}>
+    <div className={`bs-referral-content ${styles.content}`}>
       <header className="bs-referral-intro">
         <span>REFERRAL PROGRAM</span>
         <h2>Share BirdShop.</h2>
@@ -91,69 +75,69 @@ export default async function ReferralDashboard({
         <span><strong>03</strong> Share your unique link</span>
         <span><strong>04</strong> Track approved rewards</span>
       </div>
-      {notice && messages[notice] && <p role="status" style={boxStyle}>{messages[notice]}</p>}
+      {notice && messages[notice] && <p role="status" className={styles.notice}>{messages[notice]}</p>}
 
-      {!verified ? <section style={boxStyle}>
+      {!verified ? <section className={styles.panel}>
         <h2>Verify your email</h2>
         <p>We use a secure email sign-in. You do not need a password.</p>
         <form action={sendReferralLogin}>
           <label htmlFor="ref-email">Your email</label>
-          <input id="ref-email" style={inputStyle} type="email" name="email" autoComplete="email" required maxLength={320} />
-          <button type="submit" style={buttonStyle}>Send sign-in email</button>
+          <input id="ref-email" className={styles.input} type="email" name="email" autoComplete="email" required maxLength={320} />
+          <button type="submit" className={styles.button}>Send sign-in email</button>
         </form>
-        <details style={{marginTop:22}}><summary>Have a verification code?</summary>
-          <form action={verifyReferralCode} style={{marginTop:15}}>
+        <details className={styles.verification}><summary>Have a verification code?</summary>
+          <form action={verifyReferralCode}>
             <label htmlFor="ref-code-email">Email</label>
-            <input id="ref-code-email" name="email" style={inputStyle} type="email" required autoComplete="email"/>
+            <input id="ref-code-email" name="email" className={styles.input} type="email" required autoComplete="email"/>
             <label htmlFor="ref-code">Email code</label>
-            <input id="ref-code" name="token" style={inputStyle} inputMode="numeric" pattern="[0-9]{6,8}" required />
-            <button type="submit" style={buttonStyle}>Verify code</button>
+            <input id="ref-code" name="token" className={styles.input} inputMode="numeric" pattern="[0-9]{6,8}" required />
+            <button type="submit" className={styles.button}>Verify code</button>
           </form>
         </details>
       </section> : <>
-        <section style={boxStyle}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+        <section className={styles.panel}>
+          <div className={styles.identity}>
             <p>Verified as <strong>{email}</strong></p>
-            <form action={signOutReferral}><button type="submit" style={buttonStyle}>Sign out</button></form>
+            <form action={signOutReferral}><button type="submit" className={styles.button}>Sign out</button></form>
           </div>
         </section>
-        {!referrer ? <section style={boxStyle}>
+        {!referrer ? <section className={styles.panel}>
           <h2>Join BirdShop referrals</h2>
           <p>Customer links activate immediately after verified registration. Affiliate applications require owner approval.</p>
           <form action={registerMyReferral}>
             <label htmlFor="ref-name">Display name</label>
-            <input id="ref-name" name="name" style={inputStyle} required minLength={2} maxLength={80}/>
+            <input id="ref-name" name="name" className={styles.input} required minLength={2} maxLength={80}/>
             <label htmlFor="ref-kind">Account type</label>
-            <select id="ref-kind" name="kind" style={inputStyle}>
+            <select id="ref-kind" name="kind" className={styles.input}>
               <option value="customer">Customer referral</option>
               <option value="affiliate">Apply as an affiliate</option>
             </select>
-            <button type="submit" style={buttonStyle}>Create referral account</button>
+            <button type="submit" className={styles.button}>Create referral account</button>
           </form>
         </section> : <>
-          <section style={boxStyle}>
+          <section className={styles.panel}>
             <h2>{referrer.display_name}&apos;s referral profile</h2>
             <p>Type: <strong>{referrer.kind}</strong> · Status: <strong>{referrer.status}</strong></p>
             <p>Your code: <strong>{referrer.code}</strong></p>
             {referrer.status==="approved" ?
               <><label htmlFor="my-ref-link">Your shareable link</label>
-                <input id="my-ref-link" style={inputStyle} readOnly value={`${origin}/ref/${referrer.code}`} />
+                <input id="my-ref-link" className={styles.input} readOnly value={`${origin}/ref/${referrer.code}`} />
                 <p>Share this link with people who have never purchased from BirdShop before.</p></> :
               <p>Your link will become active after approval. You cannot earn rewards while pending, rejected or suspended.</p>}
           </section>
-          <section style={boxStyle}>
+          <section className={styles.panel}>
             <h2>Earnings</h2>
-            <div style={{display:"flex",flexWrap:"wrap",gap:28}}>
+            <div className={styles.earnings}>
               <div><small>Pending review</small><h3>{currency(sum(pending))}</h3></div>
               <div><small>Approved / unpaid</small><h3>{currency(sum(approved))}</h3></div>
               <div><small>Recorded as paid</small><h3>{currency(sum(paid))}</h3></div>
             </div>
             <h3>Recent reward activity</h3>
             {rewards.length===0 ? <p>No qualifying referrals recorded yet.</p> :
-              <ul>{rewards.map((r,i)=><li key={i} style={{padding:"8px 0"}}>
+              <ul className={styles.activity}>{rewards.map((r,i)=><li key={i}>
                 {new Date(r.created_at).toLocaleDateString("en-US")} — {currency(r.amount_cents)} — {r.status.replaceAll("_"," ")}
               </li>)}</ul>}
-            <p style={{opacity:.75,fontSize:14}}>Amounts are USD. Only the 100 newest reward records are displayed. Referrals must be reviewed before payment.</p>
+            <p className={styles.disclaimer}>Amounts are USD. Only the 100 newest reward records are displayed. Referrals must be reviewed before payment.</p>
           </section>
         </>}
       </>}

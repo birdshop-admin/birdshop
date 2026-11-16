@@ -1,0 +1,107 @@
+
+> birdshop@0.1.0 build
+> next build
+
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 281ms
+- Experiments (use with caution):
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 13.6s
+  Running TypeScript ...
+  Finished TypeScript in 30.3s ...
+  Collecting page data using 2 workers ...
+  Generating static pages using 2 workers (0/36) ...
+  Generating static pages using 2 workers (9/36)
+  Generating static pages using 2 workers (18/36)
+  Generating static pages using 2 workers (27/36)
+BirdShop sitemap could not load catalog pages
+Error: SUPABASE_SECRET_KEY is not configured.
+    at r (lib/supabase/admin.ts:19:11)
+    at <unknown> (lib/supabase/admin.ts:43:5)
+    at <unknown> (lib/service-catalog.ts:115:33)
+    at o (app/sitemap.ts:32:7)
+    at l (app/sitemap--route-entry.js:14:24)
+  17 |
+  18 |   if (!value) {
+> 19 |     throw new Error(
+     |           ^
+  20 |       `${name} is not configured.`
+  21 |     );
+  22 |   }
+✓ Generating static pages using 2 workers (36/36) in 5.2s
+  Finalizing page optimization ...
+
+Route (app)                             Revalidate  Expire
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /admin
+├ ƒ /admin/analytics
+├ ƒ /admin/chat
+├ ƒ /admin/inventory
+├ ƒ /admin/login
+├ ƒ /admin/login/session
+├ ƒ /admin/logout
+├ ƒ /admin/orders
+├ ƒ /admin/products
+├ ƒ /admin/referrals
+├ ƒ /admin/requests
+├ ƒ /admin/reviews
+├ ƒ /admin/services
+├ ƒ /admin/session/heartbeat
+├ ƒ /admin/settings
+├ ƒ /api/analytics
+├ ƒ /api/checkout
+├ ƒ /api/checkout/manage
+├ ƒ /api/checkout/status
+├ ƒ /api/customer-device
+├ ƒ /api/customer-inbox
+├ ƒ /api/customer-inbox/request
+├ ƒ /api/customer-inbox/verify
+├ ƒ /api/maintenance
+├ ƒ /api/orders/access
+├ ƒ /api/reviews
+├ ƒ /api/service-chat/[token]
+├ ƒ /api/service-chat/[token]/checkout
+├ ƒ /api/service-chat/create
+├ ƒ /api/service-chat/open
+├ ƒ /api/services/checkout
+├ ƒ /api/services/purchase
+├ ƒ /api/stripe/webhook
+├ ƒ /api/webhooks/service-created
+├ ○ /cart
+├ ○ /checkout/return
+├ ƒ /contact
+├ ○ /faqs
+├ ○ /how-to-order
+├ ○ /orders/access
+├ ○ /privacy
+├ ○ /products
+├ ƒ /products/[slug]
+├ ƒ /ref/[code]
+├ ƒ /referrals
+├ ƒ /referrals/auth/callback
+├ ○ /refunds
+├ ○ /reviews
+├ ○ /robots.txt
+├ ƒ /service-chat
+├ ƒ /service-chat/verify
+├ ƒ /services
+├ ƒ /services/[slug]
+├ ƒ /services/[slug]/purchase
+├ ○ /services/checkout
+├ ○ /sitemap.xml                                1h      1y
+└ ○ /terms
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

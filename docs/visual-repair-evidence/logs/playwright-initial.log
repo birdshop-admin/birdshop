@@ -1,0 +1,72 @@
+
+> birdshop@0.1.0 test:storefront
+> playwright test --reporter=line
+
+[WebServer] (node:3663) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:3679) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:3692) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 23 tests using 1 worker
+
+(node:3706) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/23] tests/storefront/storefront.spec.ts:9:3 › storefront fits 320px and exposes navigation
+  1) tests/storefront/storefront.spec.ts:9:3 › storefront fits 320px and exposes navigation ────────
+
+    Test timeout of 30000ms exceeded.
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/storefront-storefront-fits-320px-and-exposes-navigation/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/storefront-storefront-fits-320px-and-exposes-navigation/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/storefront-storefront-fits-320px-and-exposes-navigation/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/storefront-storefront-fits-320px-and-exposes-navigation/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:4116) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[2/23] tests/storefront/storefront.spec.ts:9:3 › storefront fits 390px and exposes navigation
+[3/23] tests/storefront/storefront.spec.ts:9:3 › storefront fits 768px and exposes navigation
+[4/23] tests/storefront/storefront.spec.ts:9:3 › storefront fits 1024px and exposes navigation
+[5/23] tests/storefront/storefront.spec.ts:9:3 › storefront fits 1440px and exposes navigation
+[6/23] tests/storefront/storefront.spec.ts:34:1 › inventory, cart persistence, and sold-out protection survive the redesign
+[7/23] tests/storefront/storefront.spec.ts:50:1 › referral sign-in, service list, and staff login stay reachable
+[8/23] tests/storefront/storefront.spec.ts:64:3 › approved Christmas subpages render at 390px
+[9/23] tests/storefront/storefront.spec.ts:64:3 › approved Christmas subpages render at 768px
+[10/23] tests/storefront/storefront.spec.ts:64:3 › approved Christmas subpages render at 1440px
+[11/23] tests/storefront/visual-repairs.spec.ts:36:3 › catalog and detail cart controls remain centered at 320px
+[12/23] tests/storefront/visual-repairs.spec.ts:36:3 › catalog and detail cart controls remain centered at 390px
+[13/23] tests/storefront/visual-repairs.spec.ts:36:3 › catalog and detail cart controls remain centered at 768px
+[14/23] tests/storefront/visual-repairs.spec.ts:36:3 › catalog and detail cart controls remain centered at 1440px
+[15/23] tests/storefront/visual-repairs.spec.ts:67:3 › referrals use a black page canvas and working sign-in in light mode
+[16/23] tests/storefront/visual-repairs.spec.ts:67:3 › referrals use a black page canvas and working sign-in in dark mode
+[17/23] tests/storefront/visual-repairs.spec.ts:108:1 › Reviews render only approved RPC records and derived ratings
+[18/23] tests/storefront/visual-repairs.spec.ts:120:1 › Reviews preserve honest empty and unavailable states
+[19/23] tests/storefront/visual-repairs.spec.ts:135:1 › Reviews announce loading while an approved-review request is pending
+[20/23] tests/storefront/visual-repairs.spec.ts:154:1 › vortex, rocks, clouds and camera animate independently and pause offscreen
+[21/23] tests/storefront/visual-repairs.spec.ts:169:1 › reduced motion keeps a sharp static scene without animated layers
+[22/23] tests/storefront/visual-repairs.spec.ts:185:1 › Reviews keep a static cinematic fallback when JavaScript is unavailable
+[23/23] tests/storefront/visual-repairs.spec.ts:205:1 › authenticated referral profile, earnings and registration keep black surfaces
+  1 failed
+    tests/storefront/storefront.spec.ts:9:3 › storefront fits 320px and exposes navigation ─────────
+  22 passed (5.5m)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

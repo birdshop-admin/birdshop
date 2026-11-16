@@ -143,7 +143,9 @@ function ProductCard({
             onClick={handleAdd}
           >
             {added && !isOutOfStock ? <CheckIcon /> : <CartIcon />}
-            <span className="bs-cart-button-label">{added && !isOutOfStock ? "Added" : "Add to cart"}</span>
+            <span>
+              {isOutOfStock ? "Out of Stock" : added ? "Added" : "Add to Cart"}
+            </span>
           </button>
         </div>
       </div>

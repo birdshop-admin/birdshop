@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import SiteHeader from "@/components/SiteHeader";
-import EditorialPageHero from "@/components/EditorialPageHero";
+import ReviewsHero from "@/components/ReviewsHero";
 import SiteFooter from "@/components/SiteFooter";
 
 import {
@@ -121,7 +121,7 @@ function ReviewCard({
   const bodyId = `review-${review.id}-body`;
 
   return (
-    <article className={styles.reviewCard}>
+    <article id={`review-${review.id}`} className={styles.reviewCard} tabIndex={-1}>
       <div className={styles.reviewCardTop}>
         <div className={styles.reviewIdentity}>
           <div className={styles.reviewAvatar} aria-hidden="true">
@@ -226,6 +226,20 @@ export default function ReviewsPage() {
   const [expandedReviews, setExpandedReviews] = useState<Set<string>>(
     () => new Set(),
   );
+  // A fresh object also handles selecting the same hero card more than once.
+  const [reviewToReveal, setReviewToReveal] = useState<{ id: string } | null>(null);
+
+  useEffect(() => {
+    if (!reviewToReveal) return;
+    // Runs after the filter, visible count and expanded card commit together.
+    const card = document.getElementById(`review-${reviewToReveal.id}`);
+    if (!card) return;
+    card.focus({ preventScroll: true });
+    card.scrollIntoView({
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+      block: "start",
+    });
+  }, [reviewToReveal]);
 
   // Every state update here happens after the request resolves; the initial
   // state already reads "loading", so nothing is set synchronously.
@@ -265,9 +279,6 @@ export default function ReviewsPage() {
     setLoadError(null);
     setReloadKey((key) => key + 1);
   }
-
-  const featuredReview =
-    approvedReviews.find((review) => review.featured) ?? approvedReviews[0];
 
   const filteredReviews = useMemo(() => {
     if (filter === "Products") {
@@ -326,105 +337,25 @@ export default function ReviewsPage() {
     });
   }
 
+  function revealReview(id: string) {
+    if (!approvedReviews.some(review => review.id === id)) return;
+    setFilter("All Reviews");
+    setVisibleCount(INITIAL_VISIBLE);
+    setExpandedReviews(current => new Set(current).add(id));
+    setReviewToReveal({ id });
+  }
+
   return (
-    <main className="page-shell bs-editorial-page">
+    <main className={`page-shell bs-editorial-page ${styles.reviewsPage}`}>
       <SiteHeader />
 
-      <EditorialPageHero
-        section="reviews"
-        eyebrow="BIRDSHOP / COMMUNITY"
-        title="Reviews"
-        subtitle="REAL COMMUNITY FEEDBACK"
-        description="Real customer experiences and service feedback, shared by the BirdShop community."
-        primary={{ href: "#reviews", label: "VIEW REVIEWS" }}
-        secondary={{ href: "/contact?topic=review", label: "LEAVE A REVIEW" }}
-        imageSrc="/birdshop-reviews-vortex.svg"
-        imageAlt="Dark extraterrestrial mountains beneath a luminous swirling cosmic portal"
+      <ReviewsHero
+        reviews={approvedReviews}
+        loading={loading}
+        error={Boolean(loadError)}
+        summary={ratingSummary}
+        onRevealReview={revealReview}
       />
-
-      {/* Holds the featured slot while loading, so the page does not jump. */}
-      {loading && (
-        <section className={styles.featuredSection} aria-hidden="true">
-          <div className={styles.featuredHeading}>
-            <div>
-              <span className={`${styles.skeleton} ${styles.skeletonLine} ${styles.skeletonEyebrow}`} />
-              <span className={`${styles.skeleton} ${styles.skeletonHeading}`} />
-            </div>
-          </div>
-
-          <div className={`${styles.skeleton} ${styles.featuredSkeleton}`} />
-        </section>
-      )}
-
-      {!loading && featuredReview && (
-        <section className={styles.featuredSection}>
-          <div className={styles.featuredHeading}>
-            <div>
-              <span>Featured experience</span>
-              <h2>From the community.</h2>
-            </div>
-
-            <p>A closer look at one BirdShop experience.</p>
-          </div>
-
-          <article className={styles.featuredReview}>
-            <div className={styles.featuredDark}>
-              <div className={styles.featuredQuoteMark} aria-hidden="true">
-                “
-              </div>
-
-              <Stars rating={featuredReview.rating} />
-
-              <blockquote>{featuredReview.title}</blockquote>
-
-              <p>{featuredReview.body}</p>
-
-              <span className={styles.sampleNotice}>
-                Approved community review
-              </span>
-            </div>
-
-            <div className={styles.featuredDetails}>
-              <div className={styles.featuredPerson}>
-                <div aria-hidden="true">{featuredReview.initials}</div>
-
-                <span>
-                  <strong>{featuredReview.reviewer}</strong>
-                  <small>{featuredReview.date}</small>
-                </span>
-              </div>
-
-              <div className={styles.featuredMeta}>
-                <div>
-                  <span>Experience</span>
-                  <strong>{featuredReview.type}</strong>
-                </div>
-
-                <div>
-                  <span>Reviewed</span>
-                  <strong>{featuredReview.subject}</strong>
-                </div>
-
-                <div>
-                  <span>Details</span>
-                  <strong>{featuredReview.meta}</strong>
-                </div>
-              </div>
-
-              <Link
-                href={
-                  featuredReview.type === "Service" ? "/services" : "/products"
-                }
-                className={styles.featuredLink}
-              >
-                Browse{" "}
-                {featuredReview.type === "Service" ? "Services" : "Products"}
-                <ArrowIcon />
-              </Link>
-            </div>
-          </article>
-        </section>
-      )}
 
       <section id="reviews" className={styles.reviewSection}>
         <div className={styles.reviewHeading}>

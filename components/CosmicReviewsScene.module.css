@@ -1,0 +1,198 @@
+.scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+  background: #030306;
+  contain: paint;
+}
+
+.camera {
+  position: absolute;
+  inset: -2%;
+  animation: cosmic-camera 35s ease-in-out infinite alternate;
+  transform-origin: 55% 35%;
+}
+
+.landscape {
+  position: absolute;
+  inset: 0;
+  background: url("/reviews-cosmos-landscape.webp") center 61% / cover no-repeat;
+}
+
+.stars, .dust {
+  position: absolute;
+  inset: -5%;
+  background-image:
+    radial-gradient(1px 1px at 23px 19px, #fff9 80%, transparent),
+    radial-gradient(1px 1px at 117px 89px, #e5d9cb8a 80%, transparent),
+    radial-gradient(1.4px 1.4px at 222px 132px, #ffc9a0aa 80%, transparent);
+  background-size: 293px 241px, 367px 313px, 457px 389px;
+  mask-image: linear-gradient(#000 45%, transparent 77%);
+  opacity: .5;
+  animation: cosmic-stars 43s ease-in-out infinite alternate;
+}
+
+.horizonLight {
+  position: absolute;
+  left: 25%;
+  top: 53%;
+  width: 75%;
+  height: 24%;
+  background: radial-gradient(ellipse, #ff661a24, #ba27110b 45%, transparent 72%);
+  mix-blend-mode: screen;
+  animation: cosmic-light 9s ease-in-out infinite alternate;
+}
+
+.portal {
+  position: absolute;
+  left: 54%;
+  top: 27%;
+  width: clamp(460px, 46vw, 850px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) rotate(-14deg);
+}
+
+.portalHalo {
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ff8b2a13 0 14%, #f94c1410 24%, #73201508 49%, transparent 71%);
+}
+
+.vortex, .innerVortex {
+  position: absolute;
+  inset: 0;
+  background: url("/reviews-accretion.webp") center / contain no-repeat;
+  animation: cosmic-orbit 48s linear infinite;
+}
+
+.innerVortex {
+  inset: 25%;
+  opacity: .42;
+  mix-blend-mode: screen;
+  animation-duration: 31s;
+  animation-direction: reverse;
+}
+
+.lens {
+  position: absolute;
+  inset: 0;
+  background: url("/reviews-lens.webp") center / contain no-repeat;
+  opacity: .88;
+  animation: cosmic-orbit 52s linear infinite;
+}
+
+.core {
+  position: absolute;
+  inset: 43.5%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 58% 47%, #fffad8 0 5%, #ffcf62 12%, #ff8c21 27%, #e6380b 38%, #250507 55%, transparent 72%);
+  box-shadow: 0 0 30px #ff5b1740;
+  animation: cosmic-light 7s ease-in-out infinite alternate;
+}
+
+.rockOrbit {
+  position: absolute;
+  width: var(--size);
+  aspect-ratio: 1.25;
+  animation: cosmic-rock-drift var(--duration) ease-in-out var(--delay) infinite alternate;
+}
+
+.rock {
+  width: 100%;
+  height: 100%;
+  background: url("/reviews-asteroid.webp") center / contain no-repeat;
+  transform: rotate(var(--angle));
+  filter: drop-shadow(0 9px 12px #0008);
+}
+
+.rockOrbit:nth-of-type(3n) { opacity: .67; }
+
+.cloud {
+  position: absolute;
+  top: var(--level);
+  width: 69%;
+  height: 32%;
+  background: url("/reviews-cloud.webp") center / 100% 100% no-repeat;
+  opacity: .48;
+  animation: cosmic-cloud-left var(--duration) linear var(--delay) infinite;
+}
+
+.cloudLeft { left: -20%; }
+.cloudRight {
+  right: -20%;
+  animation-name: cosmic-cloud-right;
+}
+
+.dust {
+  inset: 3%;
+  background-image: radial-gradient(1px 1px at 61px 47px, #ffa964 70%, transparent);
+  background-size: 211px 179px;
+  mask-image: radial-gradient(ellipse at 56% 34%, #0005 5%, #000 25%, transparent 60%);
+  opacity: .48;
+  animation: cosmic-dust 23s ease-in-out infinite alternate;
+}
+
+.readability {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, #000b 0%, #0008 24%, transparent 58%),
+    linear-gradient(0deg, #000 0%, #0008 9%, transparent 29%);
+}
+
+.scene[data-active="false"] *, .scene[data-active="false"] *::before {
+  animation-play-state: paused;
+}
+
+@keyframes cosmic-orbit { to { transform: rotate(360deg); } }
+@keyframes cosmic-camera {
+  from { transform: scale(1) translate3d(0, 0, 0); }
+  to { transform: scale(1.045) translate3d(-.35%, .25%, 0); }
+}
+@keyframes cosmic-stars {
+  from { transform: translate3d(-5px, 0, 0); }
+  to { transform: translate3d(14px, 9px, 0); }
+}
+@keyframes cosmic-light { from { opacity: .65; } to { opacity: 1; } }
+@keyframes cosmic-rock-drift {
+  from { transform: translate3d(0, -12px, 0) rotate(-8deg); }
+  to { transform: translate3d(var(--drift), 22px, 0) rotate(11deg); }
+}
+@keyframes cosmic-cloud-left {
+  0% { transform: translate3d(-5%, 8%, 0) scale(var(--cloud-scale)); opacity: 0; }
+  18% { opacity: .48; }
+  75% { opacity: .38; }
+  100% { transform: translate3d(44%, -19%, 0) scale(.68); opacity: 0; }
+}
+@keyframes cosmic-cloud-right {
+  0% { transform: translate3d(5%, 8%, 0) scale(var(--cloud-scale)); opacity: 0; }
+  18% { opacity: .48; }
+  75% { opacity: .38; }
+  100% { transform: translate3d(-44%, -19%, 0) scale(.68); opacity: 0; }
+}
+@keyframes cosmic-dust {
+  from { transform: translate3d(-7px, 18px, 0) scale(1.01); opacity: .35; }
+  to { transform: translate3d(17px, -22px, 0) scale(.95); opacity: .65; }
+}
+
+@media (max-width: 700px) {
+  .landscape { background-position: 54% center; }
+  .portal { left: 67%; top: 18%; width: 440px; }
+  .rockOrbit { width: calc(var(--size) * .7); }
+  .rockOrbit:nth-of-type(2n) { display: none; }
+  .cloud { width: 115%; height: 23%; }
+  .cloudLeft { left: -55%; }
+  .cloudRight { right: -55%; }
+  .readability {
+    background: linear-gradient(0deg, #000 0%, transparent 25%),
+      linear-gradient(90deg, #000a, #0004 60%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene *, .scene *::before { animation: none; }
+  .cloud { opacity: .28; }
+}

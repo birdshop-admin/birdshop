@@ -480,15 +480,16 @@
 
 .purchaseButtons {
   display: grid;
-  grid-template-columns: 1fr 0.55fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 11px;
   margin-top: 19px;
 }
 
 .addButton,
 .buyButton {
-  min-height: 56px;
-  border-radius: var(--bs-r-control);
+  height: 50px;
+  min-height: 50px;
+  border-radius: 3px;
   cursor: pointer;
   font-family: Georgia, "Times New Roman", serif;
   transition:
@@ -498,32 +499,42 @@
 }
 
 .addButton {
-  display: flex;
+  display: inline-flex;
+  flex-flow: row nowrap;
   align-items: center;
-  gap: 12px;
-  padding: 0 18px;
-  border: 0;
-  color: var(--bs-btn-ink);
-  background: var(--bs-btn-bg);
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 0 14px;
+  border: 1px solid #b5223a;
+  color: #f8f4ef;
+  background: #921027;
+  font: 600 13px/1.2 Arial, Helvetica, sans-serif;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .addButton.addedButton {
-  color: var(--bs-selected-ink);
-  background: var(--bs-selected-bg);
+  background: #741023;
 }
 
 .addButton svg {
-  width: 21px;
-  height: 21px;
+  display: block;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
 }
 
-.addButton span:nth-child(2) {
-  font-size: 17px;
+.addButton > span {
+  min-width: 0;
+  margin: 0;
+  white-space: nowrap;
 }
 
-.addButton span:last-child {
-  margin-left: auto;
-  font-size: 21px;
+.addButton:focus-visible {
+  outline: 2px solid #f8f4ef;
+  outline-offset: 3px;
 }
 
 .buyButton {
@@ -539,8 +550,9 @@
 }
 
 .addButton:disabled {
-  color: var(--bs-btn-disabled-ink);
-  background: var(--bs-btn-disabled-bg);
+  color: #b9b2ab;
+  background: #292626;
+  border-color: #484141;
   cursor: not-allowed;
 }
 
@@ -1046,11 +1058,11 @@
 
   .addButton:not(:disabled):hover {
     transform: translateY(-1px);
-    background: var(--bs-btn-hover);
+    background: #ad1933;
   }
 
   .addButton.addedButton:hover {
-    background: var(--bs-selected-bg);
+    background: #741023;
   }
 
   .buyButton:not(:disabled):hover {
@@ -1265,31 +1277,4 @@
   .relatedCard:hover .relatedImage img {
     transform: none;
   }
-}
-
-/* Owner-approved Christmas detail CTA: icon and text on ONE centered line. */
-.purchaseButtons .addButton {
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  width: 100%;
-  min-width: 0;
-  min-height: 56px;
-  padding: 12px 16px;
-  line-height: 1.2;
-  color: #fff;
-  background: #921027;
-  border: 1px solid #b5223a;
-  border-radius: 3px;
-  white-space: normal;
-  text-align: center;
-}
-.purchaseButtons .addButton svg { display:block; flex:0 0 20px; width:20px; height:20px; }
-.purchaseButtons .addButton span { display:block; min-width:0; margin:0; font:600 14px/1.25 Arial,Helvetica,sans-serif; }
-.purchaseButtons .addButton:not(:disabled):hover {background:#b31b37}
-@media(max-width:520px) {
-  .purchaseButtons .addButton {gap:8px; padding:11px 12px}
-  .purchaseButtons .addButton span {font-size:13px}
 }

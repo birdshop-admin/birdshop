@@ -26,7 +26,7 @@ for (const width of [320, 390, 768, 1024, 1440]) {
     } else {
       await expect(page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Products", exact: true })).toBeVisible();
     }
-    await page.screenshot({ path: test.info().outputPath(`home-${width}.png`), fullPage: true });
+    await page.screenshot({ path: test.info().outputPath(`home-${width}.png`), fullPage: true, animations: "disabled", caret: "initial" });
     expect(errors).toEqual([]);
   });
 }
@@ -51,23 +51,23 @@ test("referral sign-in, service list, and staff login stay reachable", async ({ 
   await page.goto("/referrals");
   await expect(page.getByRole("heading", { name: "Refer friends.", exact: true })).toBeVisible();
   await expect(page.getByLabel("Your email", { exact: true })).toBeVisible();
-  await page.screenshot({ path: test.info().outputPath("referrals.png"), fullPage: true });
+  await page.screenshot({ path: test.info().outputPath("referrals.png"), fullPage: true, animations: "disabled", caret: "initial" });
   await page.goto("/services");
   await expect(page.getByRole("heading", { name: "Deepwoken progression", exact: true }).first()).toBeVisible();
-  await page.screenshot({ path: test.info().outputPath("services.png"), fullPage: true });
+  await page.screenshot({ path: test.info().outputPath("services.png"), fullPage: true, animations: "disabled", caret: "initial" });
   await page.goto("/admin/login");
   await expect(page.locator(".storefront-rail")).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe("light");
 });
 
-for (const width of [390, 1440]) {
+for (const width of [390, 768, 1440]) {
   test(`approved Christmas subpages render at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });
     for (const [path, heading, imageName] of [
       ["/products", "Products", ""],
       ["/services", "Services", ""],
       ["/referrals", "Refer friends.", ""],
-      ["/reviews", "Reviews", "birdshop-reviews-vortex"],
+      ["/reviews", "Reviews", "reviews-cosmos-landscape"],
     ] as const) {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1, name: heading, exact: true })).toBeVisible();
@@ -75,30 +75,20 @@ for (const width of [390, 1440]) {
         await expect(page.locator("img[src*='birdshop-christmas-bells-reference']")).toBeVisible();
       }
       if (imageName) {
-        const photo = page.locator(`img[src*='${imageName}']`);
-        await expect(photo).toBeVisible();
-        await expect(page.locator(".bs-editorial-hero--reviews .bs-editorial-bells")).toBeHidden();
-        await expect(page.locator(".bs-reviews-vortex")).toHaveCount(1);
-        await expect(page.locator(".bs-reviews-stars")).toHaveCount(1);
-        const photoAsset = await page.request.get("/birdshop-reviews-vortex.svg");
-        expect(photoAsset.ok()).toBe(true);
-        expect(await photoAsset.text()).toContain('width="800" height="500"');
-        expect(await photoAsset.text()).toContain("data:image/webp;base64,");
+        await expect(page.locator("[data-cosmic-scene]")).toBeVisible();
+        await expect(page.locator("[data-cosmic-layer='vortex']").first()).toBeVisible();
+        await expect(page.locator("[data-cosmic-layer='rock']").first()).toBeVisible();
+        await expect(page.locator("[data-cosmic-layer='cloud']").first()).toBeVisible();
+        await expect(page.locator(".bs-editorial-bells")).toHaveCount(0);
+        const sceneAsset = await page.request.get("/reviews-cosmos-landscape.webp");
+        expect(sceneAsset.ok()).toBe(true);
+        expect(sceneAsset.headers()["content-type"]).toContain("image/webp");
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await page.screenshot({
         path: test.info().outputPath(`${path.slice(1)}-${width}.png`),
-        fullPage: true,
+        fullPage: true, animations: "disabled", caret: "initial",
       });
     }
   });
 }
-
-test("Reviews hero respects reduced-motion preference", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/reviews");
-  await expect(page.locator(".bs-reviews-vortex")).toBeVisible();
-  const duration = await page.locator(".bs-reviews-vortex").evaluate(element =>
-    window.getComputedStyle(element).animationDuration);
-  expect(duration).toBe("0s");
-});

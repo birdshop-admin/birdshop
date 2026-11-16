@@ -1,5 +1,5 @@
--- Staging-only Rewarble voucher intake. A voucher submission is NOT an order or payment.
--- Apply manually after backup, review and owner approval; do not run on production yet.
+-- Additive schema for gated Rewarble manual review. Voucher submission is NOT payment.
+-- Do not activate code intake or automatic fulfillment simply by applying this schema.
 begin;
 
 create table if not exists public.birdshop_rewarble_requests (
@@ -53,7 +53,7 @@ comment on table public.birdshop_rewarble_requests is
 -- Transactional owner review. No orders, payments, or inventory are changed.
 create or replace function public.birdshop_review_rewarble_request(
   p_id uuid, p_from text, p_to text, p_owner uuid, p_note text
-) returns void language plpgsql security definer set search_path = '' as $
+) returns void language plpgsql security definer set search_path = '' as $rewarble$
 begin
   perform private.birdshop_require_server();
   if p_owner is null or p_note is null or length(p_note) > 500 or
@@ -71,7 +71,7 @@ begin
   if not found then raise exception 'Review request has changed. Refresh and try again.'; end if;
   insert into public.birdshop_rewarble_audit(request_id, actor_id, event)
   values(p_id, p_owner, p_to);
-end $;
+end $rewarble$;
 revoke all on function public.birdshop_review_rewarble_request(uuid,text,text,uuid,text)
   from public, anon, authenticated;
 grant execute on function public.birdshop_review_rewarble_request(uuid,text,text,uuid,text)

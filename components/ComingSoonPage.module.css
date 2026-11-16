@@ -418,3 +418,16 @@
     transform: none;
   }
 }
+
+/* Bring error and 404 surfaces into the approved black Christmas system. */
+.hero {color:#f5f2ed;background:#000!important;background-image:none!important}
+.overlay {background:linear-gradient(90deg,#000,rgba(0,0,0,.92))!important}
+.glow {display:none!important}
+.eyebrow {color:#ba1f38!important;letter-spacing:.28em}
+.content h1 {font-style:italic;color:#f5f2ed!important}
+.description {color:#c8c3be!important;font-style:italic}
+.monogram {color:#1a1a1a!important;opacity:.3}
+.primary {background:#941126!important;color:#fff!important;border-color:#ba223e!important}
+.secondary {background:#000!important;color:#f7f4ef!important;border-color:#ffffff58!important}
+.quickLink {background:#070707!important;color:#eee!important;border-color:#ffffff3b!important}
+.actions button,.actions a {border-radius:2px!important}

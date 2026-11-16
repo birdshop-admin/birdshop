@@ -1,6 +1,6 @@
-import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import EditorialPageHero from "@/components/EditorialPageHero";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { registerMyReferral, sendReferralLogin, verifyReferralCode, signOutReferral } from "./actions";
@@ -72,12 +72,25 @@ export default async function ReferralDashboard({
 
   return <main className="page-shell referrals-page">
     <SiteHeader />
-    <div style={{maxWidth:960,margin:"0 auto",display:"grid",gap:22,padding:"clamp(28px,5vw,64px) 24px"}}>
-      <nav><Link href="/" style={{color:"var(--bs-accent)"}}>← BirdShop storefront</Link></nav>
-      <header><span style={{color:"var(--bs-accent)",letterSpacing:".15em"}}>BIRDSHOP / REWARDS</span>
-        <h1 style={{fontSize:"clamp(32px,5vw,52px)",margin:"10px 0"}}>Refer friends. Earn rewards.</h1>
-        <p>Earn $0.50 USD when a new referred customer makes their first eligible paid, fulfilled product purchase. Rewards require review and are not guaranteed payouts.</p>
+    <EditorialPageHero
+      section="referrals"
+      eyebrow="BIRDSHOP / REWARDS"
+      title="Refer friends."
+      subtitle="SHARE A LINK / EARN APPROVED REWARDS"
+      description="Earn $0.50 USD for each qualifying new customer's first eligible paid and fulfilled product purchase, subject to review."
+    />
+    <div className="bs-referral-content" style={{maxWidth:960,margin:"0 auto",display:"grid",gap:22,padding:"clamp(28px,5vw,64px) 24px"}}>
+      <header className="bs-referral-intro">
+        <span>REFERRAL PROGRAM</span>
+        <h2>Share BirdShop.</h2>
+        <p>Sign in with a verified email to request your referral link. Affiliate applications require approval. Every reward is reviewed before payment.</p>
       </header>
+      <div className="bs-referral-steps" aria-label="How referral rewards work">
+        <span><strong>01</strong> Verify your email</span>
+        <span><strong>02</strong> Register or apply</span>
+        <span><strong>03</strong> Share your unique link</span>
+        <span><strong>04</strong> Track approved rewards</span>
+      </div>
       {notice && messages[notice] && <p role="status" style={boxStyle}>{messages[notice]}</p>}
 
       {!verified ? <section style={boxStyle}>

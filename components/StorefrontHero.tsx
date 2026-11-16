@@ -12,9 +12,6 @@ export default function StorefrontHero({ services }: { services: HomeService[] |
   return (
     <>
       <section className={s.hero} aria-labelledby="home-hero-title">
-        <nav className={s.heroSteps} aria-label="Homepage sections">
-          <span aria-current="true">01</span><span>02</span><span>03</span>
-        </nav>
         <div className={s.copy}>
           <p className={s.eyebrow}>THIS CHRISTMAS AT</p>
           <h1 id="home-hero-title">BIRD SHOP</h1>

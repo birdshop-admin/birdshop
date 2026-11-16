@@ -1,0 +1,271 @@
+/* BirdShop owner-approved Christmas editorial system.
+   Public pages only. Does not restyle admin / checkout interiors.
+   Source of truth: the existing Home hero in StorefrontHero.module.css. */
+html:has(.bs-editorial-page) { color-scheme: dark; }
+html:has(.bs-editorial-page) body {
+  background:#000!important; background-image:none!important; color:#f5f2ed;
+}
+main.bs-editorial-page,
+main.referrals-page {
+  --bs-canvas:#000; --bs-page:#000; --bs-band:#080808;
+  --bs-card:#090909; --bs-raised:#101010; --bs-field:#070707;
+  --bs-ink:#f5f2ed; --bs-muted:#c2bfbb; --bs-faint:#99928e;
+  --bs-accent:#c63148; --bs-line:#ffffff26; --bs-line-strong:#ffffff4b;
+  --bs-line-active:#b31c35; --bs-btn-bg:#901124;
+  --bs-btn-hover:#ba1c38; --bs-btn-ink:#fff;
+  --bs-selected-bg:#810b1d; --bs-selected-ink:#fff;
+  --bs-selected-line:#ad1c32; --bs-focus:#df4964;
+  --bs-forest-ink:#f5f2ed; --bs-forest-muted:#c2bebb;
+  --bs-forest-line:#ffffff24;
+  --dark-card-rgb:9,9,9; --dark-band-rgb:4,4,4;
+  --serif:Georgia,"Times New Roman",serif;
+  --sans:Arial,Helvetica,sans-serif;
+  background:#000!important; color:#f5f2ed!important;
+}
+main.bs-editorial-page .site-footer,
+main.referrals-page .site-footer {
+  color:#eee9e4;background:#000!important;
+  border-top:1px solid #ffffff2b;
+}
+main.bs-editorial-page .footer-overlay,
+main.referrals-page .footer-overlay {background:#000!important;background-image:none!important}
+main.bs-editorial-page .site-header,
+main.referrals-page .site-header {
+  background:#000!important; color:#f6f3ef!important;
+  border-bottom:1px solid #ffffff28; border-radius:0!important; box-shadow:none!important;
+}
+main.bs-editorial-page .site-header-nav a::after,
+main.referrals-page .site-header-nav a::after {background:#9c1129!important}
+main.bs-editorial-page .site-header-cart-count,
+main.referrals-page .site-header-cart-count {background:#eeeae4!important;color:#050505!important}
+main.bs-editorial-page .theme-toggle-header,
+main.referrals-page .theme-toggle-header {background:#020202!important}
+html:has(.site-header) {scrollbar-width:thin;scrollbar-color:#c7c3bd #080808;}
+html:has(.site-header)::-webkit-scrollbar {width:8px}
+html:has(.site-header)::-webkit-scrollbar-track {background:#070707}
+html:has(.site-header)::-webkit-scrollbar-thumb {
+  border-radius:8px;background:#bdb8b2;border:2px solid #080808;
+}
+.bs-editorial-hero {
+  position:relative; isolation:isolate; background:#000; color:#f5f3ee;
+  min-height:clamp(405px,33vw,500px);display:flex;align-items:center;
+  padding:60px clamp(25px,7vw,116px) 67px clamp(50px,9.6vw,160px);
+  overflow:hidden;border-bottom:1px solid #ffffff36;
+}
+.bs-editorial-copy {position:relative;z-index:2;max-width:670px; width:62%;}
+.bs-editorial-kicker {
+  font:400 clamp(11px,.8vw,13px)/1.4 Georgia,"Times New Roman",serif;
+  letter-spacing:.4em;color:#b51f34;margin:0 0 24px;
+  text-transform:uppercase;
+}
+.bs-editorial-hero h1 {
+  margin:0 0 22px;color:#f8f6f2!important;
+  font:italic 400 clamp(57px,6.1vw,94px)/.98 Georgia,"Times New Roman",serif;
+  letter-spacing:-.069em;
+}
+.bs-editorial-subtitle {
+  font:500 11px/1.5 Arial,Helvetica,sans-serif;
+  letter-spacing:.23em;text-transform:uppercase;
+  color:#d3d0cc;margin:0 0 14px;
+}
+.bs-editorial-description {
+  max-width:540px; color:#d6d3ce;
+  font:italic 400 clamp(16px,1.4vw,21px)/1.55 Georgia,"Times New Roman",serif;
+  margin:0 0 28px;
+}
+.bs-editorial-actions {display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bs-editorial-actions a {
+  min-height:51px;display:inline-flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;gap:22px;color:#fff;font:700 10px Arial,Helvetica,sans-serif;
+  letter-spacing:.13em;transition:background .2s,border-color .2s;
+}
+.bs-editorial-primary {border:1px solid #bc2540;background:#901124}
+.bs-editorial-primary:hover {background:#b82039}
+.bs-editorial-secondary {border:1px solid #bdb9b5;background:transparent}
+.bs-editorial-secondary:hover {background:#1b1b1b}
+.bs-editorial-bells {
+  position:absolute;top:-35px;right:clamp(17px,3.5vw,76px);width:140px;height:230px;
+  z-index:4;pointer-events:auto;mix-blend-mode:screen;
+}
+.bs-editorial-bells-image {width:100%;height:auto;object-fit:contain;transform-origin:51% 0;animation:bs-subpage-bell 5.5s ease-in-out infinite alternate}
+@keyframes bs-subpage-bell {from {transform:rotate(-4deg)} to {transform:rotate(4deg)}}
+.bs-editorial-bells:hover .bs-editorial-bells-image {animation-duration:.65s}
+.bs-editorial-photowell {
+  z-index:0;position:absolute;right:7%;top:35px;bottom:0;width:46%;
+  overflow:hidden;pointer-events:none;
+}
+.bs-editorial-photo {
+  width:100%;height:100%;object-fit:cover;object-position:center;
+  filter:brightness(.63) contrast(1.2) saturate(.65);
+}
+.bs-editorial-photowell::after {
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,#000 0%,transparent 45%),
+             linear-gradient(0deg,#000 0%,transparent 28%),
+             linear-gradient(180deg,#000 0%,transparent 12%);
+}
+main.bs-editorial-page [class*="_store__"],
+main.bs-editorial-page [class*="_catalog__"],
+main.bs-editorial-page [class*="_reviewSection__"],
+main.bs-editorial-page [class*="_featuredSection__"],
+main.bs-editorial-page [class*="_outOfStockSection__"] {
+  background:#000!important;color:#f5f3ef!important;
+}
+main.bs-editorial-page [class*="_storeHeading__"] h2,
+main.bs-editorial-page [class*="_catalogHeading__"] h2,
+main.bs-editorial-page [class*="_reviewHeading__"] h2,
+main.bs-editorial-page [class*="_featuredHeading__"] h2 {
+  color:#f5f3ef!important;
+  font:italic 400 clamp(34px,3.2vw,47px)/1.15 Georgia,"Times New Roman",serif!important;
+  letter-spacing:-.035em;
+}
+main.bs-editorial-page [class*="_storeHeading__"] p,
+main.bs-editorial-page [class*="_catalogHeading__"] p,
+main.bs-editorial-page [class*="_reviewHeading__"] p,
+main.bs-editorial-page [class*="_featuredHeading__"] p {
+  color:#b71f36!important;letter-spacing:.3em!important;
+}
+main.bs-editorial-page [class*="_storeLayout__"],
+main.bs-editorial-page [class*="_catalogLayout__"],
+main.bs-editorial-page [class*="_reviewGrid__"] {color:#f6f2ed}
+main.bs-editorial-page [class*="_sidebar__"],
+main.bs-editorial-page [class*="_productsArea__"],
+main.bs-editorial-page [class*="_servicesArea__"] {background:transparent!important;color:#eae7e2!important}
+main.bs-editorial-page [class*="_searchBox__"],
+main.bs-editorial-page [class*="_toolbar__"] select,
+main.bs-editorial-page [class*="_filters__"] button,
+main.bs-editorial-page [class*="_categoryList__"] button,
+main.bs-editorial-page [class*="_filterList__"] button {
+  background:#060606!important;color:#eee9e5!important;
+  border-color:#4a4a4a!important;
+}
+main.bs-editorial-page input,
+main.bs-editorial-page select,
+main.referrals-page input {
+  background:#070707!important;color:#f4f0ec!important;border-color:#4c4c4c!important;
+}
+main.bs-editorial-page input::placeholder,
+main.referrals-page input::placeholder {color:#a5a09d!important}
+main.bs-editorial-page [class*="_activeCategory__"],
+main.bs-editorial-page [class*="_activeFilter__"],
+main.bs-editorial-page [class*="_active__"][class*="category"] {
+  background:#800c1c!important;color:#fff!important;border-color:#a91e34!important;
+}
+main.bs-editorial-page [class*="_productCard__"],
+main.bs-editorial-page [class*="_featuredCard__"],
+main.bs-editorial-page [class*="_serviceCard__"],
+main.bs-editorial-page [class*="_reviewCard__"],
+main.bs-editorial-page [class*="_reviewEmpty__"],
+main.bs-editorial-page [class*="_emptyState__"],
+main.bs-editorial-page [class*="_helpCard__"],
+main.bs-editorial-page [class*="_supportCard__"] {
+  background:#090909!important;background-image:none!important;
+  border:1px solid #ffffff31!important;color:#f5f1ec!important;
+  border-radius:2px!important;box-shadow:none!important;
+}
+main.bs-editorial-page [class*="_productVisual__"],
+main.bs-editorial-page [class*="_serviceVisual__"],
+main.bs-editorial-page [class*="_featuredVisual__"] {
+  background:#0b0b0b!important;border-color:#ffffff1f!important;
+}
+main.bs-editorial-page [class*="_productName__"],
+main.bs-editorial-page [class*="_serviceBody__"] h3,
+main.bs-editorial-page [class*="_featuredInfo__"] h3,
+main.bs-editorial-page [class*="_reviewCard__"] h3 {
+  color:#f9f4ee!important;font-family:Georgia,"Times New Roman",serif!important;
+}
+main.bs-editorial-page [class*="_cardCart__"],
+main.bs-editorial-page [class*="_heroPrimary__"],
+main.bs-editorial-page [class*="_customPrimary__"],
+main.bs-editorial-page [class*="_loadMoreButton__"],
+main.bs-editorial-page [class*="_reviewEmpty__"] a,
+main.bs-editorial-page [class*="_feedbackActions__"] a:first-child {
+  background:#911128!important;color:#fff!important;border:1px solid #b61e38!important;
+  border-radius:2px!important;box-shadow:none!important;
+}
+main.bs-editorial-page [class*="_cardCart__"]:hover,
+main.bs-editorial-page [class*="_heroPrimary__"]:hover {background:#b8213d!important}
+main.bs-editorial-page [class*="_cardCart__"] svg {stroke:#fff!important}
+main.bs-editorial-page [class*="_processStrip__"],
+main.bs-editorial-page [class*="_communityStrip__"],
+main.bs-editorial-page [class*="_trustSection__"],
+main.bs-editorial-page [class*="_values__"] {
+  color:#f1eee9!important;background:#050505!important;background-image:none!important;
+  border-block:1px solid #ffffff27!important;
+}
+main.bs-editorial-page [class*="_trustSection__"] > div,
+main.bs-editorial-page [class*="_communityStrip__"] > div {background:#050505!important;border-color:#ffffff21!important;}
+main.bs-editorial-page [class*="_bottomScene__"],
+main.bs-editorial-page [class*="_feedbackCta__"],
+main.bs-editorial-page [class*="_customRequest__"] {
+  background:#070707!important;background-image:none!important;color:#f2eee9!important;
+}
+main.bs-editorial-page [class*="_featuredDark__"],
+main.bs-editorial-page [class*="_featuredReview__"],
+main.bs-editorial-page [class*="_communityBanner__"] {
+  background:#0a0a0a!important;background-image:none!important;color:#ede9e4!important;
+}
+main.bs-editorial-page [class*="_reviewBody__"],
+main.bs-editorial-page [class*="_serviceDescription__"],
+main.bs-editorial-page [class*="_heroDescription__"],
+main.bs-editorial-page [class*="_productMeta__"],
+main.bs-editorial-page [class*="_ratingSummary__"] {color:#c5c0b9!important;}
+main.bs-editorial-page [class*="_stars__"],
+main.bs-editorial-page [class*="_starActive__"] {color:#b7213a!important}
+main.bs-editorial-page [class*="_filterBlock__"],
+main.bs-editorial-page [class*="_filterList__"],
+main.bs-editorial-page [class*="_filterTitle__"],
+main.bs-editorial-page [class*="_filters__"] {color:#e9e4de!important}
+main.bs-editorial-page [class*="_filterList__"] button:hover,
+main.bs-editorial-page [class*="_categoryList__"] button:hover {border-color:#9c1129!important}
+main.bs-editorial-page [class*="_catalogCount__"],
+main.bs-editorial-page [class*="_resultSummary__"],
+main.bs-editorial-page [class*="_reviewDate__"] {color:#a8a4a0!important}
+/* Reuse the actual existing referral form and ledger. Never mock reward values. */
+main.referrals-page > div {
+  max-width:1120px!important;gap:24px!important;padding:60px clamp(24px,5vw,78px)!important;
+}
+main.referrals-page > div > nav {display:none}
+main.referrals-page > div > header {border-bottom:1px solid #ffffff24;padding-bottom:16px}
+main.referrals-page > div > header h1 {
+  font:italic 400 clamp(36px,4vw,54px)/1.1 Georgia,"Times New Roman",serif!important;
+  color:#f6f2ee!important;
+}
+main.referrals-page section {
+  background:#090909!important;color:#f5f1ed!important;
+  border-color:#ffffff35!important;border-radius:2px!important;
+}
+main.referrals-page section h2,
+main.referrals-page section h3 {font-family:Georgia,"Times New Roman",serif;color:#f6f2ed}
+main.referrals-page section h2 {font-size:clamp(26px,2.7vw,39px);font-weight:400;font-style:italic}
+main.referrals-page section p,
+main.referrals-page section label {color:#c7c1bc}
+main.referrals-page section button[type="submit"] {
+  color:#fff!important;background:#911128!important;border:1px solid #b91f39!important;
+  border-radius:2px!important;min-height:44px;
+}
+main.referrals-page section button[type="submit"]:hover {background:#bc2640!important}
+main.referrals-page section details {padding-top:6px}
+main.referrals-page section summary {color:#eee;cursor:pointer}
+main.referrals-page [role="status"] {color:#fff;background:#1c1013!important;border:1px solid #a4213a!important}
+@media(max-width:880px){
+ .bs-editorial-hero {padding:70px 35px;min-height:430px}
+ .bs-editorial-copy {width:78%}
+ .bs-editorial-bells {right:0;width:115px;height:175px;top:-25px}
+ .bs-editorial-photowell {right:0;width:48%;opacity:.7}
+}
+@media(max-width:640px){
+ .bs-editorial-hero {padding:76px 23px 70px;min-height:470px;align-items:center}
+ .bs-editorial-copy {width:100%;max-width:100%}
+ .bs-editorial-hero h1 {font-size:clamp(48px,12vw,68px);letter-spacing:-.065em}
+ .bs-editorial-description {max-width:330px;font-size:17px}
+ .bs-editorial-kicker {font-size:10px;letter-spacing:.28em}
+ .bs-editorial-subtitle {font-size:9px;letter-spacing:.12em;max-width:270px}
+ .bs-editorial-bells {right:-8px;width:98px;height:145px;top:-9px}
+ .bs-editorial-photowell {top:0;right:0;bottom:0;width:100%;opacity:.2}
+ .bs-editorial-photowell::after {background:linear-gradient(90deg,#000 0%,transparent 82%),linear-gradient(0deg,#000 0%,transparent 55%)}
+ .bs-editorial-actions {gap:8px}
+ .bs-editorial-actions a {padding:12px 13px;min-height:46px;font-size:9px;letter-spacing:.08em;gap:11px}
+ main.referrals-page > div {padding:35px 22px!important}
+}
+@media(prefers-reduced-motion:reduce){.bs-editorial-bells-image{animation:none!important}}

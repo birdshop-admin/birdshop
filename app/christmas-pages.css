@@ -488,3 +488,145 @@ main.bs-cart-page [class*="_emptyCart__"] p {color:#c7c2bb!important}
     width:100%;right:0;top:0;bottom:0;opacity:.24;
   }
 }
+
+/*
+ * Reviews: owner's cosmic vortex landscape, deliberately separate from
+ * BirdShop's Christmas homepage and the existing Supabase review feed.
+ * Motion comes from non-interactive compositor layers. No invented reviews.
+ */
+.bs-editorial-hero--reviews {
+  min-height:clamp(480px,43vw,640px);
+  background:#000;
+}
+.bs-editorial-hero--reviews .bs-editorial-copy {
+  width:min(52%,650px);
+  padding-block:40px;
+  text-shadow:0 2px 20px rgba(0,0,0,.6);
+}
+.bs-editorial-hero--reviews .bs-editorial-photowell {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  opacity:1;
+  pointer-events:none;
+  isolation:isolate;
+  background:#030306;
+}
+.bs-editorial-hero--reviews .bs-editorial-photo {
+  display:block;
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center 35%;
+  opacity:.94;
+  filter:brightness(.89) contrast(1.09) saturate(1.1);
+  animation:bs-cosmos-breathe 28s ease-in-out infinite alternate;
+  will-change:transform;
+}
+.bs-editorial-hero--reviews .bs-editorial-photowell::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:4;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg, #000 0%,rgba(0,0,0,.90) 16%,
+      rgba(0,0,0,.68) 30%,rgba(0,0,0,.18) 65%,rgba(0,0,0,.13) 100%),
+    linear-gradient(0deg,#000 0%,transparent 32%);
+}
+.bs-reviews-vortex {
+  position:absolute;
+  z-index:2;
+  left:49%;
+  top:24%;
+  width:clamp(150px,20vw,310px);
+  aspect-ratio:1;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  pointer-events:none;
+  opacity:.32;
+  mix-blend-mode:screen;
+  background:conic-gradient(from 0deg,
+    transparent 0deg,rgba(243,84,38,.14) 40deg,
+    rgba(247,98,36,.54) 78deg,transparent 110deg,
+    rgba(248,94,36,.3) 176deg,transparent 228deg,
+    rgba(216,59,26,.43) 290deg,transparent 355deg);
+  -webkit-mask-image:radial-gradient(circle,
+    transparent 0 33%,#000 48% 61%,transparent 76%);
+  mask-image:radial-gradient(circle,
+    transparent 0 33%,#000 48% 61%,transparent 76%);
+  animation:bs-cosmos-turn 36s linear infinite;
+}
+.bs-reviews-stars {
+  position:absolute;
+  z-index:2;
+  inset:-25%;
+  opacity:.47;
+  pointer-events:none;
+  background-image:
+    radial-gradient(1px 1px at 28px 57px,rgba(255,255,255,.85) 75%,transparent),
+    radial-gradient(1.3px 1.3px at 163px 106px,rgba(237,218,207,.70) 75%,transparent),
+    radial-gradient(1px 1px at 102px 177px,rgba(255,255,255,.6) 75%,transparent);
+  background-size:229px 211px,317px 281px,271px 307px;
+  animation:bs-cosmos-stars 32s linear infinite;
+}
+.bs-reviews-portal-glow {
+  position:absolute;
+  z-index:3;
+  left:49%;
+  top:24%;
+  width:clamp(95px,10vw,190px);
+  aspect-ratio:1;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle,
+    rgba(255,182,101,.21) 0%,rgba(255,77,31,.10) 19%,transparent 72%);
+  border-radius:50%;
+  pointer-events:none;
+  mix-blend-mode:screen;
+  animation:bs-cosmos-pulse 5.5s ease-in-out infinite;
+}
+@keyframes bs-cosmos-breathe {
+  from {transform:scale(1.01) translate3d(0,0,0)}
+  to {transform:scale(1.065) translate3d(-.5%,.5%,0)}
+}
+@keyframes bs-cosmos-turn {
+  from {transform:translate(-50%,-50%) rotate(0deg)}
+  to {transform:translate(-50%,-50%) rotate(360deg)}
+}
+@keyframes bs-cosmos-stars {
+  from {transform:translate3d(-7px,-16px,0)}
+  to {transform:translate3d(17px,29px,0)}
+}
+@keyframes bs-cosmos-pulse {
+  0%,100% {opacity:.45;transform:translate(-50%,-50%) scale(.88)}
+  50% {opacity:.8;transform:translate(-50%,-50%) scale(1.2)}
+}
+@media(max-width:900px) {
+  .bs-editorial-hero--reviews .bs-editorial-copy {width:min(75%,580px)}
+  .bs-reviews-vortex,.bs-reviews-portal-glow {left:52%;top:22%}
+}
+@media(max-width:640px) {
+  .bs-editorial-hero--reviews {min-height:520px}
+  .bs-editorial-hero--reviews .bs-editorial-copy {width:100%;padding-block:50px}
+  .bs-editorial-hero--reviews .bs-editorial-photowell {opacity:1}
+  .bs-editorial-hero--reviews .bs-editorial-photo {
+    object-position:54% 38%;
+    filter:brightness(.65) contrast(1.06) saturate(1);
+  }
+  .bs-editorial-hero--reviews .bs-editorial-photowell::after {
+    background:linear-gradient(90deg,rgba(0,0,0,.84),rgba(0,0,0,.32)),
+      linear-gradient(0deg,#000 0%,transparent 44%);
+  }
+  .bs-reviews-vortex,.bs-reviews-portal-glow {top:19%;left:59%;opacity:.24}
+  .bs-reviews-stars {opacity:.23}
+}
+@media(prefers-reduced-motion:reduce) {
+  .bs-editorial-hero--reviews .bs-editorial-photo,
+  .bs-reviews-vortex,
+  .bs-reviews-stars,
+  .bs-reviews-portal-glow {animation:none!important;will-change:auto}
+}

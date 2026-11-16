@@ -491,7 +491,6 @@ function ProductPageContent({
                       : "Add to Cart"}
                 </span>
 
-                <span aria-hidden="true">{added ? "✓" : "→"}</span>
               </button>
 
               <button

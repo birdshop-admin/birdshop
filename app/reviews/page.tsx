@@ -11,7 +11,6 @@ import SiteFooter from "@/components/SiteFooter";
 import {
   ArrowIcon,
   CheckIcon,
-  HeartIcon,
   MessageIcon,
   PeopleIcon,
   ShieldIcon,
@@ -342,40 +341,6 @@ export default function ReviewsPage() {
         imageSrc="/birdshop-owner-christmas-dinner.svg"
         imageAlt="Christmas dinner photograph supplied by BirdShop owner"
       />
-
-      <section className={styles.communityStrip}>
-        <div>
-          <MessageIcon />
-          <div>
-            <strong>Clear feedback</strong>
-            <span>Product &amp; service experiences</span>
-          </div>
-        </div>
-
-        <div>
-          <PeopleIcon />
-          <div>
-            <strong>Community led</strong>
-            <span>Approved customer submissions</span>
-          </div>
-        </div>
-
-        <div>
-          <ShieldIcon />
-          <div>
-            <strong>Moderated</strong>
-            <span>Checked before publishing</span>
-          </div>
-        </div>
-
-        <div>
-          <HeartIcon />
-          <div>
-            <strong>More than sales</strong>
-            <span>Community comes first</span>
-          </div>
-        </div>
-      </section>
 
       {/* Holds the featured slot while loading, so the page does not jump. */}
       {loading && (

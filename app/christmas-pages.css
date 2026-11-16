@@ -333,3 +333,74 @@ main.bs-editorial-page [class*="_cardCart__"]:disabled {
 @media(max-width:420px){
  main.bs-editorial-page [class*="_cardCart__"]{min-width:100px!important;padding:0 7px!important;font-size:9px!important}
 }
+
+/* Final screenshot QA: eliminate remaining olive photo wells and panels. */
+main.bs-editorial-page {
+  --bs-well:linear-gradient(145deg,#151515,#070707);
+  --bs-forest:linear-gradient(#080808,#000);
+  --bs-forest-bg:#000;
+  --bs-forest-surface:#050505;
+  --bs-forest-raised:#101010;
+}
+main.bs-editorial-page :is(
+  [class*="productVisual"],
+  [class*="productMonogram"],
+  [class*="serviceVisual"],
+  [class*="featuredVisual"],
+  [class*="processStrip"],
+  [class*="communityStrip"],
+  [class*="trustSection"],
+  [class*="supportCard"],
+  [class*="helpCard"],
+  [class*="featuredCard"],
+  [class*="serviceCard"],
+  [class*="feedbackCta"],
+  [class*="feedbackOverlay"],
+  [class*="bottomScene"],
+  [class*="customRequest"],
+  [class*="communityBanner"],
+  [class*="reviewEmpty"],
+  [class*="featuredReview"]
+) {
+  background:#070707!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  color:#eeeae6!important;
+}
+main.bs-editorial-page :is(
+  [class*="processStrip"],
+  [class*="communityStrip"],
+  [class*="trustSection"],
+  [class*="supportCard"],
+  [class*="helpCard"]
+) {
+  border:1px solid #ffffff25!important;
+}
+main.bs-editorial-page :is(
+ [class*="processStrip"],[class*="communityStrip"]
+) :is(li,div) {background:transparent!important;color:#d5d0cb!important}
+main.bs-editorial-page :is(
+ [class*="serviceVisual"],[class*="featuredVisual"],[class*="productMonogram"]
+) :is([class*="artwork"],[class*="fallback"]) {
+  background:#0b0b0b!important;background-image:none!important;
+}
+main.bs-editorial-page [class*="catalog-artwork-fallback"] {
+  background:#080808!important;border-color:#ffffff35!important;color:#f4f1ed!important;
+}
+main.bs-editorial-page [class*="productBottom"] {
+  flex-direction:column!important;align-items:stretch!important;gap:12px!important;
+}
+main.bs-editorial-page [class*="cardCart"] {
+  width:100%!important;min-width:0!important;min-height:42px!important;
+  padding:8px 12px!important;
+}
+main.bs-editorial-page [class*="serviceCard"] [class*="serviceBody"] {
+  background:#060606!important;
+}
+main.bs-editorial-page [class*="featuredInfo"] {
+  background:#060606!important;color:#f1eee9!important;
+}
+main.bs-editorial-page [class*="customRequest"] [class*="customCopy"] *,
+main.bs-editorial-page [class*="feedbackCta"] [class*="feedbackCopy"] * {
+  color:#f4f0ea!important;
+}

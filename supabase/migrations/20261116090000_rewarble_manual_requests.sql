@@ -49,4 +49,32 @@ grant usage, select on sequence public.birdshop_rewarble_audit_id_seq to service
 
 comment on table public.birdshop_rewarble_requests is
   'Owner-only encrypted voucher review requests. Never mark Stripe orders paid from this table.';
+
+-- Transactional owner review. No orders, payments, or inventory are changed.
+create or replace function public.birdshop_review_rewarble_request(
+  p_id uuid, p_from text, p_to text, p_owner uuid, p_note text
+) returns void language plpgsql security definer set search_path = '' as $
+begin
+  perform private.birdshop_require_server();
+  if p_owner is null or p_note is null or length(p_note) > 500 or
+    not ((p_from='pending_review' and p_to in ('redeemed','rejected')) or
+         (p_from='redeemed' and p_to='fulfilled')) then
+    raise exception 'Invalid manual review transition.';
+  end if;
+
+  update public.birdshop_rewarble_requests
+  set status=p_to, reviewed_by=p_owner, reviewed_at=now(),
+      review_note=nullif(trim(p_note),''),
+      fulfilled_at=case when p_to='fulfilled' then now() else fulfilled_at end,
+      encrypted_code=case when p_to in ('redeemed','rejected') then null else encrypted_code end
+  where id=p_id and status=p_from;
+  if not found then raise exception 'Review request has changed. Refresh and try again.'; end if;
+  insert into public.birdshop_rewarble_audit(request_id, actor_id, event)
+  values(p_id, p_owner, p_to);
+end $;
+revoke all on function public.birdshop_review_rewarble_request(uuid,text,text,uuid,text)
+  from public, anon, authenticated;
+grant execute on function public.birdshop_review_rewarble_request(uuid,text,text,uuid,text)
+  to service_role;
+
 commit;

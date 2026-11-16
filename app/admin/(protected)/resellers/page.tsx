@@ -62,7 +62,10 @@ export default async function ResellerAdminPage(){
         <div><span>BIRDSHOP / MARKETPLACE OPERATIONS</span><h1>Resellers</h1>
           <p>Owner approvals, listing moderation, marketplace rules and audit history.</p>
         </div>
-        <Link href="/marketplace">Public marketplace ↗</Link>
+        <div style={{display:"flex",gap:18,flexWrap:"wrap"}}>
+          <Link href="/admin/resellers/inquiries">Review buyer–seller messages ↗</Link>
+          <Link href="/marketplace">Public marketplace ↗</Link>
+        </div>
       </header>
       {!ready ? <div role="alert" style={cardStyle}>
         Seller tables are not available yet. Apply the approved Phase 1 marketplace migration in the chosen staging environment.

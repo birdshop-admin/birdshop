@@ -1,22 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { HomeService } from "@/app/HomeClient";
 import { discordLinkProps, siteConfig } from "@/lib/site-config";
 import s from "./StorefrontHero.module.css";
 
 /**
- * Editorial raven silhouette traced from the BirdShop owner's supplied
- * monochrome ink artwork. No generated imagery or third-party image assets.
+ * Raven ink asset supplied by the BirdShop owner. No generated imagery.
  */
-function RavenIllustration() {
-  return (
-    <svg className={s.raven} viewBox="0 0 300 390" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-      <path d="M108,40 71,83 73,95 64,105 78,106 72,141 81,139 82,118 91,123 97,147 89,152 86,167 93,183 121,197 131,191 134,205 128,215 111,220 106,215 104,225 97,194 77,183 94,223 90,228 96,218 125,236 106,239 88,234 88,229 73,232 108,248 116,263 112,275 122,278 151,338 89,328 102,338 81,341 81,348 191,353 195,332 223,354 240,352 229,335 227,317 244,303 254,316 292,310 288,306 297,303 281,297 293,291 285,275 295,254 287,257 282,250 272,262 263,262 270,250 245,221 259,230 254,218 267,215 217,144 218,130 178,87 177,77 145,72 147,65 176,53 135,38Z" fill="currentColor" />
-      <path d="M85 151 Q115 173 150 191 M106 196 Q140 210 197 245 M123 235 Q150 252 217 301 M92 126 Q122 146 175 166 M94 179 Q111 214 150 239" stroke="#eeeae4" strokeWidth="2.5" strokeOpacity=".5" fill="none" />
-      <path d="M78 97 Q113 76 143 80" stroke="#eeeae4" strokeWidth="2.5" strokeOpacity=".75" fill="none" />
-    </svg>
-  );
-}
-
 export default function StorefrontHero({ services }: { services: HomeService[] | null }) {
   const featured = services?.find((service) => service.available);
   return (
@@ -41,7 +31,7 @@ export default function StorefrontHero({ services }: { services: HomeService[] |
           <div className={s.paper}>
             <span className={s.artIndex}>FIG. 01 / THE RAVEN</span>
             <div className={s.inkDust} aria-hidden="true" />
-            <RavenIllustration />
+            <Image src="/birdshop-raven-ink.svg" alt="Original raven ink illustration supplied by BirdShop" width={615} height={800} className={s.raven} priority />
             <span className={s.artCaption}>BIRD SHOP <span>—</span> INK STUDIES</span>
           </div>
         </div>

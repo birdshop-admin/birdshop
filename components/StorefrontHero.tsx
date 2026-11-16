@@ -40,9 +40,9 @@ export default function StorefrontHero({ services }: { services: HomeService[] |
           <Link href="/products" className={s.secondary}>Shop digital products <span aria-hidden="true">→</span></Link>
         </div>
         <div className={s.caption}>
-          <span>{featured ? featured.game || featured.name : "BIRDSHOP COLLECTION"}</span>
+          <span>{featured ? featured.game || featured.name : "BIRDSHOP / DIGITAL EXPERIENCES"}</span>
           <Link href={featured ? `/services/${featured.slug}` : "/services"}>
-            {featured ? featured.name : "A new way to play"} <span aria-hidden="true">↗</span>
+            {featured ? featured.name : "Made for what’s next"} <span aria-hidden="true">↗</span>
           </Link>
         </div>
         <span className={s.scroll} aria-hidden="true">SCROLL TO EXPLORE <span>↓</span></span>

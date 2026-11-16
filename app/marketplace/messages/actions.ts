@@ -36,9 +36,10 @@ export async function createMarketplaceInquiry(form:FormData){
     .select("id,user_id,status").eq("id",listing.seller_id).maybeSingle();
   if(!seller||seller.status!=="active"||seller.user_id===user.id)
     throw new Error("You cannot start an inquiry with this seller.");
-  let {data:thread,error:threadError}=await db.from("birdshop_marketplace_threads")
+  const {data:originalThread,error:threadError}=await db.from("birdshop_marketplace_threads")
     .select("id,status").eq("buyer_user_id",user.id).eq("listing_id",listingId).maybeSingle();
   if(threadError)throw new Error("Could not look up existing inquiry.");
+  let thread=originalThread;
   if(!thread){
     const inserted=await db.from("birdshop_marketplace_threads")
       .insert({buyer_user_id:user.id,seller_id:listing.seller_id,listing_id:listingId})

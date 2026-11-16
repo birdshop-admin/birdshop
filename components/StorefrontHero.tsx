@@ -27,23 +27,15 @@ export default function StorefrontHero({ services }: { services: HomeService[] |
         </div>
         <div className={s.christmasBells} aria-hidden="true">
           <div className={s.bellString}>
-            <span className={s.bellRibbon} />
-            <span className={s.bellPair}>
-              <svg className={s.bellLeft} viewBox="0 0 54 62" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M23 8V4a4 4 0 0 1 8 0v4" stroke="#bbbcbf" strokeWidth="3"/>
-                <path d="M27 9C13 9 12 24 11 38L5 45h44l-6-7C42 24 41 9 27 9Z" fill="#aaaeb3" stroke="#e5e5e4" strokeWidth="2"/>
-                <path d="M7 45h40M18 21c-3 6-4 13-4 18" stroke="#44474c" strokeWidth="2"/>
-                <path d="M21 47a6 6 0 0 0 12 0" fill="#5b5b5e"/>
-                <path d="M7 45h40" stroke="#f3f1ed" strokeWidth="3"/>
-              </svg>
-              <svg className={s.bellRight} viewBox="0 0 54 62" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M23 8V4a4 4 0 0 1 8 0v4" stroke="#bbbcbf" strokeWidth="3"/>
-                <path d="M27 9C13 9 12 24 11 38L5 45h44l-6-7C42 24 41 9 27 9Z" fill="#989ba0" stroke="#e5e5e4" strokeWidth="2"/>
-                <path d="M7 45h40M18 21c-3 6-4 13-4 18" stroke="#44474c" strokeWidth="2"/>
-                <path d="M21 47a6 6 0 0 0 12 0" fill="#5b5b5e"/>
-                <path d="M7 45h40" stroke="#f3f1ed" strokeWidth="3"/>
-              </svg>
-            </span>
+            <Image
+              src="/birdshop-christmas-bells-reference.svg"
+              alt=""
+              width={168}
+              height={238}
+              priority
+              unoptimized
+              className={s.bellReference}
+            />
           </div>
         </div>
         <div className={s.artwork} aria-hidden="true">

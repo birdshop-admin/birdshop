@@ -5,6 +5,7 @@ import "./theme.css";
 import ThemeToggle from "@/components/ThemeToggle";
 import "../components/site-header.css";
 import "./storefront.css";
+import "./christmas-pages.css";
 
 import { CartProvider } from "./cart-context";
 import SiteAnalyticsTracker from "@/components/SiteAnalyticsTracker";

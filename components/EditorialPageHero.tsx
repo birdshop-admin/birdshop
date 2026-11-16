@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 type EditorialPageHeroProps = {
-  section: "products" | "services" | "referrals" | "reviews";
+  section: "products" | "services" | "referrals" | "reviews" | "cart";
   eyebrow: string;
   title: string;
   subtitle: string;

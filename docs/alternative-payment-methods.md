@@ -51,3 +51,62 @@ The existing `ProductCheckout` still submits `/api/checkout` to Stripe, unmodifi
 ## Rollout constraints
 
 No merge to `main`, production deployment, database migration, live payment collection, or gift-code processing without separate explicit owner approval. The payment provider's merchant agreement and applicable local rules must be reviewed before launch.
+
+## Manual Rewarble code intake (new, NOT live)
+
+This branch includes a secure manual request flow in `components/RewarbleManualRequest.tsx`,
+`app/api/payment-requests/rewarble/route.ts`, and the owner-only
+`/admin/rewarble` review queue.
+
+- Customer enters a 16-digit *unused* Rewarble voucher, claimed USD value,
+  name/email, and selects the products from an actual existing cart.
+- The server reprices from public `products` rows, validates quantities and
+  rate limits, optionally verifies Cloudflare Turnstile, encrypts the code
+  using the existing `INVENTORY_ENCRYPTION_KEY`, and stores only ciphertext,
+  a keyed HMAC digest, and a last-four-digit hint.
+- The client gets an opaque private status link. No Stripe attempt or
+  `orders` row is created, no inventory is reserved, and **nothing is delivered**.
+- Admin is strictly owner-only. Codes are revealed on a separate server-rendered
+  review page with audit logging and no automatic browser prefetch.
+- After the owner actually redeems the code and confirms the funds settled,
+  they may mark `redeemed` and later `fulfilled` only after handling delivery
+  manually through an appropriate supported workflow.
+- Rejected/redeemed requests erase stored code ciphertext. Redemption is never
+  attempted by BirdShop's server or any browser automation.
+
+### How to activate *in staging only* (not production)
+
+1. Obtain confirmation that BirdShop is permitted to accept/transact Rewarble
+   codes through an authorized arrangement. Review fees, identity/KYC,
+   refunds and the risks of one-time-code transfer.
+2. Apply `supabase/migrations/20261116090000_rewarble_manual_requests.sql`
+   to your staging Supabase project and confirm owner-only RLS.
+3. Confirm secrets already used by BirdShop are available in server
+   configuration: `SUPABASE_SECRET_KEY`, `INVENTORY_ENCRYPTION_KEY`,
+   `BIRDSHOP_ORDER_TOKEN_SECRET`, `BIRDSHOP_RATE_LIMIT_SECRET`.
+4. Set these two feature flags **only in staging**:
+   ```dotenv
+   BIRDSHOP_REWARBLE_MANUAL_ENABLED=true
+   NEXT_PUBLIC_REWARBLE_MANUAL_ENABLED=true
+   ```
+   They default to false. The first protects the server, the second controls
+   the visible form. Restart the Next.js server after changing them.
+5. Test with a *non-live, non-redeemable* test voucher, simulated records and
+   the staging admin account. Never put real voucher codes into test logs.
+6. Demonstrate status tracking, duplicate rejection, RLS isolation,
+   admin reveal audit, review status changes and no automated delivery.
+7. Do not turn on live intake until the owner signs off on a documented
+   real-code verification and customer-resolution process.
+
+### Important implementation limitation
+
+The Rewarble flow is **only a manual request queue**, not a fully integrated
+alternate settlement method. Marking a request `redeemed` or `fulfilled`
+does not update `orders`, allocate `product_inventory`, trigger digital-key
+emails, or mark Stripe paid. Owner must arrange any manual fulfillment
+separately, and should only do so after confirmed receipt of funds.
+
+The public Rewarble redemption page at https://rewarble.com/redeem is a
+consumer-facing login/redemption flow. No public, documented merchant voucher
+redemption API was verified. An unofficial scripted login/redeemer is not
+a supported payment gateway.

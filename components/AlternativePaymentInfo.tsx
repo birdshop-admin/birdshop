@@ -1,4 +1,3 @@
-import Link from "next/link";
 import styles from "./AlternativePaymentInfo.module.css";
 
 /**
@@ -23,13 +22,13 @@ export default function AlternativePaymentInfo() {
       <details className={styles.details}>
         <summary>Rewarble voucher code <span>Manual inquiry</span></summary>
         <p>
-          Direct voucher-code payments are not automated yet. Please ask
-          BirdShop support about eligibility before sharing a code.
-          A support request is not a completed payment and does not reserve stock.
+          Direct voucher-code payments require owner review. If manual intake
+          is enabled, use the secure request form below. A submitted voucher
+          does not count as payment and does not reserve stock.
         </p>
-        <Link href="/contact?topic=rewarble-payment">
-          Ask about voucher payments ↗
-        </Link>
+        <a href="#rewarble-voucher-request">
+          Go to secure request form ↓
+        </a>
       </details>
       <details className={styles.details}>
         <summary>Cryptocurrency <span>Integration pending</span></summary>

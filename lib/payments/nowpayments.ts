@@ -103,7 +103,7 @@ export async function createNowPaymentsInvoice(input: {
   if (typeof value.id !== "string" || typeof value.invoice_url !== "string")
     throw new Error("Invalid crypto invoice response.");
   const url = new URL(value.invoice_url);
-  if (url.protocol !== "https:" || !/(^|\\.)nowpayments\\.io$/i.test(url.hostname))
+  if (url.protocol !== "https:" || !/(^|\.)nowpayments\.io$/i.test(url.hostname))
     throw new Error("Untrusted crypto invoice destination.");
   return { id: value.id, invoice_url: url.toString() };
 }

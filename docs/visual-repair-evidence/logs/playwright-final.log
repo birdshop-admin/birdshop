@@ -1,0 +1,50 @@
+
+> birdshop@0.1.0 test:storefront
+> playwright test --reporter=line
+
+[WebServer] (node:6345) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:6354) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:6367) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 25 tests using 1 worker
+
+(node:6393) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/25] tests/storefront/storefront.spec.ts:9:3 › storefront fits 320px and exposes navigation
+[2/25] tests/storefront/storefront.spec.ts:9:3 › storefront fits 390px and exposes navigation
+[3/25] tests/storefront/storefront.spec.ts:9:3 › storefront fits 768px and exposes navigation
+[4/25] tests/storefront/storefront.spec.ts:9:3 › storefront fits 1024px and exposes navigation
+[5/25] tests/storefront/storefront.spec.ts:9:3 › storefront fits 1440px and exposes navigation
+[6/25] tests/storefront/storefront.spec.ts:34:1 › inventory, cart persistence, and sold-out protection survive the redesign
+[7/25] tests/storefront/storefront.spec.ts:50:1 › referral sign-in, service list, and staff login stay reachable
+[8/25] tests/storefront/storefront.spec.ts:64:3 › approved Christmas subpages render at 390px
+[9/25] tests/storefront/storefront.spec.ts:64:3 › approved Christmas subpages render at 768px
+[10/25] tests/storefront/storefront.spec.ts:64:3 › approved Christmas subpages render at 1440px
+[11/25] tests/storefront/visual-repairs.spec.ts:38:3 › catalog and detail cart controls remain centered at 320px
+[12/25] tests/storefront/visual-repairs.spec.ts:38:3 › catalog and detail cart controls remain centered at 390px
+[13/25] tests/storefront/visual-repairs.spec.ts:38:3 › catalog and detail cart controls remain centered at 768px
+[14/25] tests/storefront/visual-repairs.spec.ts:38:3 › catalog and detail cart controls remain centered at 1440px
+[15/25] tests/storefront/visual-repairs.spec.ts:69:3 › referrals use a black page canvas and working sign-in in light mode
+[16/25] tests/storefront/visual-repairs.spec.ts:69:3 › referrals use a black page canvas and working sign-in in dark mode
+[17/25] tests/storefront/visual-repairs.spec.ts:110:1 › Reviews render only approved RPC records and derived ratings
+[18/25] tests/storefront/visual-repairs.spec.ts:122:1 › Reviews preserve honest empty and unavailable states
+[19/25] tests/storefront/visual-repairs.spec.ts:137:1 › Reviews announce loading while an approved-review request is pending
+[20/25] tests/storefront/visual-repairs.spec.ts:156:1 › vortex, rocks, clouds and camera animate independently and pause offscreen
+[21/25] tests/storefront/visual-repairs.spec.ts:171:1 › reduced motion keeps a sharp static scene without animated layers
+[22/25] tests/storefront/visual-repairs.spec.ts:187:1 › Reviews keep a static cinematic fallback when JavaScript is unavailable
+[23/25] tests/storefront/visual-repairs.spec.ts:207:1 › authenticated referral profile, earnings and registration keep black surfaces
+[24/25] tests/storefront/visual-repairs.spec.ts:230:1 › hero review links reveal and focus a long review hidden by the feed filter
+[25/25] tests/storefront/visual-repairs.spec.ts:247:1 › the cinematic scene pauses and resumes on document visibility changes
+  25 passed (3.7m)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

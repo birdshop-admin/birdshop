@@ -17,5 +17,6 @@ export async function proxy(
 export const config = {
   matcher: [
     "/admin/:path*",
+    "/referrals/:path*",
   ],
 };

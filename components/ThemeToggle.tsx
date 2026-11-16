@@ -18,7 +18,7 @@ function subscribe(callback: () => void) {
     document.documentElement.dataset.theme = event.newValue === "dark" ? "dark" : "light";
     callback();
   };
-  // The site always opens in light mode unless the visitor chose dark.
+  // Public storefront defaults to dark; the admin retains its separate choice.
   window.addEventListener(themeEvent, callback);
   window.addEventListener("storage", storage);
   return () => {
@@ -118,7 +118,7 @@ export default function ThemeToggle({
   useEffect(() => {
     let saved: string | null = null;
     try { saved = localStorage.getItem(themeKey()); } catch { /* Works without storage. */ }
-    const theme = saved === "dark" ? "dark" : "light";
+    const theme = saved === "dark" || saved === "light" ? saved : themeKey() === ADMIN_KEY ? "light" : "dark";
     if (document.documentElement.dataset.theme !== theme) {
       document.documentElement.dataset.theme = theme;
       window.dispatchEvent(new Event(themeEvent));

@@ -739,9 +739,9 @@
 
 .productBottom {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 15px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
   margin-top: auto;
 }
 
@@ -769,19 +769,27 @@
   text-decoration: line-through;
 }
 
-/* --- Add to Cart icon button (primary) --- */
+/* Full-width primary action: icon and label share one centered row. */
 
 .cardCart {
-  width: 44px;
-  height: 44px;
-  min-height: 44px;
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  min-height: 50px;
   flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: var(--bs-r-control);
-  color: var(--bs-btn-ink);
-  background: var(--bs-btn-bg);
+  display: inline-flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid #b5223a;
+  border-radius: 3px;
+  color: #f8f4ef;
+  background: #921027;
+  font: 600 13px/1.2 Arial, Helvetica, sans-serif;
+  text-align: center;
+  white-space: nowrap;
   cursor: pointer;
   transition:
     background-color var(--bs-dur-fast) ease,
@@ -790,23 +798,35 @@
 }
 
 .cardCart svg {
+  display: block;
+  flex: 0 0 20px;
   width: 20px;
   height: 20px;
+}
+
+.cardCart > span {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.cardCart:focus-visible {
+  outline: 2px solid #f8f4ef;
+  outline-offset: 3px;
 }
 
 .cardCart:not(:disabled):active {
   transform: translateY(1px);
 }
 
-/* Just added: the confirmed (selected) pair, with a check icon. */
+/* The check icon and label confirm the existing cart action. */
 .cardCart.cardCartAdded {
-  color: var(--bs-selected-ink);
-  background: var(--bs-selected-bg);
+  background: #741023;
 }
 
 .cardCart:disabled {
-  color: var(--bs-btn-disabled-ink);
-  background: var(--bs-btn-disabled-bg);
+  color: #b9b2ab;
+  background: #292626;
+  border-color: #484141;
   cursor: not-allowed;
 }
 
@@ -1001,10 +1021,6 @@
   .skeleton {
     animation: skeletonPulse 1.4s ease-in-out infinite alternate;
   }
-
-  .cardCartAdded {
-    animation: cartPop 380ms cubic-bezier(0.3, 1.5, 0.5, 1);
-  }
 }
 
 @keyframes skeletonPulse {
@@ -1014,12 +1030,6 @@
 
   to {
     opacity: 1;
-  }
-}
-
-@keyframes cartPop {
-  40% {
-    transform: scale(1.12);
   }
 }
 
@@ -1058,11 +1068,11 @@
 
   .cardCart:not(:disabled):hover {
     transform: translateY(-1px);
-    background: var(--bs-btn-hover);
+    background: #ad1933;
   }
 
   .cardCart.cardCartAdded:hover {
-    background: var(--bs-selected-bg);
+    background: #741023;
   }
 
   .categoryList button:not(.activeCategory):hover {

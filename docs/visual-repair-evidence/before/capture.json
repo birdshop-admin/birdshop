@@ -1,0 +1,47 @@
+[
+  {
+    "path": "/products",
+    "width": 390,
+    "overflow": false
+  },
+  {
+    "path": "/referrals",
+    "width": 390,
+    "overflow": false
+  },
+  {
+    "path": "/reviews",
+    "width": 390,
+    "overflow": false
+  },
+  {
+    "path": "/products",
+    "width": 768,
+    "overflow": false
+  },
+  {
+    "path": "/referrals",
+    "width": 768,
+    "overflow": false
+  },
+  {
+    "path": "/reviews",
+    "width": 768,
+    "overflow": false
+  },
+  {
+    "path": "/products",
+    "width": 1440,
+    "overflow": false
+  },
+  {
+    "path": "/referrals",
+    "width": 1440,
+    "overflow": false
+  },
+  {
+    "path": "/reviews",
+    "width": 1440,
+    "overflow": false
+  }
+]

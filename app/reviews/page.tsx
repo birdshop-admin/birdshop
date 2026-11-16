@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import SiteHeader from "@/components/SiteHeader";
+import ReviewsHero from "@/components/ReviewsHero";
 import SiteFooter from "@/components/SiteFooter";
 
 import {
   ArrowIcon,
   CheckIcon,
-  HeartIcon,
   MessageIcon,
   PeopleIcon,
   ShieldIcon,
@@ -121,7 +121,7 @@ function ReviewCard({
   const bodyId = `review-${review.id}-body`;
 
   return (
-    <article className={styles.reviewCard}>
+    <article id={`review-${review.id}`} className={styles.reviewCard} tabIndex={-1}>
       <div className={styles.reviewCardTop}>
         <div className={styles.reviewIdentity}>
           <div className={styles.reviewAvatar} aria-hidden="true">
@@ -226,6 +226,20 @@ export default function ReviewsPage() {
   const [expandedReviews, setExpandedReviews] = useState<Set<string>>(
     () => new Set(),
   );
+  // A fresh object also handles selecting the same hero card more than once.
+  const [reviewToReveal, setReviewToReveal] = useState<{ id: string } | null>(null);
+
+  useEffect(() => {
+    if (!reviewToReveal) return;
+    // Runs after the filter, visible count and expanded card commit together.
+    const card = document.getElementById(`review-${reviewToReveal.id}`);
+    if (!card) return;
+    card.focus({ preventScroll: true });
+    card.scrollIntoView({
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+      block: "start",
+    });
+  }, [reviewToReveal]);
 
   // Every state update here happens after the request resolves; the initial
   // state already reads "loading", so nothing is set synchronously.
@@ -265,9 +279,6 @@ export default function ReviewsPage() {
     setLoadError(null);
     setReloadKey((key) => key + 1);
   }
-
-  const featuredReview =
-    approvedReviews.find((review) => review.featured) ?? approvedReviews[0];
 
   const filteredReviews = useMemo(() => {
     if (filter === "Products") {
@@ -326,181 +337,25 @@ export default function ReviewsPage() {
     });
   }
 
+  function revealReview(id: string) {
+    if (!approvedReviews.some(review => review.id === id)) return;
+    setFilter("All Reviews");
+    setVisibleCount(INITIAL_VISIBLE);
+    setExpandedReviews(current => new Set(current).add(id));
+    setReviewToReveal({ id });
+  }
+
   return (
-    <main className="page-shell">
+    <main className={`page-shell bs-editorial-page ${styles.reviewsPage}`}>
       <SiteHeader />
 
-      <section className={styles.hero}>
-        <div className={styles.heroOverlay} />
-
-        <div className={styles.heroLayout}>
-          <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>BirdShop / Community</p>
-
-            <h1>
-              What people
-              <br />
-              say.
-            </h1>
-
-            <p className={styles.heroDescription}>
-              Product experiences, service feedback, and stories from the
-              BirdShop community — presented clearly and without the noise.
-            </p>
-
-            <div className={styles.heroActions}>
-              <a href="#reviews" className={styles.heroPrimary}>
-                Browse Reviews
-                <ArrowIcon />
-              </a>
-
-              <Link
-                href="/contact?topic=review"
-                className={styles.heroSecondary}
-              >
-                Leave a Review
-              </Link>
-            </div>
-          </div>
-
-          <div className={styles.heroEditorial} aria-hidden="true">
-            <div className={styles.heroMark}>
-              <span>BS</span>
-              <div />
-              <strong>Community</strong>
-              <small>
-                Experiences
-                <br />
-                worth sharing
-              </small>
-            </div>
-
-            <div className={styles.heroSideCopy}>
-              <span>Real</span>
-              <span>Simple</span>
-              <span>Clear</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className={styles.communityStrip}>
-        <div>
-          <MessageIcon />
-          <div>
-            <strong>Clear feedback</strong>
-            <span>Product &amp; service experiences</span>
-          </div>
-        </div>
-
-        <div>
-          <PeopleIcon />
-          <div>
-            <strong>Community led</strong>
-            <span>Approved customer submissions</span>
-          </div>
-        </div>
-
-        <div>
-          <ShieldIcon />
-          <div>
-            <strong>Moderated</strong>
-            <span>Checked before publishing</span>
-          </div>
-        </div>
-
-        <div>
-          <HeartIcon />
-          <div>
-            <strong>More than sales</strong>
-            <span>Community comes first</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Holds the featured slot while loading, so the page does not jump. */}
-      {loading && (
-        <section className={styles.featuredSection} aria-hidden="true">
-          <div className={styles.featuredHeading}>
-            <div>
-              <span className={`${styles.skeleton} ${styles.skeletonLine} ${styles.skeletonEyebrow}`} />
-              <span className={`${styles.skeleton} ${styles.skeletonHeading}`} />
-            </div>
-          </div>
-
-          <div className={`${styles.skeleton} ${styles.featuredSkeleton}`} />
-        </section>
-      )}
-
-      {!loading && featuredReview && (
-        <section className={styles.featuredSection}>
-          <div className={styles.featuredHeading}>
-            <div>
-              <span>Featured experience</span>
-              <h2>From the community.</h2>
-            </div>
-
-            <p>A closer look at one BirdShop experience.</p>
-          </div>
-
-          <article className={styles.featuredReview}>
-            <div className={styles.featuredDark}>
-              <div className={styles.featuredQuoteMark} aria-hidden="true">
-                “
-              </div>
-
-              <Stars rating={featuredReview.rating} />
-
-              <blockquote>{featuredReview.title}</blockquote>
-
-              <p>{featuredReview.body}</p>
-
-              <span className={styles.sampleNotice}>
-                Approved community review
-              </span>
-            </div>
-
-            <div className={styles.featuredDetails}>
-              <div className={styles.featuredPerson}>
-                <div aria-hidden="true">{featuredReview.initials}</div>
-
-                <span>
-                  <strong>{featuredReview.reviewer}</strong>
-                  <small>{featuredReview.date}</small>
-                </span>
-              </div>
-
-              <div className={styles.featuredMeta}>
-                <div>
-                  <span>Experience</span>
-                  <strong>{featuredReview.type}</strong>
-                </div>
-
-                <div>
-                  <span>Reviewed</span>
-                  <strong>{featuredReview.subject}</strong>
-                </div>
-
-                <div>
-                  <span>Details</span>
-                  <strong>{featuredReview.meta}</strong>
-                </div>
-              </div>
-
-              <Link
-                href={
-                  featuredReview.type === "Service" ? "/services" : "/products"
-                }
-                className={styles.featuredLink}
-              >
-                Browse{" "}
-                {featuredReview.type === "Service" ? "Services" : "Products"}
-                <ArrowIcon />
-              </Link>
-            </div>
-          </article>
-        </section>
-      )}
+      <ReviewsHero
+        reviews={approvedReviews}
+        loading={loading}
+        error={Boolean(loadError)}
+        summary={ratingSummary}
+        onRevealReview={revealReview}
+      />
 
       <section id="reviews" className={styles.reviewSection}>
         <div className={styles.reviewHeading}>

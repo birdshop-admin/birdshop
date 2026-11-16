@@ -1,0 +1,33 @@
+
+> birdshop@0.1.0 test:storefront
+> playwright test --reporter=line --grep Reviews|vortex|reduced motion|hero review|cinematic scene
+
+[WebServer] (node:8522) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:8577) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:8680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 8 tests using 1 worker
+
+(node:8707) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/8] tests/storefront/visual-repairs.spec.ts:110:1 › Reviews render only approved RPC records and derived ratings
+[2/8] tests/storefront/visual-repairs.spec.ts:123:1 › Reviews preserve honest empty and unavailable states
+[3/8] tests/storefront/visual-repairs.spec.ts:138:1 › Reviews announce loading while an approved-review request is pending
+[4/8] tests/storefront/visual-repairs.spec.ts:157:1 › vortex, rocks, clouds and camera animate independently and pause offscreen
+[5/8] tests/storefront/visual-repairs.spec.ts:172:1 › reduced motion keeps a sharp static scene without animated layers
+[6/8] tests/storefront/visual-repairs.spec.ts:188:1 › Reviews keep a static cinematic fallback when JavaScript is unavailable
+[7/8] tests/storefront/visual-repairs.spec.ts:231:1 › hero review links reveal and focus a long review hidden by the feed filter
+[8/8] tests/storefront/visual-repairs.spec.ts:248:1 › the cinematic scene pauses and resumes on document visibility changes
+  8 passed (1.3m)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

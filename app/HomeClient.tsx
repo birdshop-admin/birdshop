@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -19,14 +18,13 @@ import ProductThumbnail from "@/components/ProductThumbnail";
 import PublicProductCounter from "@/components/PublicProductCounter";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
+import StorefrontHero from "@/components/StorefrontHero";
 import {
   ArrowIcon,
   CartIcon,
   CheckIcon,
-  DiscordIcon,
   HeartIcon,
   LightningIcon,
-  MessageIcon,
   PeopleIcon,
   ShieldIcon,
 } from "@/components/SiteIcons";
@@ -320,7 +318,7 @@ export default function HomeClient({
     <main className="page-shell home-page">
       <SiteHeader />
 
-      <HomeHero />
+      <StorefrontHero services={services} />
 
       <TrustStrip />
 
@@ -382,6 +380,22 @@ export default function HomeClient({
           />
 
           <div className="catalog-content">{servicesContent}</div>
+        </section>
+
+        <div className="catalog-divider" aria-hidden="true" />
+
+        {/* Referral section links to verified-email enrollment in PR #1.
+            Rewards are owner reviewed and only qualify on an eligible order. */}
+        <section className="ink-referral" aria-labelledby="home-referral-title">
+          <div>
+            <span className="ink-referral__eyebrow">BIRD SHOP / REFER &amp; EARN</span>
+            <h2 id="home-referral-title">A good find<br />is worth sharing.</h2>
+            <p>Get $0.50 USD for each new customer who completes their first qualifying purchase. Referrals are verified and reviewed before payout.</p>
+          </div>
+          <div className="ink-referral__actions">
+            <Link href="/referrals">Get your referral link <span aria-hidden="true">↗</span></Link>
+            <Link href="/referrals">Apply as an affiliate <span aria-hidden="true">↗</span></Link>
+          </div>
         </section>
 
         <div className="catalog-divider" aria-hidden="true" />
@@ -454,125 +468,6 @@ export default function HomeClient({
 /* =========================================================
    HERO
 ========================================================= */
-
-function HomeHero() {
-  return (
-    <section className="hero" aria-labelledby="home-hero-title">
-      <div className="hero-content">
-        <div className="hero-copy">
-          {/* On phones the last item takes its own line, so a separator never
-              starts a line. */}
-          <p className="eyebrow">
-            <span className="eyebrow-item">Digital keys</span>{" "}
-            <span className="eyebrow-sep" aria-hidden="true">
-              ×
-            </span>{" "}
-            <span className="eyebrow-item">Game services</span>{" "}
-            <span className="eyebrow-sep eyebrow-sep--break" aria-hidden="true">
-              ×
-            </span>{" "}
-            <span className="eyebrow-item eyebrow-item--last">
-              A kinder community
-            </span>
-          </p>
-
-          <h1 id="home-hero-title">
-            Welcome to <br />
-            Bird Shop
-          </h1>
-
-          <p className="hero-description">
-            Your trusted source for digital product keys and game-related
-            services. Fast, reliable, and community-driven — so you can spend
-            less time waiting and more time playing.
-          </p>
-
-          {/* Without a configured invite this falls back to the Contact page. */}
-          <Link
-            href={siteConfig.discordUrl}
-            {...discordLinkProps}
-            className="discord-button"
-          >
-            {hasDiscordInvite ? <DiscordIcon /> : <MessageIcon />}
-
-            <span className="discord-button-label">
-              {hasDiscordInvite ? "Join Discord" : "Contact Us"}
-            </span>
-
-            <span className="button-arrow" aria-hidden="true">
-              →
-            </span>
-          </Link>
-
-          <div className="hero-secondary-buttons">
-            <Link href="/products">Browse Products</Link>
-
-            <Link href="/services">View Services</Link>
-
-            <Link href="/reviews">Read Reviews</Link>
-          </div>
-
-          <Link href="/how-to-order" className="hero-guide-link">
-            New to BirdShop? See how ordering works
-            <span aria-hidden="true">→</span>
-          </Link>
-        </div>
-
-        <div className="hero-logo-area">
-          <div className="logo-glow" aria-hidden="true" />
-
-          {/* Both marks load eagerly: the theme is unknown at render time, and a
-              lazy dark-mode mark would pop in late. The h1 names the brand.
-              The entrance animation runs on this always-displayed wrapper, so
-              switching theme (display:none -> block) does not replay it. */}
-          <div className="hero-logo-mark">
-            <Image
-              src="/greenbs.png"
-              alt=""
-              width={600}
-              height={600}
-              sizes="(max-width: 740px) 220px, 360px"
-              loading="eager"
-              className="hero-logo theme-logo-light"
-            />
-
-            {/* The dark-green mark disappears on the dark hero; dark mode uses the cream mark. */}
-            <Image
-              src="/cremebs.png"
-              alt=""
-              width={600}
-              height={600}
-              sizes="(max-width: 740px) 220px, 360px"
-              loading="eager"
-              className="hero-logo theme-logo-dark"
-            />
-          </div>
-
-          <p className="hero-tagline">
-            Games&nbsp;&nbsp; people
-            <br />A brighter tomorrow
-          </p>
-        </div>
-
-        <div className="hero-rail" aria-hidden="true">
-          <span>Good</span>
-          <span>Games</span>
-          <span>Brighter</span>
-          <span>People</span>
-
-          <i className="rail-line" />
-
-          <span>⌁</span>
-
-          <i className="rail-line short" />
-
-          <span>Est.</span>
-          <span>{siteConfig.established}</span>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 /* =========================================================
    TRUST STRIP

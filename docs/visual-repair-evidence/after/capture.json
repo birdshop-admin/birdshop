@@ -1,0 +1,86 @@
+[
+  {
+    "path": "/products",
+    "width": 390,
+    "overflow": false,
+    "brokenImages": [],
+    "errors": []
+  },
+  {
+    "path": "/products/qa-key-1",
+    "width": 390,
+    "overflow": false,
+    "brokenImages": [],
+    "errors": []
+  },
+  {
+    "path": "/referrals",
+    "width": 390,
+    "overflow": false,
+    "brokenImages": [],
+    "errors": []
+  },
+  {
+    "path": "/reviews",
+    "width": 390,
+    "overflow": false,
+    "brokenImages": [],
+    "errors": []
+  },
+  {
+    "path": "/products",
+    "width": 768,
+    "overflow": false,
+    "brokenImages": [],
+    "errors": []
+  },
+  {
+    "path": "/products/qa-key-1",
+    "width": 768,
+    "overflow": false,
+    "brokenImages": [],
+    "errors": []
+  },
+  {
+    "path": "/referrals",
+    "width": 768,
+    "overflow": false,
+    "brokenImages": [],
+    "errors": []
+  },
+  {
+    "path": "/reviews",
+    "width": 768,
+    "overflow": false,
+    "brokenImages": [],
+    "errors": []
+  },
+  {
+    "path": "/products",
+    "width": 1440,
+    "overflow": false,
+    "brokenImages": [],
+    "errors": []
+  },
+  {
+    "path": "/products/qa-key-1",
+    "width": 1440,
+    "overflow": false,
+    "brokenImages": [],
+    "errors": []
+  },
+  {
+    "path": "/referrals",
+    "width": 1440,
+    "overflow": false,
+    "brokenImages": [],
+    "errors": []
+  },
+  {
+    "path": "/reviews",
+    "width": 1440,
+    "overflow": false,
+    "brokenImages": [],
+    "errors": []
+  }
+]

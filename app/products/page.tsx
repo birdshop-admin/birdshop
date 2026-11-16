@@ -1,9 +1,9 @@
 "use client";
 import { formatUSD } from "@/lib/money";
 
-import Image from "next/image";
 import Link from "next/link";
 import ProductThumbnail from "@/components/ProductThumbnail";
+import EditorialPageHero from "@/components/EditorialPageHero";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -143,6 +143,9 @@ function ProductCard({
             onClick={handleAdd}
           >
             {added && !isOutOfStock ? <CheckIcon /> : <CartIcon />}
+            <span>
+              {isOutOfStock ? "Out of Stock" : added ? "Added" : "Add to Cart"}
+            </span>
           </button>
         </div>
       </div>
@@ -331,72 +334,28 @@ export default function ProductsPage() {
   ======================================================= */
 
   return (
-    <main className="page-shell">
+    <main className="page-shell bs-editorial-page">
       <SiteHeader />
 
       {/* ===================================================
           HERO
       =================================================== */}
 
-      <section className={styles.topSection}>
-        <div className={styles.catalogHero}>
-          <div className={styles.catalogHeroCopy}>
-            <p className={styles.eyebrow}>BirdShop / Digital store</p>
-
-            <h1>Products</h1>
-
-            <p>
-              Browse digital keys, gift cards, subscriptions, and add-ons.
-              Simple purchasing, fast delivery, and support when you need it.
-            </p>
-
-            <div className={styles.heroFacts}>
-              <span>
-                <CheckIcon />
-                Digital delivery
-              </span>
-
-              <span>
-                <CheckIcon />
-                Secure checkout
-              </span>
-
-              <span>
-                <CheckIcon />
-                Discord support
-              </span>
-            </div>
-          </div>
-
-          <div className={styles.catalogHeroLogo}>
-            <Image
-              src="/greenbs.png"
-              alt="BirdShop"
-              width={300}
-              height={300}
-              className="theme-logo-light"
-              loading="eager"
-            />
-
-            <Image
-              src="/cremebs.png"
-              alt="BirdShop"
-              width={300}
-              height={300}
-              className="theme-logo-dark"
-              loading="eager"
-            />
-
-            <span>Digital goods / Delivered simply</span>
-          </div>
-        </div>
-      </section>
+      <EditorialPageHero
+        section="products"
+        eyebrow="BIRDSHOP / DIGITAL STORE"
+        title="Products"
+        subtitle="DIGITAL GOODS & GAME PRODUCTS"
+        description="Digital goods, keys, subscriptions and more — presented without the clutter."
+        primary={{ href: "#catalog", label: "BROWSE PRODUCTS" }}
+        secondary={{ href: "/how-to-order", label: "HOW TO ORDER" }}
+      />
 
       {/* ===================================================
           STORE
       =================================================== */}
 
-      <section className={styles.store}>
+      <section id="catalog" className={styles.store}>
         <div className={styles.storeHeading}>
           <div>
             <p>The collection</p>

@@ -31,6 +31,8 @@ const ownerNavigation = [
   { label: "Services", href: "/admin/services" },
   { label: "Inventory", href: "/admin/inventory" },
   { label: "Analytics", href: "/admin/analytics" },
+  { label: "Referrals", href: "/admin/referrals" },
+  { label: "Rewarble", href: "/admin/rewarble" },
   { label: "Reviews", href: "/admin/reviews" },
   { label: "Settings", href: "/admin/settings" },
 ];

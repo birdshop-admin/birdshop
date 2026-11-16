@@ -385,3 +385,52 @@
     transform: none;
   }
 }
+
+/* Christmas editorial override: no forest, no olive, true black modal. */
+.dialog {
+  color:#f5f2ed;
+  border-radius:3px;
+  background:#000;
+}
+.dialog::backdrop {
+  background:rgba(0,0,0,.79);
+  backdrop-filter:blur(3px);
+}
+.card {
+  border:1px solid #ffffff49;
+  border-radius:3px;
+  background:#020202;
+  box-shadow:0 28px 92px #000c;
+}
+.photo {display:none!important;animation:none!important;background:none!important;}
+.mist {background:linear-gradient(180deg,#0c0c0c,#000)!important;}
+.close {color:#fff;background:#090909;border-color:#ffffff47;}
+.badge {background:#090909;color:#f6f1eb;border-color:#ffffff5d;box-shadow:none;}
+.ring {border-color:#9b1a31;animation:invite-ring 3.5s ease-out infinite;}
+.eyebrow {color:#b91e36;letter-spacing:.28em;}
+.body {padding:43px 30px 25px;}
+.body h2 {font:italic 400 clamp(29px,6vw,37px)/1.08 Georgia,"Times New Roman",serif;color:#f6f1eb;}
+.body h2 em {color:#d4d0cb;font-style:italic;}
+.body p {color:#c2beb8;font:15px/1.65 Georgia,"Times New Roman",serif;}
+.join {color:#fff;background:#871022;border:1px solid #b9233e;border-radius:2px;font:600 13px Arial,Helvetica,sans-serif;letter-spacing:.05em;box-shadow:none;}
+.join:hover {background:#ac1831;box-shadow:none;}
+.later {color:#d4cec9;border-radius:2px;}
+.later:hover {color:#fff;background:#1e1e1e;}
+.sign {color:#99918c;border-color:#ffffff27;}
+
+/* OWNER UPDATE: translucent black glass, so the actual page remains visible behind the modal. */
+.dialog { background:transparent!important; }
+.dialog::backdrop { background:rgba(0,0,0,.55)!important; backdrop-filter:blur(2px); }
+.card {
+  background:rgba(5,5,5,.62)!important;
+  border:1px solid rgba(238,232,227,.47)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(.75);
+  backdrop-filter:blur(18px) saturate(.75);
+  box-shadow:0 25px 75px rgba(0,0,0,.7)!important;
+}
+.mist {
+  background:linear-gradient(165deg,rgba(6,6,6,.36),rgba(0,0,0,.38))!important;
+}
+@media(prefers-reduced-transparency:reduce) {
+  .card {background:rgba(3,3,3,.94)!important}
+}

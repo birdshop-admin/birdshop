@@ -1,0 +1,119 @@
+/* BirdShop Christmas editorial; 2026 visual overhaul.
+   Inspiration: black studio portrait composition, not card-based holiday clip art. */
+.hero {position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,50%) minmax(0,50%);min-height:clamp(630px,55vw,840px);background:#000;color:#f6f5f3;overflow:hidden;}
+.heroSteps {position:absolute;left:clamp(25px,3vw,62px);top:49%;z-index:4;display:grid;gap:13px;color:#777;font:10px Arial,Helvetica,sans-serif;letter-spacing:.1em;}
+.heroSteps span {display:grid;place-items:center;border:1px solid #5b5b5b;width:19px;height:19px;border-radius:50%;font-size:7px;}
+.heroSteps span[aria-current] {color:#fff;background:#eee;border-color:#eee;box-shadow:inset 0 0 0 5px #050505;}
+.copy {grid-column:1;position:relative;z-index:2;align-self:center;padding:78px 10px 105px clamp(110px,9.5vw,170px);min-width:0;}
+.eyebrow {margin:0 0 17px;font:400 clamp(11px,1vw,15px)/1.5 Georgia,'Times New Roman',serif;color:#b81b30;letter-spacing:.49em;}
+.copy h1 {margin:0 0 25px;font:italic 400 clamp(62px,6.5vw,116px)/.96 Georgia,'Times New Roman',serif;letter-spacing:-.07em;white-space:nowrap;}
+.issue {display:block;margin:0 0 23px;font:400 clamp(10px,1.15vw,15px)/1.55 Arial,Helvetica,sans-serif;letter-spacing:.25em;color:#c8c6c6;white-space:nowrap;}
+.issue span {color:#ad1b2e;}
+.description {max-width:460px;margin:0 0 34px;font:italic 400 clamp(17px,1.5vw,24px)/1.5 Georgia,'Times New Roman',serif;color:#dedcdc;}
+.actions {display:flex;gap:18px;flex-wrap:wrap;}
+.primary,.secondary {display:flex;align-items:center;justify-content:space-between;gap:22px;min-height:57px;padding:0 clamp(17px,2vw,32px);border:1px solid #dedbd7;font:600 11px Arial,Helvetica,sans-serif;letter-spacing:.19em;transition:background .25s,color .25s,border-color .25s;}
+.primary {background:#8b0e21;border-color:#ba2234;color:#fff;}
+.secondary {background:transparent;color:#eee;}
+.primary:hover {background:#c3293d;border-color:#c3293d;}
+.secondary:hover {background:#fff;color:#000;border-color:#fff;}
+.artwork {position:relative;grid-column:2;z-index:0;display:grid;align-items:end;justify-items:center;overflow:hidden;pointer-events:none;background:#000;}
+.artwork::before {content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#000 0%,transparent 16%),linear-gradient(0deg,#000 0%,transparent 12%);pointer-events:none;}
+.portrait {display:block;width:min(100%,730px);height:100%;max-height:810px;object-fit:cover;object-position:center bottom;filter:contrast(1.09);opacity:.96;}
+.bottomLine {position:absolute;bottom:22px;left:clamp(60px,6vw,110px);right:clamp(60px,6vw,110px);z-index:5;display:flex;justify-content:space-between;color:#aaa;font:10px Arial,Helvetica,sans-serif;letter-spacing:.34em;}
+.information {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:#070707;color:#eee;border-block:1px solid #ffffff22;}
+.infoBlock {min-height:163px;padding:26px clamp(17px,2.5vw,40px);display:flex;flex-direction:column;gap:12px;border-right:1px solid #ffffff1b;transition:background .2s;}
+.infoBlock:hover {background:#161616;}
+.infoBlock:last-child {border:0;}
+.infoIndex {font:700 9px Arial,Helvetica,sans-serif;letter-spacing:.25em;color:#b11e2e;}
+.infoBlock strong {font:400 clamp(18px,1.65vw,25px)/1.2 Georgia,'Times New Roman',serif;}
+.infoAction {margin-top:auto;color:#bab5b5;font:11px Arial,Helvetica,sans-serif;}
+.infoAction span {margin-left:12px;}
+/* Bells extracted from the exact approved Christmas concept.
+   Transform their whole hanger so the ribbon and bells swing together. */
+.christmasBells {
+  position:absolute;
+  top:0;
+  right:clamp(12px,3.3vw,60px);
+  width:clamp(130px,13vw,205px);
+  height:clamp(210px,20vw,300px);
+  z-index:6;
+  pointer-events:auto;
+  mix-blend-mode:screen;
+}
+.bellString {
+  position:relative;
+  width:100%;
+  height:100%;
+  transform-origin:51% 0;
+  animation:birdshop-bell-sway 5.2s ease-in-out infinite alternate;
+}
+.bellReference {
+  width:100%;
+  height:auto;
+  display:block;
+  object-fit:contain;
+  user-select:none;
+  pointer-events:none;
+}
+@keyframes birdshop-bell-sway {
+  0% { transform:rotate(-4deg) }
+  48% { transform:rotate(1deg) }
+  100% { transform:rotate(5deg) }
+}
+@keyframes birdshop-bell-jingle {
+  0% { transform:rotate(-12deg) }
+  100% { transform:rotate(12deg) }
+}
+@media(hover:hover) and (prefers-reduced-motion:no-preference) {
+  .christmasBells:hover .bellString {
+    animation:birdshop-bell-jingle .6s ease-in-out infinite alternate;
+  }
+}
+@media(max-width:1200px) {.copy{padding-left:95px;}.copy h1{font-size:clamp(56px,6.2vw,84px);}.issue{white-space:normal;}.bottomLine{left:45px;right:45px;}}
+@media(max-width:880px) {.hero{grid-template-columns:minmax(0,55%) minmax(0,45%);min-height:660px;}.copy{padding:74px 10px 85px 55px;}.heroSteps{left:16px;}.copy h1{font-size:clamp(44px,6.2vw,67px);}.eyebrow{letter-spacing:.3em;}.portrait{object-position:48% bottom;}.christmasBells{right:7px;width:130px;height:185px;}.information{grid-template-columns:repeat(2,minmax(0,1fr));}.infoBlock:nth-child(2){border-right:0;}.infoBlock:nth-child(-n+2){border-bottom:1px solid #ffffff1b;}}
+@media(max-width:640px) {.hero{display:flex;flex-direction:column;min-height:780px;}.copy{padding:85px 25px 0;align-self:stretch;}.heroSteps{display:none;}.copy h1{font-size:clamp(48px,13vw,77px);white-space:normal;}.eyebrow{font-size:11px;letter-spacing:.25em;}.issue{font-size:10px;white-space:normal;letter-spacing:.17em;}.description{font-size:18px;max-width:350px;}.actions{gap:9px;}.primary,.secondary{min-height:51px;font-size:10px;letter-spacing:.09em;padding:0 16px;}.artwork{position:absolute;inset:35% 0 20px;opacity:.63;justify-items:end;}.portrait{width:100%;object-fit:contain;object-position:right bottom;}.artwork::before{background:linear-gradient(180deg,#000 0,transparent 38%),linear-gradient(90deg,#000 0,transparent 48%),linear-gradient(0deg,#000 0,transparent 15%);}.christmasBells{right:0;top:0;width:105px;height:156px;}.bottomLine{left:25px;right:25px;bottom:18px;font-size:8px;letter-spacing:.15em;}.information{grid-template-columns:repeat(2,minmax(0,1fr));}.infoBlock{padding:19px 15px;min-height:150px;}.infoBlock strong{font-size:18px;}}
+@media(max-width:380px){.hero{min-height:750px;}.copy h1{font-size:clamp(45px,12.4vw,55px);}.primary,.secondary{width:100%;}.information{grid-template-columns:1fr;}.infoBlock{min-height:120px;}}
+@media(prefers-reduced-motion:reduce){.bellString{animation:none!important;transform:none;}.hero *, .information *{transition:none!important;}}
+
+/* Soft snowfall OVER the approved portrait only; CSS rather than a second generated image. */
+.snow {
+  position:absolute;
+  z-index:2;
+  inset:-65% -5% 0;
+  overflow:hidden;
+  pointer-events:none;
+  opacity:.65;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12px 38px, rgba(255,255,255,.75) 70%, transparent 100%),
+    radial-gradient(2px 2px at 98px 124px, rgba(255,255,255,.55) 65%, transparent 100%),
+    radial-gradient(1px 1px at 175px 67px, rgba(255,255,255,.8) 65%, transparent 100%),
+    radial-gradient(2px 2px at 222px 183px, rgba(255,255,255,.4) 65%, transparent 100%);
+  background-size:251px 241px,313px 287px,207px 301px,337px 263px;
+  background-repeat:repeat;
+  animation:bs-portrait-snowfall 14s linear infinite;
+  will-change:background-position;
+}
+.snow::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:
+    radial-gradient(1px 1px at 34px 54px, rgba(255,255,255,.7) 70%, transparent),
+    radial-gradient(1.5px 1.5px at 121px 145px, rgba(255,255,255,.55) 70%, transparent);
+  background-size:187px 249px,249px 193px;
+  background-repeat:repeat;
+  animation:bs-portrait-flurries 19s linear infinite;
+  opacity:.7;
+}
+@keyframes bs-portrait-snowfall {
+  from {background-position:0 -260px,0 -260px,0 -260px,0 -260px}
+  to {background-position:44px 290px,-37px 290px,24px 290px,-32px 290px}
+}
+@keyframes bs-portrait-flurries {
+  from {transform:translate3d(-10px,-220px,0)}
+  to {transform:translate3d(24px,200px,0)}
+}
+@media(max-width:640px) {.snow {opacity:.43}}
+@media(prefers-reduced-motion:reduce) {
+  .snow, .snow::after {animation:none!important;will-change:auto}
+}

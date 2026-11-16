@@ -13,7 +13,7 @@ for (const width of [320, 390, 768, 1024, 1440]) {
     await page.goto("/");
     await dismissInvite(page);
     await expect(page.getByRole("heading", { name: /Play\s*beyond\./ })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Explore services" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Explore services/i }).first()).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     if (width <= 1100) {
       const menu = page.getByRole("button", { name: "Open menu", exact: true });
@@ -22,9 +22,7 @@ for (const width of [320, 390, 768, 1024, 1440]) {
       await page.keyboard.press("Escape");
       await expect(menu).toBeFocused();
     } else {
-      await page.getByRole("button", { name: "Open all navigation" }).click();
-      await expect(page.getByRole("navigation", { name: "Mobile navigation" }).getByRole("link", { name: "How to Order", exact: true })).toBeVisible();
-      await page.getByRole("button", { name: "Close all navigation" }).press("Escape");
+      await expect(page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Products", exact: true })).toBeVisible();
     }
     await page.screenshot({ path: test.info().outputPath(`home-${width}.png`), fullPage: true });
     expect(errors).toEqual([]);

@@ -46,6 +46,7 @@ export type MarketplaceListing = {
   price_cents: number;
   stock: number;
   fulfillment_method: "seller_manual" | "service_scheduled";
+  service_options: string[];
   delivery_hours: number;
   status: "draft" | "pending_review" | "published" | "paused" | "rejected";
   created_at: string;

@@ -49,7 +49,7 @@ test("inventory, cart persistence, and sold-out protection survive the redesign"
 
 test("referral sign-in, service list, and staff login stay reachable", async ({ page }) => {
   await page.goto("/referrals");
-  await expect(page.getByRole("heading", { name: "Refer friends. Earn rewards." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Refer friends.", exact: true })).toBeVisible();
   await expect(page.getByLabel("Your email", { exact: true })).toBeVisible();
   await page.screenshot({ path: test.info().outputPath("referrals.png"), fullPage: true });
   await page.goto("/services");
@@ -59,3 +59,25 @@ test("referral sign-in, service list, and staff login stay reachable", async ({ 
   await expect(page.locator(".storefront-rail")).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe("light");
 });
+
+for (const width of [390, 1440]) {
+  test(`approved Christmas subpages render at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    for (const [path, heading, imageName] of [
+      ["/products", "Products", ""],
+      ["/services", "Services", ""],
+      ["/referrals", "Refer friends.", ""],
+      ["/reviews", "Reviews", "birdshop-owner-christmas-dinner"],
+    ] as const) {
+      await page.goto(path);
+      await expect(page.getByRole("heading", { level: 1, name: heading, exact: true })).toBeVisible();
+      await expect(page.locator("img[src*='birdshop-christmas-bells-reference']")).toBeVisible();
+      if (imageName) await expect(page.locator(`img[src*='${imageName}']`)).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.screenshot({
+        path: test.info().outputPath(`${path.slice(1)}-${width}.png`),
+        fullPage: true,
+      });
+    }
+  });
+}

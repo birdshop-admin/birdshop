@@ -311,7 +311,7 @@ export default function ServicesPage({
       {loadError && (
         <div className="bs-service-unavailable" role="status">
           <strong>Service listings are temporarily unavailable.</strong>
-          <span>We couldn't load published services right now. You can still open a private service request.</span>
+          <span>We could not load published services right now. You can still open a private service request.</span>
           <Link href="/contact?topic=service">Contact BirdShop ↗</Link>
         </div>
       )}

@@ -9,6 +9,7 @@ import CheckoutConsent from "./CheckoutConsent";
 import recovery from "./ProductCheckout.module.css";
 import TurnstileWidget from "./TurnstileWidget";
 import AlternativePaymentInfo from "./AlternativePaymentInfo";
+import RewarbleManualRequest from "./RewarbleManualRequest";
 
 type Saved = {
   id: string;
@@ -486,7 +487,8 @@ export default function ProductCheckout() {
   }
 
   return (
-    <form onSubmit={checkout} className={styles.checkoutForm}>
+    <>
+      <form onSubmit={checkout} className={styles.checkoutForm}>
       <label>
         Your name
         <input
@@ -561,6 +563,8 @@ export default function ProductCheckout() {
           {error}
         </p>
       )}
-    </form>
+      </form>
+      <RewarbleManualRequest />
+    </>
   );
 }

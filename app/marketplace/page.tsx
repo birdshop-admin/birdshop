@@ -70,7 +70,7 @@ export default async function MarketplacePage({
           </div>
           {!listings.length&&<div className={styles.card}>
             <h3>No listings available yet.</h3>
-            <p>Listings appear here after an approved seller submits them and BirdShop's owner reviews them. No fabricated inventory or seller ratings are displayed.</p>
+            <p>Listings appear here after an approved seller submits them and BirdShop&apos;s owner reviews them. No fabricated inventory or seller ratings are displayed.</p>
           </div>}
           <div className={styles.grid}>
             {listings.map(listing=>{

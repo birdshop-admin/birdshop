@@ -20,7 +20,7 @@
   min-height: 515px;
   overflow: hidden;
   color: var(--bs-forest-ink);
-  background: url("/landscape1.webp") center 44% / cover no-repeat;
+  background: linear-gradient(#080808,#000) center 44% / cover no-repeat;
 }
 
 .heroOverlay {
@@ -28,9 +28,9 @@
   inset: 0;
   background: linear-gradient(
     90deg,
-    rgba(4, 10, 6, 0.985) 0%,
-    rgba(7, 13, 9, 0.94) 40%,
-    rgba(32, 42, 31, 0.66) 66%,
+    rgba(8, 8, 8, 0.985) 0%,
+    rgba(11, 11, 11, 0.94) 40%,
+    rgba(39, 39, 39, 0.66) 66%,
     var(--theme-surface-24-28-24-0_92, rgba(239, 235, 224, 0.92)) 100%
   );
 }
@@ -120,7 +120,7 @@
   min-width: 150px;
   border: 1px solid rgba(241, 237, 226, 0.34);
   color: var(--bs-forest-ink);
-  background: rgba(5, 10, 6, 0.24);
+  background: rgba(9, 9, 9, 0.24);
 }
 
 .heroPrimary:active,
@@ -141,7 +141,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 62px;
   align-items: center;
-  color: var(--theme-text-240-236-226-1, #192218);
+  color: var(--theme-text-240-236-226-1, #1f1f1f);
 }
 
 .heroMark {
@@ -174,7 +174,7 @@
 
 .heroMark small,
 .heroSideCopy {
-  color: var(--theme-text-240-236-226-0_58, rgba(25, 34, 24, 0.64));
+  color: var(--theme-text-240-236-226-0_58, rgba(31, 31, 31, 0.64));
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.2em;
@@ -193,7 +193,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 15px 0;
-  border-left: 1px solid var(--theme-border-207-215-196-0_18, rgba(25, 34, 24, 0.18));
+  border-left: 1px solid var(--theme-border-207-215-196-0_18, rgba(31, 31, 31, 0.18));
 }
 
 /* =========================================================
@@ -204,7 +204,7 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   color: var(--bs-forest-ink);
-  background: linear-gradient(90deg, #0e1810, #172219, #0e1810);
+  background: linear-gradient(90deg, #151515, #1f1f1f, #151515);
 }
 
 .communityStrip > div {
@@ -231,7 +231,7 @@
   width: 27px;
   height: 27px;
   flex: 0 0 auto;
-  color: #b9c9a8;
+  color: #c3c3c3;
 }
 
 .communityStrip > div > div {
@@ -343,8 +343,8 @@
   padding: 44px 45px;
   color: var(--bs-forest-ink);
   background:
-    radial-gradient(circle at 85% 20%, rgba(110, 135, 92, 0.18), transparent 38%),
-    linear-gradient(135deg, #0c160e, #203022);
+    radial-gradient(circle at 85% 20%, rgba(127, 127, 127, 0.18), transparent 38%),
+    linear-gradient(135deg, #131313, #2c2c2c);
 }
 
 .featuredDark::after {
@@ -1029,13 +1029,13 @@
   gap: 75px;
   padding: 50px 72px;
   color: var(--bs-forest-ink);
-  background: url("/landscape2bottom.webp") center / cover no-repeat;
+  background: linear-gradient(#080808,#000) center / cover no-repeat;
 }
 
 .feedbackOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(5, 11, 7, 0.965), rgba(8, 15, 9, 0.86));
+  background: linear-gradient(90deg, rgba(9, 9, 9, 0.965), rgba(13, 13, 13, 0.86));
 }
 
 .feedbackCopy,
@@ -1342,8 +1342,8 @@
   .heroOverlay {
     background: linear-gradient(
       180deg,
-      rgba(4, 10, 6, 0.92) 0%,
-      rgba(7, 13, 9, 0.84) 100%
+      rgba(8, 8, 8, 0.92) 0%,
+      rgba(11, 11, 11, 0.84) 100%
     );
   }
 

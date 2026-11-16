@@ -6,7 +6,7 @@ export default function ErrorPage({ retry }: { retry: () => void }) {
         padding: 32,
         minHeight: "calc(60dvh / var(--admin-zoom, 1))",
         color: "#eee8d8",
-        background: "#101d13",
+        background: "#1a1a1a",
       }}
     >
       <h1>This admin view could not load.</h1>

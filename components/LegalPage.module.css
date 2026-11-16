@@ -16,7 +16,7 @@
 .hero {
   padding: clamp(44px, 6vw, 84px) var(--legal-gutter) clamp(32px, 4vw, 52px);
   background:
-    radial-gradient(820px 380px at 92% 0%, rgba(173, 194, 154, 0.16), transparent 65%),
+    radial-gradient(820px 380px at 92% 0%, rgba(187, 187, 187, 0.16), transparent 65%),
     var(--bs-forest);
   color: var(--bs-forest-ink);
 }

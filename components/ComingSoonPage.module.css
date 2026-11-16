@@ -25,7 +25,7 @@
 
   color: var(--bs-forest-ink);
 
-  background: url("/landscape1.webp") center / cover no-repeat;
+  background: linear-gradient(#080808,#000) center / cover no-repeat;
 }
 
 /* Dark behind the copy; the light-mode right end lifts so the green
@@ -36,8 +36,8 @@
 
   background: linear-gradient(
     90deg,
-    rgba(5, 11, 7, 0.96),
-    rgba(8, 15, 9, 0.89) 48%,
+    rgba(9, 9, 9, 0.96),
+    rgba(13, 13, 13, 0.89) 48%,
     var(--theme-surface-48-54-44-0_64, rgba(234, 231, 219, 0.64)) 76%
   );
 }
@@ -58,7 +58,7 @@
 
   background: radial-gradient(
     circle,
-    rgba(108, 123, 92, 0.2),
+    rgba(118, 118, 118, 0.2),
     transparent 68%
   );
 
@@ -166,7 +166,7 @@
   border: 1px solid rgba(240, 236, 226, 0.34);
 
   color: var(--bs-forest-ink);
-  background: rgba(5, 11, 7, 0.3);
+  background: rgba(9, 9, 9, 0.3);
 }
 
 .actions a:active,
@@ -210,7 +210,7 @@
   border-radius: var(--bs-r-control);
 
   color: var(--bs-forest-ink);
-  background: rgba(5, 11, 7, 0.32);
+  background: rgba(9, 9, 9, 0.32);
 
   transition:
     border-color var(--bs-dur-fast) ease,
@@ -266,9 +266,9 @@
 
   border-radius: 50%;
 
-  background: #a9bd96;
+  background: #b6b6b6;
 
-  box-shadow: 0 0 0 4px rgba(169, 189, 150, 0.14);
+  box-shadow: 0 0 0 4px rgba(182, 182, 182, 0.14);
 }
 
 .status p {
@@ -292,7 +292,7 @@
   display: grid;
   place-items: center;
 
-  color: var(--theme-text-240-236-226-0_78, rgba(22, 31, 20, 0.78));
+  color: var(--theme-text-240-236-226-0_78, rgba(28, 28, 28, 0.78));
 
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(120px, 14vw, 220px);
@@ -339,7 +339,7 @@
   .quickLink:hover {
     border-color: rgba(240, 236, 226, 0.34);
 
-    background: rgba(5, 11, 7, 0.5);
+    background: rgba(9, 9, 9, 0.5);
   }
 
   .quickLink:hover .quickArrow {
@@ -363,8 +363,8 @@
   .overlay {
     background: linear-gradient(
       90deg,
-      rgba(5, 11, 7, 0.96),
-      rgba(8, 15, 9, 0.9)
+      rgba(9, 9, 9, 0.96),
+      rgba(13, 13, 13, 0.9)
     );
   }
 

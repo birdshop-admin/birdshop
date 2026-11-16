@@ -177,7 +177,7 @@
   .summary > div + div { padding-left: 18px; }
 }
 @media (max-width: 700px) {
-  .hero { min-height: 850px; padding: 240px 24px 28px; }
+  .hero { min-height: 960px; padding: 350px 24px 28px; }
   .copy { width: 100%; }
   .copy h1 { font-size: clamp(66px, 16vw, 88px); }
   .eyebrow { font-size: 9px; letter-spacing: .26em; }

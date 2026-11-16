@@ -46,12 +46,12 @@
 }
 
 .tabs .active {
-  color: var(--theme-text-240-236-226-1, #263025);
+  color: var(--theme-text-240-236-226-1, #2d2d2d);
   border-color: #f2eee4;
   background: var(--theme-surface-24-28-24-1, #f2eee4);
 }
 
 .tabs .active span {
   color: #f2eee4;
-  background: #51604b;
+  background: #5b5b5b;
 }

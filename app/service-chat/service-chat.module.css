@@ -297,7 +297,7 @@
   border: 1px solid var(--bs-forest-line);
   border-radius: var(--sc-r-shell);
   background:
-    radial-gradient(circle at 85% 0%, rgba(135, 164, 118, 0.22), transparent 40%),
+    radial-gradient(circle at 85% 0%, rgba(155, 155, 155, 0.22), transparent 40%),
     radial-gradient(circle at 0% 100%, rgba(214, 183, 120, 0.08), transparent 45%),
     var(--bs-forest);
   box-shadow:
@@ -454,13 +454,13 @@
 }
 
 .steps li[data-state="done"] .stepDot {
-  border-color: #a9cc93;
-  background: #a9cc93;
-  color: #10200f;
+  border-color: #c0c0c0;
+  background: #c0c0c0;
+  color: #1b1b1b;
 }
 
 .steps li[data-state="done"]:not(:last-child)::after {
-  background: rgba(169, 204, 147, 0.5);
+  background: rgba(192, 192, 192, 0.5);
 }
 
 .steps li[data-state="current"] {
@@ -600,7 +600,7 @@
 }
 
 .futurePayment .paidLine {
-  color: #cfe0bf;
+  color: #dadada;
 }
 
 .paidLine svg {

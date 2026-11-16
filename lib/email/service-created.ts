@@ -312,7 +312,7 @@ function emailShell({
     style="
       margin:0;
       padding:0;
-      background:#08110b;
+      background:#0f0f0f;
       color:#f0ede2;
       font-family:Arial,Helvetica,sans-serif;
     "
@@ -338,7 +338,7 @@ function emailShell({
       role="presentation"
       style="
         width:100%;
-        background:#08110b;
+        background:#0f0f0f;
       "
     >
       <tr>
@@ -358,7 +358,7 @@ function emailShell({
               width:100%;
               max-width:650px;
               background:#f1eee4;
-              color:#102018;
+              color:#1c1c1c;
               border-radius:18px;
               overflow:hidden;
               border:1px solid rgba(234,230,214,.18);
@@ -368,7 +368,7 @@ function emailShell({
               <td
                 style="
                   padding:28px 34px;
-                  background:#102018;
+                  background:#1c1c1c;
                   color:#f1eee4;
                   border-bottom:1px solid rgba(241,238,228,.12);
                 "
@@ -378,7 +378,7 @@ function emailShell({
                     font-size:11px;
                     letter-spacing:4px;
                     font-weight:700;
-                    color:#aeb99f;
+                    color:#b5b5b5;
                   "
                 >
                   BIRDSHOP
@@ -408,7 +408,7 @@ function emailShell({
                     font-size:10px;
                     font-weight:700;
                     letter-spacing:3px;
-                    color:#63745f;
+                    color:#6f6f6f;
                   "
                 >
                   ${escapeHtml(
@@ -423,7 +423,7 @@ function emailShell({
                     font-weight:400;
                     font-size:38px;
                     line-height:1.08;
-                    color:#0d2117;
+                    color:#1c1c1c;
                   "
                 >
                   ${escapeHtml(
@@ -436,7 +436,7 @@ function emailShell({
                     margin:0;
                     font-size:15px;
                     line-height:1.75;
-                    color:#58645a;
+                    color:#616161;
                   "
                 >
                   ${escapeHtml(
@@ -468,7 +468,7 @@ function emailShell({
                   )}"
                   style="
                     display:block;
-                    background:#40563c;
+                    background:#921027;
                     color:#f7f2e7;
                     text-decoration:none;
                     text-align:center;
@@ -498,7 +498,7 @@ function emailShell({
                 <p
                   style="
                     margin:0;
-                    color:#6d746c;
+                    color:#727272;
                     font-size:12px;
                     line-height:1.7;
                   "
@@ -512,7 +512,7 @@ function emailShell({
           <div
             style="
               margin-top:20px;
-              color:#778078;
+              color:#7e7e7e;
               font-size:10px;
               letter-spacing:2px;
             "
@@ -556,7 +556,7 @@ function infoRow(
         font-size:9px;
         letter-spacing:2px;
         font-weight:700;
-        color:#788075;
+        color:#7e7e7e;
         vertical-align:top;
       "
     >
@@ -570,7 +570,7 @@ function infoRow(
         padding:13px 0;
         font-size:14px;
         font-weight:600;
-        color:#17241c;
+        color:#212121;
         vertical-align:top;
       "
     >
@@ -676,7 +676,7 @@ ${
       font-size:9px;
       font-weight:700;
       letter-spacing:2px;
-      color:#788075;
+      color:#7e7e7e;
     "
   >
     YOUR MESSAGE
@@ -684,7 +684,7 @@ ${
 
   <div
     style="
-      color:#263129;
+      color:#2e2e2e;
       font-size:14px;
       line-height:1.7;
     "
@@ -703,14 +703,14 @@ ${
     margin-top:22px;
     padding:20px;
     border-radius:10px;
-    background:#102018;
+    background:#1c1c1c;
     color:#f1eee4;
   "
 >
   <div
     style="
       margin-bottom:9px;
-      color:#aeb99f;
+      color:#b5b5b5;
       font-size:9px;
       font-weight:700;
       letter-spacing:2px;
@@ -763,7 +763,7 @@ ${
       footer:
         `If the private link is unavailable later, visit <a href="${escapeHtml(
           data.recoveryUrl
-        )}" style="color:#40563c;">BirdShop Private Chat</a> and enter reference <strong>${escapeHtml(
+        )}" style="color:#4f4f4f;">BirdShop Private Chat</a> and enter reference <strong>${escapeHtml(
           data.reference
         )}</strong> with the email used when you contacted BirdShop.`,
     });
@@ -919,7 +919,7 @@ ${
       font-size:9px;
       font-weight:700;
       letter-spacing:2px;
-      color:#788075;
+      color:#7e7e7e;
     "
   >
     CUSTOMER MESSAGE
@@ -927,7 +927,7 @@ ${
 
   <div
     style="
-      color:#263129;
+      color:#2e2e2e;
       font-size:14px;
       line-height:1.7;
     "
@@ -945,7 +945,7 @@ ${
   style="
     margin-top:22px;
     padding:18px 20px;
-    background:#102018;
+    background:#1c1c1c;
     color:#dfdbcf;
     border-radius:10px;
     font-size:13px;

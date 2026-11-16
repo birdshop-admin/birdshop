@@ -13,14 +13,14 @@
   background:
     radial-gradient(
       circle at 80% 15%,
-      rgba(105, 128, 91, 0.16),
+      rgba(120, 120, 120, 0.16),
       transparent 34%
     ),
     linear-gradient(
       145deg,
-      #071009,
-      #101a12 55%,
-      #0a120c
+      #0e0e0e,
+      #171717 55%,
+      #101010
     );
 
   color: var(--cream);
@@ -59,7 +59,7 @@
   border-radius: 50%;
 
   background:
-    rgba(103, 126, 89, 0.12);
+    rgba(118, 118, 118, 0.12);
 
   filter: blur(100px);
 }
@@ -112,13 +112,13 @@
   background:
     radial-gradient(
       circle at 80% 15%,
-      rgba(123, 147, 104, 0.15),
+      rgba(139, 139, 139, 0.15),
       transparent 35%
     ),
     linear-gradient(
       160deg,
-      #101a12,
-      #1b291d
+      #171717,
+      #252525
     );
 }
 
@@ -214,7 +214,7 @@
   padding:
     65px 70px;
 
-  color: var(--theme-text-240-236-226-1, #263225);
+  color: var(--theme-text-240-236-226-1, #2f2f2f);
 }
 
 .formHeading {
@@ -222,7 +222,7 @@
 }
 
 .formHeading > span {
-  color: var(--theme-text-184-196-170-1, #65735e);
+  color: var(--theme-text-184-196-170-1, #6f6f6f);
 }
 
 .formHeading h2 {
@@ -240,7 +240,7 @@
 .formHeading p {
   margin: 0;
 
-  color: var(--theme-text-184-196-170-1, #757d72);
+  color: var(--theme-text-184-196-170-1, #7b7b7b);
 
   font-family: var(--serif);
 
@@ -262,7 +262,7 @@
 }
 
 .field label {
-  color: var(--theme-text-184-196-170-1, #5f6d58);
+  color: var(--theme-text-184-196-170-1, #696969);
 
   font-size: 10px;
   font-weight: 700;
@@ -280,13 +280,13 @@
 
   border:
     1px solid
-    var(--theme-border-207-215-196-0_16, rgba(45, 57, 41, 0.16));
+    var(--theme-border-207-215-196-0_16, rgba(53, 53, 53, 0.16));
 
   border-radius: 5px;
 
   outline: none;
 
-  color: var(--theme-text-240-236-226-1, #303c2e);
+  color: var(--theme-text-240-236-226-1, #383838);
 
   background: var(--theme-surface-24-28-24-1, #f9f6ee);
 
@@ -300,11 +300,11 @@
 }
 
 .field input:focus {
-  border-color: var(--theme-border-207-215-196-1, #75866c);
+  border-color: var(--theme-border-207-215-196-1, #818181);
 
   box-shadow:
     0 0 0 3px
-    rgba(101, 119, 91, 0.08);
+    rgba(113, 113, 113, 0.08);
 }
 
 .passwordLabel {
@@ -317,7 +317,7 @@
 .passwordLabel button {
   border: 0;
 
-  color: var(--theme-text-184-196-170-1, #66755f);
+  color: var(--theme-text-184-196-170-1, #707070);
 
   background: transparent;
 
@@ -381,8 +381,8 @@
   background:
     linear-gradient(
       90deg,
-      #4d5e45,
-      #405139
+      #595959,
+      #4c4c4c
     );
 
   cursor: pointer;
@@ -403,8 +403,8 @@
   background:
     linear-gradient(
       90deg,
-      #586b50,
-      #485b40
+      #656565,
+      #555555
     );
 }
 
@@ -417,7 +417,7 @@
 .securityNote {
   margin: -5px 0 0;
 
-  color: var(--theme-text-184-196-170-1, #8a9087);
+  color: var(--theme-text-184-196-170-1, #8e8e8e);
 
   text-align: center;
 

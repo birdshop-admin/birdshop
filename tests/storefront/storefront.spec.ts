@@ -84,7 +84,7 @@ for (const width of [390, 768, 1440]) {
       ["/products", "Products", ""],
       ["/services", "Services", ""],
       ["/referrals", "Refer friends.", ""],
-      ["/reviews", "Reviews", "reviews-cosmos-landscape"],
+      ["/reviews", "Reviews", "reviews-christmas-reference"],
     ] as const) {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1, name: heading, exact: true })).toBeVisible();
@@ -92,12 +92,12 @@ for (const width of [390, 768, 1440]) {
         await expect(page.locator("img[src*='birdshop-christmas-bells-reference']")).toBeVisible();
       }
       if (imageName) {
-        await expect(page.locator("[data-cosmic-scene]")).toBeVisible();
-        await expect(page.locator("[data-cosmic-layer='vortex']").first()).toBeVisible();
-        await expect(page.locator("[data-cosmic-layer='rock']").first()).toBeVisible();
-        await expect(page.locator("[data-cosmic-layer='cloud']").first()).toBeVisible();
+        await expect(page.locator("[data-christmas-scene]")).toBeVisible();
+        await expect(page.locator("[data-christmas-layer='flight']").first()).toBeVisible();
+        await expect(page.locator("[data-christmas-layer='sleigh']")).toBeVisible();
+        await expect(page.locator("[data-cosmic-scene]")).toHaveCount(0);
         await expect(page.locator(".bs-editorial-bells")).toHaveCount(0);
-        const sceneAsset = await page.request.get("/reviews-cosmos-landscape.webp");
+        const sceneAsset = await page.request.get("/reviews-christmas-reference.webp");
         expect(sceneAsset.ok()).toBe(true);
         expect(sceneAsset.headers()["content-type"]).toContain("image/webp");
       }

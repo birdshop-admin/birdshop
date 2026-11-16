@@ -1,0 +1,18 @@
+.scene { position:absolute; inset:0; overflow:hidden; isolation:isolate; pointer-events:none; contain:paint; background:#020c16; }
+.composition { position:absolute; inset:0 0 0 25%; }
+.plate { position:absolute; inset:0; background:url('/reviews-christmas-reference.webp') center 18% / cover no-repeat; }
+.stars { position:absolute; inset:0; opacity:.25; background-image:radial-gradient(1px 1px at 23px 19px,#d7efff 75%,transparent),radial-gradient(1px 1px at 117px 89px,#b5dce8 80%,transparent); background-size:293px 241px,367px 313px; animation:winter-stars 9s ease-in-out infinite alternate; }
+.flight { position:absolute; inset:0; transform:translateX(25%); animation:santa-pass 100s linear -50s infinite; }
+.sleigh { position:absolute; top:17%; width:54%; aspect-ratio:1920 / 832; background:url('/reviews-christmas-sleigh.webp') center / contain no-repeat; animation:sleigh-bob 7s ease-in-out infinite alternate; }
+.readability { position:absolute; inset:0; background:linear-gradient(90deg,#020c16 0%,#020c16de 19%,#020c1670 36%,transparent 55%),linear-gradient(0deg,#000 0%,#0006 14%,transparent 40%); }
+.scene[data-active="false"] * { animation-play-state:paused; }
+@keyframes santa-pass { from { transform:translate3d(-70%,15px,0); } to { transform:translate3d(120%,-20px,0); } }
+@keyframes sleigh-bob { from { transform:translate3d(0,2px,0) rotate(-.5deg); } to { transform:translate3d(0,-3px,0) rotate(.5deg); } }
+@keyframes winter-stars { from { opacity:.1; } to { opacity:.35; } }
+@media(max-width:700px) {
+ .composition { inset:0 auto auto 50%; width:780px; height:624px; transform:translateX(-50%); }
+ .plate { background-position:center; }
+ .sleigh { width:47%; }
+ .readability { background:linear-gradient(0deg,#000 0%,#000a 40%,transparent 75%),linear-gradient(90deg,#0004,transparent 65%); }
+}
+@media(prefers-reduced-motion:reduce) { .scene * { animation:none; } }

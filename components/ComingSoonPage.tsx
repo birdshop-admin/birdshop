@@ -98,7 +98,7 @@ export default function ComingSoonPage({
         {/* Theme-swapped logo pair: both load eagerly, CSS shows one. */}
         <div className={styles.monogram} aria-hidden="true">
           <Image
-            src="/greenbs.png"
+            src="/cremebs.png"
             alt=""
             width={300}
             height={300}

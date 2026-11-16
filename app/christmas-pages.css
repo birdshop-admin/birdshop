@@ -1,14 +1,14 @@
 /* BirdShop owner-approved Christmas editorial system.
-   Public pages only. Does not restyle admin / checkout interiors.
+   Public editorial pages, including nested customer and checkout flows.
    Source of truth: the existing Home hero in StorefrontHero.module.css. */
 /* Scope the complete canvas, including body gutters and native controls, to
-   the editorial route marker. Referrals uses the same marker as its siblings. */
-html:has(.bs-editorial-page) { color-scheme:dark; accent-color:#c63148; background:#000; }
-html:has(.bs-editorial-page) body {
+   the shared public header, so nested detail/purchase/error routes inherit it too. */
+html:has(.site-header) { color-scheme:dark; accent-color:#c63148; background:#000; }
+html:has(.site-header) body {
   background:#000; color:#f5f2ed;
 }
-html:has(.bs-editorial-page),
-main.bs-editorial-page {
+html:has(.site-header),
+main.page-shell:has(.site-header) {
   --bs-canvas:#000; --bs-page:#000; --bs-band:#080808;
   --bs-card:#090909; --bs-raised:#101010; --bs-field:#070707;
   --bs-ink:#f5f2ed; --bs-muted:#c2bfbb; --bs-faint:#99928e;
@@ -37,8 +37,8 @@ main.bs-editorial-page {
   --serif:Georgia,"Times New Roman",serif;
   --sans:Arial,Helvetica,sans-serif;
 }
-.page-shell.bs-editorial-page {background:#000;color:#f5f2ed;}
-html:has(.bs-editorial-page) ::selection {background:#921027;color:#f5f2ed;}
+.page-shell:has(.site-header) {background:#000;color:#f5f2ed;}
+html:has(.site-header) ::selection {background:#921027;color:#f5f2ed;}
 main.bs-editorial-page .site-footer {
   color:#eee9e4;background:#000!important;
   border-top:1px solid #ffffff2b;

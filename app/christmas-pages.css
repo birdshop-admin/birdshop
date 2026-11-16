@@ -465,3 +465,26 @@ main.bs-cart-page [class*="_emptyCart__"] {
 }
 main.bs-cart-page [class*="_emptyCart__"] h2 {color:#f5f2ed!important}
 main.bs-cart-page [class*="_emptyCart__"] p {color:#c7c2bb!important}
+
+/* Reviews hero: preserve the supplied group photo without decoration overlapping
+   anyone's face. The homepage retains its own approved moving bells. */
+.bs-editorial-hero--reviews .bs-editorial-bells { display:none!important; }
+.bs-editorial-hero--reviews .bs-editorial-photowell {
+  top:20px;right:3%;bottom:20px;width:min(48%,680px);
+  overflow:hidden;
+}
+.bs-editorial-hero--reviews .bs-editorial-photo {
+  object-fit:contain;
+  object-position:center;
+  filter:brightness(1.12) contrast(1.02) saturate(.94);
+  image-rendering:auto;
+}
+.bs-editorial-hero--reviews .bs-editorial-photowell::after {
+  background:linear-gradient(90deg,#000 0%,rgba(0,0,0,.22) 20%,transparent 50%),
+    linear-gradient(0deg,#000 0%,transparent 11%);
+}
+@media(max-width:640px){
+  .bs-editorial-hero--reviews .bs-editorial-photowell {
+    width:100%;right:0;top:0;bottom:0;opacity:.24;
+  }
+}

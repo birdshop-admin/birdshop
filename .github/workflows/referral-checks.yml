@@ -1,5 +1,8 @@
 name: Referral feature checks
 on:
+  push:
+    branches:
+      - "feat/referrals-affiliate-program"
   pull_request:
     paths:
       - "app/ref/**"

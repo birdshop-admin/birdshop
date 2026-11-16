@@ -384,6 +384,22 @@ export default function HomeClient({
 
         <div className="catalog-divider" aria-hidden="true" />
 
+        {/* Referral section links to verified-email enrollment in PR #1.
+            Rewards are owner reviewed and only qualify on an eligible order. */}
+        <section className="ink-referral" aria-labelledby="home-referral-title">
+          <div>
+            <span className="ink-referral__eyebrow">BIRD SHOP / REFER &amp; EARN</span>
+            <h2 id="home-referral-title">A good find<br />is worth sharing.</h2>
+            <p>Get $0.50 USD for each new customer who completes their first qualifying purchase. Referrals are verified and reviewed before payout.</p>
+          </div>
+          <div className="ink-referral__actions">
+            <Link href="/referrals">Get your referral link <span aria-hidden="true">↗</span></Link>
+            <Link href="/referrals">Apply as an affiliate <span aria-hidden="true">↗</span></Link>
+          </div>
+        </section>
+
+        <div className="catalog-divider" aria-hidden="true" />
+
         {/* =================================================
             HOW IT WORKS
         ================================================= */}

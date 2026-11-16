@@ -181,8 +181,10 @@ function ServiceCard({ service }: { service: Service }) {
 
 export default function ServicesPage({
   serviceList,
+  loadError = false,
 }: {
   serviceList: Service[];
+  loadError?: boolean;
 }) {
   const [search, setSearch] = useState("");
   const [game, setGame] = useState(ALL_GAMES);
@@ -305,6 +307,14 @@ export default function ServicesPage({
         primary={{ href: "#services-catalog", label: "EXPLORE SERVICES" }}
         secondary={{ href: "/contact?topic=service", label: "OPEN PRIVATE CHAT" }}
       />
+
+      {loadError && (
+        <div className="bs-service-unavailable" role="status">
+          <strong>Service listings are temporarily unavailable.</strong>
+          <span>We couldn't load published services right now. You can still open a private service request.</span>
+          <Link href="/contact?topic=service">Contact BirdShop ↗</Link>
+        </div>
+      )}
 
       {/* PROCESS */}
 

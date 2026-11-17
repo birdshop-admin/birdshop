@@ -10,6 +10,7 @@ import PostPurchaseReferral from "./PostPurchaseReferral";
 
 type Delivery = {
   referralClaimEnabled?: boolean;
+  referralAlreadyRecorded?: boolean;
   order: {
     reference: string;
     total: number;
@@ -384,7 +385,7 @@ function OrderDetails({ token }: { token: string }) {
         )}
 
         {data?.referralClaimEnabled && order && (
-          <PostPurchaseReferral token={token} />
+          <PostPurchaseReferral token={token} alreadyRecorded={Boolean(data.referralAlreadyRecorded)} />
         )}
 
         <nav

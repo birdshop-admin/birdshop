@@ -54,3 +54,76 @@ The financial tables are strictly future scaffolding. They are not connected to 
 **B. Marketplace transaction engine** — payment partner, fee snapshots, idempotent order transitions, fulfillment locks, reviews.  
 **C. Dispute and money ledger** — refunds/chargebacks, withdrawals after settlement, owner queue, audited payout approval.  
 **D. Release quality** — integration tests, compliance review and owner-approved deployment.
+
+
+
+## Milestone B (November 16, 2026): transaction state and dispute holds
+
+New draft-only migration: `supabase/migrations/20261117000000_marketplace_transaction_safety.sql`.
+**Requires the earlier Phase 1 seller schema migration first. Neither migration was applied to the production Supabase project in this phase.**
+
+The marketplace now includes order and dispute workflow screens:
+- Buyer: `/marketplace/orders`: see actual seller-owned orders, cancel unpaid orders, confirm delivery and file a dispute. Nothing is fabricated when orders are empty.
+- Seller: `/sell/orders`: orders belonging to the approved seller only; begin fulfillment after verified payment and add delivery proof summary before marking delivered.
+- Owner: `/admin/resellers/orders`: payment verification status, per-order commission snapshots, earning holds, manual completion and release of **ledger availability only**.
+- Owner: `/admin/resellers/disputes`: inspect reported issues and begin investigations. No unsupported refund or unilateral payout button.
+- No change to the existing first-party Stripe checkout, first-party inventory or existing customer-service chat.
+
+### Transaction state machine — server-side enforced
+
+```
+payment_pending --[provider evidence only]--> paid
+paid --[seller]--> fulfillment_pending
+fulfillment_pending --[seller delivery note]--> delivered
+delivered --[buyer]--> buyer_confirmed
+buyer_confirmed --[owner]--> completed
+payment_pending --[buyer/owner]--> cancelled
+paid/fulfillment_pending/delivered/buyer_confirmed/completed
+   --[buyer dispute]--> disputed (payout hold)
+paid/fulfillment_pending/delivered/buyer_confirmed/completed/disputed
+   --[verified full refund/chargeback evidence]--> refunded
+```
+
+A server-only `birdshop_marketplace_transition_order` RPC validates actor ownership,
+expected previous state and an idempotency event key under a row lock.
+`paid` and `refunded` require payment-provider evidence **for the same order,
+amount and currency**. Only a future signature-verified provider webhook adapter
+may record that evidence. There is no public `mark-paid` endpoint.
+
+At completion, BirdShop records one **pending** seller earning
+(`subtotal - snapshotted commission`). Default snapshot fee is currently
+10% (owner-configurable for future orders only); the hold is 7 days from
+owner completion (proposed default, subject to approval). The owner can release
+ledger availability after the hold and only when the order is completed,
+undisputed and the seller is active. This is **not a bank or wallet payout**.
+Unique earning event keys and payout-allocation uniqueness provide duplicate
+protections for the future withdrawal workflow.
+
+A verified refund voids unpaid earnings, cancels pending payout allocations,
+and records reversal debt for any already-paid seller allocation. Partial
+refunds, manual withdrawal approvals and dispute resolution require further
+design and integration before use.
+
+### User decisions required before actual checkout
+
+1. **Legal Stripe merchant identity:** registered country, business legal
+   entity and whether its account owner has authorized BirdShop marketplace
+   activity. The owner said a friend overseas handles the current Stripe account;
+   do not infer that it can legally onboard and pay third-party sellers.
+2. **Seller geography and payout provider:** where sellers live, approved
+   payment rail, KYC eligibility and whether cross-border disbursements are supported.
+3. **Commission:** confirm a 10% starting platform fee or choose a different rate.
+4. **Buyer confirmation and payout holds:** confirm a default 7 days after owner
+   completion, and the rules for no-response orders and chargeback reversals.
+5. **Scope:** launch with one seller per marketplace order, no mixed first-party
+   and reseller carts, no unverified gift-card or crypto seller payments.
+6. **Disputes and seller eligibility:** clear owner-reviewed proof requirements,
+   prohibited items, buyer policy, notice/appeal process and refund authority.
+
+### Explicit unresolved integration
+
+There is no public marketplace order-creation/checkout route, no webhook
+signature verification adapter, no seller settlement provider, no live
+payout requests and no production migrations. A screenshot, buyer chat,
+voucher or claimed transfer never marks an order paid. Design and end-to-end
+staging checks must precede any owner-approved activation.

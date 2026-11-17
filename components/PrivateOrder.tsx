@@ -383,7 +383,7 @@ function OrderDetails({ token }: { token: string }) {
           </div>
         )}
 
-        {data?.referralClaimEnabled && order?.paid_at !== null && (
+        {data?.referralClaimEnabled && order && (
           <PostPurchaseReferral token={token} />
         )}
 

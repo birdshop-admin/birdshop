@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import styles from "./PostPurchaseReferral.module.css";
 
-export default function PostPurchaseReferral({ token }: { token: string }) {
+export default function PostPurchaseReferral({ token, alreadyRecorded = false }: { token: string; alreadyRecorded?: boolean }) {
   const [code, setCode] = useState("");
   const [status, setStatus] = useState("");
   const [pending, setPending] = useState(false);
@@ -39,6 +39,14 @@ export default function PostPurchaseReferral({ token }: { token: string }) {
     } finally {
       setPending(false);
     }
+  }
+
+  if (alreadyRecorded) {
+    return <section className={styles.panel} aria-label="Referral credited">
+      <span className={styles.eyebrow}>BIRDSHOP / CREDIT A FRIEND</span>
+      <h2>Your referral is recorded.</h2>
+      <p>This purchase already has a linked referral. Only one referral can be credited per order.</p>
+    </section>;
   }
 
   return (

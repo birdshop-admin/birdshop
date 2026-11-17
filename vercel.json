@@ -2,7 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "git": {
     "deploymentEnabled": {
-      "feat/aer-charcoal-storefront": false
+      "feat/aer-charcoal-storefront": false,
+      "feat/reseller-marketplace-phase1": false
     }
-  }
+  },
+  "ignoreCommand": "node scripts/vercel-ignore.mjs official"
 }

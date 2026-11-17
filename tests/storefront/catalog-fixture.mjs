@@ -37,8 +37,19 @@ http.createServer((request, response) => {
   }
   // A successful local stub exercises the real server action without sending email.
   if (url.pathname === '/auth/v1/otp') { response.end('{}'); return; }
+  const sellerUser = '00000000-0000-4000-8000-000000000007';
+  const sellerId = '20000000-0000-4000-8000-000000000007';
+  const sellerProfile = { id: sellerId, user_id: sellerUser, handle: 'qa-seller', display_name: 'QA BirdShop seller',
+    description: 'Seller dashboard fixture only.', logo_url: null, status: 'active', commission_bps: 700,
+    earned_tier: 'bronze', partner_approved: false, commission_override_bps: null, qualifying_sales_cents: 125000 };
   let value = url.pathname === '/rest/v1/products' ? products
     : url.pathname === '/rest/v1/birdshop_services' ? services
+    : url.pathname === '/rest/v1/birdshop_seller_profiles' && url.searchParams.get('user_id') === `eq.${sellerUser}` ? [sellerProfile]
+    : url.pathname === '/rest/v1/birdshop_seller_connect_accounts' ? []
+    : url.pathname === '/rest/v1/birdshop_marketplace_orders' && url.searchParams.get('seller_id') === `eq.${sellerId}`
+      ? [{ id: '40000000-0000-4000-8000-000000000007', seller_id: sellerId, state: 'completed', subtotal_cents: 10000,
+        commission_cents: 800, commission_bps: 800, refunded_cents: 2000, stripe_dispute_status: null, fraudulent: false,
+        listing_title: 'Completed BirdShop service', created_at: '2026-11-16T12:00:00Z' }]
     : url.pathname === '/rest/v1/birdshop_referrers' && url.searchParams.get('contact_email') === 'eq.qa-dashboard@example.test'
       ? [{ id: 'qa-referrer', code: 'BSQATEST01', kind: 'customer', status: 'approved', display_name: 'QA referral customer' }]
     : url.pathname === '/rest/v1/birdshop_referral_rewards'

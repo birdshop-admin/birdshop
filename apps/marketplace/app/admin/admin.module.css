@@ -1,0 +1,39 @@
+.page {
+  display: grid;
+  grid-template-columns: 245px minmax(0, 1fr);
+  min-height: 100vh;
+  background: #101012;
+  color: #f6efe5;
+}
+.content {
+  min-width: 0;
+  padding: 42px clamp(20px, 4vw, 60px);
+}
+.topbar {
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #ffffff25;
+  padding-bottom: 28px;
+}
+.topbar h1 {
+  font:
+    400 50px Georgia,
+    serif;
+  margin: 12px 0;
+}
+.topbar p {
+  color: #beb6b0;
+}
+.topbar span {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #eaa5b5;
+}
+@media (max-width: 850px) {
+  .page {
+    grid-template-columns: 1fr;
+  }
+}

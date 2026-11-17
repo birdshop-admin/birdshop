@@ -118,3 +118,13 @@ for (const width of [390, 768, 1440]) {
     }
   });
 }
+
+for (const width of [390,1440]) {
+  test(`official store keeps marketplace external at ${width}px`, async ({page}) => {
+    await page.setViewportSize({width,height:960});await page.goto("/");
+    await expect(page.getByRole("banner").getByRole("link",{name:"Marketplace",exact:true})).toHaveCount(0);
+    await expect(page.getByRole("navigation",{name:"Footer navigation"}).getByRole("link",{name:"Marketplace",exact:true})).toHaveAttribute("href","https://market.birdshop.store");
+    expect((await page.request.get("/sell/dashboard")).status()).toBe(404);
+    expect((await page.request.get("/api/stripe/connect/webhook")).status()).toBe(404);
+  });
+}

@@ -203,13 +203,39 @@ begin
     if not found then raise exception 'Verified refund evidence is missing'; end if;
     update public.birdshop_marketplace_orders set refunded_at=now()
       where id=p_order_id;
-    -- Revoke future availability and record an offsetting entry (if earned).
-    update public.birdshop_marketplace_ledger set status='void'
-      where order_id=p_order_id and entry_type='earned'
-        and status in ('pending','available');
-    select coalesce(sum(amount_cents),0) into v_seller_net
-      from public.birdshop_marketplace_ledger
-      where order_id=p_order_id and entry_type='earned';
+    -- Stop queued/approved manual payouts containing a refunded earning.
+    -- Release ALL allocations from those rejected payouts. Paid payouts remain immutable.
+    update public.birdshop_marketplace_payouts p
+      set status='rejected'
+      where p.status in ('requested','approved')
+        and exists (
+          select 1 from public.birdshop_marketplace_payout_allocations a
+          join public.birdshop_marketplace_ledger e on e.id=a.ledger_id
+          where a.payout_id=p.id and e.order_id=p_order_id
+        );
+    delete from public.birdshop_marketplace_payout_allocations a
+      using public.birdshop_marketplace_payouts p
+      where a.payout_id=p.id and p.status='rejected';
+
+    -- An unpaid earning is void, not both void AND an offsetting debt.
+    -- If a payout has already been confirmed PAID, preserve an offsetting
+    -- refund/chargeback debt so the seller is not credited twice.
+    select coalesce(sum(e.amount_cents),0) into v_seller_net
+      from public.birdshop_marketplace_ledger e
+      where e.order_id=p_order_id and e.entry_type='earned'
+        and exists(
+          select 1 from public.birdshop_marketplace_payout_allocations a
+          join public.birdshop_marketplace_payouts p on p.id=a.payout_id
+          where a.ledger_id=e.id and p.status='paid'
+        );
+    update public.birdshop_marketplace_ledger e
+      set status='void'
+      where e.order_id=p_order_id and e.entry_type='earned'
+        and not exists(
+          select 1 from public.birdshop_marketplace_payout_allocations a
+          join public.birdshop_marketplace_payouts p on p.id=a.payout_id
+          where a.ledger_id=e.id and p.status='paid'
+        );
     if v_seller_net>0 then
       insert into public.birdshop_marketplace_ledger(
         seller_id,order_id,event_key,entry_type,amount_cents,status

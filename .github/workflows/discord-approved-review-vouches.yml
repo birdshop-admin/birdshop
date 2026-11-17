@@ -1,0 +1,31 @@
+name: Publish approved BirdShop reviews to Discord
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: birdshop-approved-review-vouches
+  cancel-in-progress: false
+
+jobs:
+  send-vouches:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Dispatch approved review outbox
+        env:
+          JOB_URL: ${{ secrets.BIRDSHOP_DISCORD_VOUCH_JOB_URL }}
+          JOB_SECRET: ${{ secrets.DISCORD_VOUCH_CRON_SECRET }}
+        run: |
+          if [ -z "$JOB_URL" ] || [ -z "$JOB_SECRET" ]; then
+            echo "Review vouch dispatch is not configured; skipping."
+            exit 0
+          fi
+          case "$JOB_URL" in https://*) ;; *) echo "Job URL must be HTTPS"; exit 1 ;; esac
+          curl --fail --silent --show-error --max-time 90 --retry 2 \
+            -X POST -H "Authorization: Bearer $JOB_SECRET" "$JOB_URL"

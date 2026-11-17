@@ -1,0 +1,75 @@
+name: BirdShop one-time public updates introduction
+
+on:
+  push:
+    branches:
+      - ops/public-discord-intro-20261117
+    paths:
+      - .github/workflows/public-discord-intro-20261117.yml
+
+permissions:
+  contents: read
+
+jobs:
+  post-public-intro:
+    name: Post initial brief public update
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Announce recent website updates in public channel
+        env:
+          DISCORD_PUBLIC_UPDATES_WEBHOOK_URL: ${{ secrets.DISCORD_PUBLIC_UPDATES_WEBHOOK_URL }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import urllib.error
+          import urllib.request
+          from urllib.parse import urlparse
+
+          url = os.environ.get("DISCORD_PUBLIC_UPDATES_WEBHOOK_URL", "").strip()
+          if not url:
+              raise SystemExit("DISCORD_PUBLIC_UPDATES_WEBHOOK_URL secret is missing.")
+          parsed = urlparse(url)
+          if (parsed.scheme != "https"
+              or parsed.hostname not in ("discord.com", "discordapp.com")
+              or not re.fullmatch(r"/api/webhooks/\d+/[^/]+/?", parsed.path)):
+              raise SystemExit("Public Discord webhook URL is not valid; check the GitHub Actions secret.")
+
+          payload = {
+              "username": "BirdShop Updates",
+              "allowed_mentions": {"parse": []},
+              "embeds": [{
+                  "title": "BirdShop • Website Update",
+                  "description": (
+                      "• Refreshed black-and-burgundy storefront design.\n"
+                      "• Improved product cards, cart buttons, and mobile browsing.\n"
+                      "• Updated the Reviews page with a new seasonal look."
+                  ),
+                  "color": 0x921027,
+                  "url": "https://birdshop.store",
+                  "footer": {"text": "BirdShop • Recent improvements • Availability may vary by rollout"}
+              }]
+          }
+
+          request = urllib.request.Request(
+              url,
+              data=json.dumps(payload).encode("utf-8"),
+              method="POST",
+              headers={
+                  "Content-Type": "application/json",
+                  "User-Agent": "BirdShop-Public-Updates/1.0"
+              }
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=20) as res:
+                  if res.status not in (200, 204):
+                      raise SystemExit("Unexpected Discord response: HTTP " + str(res.status))
+          except urllib.error.HTTPError as error:
+              raise SystemExit("Discord rejected public announcement: HTTP " + str(error.code))
+          except urllib.error.URLError:
+              raise SystemExit("Could not reach Discord public webhook.")
+
+          print("Public BirdShop website update successfully delivered.")
+          PY

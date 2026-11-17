@@ -50,7 +50,23 @@ jobs:
               ;;
             2??) ;;
             *)
-              echo "::error::Review endpoint returned HTTP $status; check Vercel deployment, environment variables and server logs."
+              # Read only a fixed allowlist of server error categories; never print arbitrary responses.
+              reason="$(python3 - "$response" <<'PY'
+import json,sys
+try:
+    with open(sys.argv[1], encoding="utf-8") as f:
+        message = json.load(f).get("error", "")
+except (ValueError, UnicodeError, OSError):
+    message = ""
+allowed = {
+    "Discord webhook not configured": "Discord webhook URL is missing or invalid in Vercel.",
+    "Invalid public origin": "BIRDSHOP_PUBLIC_ORIGIN is invalid in Vercel.",
+    "Review queue unavailable": "Supabase review queue RPC failed; inspect Vercel function logs.",
+}
+print(allowed.get(message, "Unexpected server error; inspect Vercel function logs."))
+PY
+)"
+              echo "::error::Review endpoint returned HTTP $status: $reason"
               exit 1
               ;;
           esac

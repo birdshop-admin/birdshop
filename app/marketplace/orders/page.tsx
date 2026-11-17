@@ -78,7 +78,7 @@ export default async function BuyerMarketplaceOrders(){
                   <input type="hidden" name="order_id" value={o.id}/>
                   <label className={styles.label} htmlFor={`reason-${o.id}`}>Explain the issue (10–3,000 characters)</label>
                   <textarea className={styles.field} name="reason" id={`reason-${o.id}`} minLength={10} maxLength={3000} required/>
-                  <p className={styles.small}>Filing a dispute pauses earnings release while the owner investigates. Don't include passwords or private redemption codes.</p>
+                  <p className={styles.small}>Filing a dispute pauses earnings release while the owner investigates. Do not include passwords or private redemption codes.</p>
                   <button type="submit" className={styles.button}>Open dispute</button>
                 </form>
               </details>}

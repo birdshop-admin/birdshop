@@ -6,8 +6,11 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCart } from "@/app/cart-context";
 import styles from "./PrivateOrder.module.css";
+import PostPurchaseReferral from "./PostPurchaseReferral";
 
 type Delivery = {
+  referralClaimEnabled?: boolean;
+  referralAlreadyRecorded?: boolean;
   order: {
     reference: string;
     total: number;
@@ -379,6 +382,10 @@ function OrderDetails({ token }: { token: string }) {
               </Link>
             </aside>
           </div>
+        )}
+
+        {data?.referralClaimEnabled && order && (
+          <PostPurchaseReferral token={token} alreadyRecorded={Boolean(data.referralAlreadyRecorded)} />
         )}
 
         <nav

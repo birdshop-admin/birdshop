@@ -31,7 +31,9 @@ export default async function ReferralDashboard({
   const email = verified ? user!.email!.toLowerCase() : null;
 
   let referrer: { id: string; code: string; kind: string; status: string; display_name: string } | null = null;
-  let rewards: { amount_cents: number; status: string; created_at: string }[] = [];
+  let rewards: { amount_cents: number; status: string; created_at: string; referred_email: string }[] = [];
+  const claimsEnabled = process.env.BIRDSHOP_POSTPURCHASE_REFERRALS_ENABLED === "true";
+  let creditedBuyers = new Set<string>();
   if (email) {
     const admin = createAdminClient();
     const result = await admin.from("birdshop_referrers")
@@ -40,10 +42,20 @@ export default async function ReferralDashboard({
     referrer = result.data;
     if (referrer) {
       const ledger = await admin.from("birdshop_referral_rewards")
-        .select("amount_cents,status,created_at").eq("referrer_id",referrer.id)
+        .select("amount_cents,status,created_at,referred_email").eq("referrer_id",referrer.id)
         .order("created_at",{ascending:false}).limit(100);
       if (ledger.error) throw new Error("Referral ledger is unavailable.");
       rewards = ledger.data ?? [];
+      creditedBuyers = new Set(rewards.filter(r => !["rejected","reversed"].includes(r.status) && typeof r.referred_email === "string").map(r => r.referred_email.toLowerCase()));
+      if (claimsEnabled) {
+        const claims = await admin.from("birdshop_referral_attributions")
+          .select("referred_email")
+          .eq("referrer_id", referrer.id)
+          .not("verified_at", "is", null)
+          .limit(1000);
+        if (claims.error) throw new Error("Verified referrals are unavailable.");
+        for (const claim of claims.data ?? []) creditedBuyers.add(claim.referred_email.toLowerCase());
+      }
     }
   }
 
@@ -124,6 +136,11 @@ export default async function ReferralDashboard({
                 <input id="my-ref-link" className={styles.input} readOnly value={`${origin}/ref/${referrer.code}`} />
                 <p>Share this link with people who have never purchased from BirdShop before.</p></> :
               <p>Your link will become active after approval. You cannot earn rewards while pending, rejected or suspended.</p>}
+          </section>
+          <section className={styles.panel}>
+            <h2>Referred buyers</h2>
+            <p><strong>{creditedBuyers.size}</strong> verified qualifying buyer{creditedBuyers.size === 1 ? "" : "s"} recorded.</p>
+            <p className={styles.disclaimer}>Paid first purchases are counted only once. Verified buyer credit does not mean the $0.50 reward is approved or payable.</p>
           </section>
           <section className={styles.panel}>
             <h2>Earnings</h2>

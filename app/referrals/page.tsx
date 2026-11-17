@@ -46,7 +46,7 @@ export default async function ReferralDashboard({
         .order("created_at",{ascending:false}).limit(100);
       if (ledger.error) throw new Error("Referral ledger is unavailable.");
       rewards = ledger.data ?? [];
-      creditedBuyers = new Set(rewards.filter(r => !["rejected","reversed"].includes(r.status)).map(r => r.referred_email.toLowerCase()));
+      creditedBuyers = new Set(rewards.filter(r => !["rejected","reversed"].includes(r.status) && typeof r.referred_email === "string").map(r => r.referred_email.toLowerCase()));
       if (claimsEnabled) {
         const claims = await admin.from("birdshop_referral_attributions")
           .select("referred_email")

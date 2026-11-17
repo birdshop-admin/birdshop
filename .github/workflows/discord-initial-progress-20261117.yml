@@ -32,9 +32,12 @@ jobs:
           if not webhook:
               raise SystemExit("Missing Discord changelog webhook repository secret.")
           u = urlparse(webhook)
-          if (u.scheme != "https" or u.hostname != "discord.com"
-                  or not u.path.startswith("/api/webhooks/")):
-              raise SystemExit("Discord webhook secret is invalid.")
+          if u.scheme != "https":
+              raise SystemExit("Discord webhook secret must be a full HTTPS URL.")
+          if u.hostname not in ("discord.com", "discordapp.com"):
+              raise SystemExit("Discord webhook secret has the wrong hostname; copy the webhook URL from Discord Integrations.")
+          if not u.path.startswith("/api/webhooks/"):
+              raise SystemExit("Discord webhook secret is not a webhook URL; it must contain /api/webhooks/.")
 
           embed = {
               "title": "BirdShop — November Website Progress Update",

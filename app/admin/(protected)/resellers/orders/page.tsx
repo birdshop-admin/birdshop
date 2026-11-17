@@ -51,8 +51,7 @@ export default async function OwnerMarketplaceOrders(){
         </div>}
         {orders.map(o=>{
           const earning=ledger.find(l=>l.order_id===o.id&&l.entry_type==="earned");
-          const canRelease=o.state==="completed"&&o.payout_eligible_after&&
-            new Date(o.payout_eligible_after).getTime()<=Date.now()&&earning?.status==="pending";
+          const canRelease=o.state==="completed"&&o.payout_eligible_after&&earning?.status==="pending";
           return <article key={o.id} style={{border:"1px solid #ffffff3a",background:"#090909",
             color:"#eee",padding:22,marginTop:15}}>
             <h2 style={{font:"italic 28px Georgia,serif",margin:"0 0 12px"}}>

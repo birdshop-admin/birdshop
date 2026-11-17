@@ -131,5 +131,27 @@ revoke all on function public.birdshop_claim_postpurchase_referral(uuid,text)
 grant execute on function public.birdshop_claim_postpurchase_referral(uuid,text)
   to service_role;
 
+-- A refunded buyer must stop counting as a verified credited purchase.
+-- Keep the original attribution immutable to prevent another code being claimed.
+create or replace function public.birdshop_unverify_refunded_referral()
+returns trigger language plpgsql security definer
+set search_path=pg_catalog,public,pg_temp as $
+begin
+  if new.payment_status in ('partially_refunded','refunded')
+     or coalesce(new.refunded_amount,0)>0 then
+    update public.birdshop_referral_attributions a
+       set verified_at=null
+      from public.birdshop_checkout_attempts t
+     where a.attempt_id=t.id and t.order_id=new.id
+       and a.verified_at is not null;
+  end if;
+  return new;
+end;
+$;
+drop trigger if exists birdshop_order_referral_unverify on public.orders;
+create trigger birdshop_order_referral_unverify
+after update of payment_status,refunded_amount on public.orders
+for each row execute function public.birdshop_unverify_refunded_referral();
+
 notify pgrst,'reload schema';
 commit;

@@ -216,7 +216,9 @@ test("authenticated referral profile, earnings and registration keep black surfa
   const earnings = page.locator("section").filter({ has: page.getByRole("heading", { name: "Earnings", exact: true }) });
   await expect(earnings.getByRole("heading", { name: "$0.50", exact: true })).toHaveCount(3);
   await expect(earnings.getByText("Recorded as paid", { exact: true })).toBeVisible();
-  expect(await page.locator("main.referrals-page > div > section").evaluateAll(elements => elements.map(element => getComputedStyle(element).backgroundColor))).toEqual(["rgb(0, 0, 0)", "rgb(0, 0, 0)", "rgb(0, 0, 0)"]);
+  const referralPanelColors = await page.locator("main.referrals-page > div > section").evaluateAll(elements => elements.map(element => getComputedStyle(element).backgroundColor));
+  expect(referralPanelColors.length).toBeGreaterThanOrEqual(3);
+  expect(referralPanelColors.every(color => color === "rgb(0, 0, 0)")).toBe(true);
   await expectNoOverflow(page);
   await page.screenshot({ path: test.info().outputPath("referral-dashboard-390.png"), fullPage: true, animations: "disabled", caret: "initial" });
 

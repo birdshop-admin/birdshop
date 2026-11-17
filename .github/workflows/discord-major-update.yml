@@ -39,7 +39,7 @@ jobs:
           url = urlparse(webhook)
           if (
               url.scheme != "https"
-              or url.hostname != "discord.com"
+              or url.hostname not in ("discord.com", "discordapp.com")
               or not url.path.startswith("/api/webhooks/")
           ):
               raise SystemExit("Discord changelog webhook URL has an invalid format.")

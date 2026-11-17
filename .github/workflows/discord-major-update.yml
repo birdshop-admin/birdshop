@@ -1,0 +1,117 @@
+name: BirdShop major update changelog
+
+on:
+  pull_request_target:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  discord-changelog:
+    name: Announce approved major update
+    if: >-
+      github.event.pull_request.merged == true &&
+      contains(github.event.pull_request.labels.*.name, 'major-update')
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Post public changelog to Discord
+        env:
+          DISCORD_CHANGELOG_WEBHOOK_URL: ${{ secrets.DISCORD_CHANGELOG_WEBHOOK_URL }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import urllib.error
+          import urllib.request
+          from urllib.parse import urlparse
+
+          webhook = os.environ.get("DISCORD_CHANGELOG_WEBHOOK_URL", "")
+          if not webhook:
+              raise SystemExit(
+                  "DISCORD_CHANGELOG_WEBHOOK_URL is missing. "
+                  "Add it under repository Settings > Secrets and variables > Actions."
+              )
+
+          url = urlparse(webhook)
+          if (
+              url.scheme != "https"
+              or url.hostname != "discord.com"
+              or not url.path.startswith("/api/webhooks/")
+          ):
+              raise SystemExit("Discord changelog webhook URL has an invalid format.")
+
+          with open(os.environ["GITHUB_EVENT_PATH"], encoding="utf-8") as event_file:
+              event = json.load(event_file)
+
+          pr = event["pull_request"]
+          if not pr.get("merged") or not any(
+              label.get("name") == "major-update" for label in pr.get("labels", [])
+          ):
+              raise SystemExit("Not a merged major update; no Discord message sent.")
+
+          # Only explicitly approved public notes go into the Discord message.
+          # Do not copy the entire PR description: it may contain internal details.
+          notes = []
+          inside = False
+          for line in (pr.get("body") or "").splitlines():
+              if re.match(r"^#{2,3}\s+(Discord Changelog|Public Changelog)\s*$", line, re.I):
+                  inside = True
+                  continue
+              if inside and re.match(r"^#{1,3}\s+", line):
+                  break
+              if inside:
+                  match = re.match(r"^\s*[-*]\s+(.+?)\s*$", line)
+                  if match:
+                      notes.append(match.group(1)[:220])
+                      if len(notes) == 6:
+                          break
+
+          # Keep user-authored text inert; no mass pings or role/user mentions.
+          title = str(pr.get("title") or "Website update").replace("@", "＠")[:210]
+          bullets = "\n".join("• " + note.replace("@", "＠") for note in notes)
+          description = (
+              ("**What's new**\n" + bullets)
+              if bullets
+              else "A major BirdShop website update was approved. See the pull request for details."
+          )
+          description += (
+              "\n\n*Merged into the codebase. Live deployment is tracked separately.*"
+          )
+          embed = {
+              "title": "BirdShop Update — " + title,
+              "description": description,
+              "url": pr.get("html_url", ""),
+              "color": 0x921027,
+              "footer": {"text": "BirdShop • Update #" + str(pr.get("number", "?"))},
+          }
+          if pr.get("merged_at"):
+              embed["timestamp"] = pr["merged_at"]
+          payload = {
+              "username": "BirdShop Updates",
+              "allowed_mentions": {"parse": []},
+              "embeds": [embed],
+          }
+          req = urllib.request.Request(
+              webhook,
+              data=json.dumps(payload).encode("utf-8"),
+              headers={
+                  "Content-Type": "application/json",
+                  "User-Agent": "BirdShop-Changelog/1.0",
+              },
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=15) as response:
+                  if response.status not in (200, 204):
+                      raise RuntimeError(f"Unexpected Discord response: {response.status}")
+          except urllib.error.HTTPError as exc:
+              raise SystemExit(f"Discord webhook rejected changelog: HTTP {exc.code}")
+          except urllib.error.URLError:
+              raise SystemExit("Could not reach Discord webhook. Check network and secret.")
+
+          print("Discord changelog posted for merged major update.")
+          PY

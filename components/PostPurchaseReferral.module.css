@@ -1,0 +1,73 @@
+.panel {
+  margin-top: 28px;
+  padding: 32px;
+  border: 1px solid var(--bs-line);
+  border-radius: var(--bs-r-panel);
+  background: var(--bs-card);
+  color: var(--bs-ink);
+}
+.eyebrow {
+  color: var(--bs-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .16em;
+}
+.panel h2 {
+  margin: 12px 0 16px;
+  font: italic 400 clamp(26px,3vw,38px)/1.2 var(--serif,Georgia,serif);
+}
+.panel p {
+  max-width: 750px;
+  margin: 0 0 20px;
+  color: var(--bs-muted);
+  line-height: 1.65;
+}
+.form label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--bs-ink);
+  font-size: 13px;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.controls input {
+  min-width: 0;
+  flex: 1 1 230px;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--bs-line-strong);
+  border-radius: 4px;
+  background: var(--bs-field);
+  color: var(--bs-ink);
+  font-size: 15px;
+  text-transform: uppercase;
+}
+.controls button {
+  min-height: 48px;
+  padding: 12px 24px;
+  border: 1px solid #b51d38;
+  border-radius: 4px;
+  background: #921027;
+  color: #f5f2ed;
+  cursor: pointer;
+  font-weight: 700;
+}
+.controls button:disabled {
+  opacity: .7;
+  cursor: default;
+}
+.controls input:focus-visible,.controls button:focus-visible {
+  outline: 2px solid var(--bs-focus);
+  outline-offset: 2px;
+}
+.panel .status { margin-top: 18px; color: var(--bs-ink); }
+.panel .note { margin: 22px 0 0; font-size: 13px; }
+@media(max-width:480px) {
+  .panel { padding: 22px 18px; }
+  .controls { flex-direction: column; }
+  .controls input { flex-basis: auto; width: 100%; }
+  .controls button { width: 100%; }
+}

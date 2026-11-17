@@ -37,7 +37,7 @@ export async function GET(request: Request) {
       .eq("order_id", attempt.order_id);
     if (orderError || itemError) throw new Error("Order lookup failed.");
     if (!order.paid_at) throw new PublicError(UNAVAILABLE, 404);
-    return Response.json({ order, items }, { headers: privateHeaders });
+    return Response.json({ order, items, referralClaimEnabled: process.env.BIRDSHOP_POSTPURCHASE_REFERRALS_ENABLED === "true" }, { headers: privateHeaders });
   } catch (error) {
     return publicErrorResponse(
       error,

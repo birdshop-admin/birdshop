@@ -43,6 +43,7 @@ export default async function MarketplacePage({
         <div className={styles.actions}>
           <Link href="/sell" className={styles.button}>Become a seller</Link>
           <Link href="/sell/dashboard" className={styles.outline}>Seller dashboard</Link>
+          <Link href="/marketplace/orders" className={styles.outline}>My orders</Link>
         </div>
       </header>
       <div className={styles.stack}>

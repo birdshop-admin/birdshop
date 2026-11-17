@@ -42,11 +42,25 @@ jobs:
               "allowed_mentions": {"parse": []},
               "embeds": [{
                   "title": "BirdShop • Website Update",
-                  "description": (
-                      "• Refreshed black-and-burgundy storefront design.\n"
-                      "• Improved product cards, cart buttons, and mobile browsing.\n"
-                      "• Updated the Reviews page with a new seasonal look."
-                  ),
+                  "description": "\n".join([
+                      "**BirdShop — Website Progress Update**",
+                      "",
+                      "Over the past several updates, we've been improving the look, usability, and shopping experience across BirdShop. Here's a recap of the improvements in the project and what's coming next.",
+                      "",
+                      "**Recently added to the website code**",
+                      "• A refreshed black, ivory, and burgundy design across the storefront, services, and customer pages.",
+                      "• Better product cards, clearer stock states, properly aligned Add to Cart buttons, and improved mobile layouts.",
+                      "• Updated Reviews page with a seasonal animated moonlit Santa scene, plus cleaner typography and navigation.",
+                      "• More consistent styling across the cart, service pages, and referral area while preserving the existing checkout.",
+                      "",
+                      "**Coming soon / in development**",
+                      "• A referral program with verified customers and one-time rewards for qualified first purchases.",
+                      "• A post-purchase option to credit a friend's referral code, with safeguards against duplicate claims.",
+                      "• A larger multi-game marketplace where approved sellers can manage eligible services, listings, and storefronts.",
+                      "• Additional payment options are being evaluated, but have not been enabled.",
+                      "",
+                      "Some features are still in testing or require activation; inclusion here does not mean they're live. Watch this channel for confirmed public releases.",
+                  ]),
                   "color": 0x921027,
                   "url": "https://birdshop.store",
                   "footer": {"text": "BirdShop • Recent improvements • Availability may vary by rollout"}

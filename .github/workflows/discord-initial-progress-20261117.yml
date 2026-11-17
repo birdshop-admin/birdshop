@@ -1,0 +1,99 @@
+name: One-time BirdShop community progress update
+
+on:
+  push:
+    branches:
+      - ops/discord-initial-changelog-20261117
+    paths:
+      - .github/workflows/discord-initial-progress-20261117.yml
+
+permissions:
+  contents: read
+
+jobs:
+  announce:
+    name: Send one-time Discord project update
+    if: github.repository == 'birdshop-admin/birdshop'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Post update without touching production
+        env:
+          DISCORD_CHANGELOG_WEBHOOK_URL: ${{ secrets.DISCORD_CHANGELOG_WEBHOOK_URL }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+          from urllib.parse import urlparse
+
+          webhook = os.environ.get("DISCORD_CHANGELOG_WEBHOOK_URL", "")
+          if not webhook:
+              raise SystemExit("Missing Discord changelog webhook repository secret.")
+          u = urlparse(webhook)
+          if (u.scheme != "https" or u.hostname != "discord.com"
+                  or not u.path.startswith("/api/webhooks/")):
+              raise SystemExit("Discord webhook secret is invalid.")
+
+          embed = {
+              "title": "BirdShop — November Website Progress Update",
+              "description": (
+                  "Here is a summary of the changes added to BirdShop's "
+                  "GitHub project and the features still being prepared."
+              ),
+              "color": 0x921027,
+              "url": "https://github.com/birdshop-admin/birdshop",
+              "fields": [
+                  {
+                      "name": "Recently merged into the website code",
+                      "value": (
+                          "• Refreshed black, ivory and burgundy design across the storefront and customer pages.\n"
+                          "• Improved product cards, Add to Cart button alignment and mobile styling.\n"
+                          "• Updated Reviews presentation with an animated moonlit Santa scene.\n"
+                          "• Improved referral-page layout and kept the existing Stripe checkout intact."
+                      ),
+                      "inline": False
+                  },
+                  {
+                      "name": "In development — not yet available",
+                      "value": (
+                          "• Verified referral accounts, tracking and $0.50 first-buyer reward groundwork "
+                          "(requires further setup and validation).\n"
+                          "• Seller applications, shops, listings and messaging in the draft reseller marketplace.\n"
+                          "• Post-purchase friend referral codes and seller payments/payouts are planned, not live.\n"
+                          "• Additional payment-method options remain staged or disabled."
+                      ),
+                      "inline": False
+                  }
+              ],
+              "footer": {
+                  "text": "Development progress • Features may require activation or deployment"
+              }
+          }
+
+          payload = {
+              "username": "BirdShop Updates",
+              "allowed_mentions": {"parse": []},
+              "embeds": [embed]
+          }
+          req = urllib.request.Request(
+              webhook,
+              data=json.dumps(payload).encode("utf-8"),
+              method="POST",
+              headers={
+                  "Content-Type": "application/json",
+                  "User-Agent": "BirdShop-Changelog/1.0"
+              }
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=20) as res:
+                  if res.status not in (200, 204):
+                      raise SystemExit("Unexpected Discord delivery status: " + str(res.status))
+          except urllib.error.HTTPError as e:
+              raise SystemExit("Discord returned HTTP " + str(e.code))
+          except urllib.error.URLError:
+              raise SystemExit("Discord webhook delivery failed due to a connection error")
+
+          print("Sent one-time BirdShop Discord progress update successfully.")
+          PY

@@ -63,6 +63,8 @@ export default async function ResellerAdminPage(){
           <p>Owner approvals, listing moderation, marketplace rules and audit history.</p>
         </div>
         <div style={{display:"flex",gap:18,flexWrap:"wrap"}}>
+          <Link href="/admin/resellers/orders">Seller orders ↗</Link>
+          <Link href="/admin/resellers/disputes">Disputes ↗</Link>
           <Link href="/admin/resellers/inquiries">Review buyer–seller messages ↗</Link>
           <Link href="/marketplace">Public marketplace ↗</Link>
         </div>

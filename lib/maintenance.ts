@@ -1,3 +1,4 @@
+import { reconcileMarketplacePayments } from "@/lib/marketplace-payments";
 import "server-only";
 import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -226,5 +227,12 @@ export async function runMaintenance() {
     .lt("window_start", new Date(Date.now() - 2 * 86400_000).toISOString());
   // Cleanup still ran; now fail the run so the scheduler shows the email outage.
   if (emailError) throw emailError;
-  return { events, checkouts, emails: email.sent, closedChats };
+  let marketplaceError = false;
+  if (Date.now() - started < 35_000) {
+    await reconcileMarketplacePayments().catch(() => {
+      marketplaceError = true;
+      console.error("BirdShop marketplace reconciliation will retry on its next run");
+    });
+  }
+  return { events, checkouts, emails: email.sent, closedChats, marketplaceError };
 }

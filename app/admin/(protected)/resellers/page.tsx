@@ -12,7 +12,7 @@ type Application={
   contact_email:string;description:string;categories:string[];
   payout_preference:string; status:string;review_note:string|null;created_at:string;
 };
-type Profile={id:string;handle:string;display_name:string;status:string;commission_bps:number;};
+type Profile={id:string;handle:string;display_name:string;status:string;commission_bps:number;earned_tier:string;partner_approved:boolean;commission_override_bps:number|null;qualifying_sales_cents:number;};
 type Listing={id:string;title:string;slug:string;seller_id:string;status:string;
   listing_type:string;stock:number;price_cents:number;created_at:string;};
 type Audit={id:number;entity_type:string;action:string;created_at:string};
@@ -38,7 +38,7 @@ export default async function ResellerAdminPage(){
       .select("id,business_name,requested_handle,contact_email,description,categories,payout_preference,status,review_note,created_at")
       .order("created_at",{ascending:false}).limit(100),
     db.from("birdshop_seller_profiles")
-      .select("id,handle,display_name,status,commission_bps")
+      .select("id,handle,display_name,status,commission_bps,earned_tier,partner_approved,commission_override_bps,qualifying_sales_cents")
       .order("created_at",{ascending:false}).limit(100),
     db.from("birdshop_marketplace_listings")
       .select("id,title,slug,seller_id,status,listing_type,stock,price_cents,created_at")
@@ -112,14 +112,16 @@ export default async function ResellerAdminPage(){
               <div>
                 <h3 style={{font:"italic 25px Georgia,serif"}}>{seller.display_name}</h3>
                 <p><Link href={`/shops/${seller.handle}`}>/shops/{seller.handle}</Link> · {seller.status}</p>
+                <p>Tier: {seller.partner_approved?"Partner":seller.earned_tier} · Effective fee: {(seller.commission_bps/100).toFixed(2)}% · Qualifying sales: {marketplaceMoney(seller.qualifying_sales_cents)}</p>
               </div>
               <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
                 <form action={setSellerCommission}>
                   <input type="hidden" name="seller_id" value={seller.id}/>
-                  <label style={{display:"block",fontSize:12}}>Commission (%)</label>
+                  <label style={{display:"block",fontSize:12}}>Override commission (%) · blank uses tier</label>
                   <input style={{...inputStyle,width:75}} type="number" name="commission_percentage"
-                    step=".01" min="0" max="50" defaultValue={(seller.commission_bps/100).toFixed(2)}/>
-                  <button style={buttonStyle} type="submit">Save rate</button>
+                    step=".01" min="0" max="50" defaultValue={seller.commission_override_bps==null?"":(seller.commission_override_bps/100).toFixed(2)}/>
+                  <label style={{display:"block",margin:"10px 0"}}><input type="checkbox" name="partner_approved" defaultChecked={seller.partner_approved}/> Owner-approved Partner tier (4%)</label>
+                  <button style={buttonStyle} type="submit">Save pricing</button>
                 </form>
                 <form action={updateSellerStatus}>
                   <input type="hidden" name="seller_id" value={seller.id}/>
@@ -153,7 +155,7 @@ export default async function ResellerAdminPage(){
         <section aria-labelledby="financial-head" style={{marginTop:44}}>
           <h2 id="financial-head">Disputes and payouts</h2>
           <div style={cardStyle}>
-            <p>Order settlement and seller withdrawals are not enabled. Pending financial records and disputes will appear here after verified marketplace checkout is integrated.</p>
+            <p>Marketplace checkout is sandbox-only. Stripe manages connected balances and payouts. The legacy ledger is an internal journal and must never be used to issue duplicate transfers.</p>
             <p>Existing BirdShop Stripe orders and refunds remain in the original admin sections.</p>
           </div>
         </section>

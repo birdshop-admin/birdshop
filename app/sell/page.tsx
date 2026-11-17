@@ -83,7 +83,7 @@ export default async function SellerRegistration({
               <li>Wait for BirdShop owner approval.</li>
               <li>Create listings; every listing is reviewed before publishing.</li>
             </ol>
-            <p>Buyer payments, seller earnings and withdrawals will only be enabled after marketplace settlement and payout integrations are approved.</p>
+            <p>New sellers start at Starter with 8% commission. Earn lower rates as completed sales grow. Marketplace payments remain in sandbox until launch approval.</p>
           </section>
         </div> : <>
           <section className={styles.card}>
@@ -97,7 +97,7 @@ export default async function SellerRegistration({
           </p> : profile ? <section className={styles.card}>
             <h2>Your shop is {profile.status}</h2>
             <p>{profile.display_name} · <Link href={`/shops/${profile.handle}`}>birdshop.store/shops/{profile.handle}</Link></p>
-            <p>Your commission rate is {(profile.commission_bps/100).toFixed(2)}% on eligible settled sales. Marketplace payments are not enabled yet.</p>
+            <p>Your commission rate is {(profile.commission_bps/100).toFixed(2)}% on eligible settled sales. Marketplace payments remain sandbox-only. Manage verification, products, services and earnings from your seller dashboard.</p>
             <Link className={styles.button} href="/sell/dashboard">Open dashboard</Link>
           </section> : application?.status==="pending" ? <section className={styles.card}>
             <h2>Application under review</h2>

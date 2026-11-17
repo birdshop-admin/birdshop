@@ -39,7 +39,7 @@ export default async function MarketplacePage({
       <header className={styles.hero}>
         <span className={styles.eyebrow}>BIRDSHOP / OWNER-APPROVED RESELLERS</span>
         <h1>The marketplace.</h1>
-        <p>Independent sellers, owner-reviewed listings, and private communication. Seller checkout and payouts are being prepared separately; never pay a seller outside an approved BirdShop order.</p>
+        <p>Independent sellers, owner-reviewed listings, and private communication. Secure checkout stays inside BirdShop and Stripe. Never pay a seller outside an approved BirdShop order. Marketplace payments are sandbox-only.</p>
         <div className={styles.actions}>
           <Link href="/sell" className={styles.button}>Become a seller</Link>
           <Link href="/sell/dashboard" className={styles.outline}>Seller dashboard</Link>
@@ -89,6 +89,7 @@ export default async function MarketplacePage({
                 <p className={styles.small}>{listing.stock} available · Estimated delivery {listing.delivery_hours}h</p>
                 <div className={styles.actions}>
                   <Link className={styles.outline} href={`/shops/${seller?.handle}`}>View seller</Link>
+                  <Link className={styles.button} href={`/marketplace/checkout/${listing.id}`}>Buy now</Link>
                   <Link className={styles.button} href={`/marketplace/inquire/${listing.id}`}>Ask seller</Link>
                 </div>
               </article>;
@@ -97,7 +98,7 @@ export default async function MarketplacePage({
         </section>
         <div className={styles.card}>
           <h2>About buyer protection</h2>
-          <p>Listings are reviewed before publication. Buyer messaging is available for product questions, but marketplace purchasing and automated seller payout are not enabled yet. Do not send passwords, gift-card codes, cryptocurrency, or off-platform payments to sellers.</p>
+          <p>Listings are reviewed before publication. Buyer messaging is available for product questions, and sandbox purchasing is available when enabled for testing. Do not send passwords, gift-card codes, cryptocurrency, or off-platform payments to sellers.</p>
         </div>
       </div>
     </div>

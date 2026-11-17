@@ -42,14 +42,14 @@ export default async function BuyerMarketplaceOrders(){
       <header className={styles.hero}>
         <span className={styles.eyebrow}>BIRDSHOP / BUYER ORDERS</span>
         <h1>Your orders.</h1>
-        <p>Track seller purchases, confirm verified delivery and report issues. Marketplace payment checkout has not been activated.</p>
+        <p>Track seller purchases, confirm verified delivery and report issues. Marketplace purchases are currently in sandbox mode.</p>
         <div className={styles.actions}><Link className={styles.outline} href="/marketplace">Browse marketplace</Link>
           <Link className={styles.outline} href="/marketplace/messages">Buyer messages</Link></div>
       </header>
       <div className={styles.stack}>
         {!orders.length&&<section className={styles.card}>
           <h2>No marketplace orders yet.</h2>
-          <p>Seller checkout will appear after the marketplace payment and payout processor is approved. Existing BirdShop product purchases remain under the original order tracker.</p>
+          <p>Test purchases appear here when marketplace sandbox checkout is enabled. Existing BirdShop product purchases remain under the original order tracker.</p>
           <Link href="/orders/access" className={styles.outline}>First-party order tracker</Link>
         </section>}
         {orders.map(o=>{

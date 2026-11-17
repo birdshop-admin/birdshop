@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit --incremental false",
     "check": "npm run lint && npm run typecheck",
-    "test:storefront": "playwright test"
+    "test:storefront": "playwright test",
+    "test:marketplace": "node --conditions=react-server --import tsx --test tests/marketplace/*.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -18,9 +19,11 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "resend": "^6.28.1",
-    "stripe": "^22.6.2"
+    "server-only": "0.0.1",
+    "stripe": "22.6.2"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.3.14",
     "@playwright/test": "^1.65.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
@@ -29,6 +32,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
+    "tsx": "4.23.15",
     "typescript": "^5"
   }
 }

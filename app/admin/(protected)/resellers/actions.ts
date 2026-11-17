@@ -43,19 +43,17 @@ export async function updateSellerStatus(form:FormData){
 export async function setSellerCommission(form:FormData){
   const {user}=await requireOwner();
   const sellerId=String(form.get("seller_id")||"");
-  const percentage=Number(form.get("commission_percentage"));
-  if(!isUuid(sellerId)||!Number.isFinite(percentage)||percentage<0||percentage>50||
-      !Number.isInteger(percentage*100))
-    throw new Error("Commission must be between 0 and 50%, with at most two decimals.");
-  const commission_bps=Math.round(percentage*100);
-  const db=createAdminClient();
-  const {error}=await db.from("birdshop_seller_profiles")
-    .update({commission_bps,updated_at:new Date().toISOString()}).eq("id",sellerId);
-  if(error)throw new Error("Unable to change seller commission.");
-  await db.from("birdshop_marketplace_audit").insert({
-    entity_type:"seller",entity_id:sellerId,actor_id:user.id,
-    action:"commission_updated",details:{commission_bps},
+  const raw=String(form.get("commission_percentage")??"").trim();
+  const percentage=Number(raw);
+  const partner=form.get("partner_approved")==="on";
+  if(!isUuid(sellerId)||(raw!==""&&(!/^\d{1,2}(\.\d{1,2})?$/.test(raw)||percentage<0||percentage>50)))
+    throw new Error("Commission must be blank for tier pricing or between 0 and 50%, with at most two decimals.");
+  const {error}=await createAdminClient().rpc("birdshop_owner_seller_pricing",{
+    p_owner:user.id,p_seller:sellerId,p_partner:partner,
+    p_override:raw===""?null:Math.round(percentage*100),
   });
+  if(error)throw new Error("Unable to change seller pricing. Owner approval is required.");
+  revalidatePath("/sell/dashboard");
   revalidatePath("/admin/resellers");
 }
 

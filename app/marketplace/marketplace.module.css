@@ -49,3 +49,18 @@ textarea.field{min-height:135px;resize:vertical}
 .alert{font:14px/1.6 Arial,Helvetica,sans-serif;color:#f6c1c8}
 @media(max-width:780px){.hero{padding-top:54px}.split{grid-template-columns:1fr}.wrap{padding-inline:20px}.kpis{grid-template-columns:1fr}.table{display:block;overflow-x:auto}}
 @media(prefers-reduced-motion:reduce){.button{transition:none}}
+.financeGrid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:22px;align-items:start}
+.tierCard{background:linear-gradient(125deg,#201419,#111113 60%);border-color:#68404b}
+.tierCard h2{margin-top:18px;max-width:390px}
+.card .financeAmount{font:italic 400 clamp(36px,4vw,56px)/1.1 Georgia,serif;letter-spacing:-.03em;color:#fff7ef;margin:24px 0 8px;font-variant-numeric:tabular-nums}
+.progress{display:block;width:100%;height:9px;border:0;border-radius:9px;overflow:hidden;accent-color:#ce637c;background:#44323a}
+.progress::-webkit-progress-bar{background:#44323a;border-radius:9px}
+.progress::-webkit-progress-value{background:#ce637c;border-radius:9px}
+.progress::-moz-progress-bar{background:#ce637c}
+.tierSteps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:28px 0 18px}
+.tierSteps>div{border-top:2px solid #6a4a53;padding:12px 3px;display:grid;gap:7px;color:#d3c6ca;font:11px/1.5 Arial,sans-serif}
+.tierSteps>div[aria-current]{border-color:#f1b7c3;color:#ffe9ed}
+.tierSteps strong{font-size:21px}.tierSteps small{font-size:10px}
+.tableScroll{max-width:100%;overflow-x:auto}.table caption{text-align:left;padding:0 8px 15px}
+@media(max-width:960px){.financeGrid{grid-template-columns:1fr}}
+@media(max-width:400px){.tierSteps{grid-template-columns:repeat(3,minmax(0,1fr))}.card{padding:20px}}

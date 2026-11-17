@@ -1,5 +1,6 @@
 "use server";
 
+import { cancelMarketplaceCheckout } from "@/lib/marketplace-payments";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { requireOwner } from "@/lib/staff-auth";
@@ -44,7 +45,15 @@ export async function buyerCancelUnpaidMarketplaceOrder(form:FormData){
   const user=await requireMarketplaceUser();
   const id=String(form.get("order_id")||"");
   await rateLimit("marketplace-cancel",user.id,12,3600);
-  await transition(id,"payment_pending","cancelled",user.id,"buyer");
+  if(!uuid(id))throw new Error("Invalid order ID.");
+  const {data:order,error}=await createAdminClient().from("birdshop_marketplace_orders")
+    .select("checkout_key").eq("id",id).eq("buyer_user_id",user.id).single();
+  if(error||!order)throw new Error("Order not found.");
+  if(order.checkout_key){
+    await cancelMarketplaceCheckout(id,user.id);
+    revalidatePath("/marketplace/orders");
+    revalidatePath("/sell/orders");
+  }else await transition(id,"payment_pending","cancelled",user.id,"buyer");
 }
 
 export async function sellerBeginMarketplaceFulfillment(form:FormData){

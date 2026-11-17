@@ -45,9 +45,9 @@ export default async function OwnerMarketplaceOrders(){
     </div><Link href="/admin/resellers">← Resellers</Link></header>
     <section style={{marginTop:25}}>
       {!ready?<p role="alert">Marketplace order tables are not installed in this database. Migration review is still required.</p>:<>
-        <p>No seller payment webhook is active. Existing BirdShop Stripe orders are not displayed in this table.</p>
+        <p>Stripe sandbox webhooks reconcile marketplace payments. Existing BirdShop Stripe orders are not displayed in this table.</p>
         {!orders.length&&<div style={{padding:20,border:"1px solid #ffffff40"}}>
-          No marketplace orders yet. This is expected until a marketplace payment provider is approved.
+          No marketplace orders yet. Enable sandbox checkout only after configuring the test environment.
         </div>}
         {orders.map(o=>{
           const earning=ledger.find(l=>l.order_id===o.id&&l.entry_type==="earned");
@@ -63,7 +63,7 @@ export default async function OwnerMarketplaceOrders(){
               {" "}({(o.commission_bps/100).toFixed(2)}%) · Seller net: {marketplaceMoney(o.subtotal_cents-o.commission_cents)}</p>
             <p>Payment: {o.payment_verified_at? `Provider verified ${o.payment_provider||""}`:
               "Not provider-verified"} · Ledger: {earning?.status||"not posted"}</p>
-            {o.payout_eligible_after&&<p>Earnings hold expires: {new Date(o.payout_eligible_after).toLocaleString()}</p>}
+            {o.payout_eligible_after&&<p>Internal journal hold expires (does not delay Stripe payouts): {new Date(o.payout_eligible_after).toLocaleString()}</p>}
             {o.state==="buyer_confirmed"&&<form action={ownerCompleteMarketplaceOrder}>
               <input type="hidden" name="order_id" value={o.id}/>
               <button type="submit" style={{padding:12,background:"#96152c",color:"#fff",

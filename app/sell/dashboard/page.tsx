@@ -4,11 +4,15 @@ import SiteFooter from "@/components/SiteFooter";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { marketplaceMoney, MARKETPLACE_CATEGORIES, requireApprovedSeller, type MarketplaceListing } from "@/lib/marketplace";
 import { archiveMyListing, changeMyListingState, saveMarketplaceListing, updateMyShop } from "./actions";
+import { SellerFinancials } from "./SellerFinancials";
+import { getSellerConnect, refreshSellerConnect, sellerStripeBalance } from "@/lib/stripe-connect";
+import { logServerError } from "@/lib/server-config";
 import styles from "@/app/marketplace/marketplace.module.css";
 
 export const dynamic="force-dynamic";
 export const metadata={title:"Seller dashboard | BirdShop"};
 const noticeText:Record<string,string>={
+  "connect-returned":"Your Stripe verification status has been refreshed. Review any outstanding requirements below.",
   "listing-saved":"Listing saved as a draft. Submit it for owner review before it appears publicly.",
 };
 
@@ -18,29 +22,31 @@ export default async function SellerDashboard({searchParams}:{
   const {profile}=await requireApprovedSeller();
   const {notice,edit}=await searchParams;
   const db=createAdminClient();
-  const [listingResult,orderResult,ledgerResult,threadResult,disputeResult,payoutResult]=await Promise.all([
+  const [listingResult,orderResult,threadResult,disputeResult]=await Promise.all([
     db.from("birdshop_marketplace_listings")
       .select("id,seller_id,slug,title,description,listing_type,category,image_url,price_cents,stock,fulfillment_method,service_options,delivery_hours,status,created_at")
       .eq("seller_id",profile.id).order("created_at",{ascending:false}).limit(200),
     db.from("birdshop_marketplace_orders")
-      .select("id,state,subtotal_cents,commission_cents,created_at").eq("seller_id",profile.id).limit(100),
-    db.from("birdshop_marketplace_ledger")
-      .select("amount_cents,status,entry_type").eq("seller_id",profile.id).limit(300),
+      .select("id,state,subtotal_cents,commission_cents,commission_bps,refunded_cents,stripe_dispute_status,fraudulent,listing_title,created_at").eq("seller_id",profile.id).order("created_at",{ascending:false}).limit(20),
     db.from("birdshop_marketplace_threads")
       .select("id,status").eq("seller_id",profile.id).limit(100),
     db.from("birdshop_marketplace_disputes")
       .select("id,status").eq("seller_id",profile.id).limit(100),
-    db.from("birdshop_marketplace_payouts")
-      .select("id,amount_cents,status").eq("seller_id",profile.id).limit(100),
   ]);
-  if(listingResult.error||orderResult.error||ledgerResult.error||threadResult.error)
+  if(listingResult.error||orderResult.error||threadResult.error||disputeResult.error)
     throw new Error("The marketplace dashboard could not load. Please try again.");
   const listings=(listingResult.data||[]) as MarketplaceListing[];
   const selected=listings.find(listing=>listing.id===edit);
   const orders=orderResult.data||[];
-  const ledger=ledgerResult.data||[];
-  const pending=ledger.filter(e=>e.status==="pending").reduce((n,e)=>n+Number(e.amount_cents),0);
-  const available=ledger.filter(e=>e.status==="available").reduce((n,e)=>n+Number(e.amount_cents),0);
+  let connect = await getSellerConnect(profile.id);
+  let balance = null;
+  let stripeUnavailable = false;
+  if (connect?.stripe_account_id) {
+    try {
+      connect = await refreshSellerConnect(connect);
+      balance = await sellerStripeBalance(connect);
+    } catch (error) { stripeUnavailable = true; logServerError("seller Stripe overview", error); }
+  }
   return <main className={`page-shell bs-editorial-page ${styles.shell}`} id="site-content">
     <SiteHeader/>
     <div className={styles.wrap}>
@@ -56,11 +62,8 @@ export default async function SellerDashboard({searchParams}:{
       </header>
       <div className={styles.stack}>
         {notice&&noticeText[notice]&&<p role="status" className={styles.notice}>{noticeText[notice]}</p>}
-        <div className={styles.kpis}>
-          <div className={styles.kpi}><span>Listings (published)</span><strong>{listings.filter(l=>l.status==="published").length}</strong></div>
-          <div className={styles.kpi}><span>Pending earnings</span><strong>{marketplaceMoney(pending)}</strong></div>
-          <div className={styles.kpi}><span>Available earnings</span><strong>{marketplaceMoney(available)}</strong></div>
-        </div>
+        <SellerFinancials profile={profile} connect={connect} balance={balance}
+          stripeUnavailable={stripeUnavailable} orders={orders}/>
         <section className={styles.card}>
           <h2>Manage listings</h2>
           <p>Seller listings never publish automatically. Save a draft, submit for owner moderation, then choose when to pause a published listing.</p>
@@ -121,8 +124,8 @@ export default async function SellerDashboard({searchParams}:{
               <input className={styles.field} id="listing-hours" type="number" name="delivery_hours" min="1" max="720" step="1" required defaultValue={selected?.delivery_hours??24}/>
               <label className={styles.label} htmlFor="listing-options">Service options (optional; one per line)</label>
               <textarea className={styles.field} id="listing-options" name="service_options" maxLength={1000}
-                placeholder={"Priority delivery\\nProgression help\\nCoaching session"}
-                defaultValue={(selected?.service_options||[]).join("\\n")}/>
+                placeholder={"Priority delivery\nProgression help\nCoaching session"}
+                defaultValue={(selected?.service_options||[]).join("\n")}/>
               <p className={styles.small}>Up to 12 options, 80 characters each. Options are informational until seller checkout supports them.</p>
               <label className={styles.label} htmlFor="listing-image">Image HTTPS URL (optional)</label>
               <input className={styles.field} id="listing-image" type="url" name="image_url" maxLength={1000} placeholder="https://..." defaultValue={selected?.image_url||""}/>
@@ -147,17 +150,12 @@ export default async function SellerDashboard({searchParams}:{
             </section>
             <section className={styles.card}>
               <h2>Orders and inquiries</h2>
-              <p>{orders.length} marketplace orders · {threadResult.data?.length||0} private conversations · {disputeResult.data?.length||0} disputes.</p>
+              <p>Showing {orders.length} recent marketplace orders · {threadResult.data?.length||0} private conversations · {disputeResult.data?.length||0} disputes.</p>
               <p><Link href="/sell/orders">Open seller orders and fulfillment</Link></p>
               <p><Link href="/sell/inbox">Open seller inbox</Link></p>
-              <p>Marketplace buyer checkout, payment settlement and dispute resolution are under development. This workspace does not accept unverified payments.</p>
+              <p>Create and manage every product and service here. BirdShop handles payment setup automatically; you never need to create products in Stripe.</p>
             </section>
-            <section className={styles.card}>
-              <h2>Commissions and payouts</h2>
-              <p>Your configured commission rate: <strong>{(profile.commission_bps/100).toFixed(2)}%</strong>.</p>
-              <p>Pending: {marketplaceMoney(pending)} · Available: {marketplaceMoney(available)}</p>
-              <p>{payoutResult.data?.length||0} payout requests recorded. Live seller withdrawals are not yet enabled.</p>
-            </section>
+
           </div>
         </div>
       </div>

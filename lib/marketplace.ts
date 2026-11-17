@@ -1,9 +1,10 @@
 import "server-only";
+import type { SellerTier } from "@/lib/seller-tiers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export const MARKETPLACE_ACTIVE = false; // Flip only after seller checkout + payout reconciliation are approved.
+export const MARKETPLACE_ACTIVE = false; // Production launch still requires a separate reviewed change.
 
 export const MARKETPLACE_CATEGORIES = [
   "Deepwoken", "Grand Piece Online", "Slayers Unleashed",
@@ -32,6 +33,10 @@ export type SellerProfile = {
   logo_url: string | null;
   status: "active" | "suspended";
   commission_bps: number;
+  earned_tier: SellerTier;
+  partner_approved: boolean;
+  commission_override_bps: number | null;
+  qualifying_sales_cents: number;
 };
 
 export type MarketplaceListing = {
@@ -69,7 +74,7 @@ export async function requireMarketplaceUser() {
 export async function getMySellerProfile(userId: string): Promise<SellerProfile | null> {
   const { data, error } = await createAdminClient()
     .from("birdshop_seller_profiles")
-    .select("id,user_id,handle,display_name,description,logo_url,status,commission_bps")
+    .select("id,user_id,handle,display_name,description,logo_url,status,commission_bps,earned_tier,partner_approved,commission_override_bps,qualifying_sales_cents")
     .eq("user_id", userId).maybeSingle();
   if (error) throw new Error("The seller account is not available. Try again shortly.");
   return data as SellerProfile | null;

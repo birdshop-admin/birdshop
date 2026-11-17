@@ -1,5 +1,6 @@
 import "server-only";
 import type Stripe from "stripe";
+import { processMarketplaceStripeEvent } from "@/lib/marketplace-payments";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
 import {
@@ -14,7 +15,9 @@ import {
 
 export async function processStripeEvent(event: Stripe.Event) {
   const stripe = getStripe();
-  if (event.type.startsWith("checkout.session.")) {
+  if (await processMarketplaceStripeEvent(event)) {
+    // Marketplace events are reconciled against their own immutable order snapshots.
+  } else if (event.type.startsWith("checkout.session.")) {
     // Re-fetch current processor state; an old event must not reverse a newer state.
     const session = await stripe.checkout.sessions.retrieve(
       (event.data.object as Stripe.Checkout.Session).id,

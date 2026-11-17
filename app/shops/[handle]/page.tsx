@@ -55,13 +55,14 @@ export default async function SellerStorefront({params}:{params:Promise<{handle:
               {listing.service_options?.length>0&&<p className={styles.small}>Available options: {listing.service_options.join(" · ")}</p>}
               <p className={styles.price}>{marketplaceMoney(listing.price_cents)}</p>
               <p className={styles.small}>{listing.stock} available · Estimated delivery {listing.delivery_hours}h</p>
-              <Link className={styles.button} href={`/marketplace/inquire/${listing.id}`}>Ask seller about this listing</Link>
+              <Link className={styles.button} href={`/marketplace/checkout/${listing.id}`}>Buy now</Link>
+                  <Link className={styles.button} href={`/marketplace/inquire/${listing.id}`}>Ask seller about this listing</Link>
             </article>)}
           </div>
         </section>
         <div className={styles.card}>
           <h2>Ordering</h2>
-          <p>Marketplace purchases are not enabled yet. Please use the inquiry feature for product questions only; do not send off-platform payments or sensitive account details.</p>
+          <p>Buy through BirdShop secure checkout when sandbox testing is enabled. Stripe verifies sellers and processes test payments. Use inquiries for product questions; never send off-platform payments or sensitive account details.</p>
         </div>
       </div>
     </div>

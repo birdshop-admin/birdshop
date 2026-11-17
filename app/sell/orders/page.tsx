@@ -31,14 +31,14 @@ export default async function SellerMarketplaceOrders(){
       <header className={styles.hero}>
         <span className={styles.eyebrow}>BIRDSHOP / SELLER FULFILLMENT</span>
         <h1>Your orders.</h1>
-        <p>Seller fulfillment begins only after BirdShop verifies payment with the payment provider. No marketplace payment collection is currently active.</p>
+        <p>Seller fulfillment begins only after BirdShop verifies payment with the payment provider. Marketplace payments are sandbox-only until launch approval.</p>
         <div className={styles.actions}><Link className={styles.outline} href="/sell/dashboard">Seller dashboard</Link>
           <Link className={styles.outline} href="/sell/inbox">Seller inbox</Link></div>
       </header>
       <div className={styles.stack}>
         {!orders.length&&<section className={styles.card}>
           <h2>No marketplace orders yet.</h2>
-          <p>Your approved listings can receive buyer inquiries. Paid orders will appear after the marketplace payment processor is integrated.</p>
+          <p>Your approved listings can receive buyer inquiries. Verified sandbox purchases appear here when test checkout is enabled.</p>
         </section>}
         {orders.map(o=><section className={styles.card} key={o.id}>
           <span className={styles.status}>{o.state.replaceAll("_"," ")}</span>

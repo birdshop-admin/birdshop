@@ -1,3 +1,5 @@
+> Current implementation: [Stripe Connect V2 and seller tiers](stripe-connect-marketplace.md). The milestones below document the earlier foundation; statements about absent checkout or provisional 10% fees are superseded by the sandbox integration and approved tier model. No marketplace migrations have been applied to production.
+
 # BirdShop marketplace — Phase 1 implementation
 
 **Branch:** `feat/reseller-marketplace-phase1`  

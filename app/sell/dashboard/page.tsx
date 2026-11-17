@@ -148,6 +148,7 @@ export default async function SellerDashboard({searchParams}:{
             <section className={styles.card}>
               <h2>Orders and inquiries</h2>
               <p>{orders.length} marketplace orders · {threadResult.data?.length||0} private conversations · {disputeResult.data?.length||0} disputes.</p>
+              <p><Link href="/sell/orders">Open seller orders and fulfillment</Link></p>
               <p><Link href="/sell/inbox">Open seller inbox</Link></p>
               <p>Marketplace buyer checkout, payment settlement and dispute resolution are under development. This workspace does not accept unverified payments.</p>
             </section>

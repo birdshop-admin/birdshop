@@ -21,11 +21,54 @@ jobs:
         env:
           JOB_URL: ${{ secrets.BIRDSHOP_DISCORD_VOUCH_JOB_URL }}
           JOB_SECRET: ${{ secrets.DISCORD_VOUCH_CRON_SECRET }}
+        shell: bash
         run: |
+          set -euo pipefail
           if [ -z "$JOB_URL" ] || [ -z "$JOB_SECRET" ]; then
-            echo "Review vouch dispatch is not configured; skipping."
-            exit 0
+            echo "::error::Missing BIRDSHOP_DISCORD_VOUCH_JOB_URL or DISCORD_VOUCH_CRON_SECRET in repository Actions secrets."
+            exit 1
           fi
-          case "$JOB_URL" in https://*) ;; *) echo "Job URL must be HTTPS"; exit 1 ;; esac
-          curl --fail --silent --show-error --max-time 90 --retry 2 \
-            -X POST -H "Authorization: Bearer $JOB_SECRET" "$JOB_URL"
+          case "$JOB_URL" in https://*) ;; *) echo "::error::Job URL must be HTTPS"; exit 1 ;; esac
+
+          # Do NOT automatically follow redirects with a Bearer credential.
+          # The previous workflow treated HTTP 3xx 'Redirecting...' as success.
+          response="$(mktemp)"
+          headers="$(mktemp)"
+          trap 'rm -f "$response" "$headers"' EXIT
+          status="$(curl --silent --show-error --max-time 75 --max-redirs 0 \
+            --output "$response" --dump-header "$headers" \
+            --write-out '%{http_code}' \
+            --request POST \
+            --header "Authorization: Bearer $JOB_SECRET" \
+            --header "Accept: application/json" \
+            "$JOB_URL")"
+
+          case "$status" in
+            3??)
+              echo "::error::BirdShop review endpoint returned HTTP $status redirect instead of processing reviews. Check the GitHub JOB_URL secret points directly to the canonical production endpoint (no redirects). If Vercel deployment protection is enabled, exempt this server-to-server route or use an approved protected-access mechanism."
+              exit 1
+              ;;
+            2??) ;;
+            *)
+              echo "::error::Review endpoint returned HTTP $status; check Vercel deployment, environment variables and server logs."
+              exit 1
+              ;;
+          esac
+
+          # Only a valid BirdShop worker JSON response counts as success.
+          python3 - "$response" <<'PY'
+          import json
+          import sys
+          try:
+              with open(sys.argv[1], encoding="utf-8") as f:
+                  result = json.load(f)
+          except (ValueError, UnicodeError):
+              raise SystemExit("::error::Review endpoint returned non-JSON content instead of worker result; check routing/protection.")
+          if result.get("status") == "disabled":
+              raise SystemExit("::error::DISCORD_REVIEWS_ENABLED is not true on the live Vercel deployment.")
+          if not all(isinstance(result.get(key), int) for key in ("claimed", "delivered", "failed")):
+              raise SystemExit("::error::Unexpected worker response; investigate Vercel function logs.")
+          print(f"Review delivery: claimed={result['claimed']} delivered={result['delivered']} failed={result['failed']}")
+          if result["failed"]:
+              raise SystemExit("::error::One or more review deliveries failed; inspect the redacted outbox error field in Supabase.")
+          PY

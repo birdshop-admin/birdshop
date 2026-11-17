@@ -10,7 +10,11 @@
     "typecheck": "tsc --noEmit --incremental false",
     "check": "npm run lint && npm run typecheck",
     "test:storefront": "playwright test",
-    "test:marketplace": "node --conditions=react-server --import tsx --test tests/marketplace/*.test.ts"
+    "test:marketplace": "npm run test:unit --workspace @birdshop/marketplace",
+    "build:marketplace": "npm run build --workspace @birdshop/marketplace",
+    "check:marketplace": "npm run check --workspace @birdshop/marketplace",
+    "test:marketplace:browser": "npm run test:browser --workspace @birdshop/marketplace --",
+    "check:isolation": "node scripts/check-app-isolation.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -34,5 +38,8 @@
     "tailwindcss": "^4",
     "tsx": "4.23.15",
     "typescript": "^5"
-  }
+  },
+  "workspaces": [
+    "apps/*"
+  ]
 }

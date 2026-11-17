@@ -24,7 +24,6 @@ export default defineConfig({
         NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
         NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "qa-placeholder",
         SUPABASE_SECRET_KEY: "qa-placeholder",
-        STRIPE_CONNECT_ALLOWED_COUNTRIES: "CA,GB",
         BIRDSHOP_SITE_URL: "http://127.0.0.1:3100",
       },
     },

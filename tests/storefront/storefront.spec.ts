@@ -111,17 +111,11 @@ for (const width of [390, 768, 1440]) {
 }
 
 for (const width of [390,1440]) {
-  test(`seller application entry renders at ${width}px without leaking seller data`, async ({page}) => {
-    await page.setViewportSize({width,height:960});
-    await page.goto("/sell");
-    await expect(page.getByRole("heading",{name:"Sell with BirdShop."})).toBeVisible();
-    await expect(page.locator("#seller-login-email")).toBeVisible();
-    await expect(page.getByRole("button",{name:"Send sign-in email"})).toBeVisible();
-    await expect(page.getByRole("link",{name:"Explore marketplace"})).toBeVisible();
-    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-    await page.screenshot({
-      path:test.info().outputPath(`reseller-application-${width}.png`),
-      fullPage:true,animations:"disabled",caret:"initial",
-    });
+  test(`official store keeps marketplace external at ${width}px`, async ({page}) => {
+    await page.setViewportSize({width,height:960});await page.goto("/");
+    await expect(page.getByRole("banner").getByRole("link",{name:"Marketplace",exact:true})).toHaveCount(0);
+    await expect(page.getByRole("navigation",{name:"Footer navigation"}).getByRole("link",{name:"Marketplace",exact:true})).toHaveAttribute("href","https://market.birdshop.store");
+    expect((await page.request.get("/sell/dashboard")).status()).toBe(404);
+    expect((await page.request.get("/api/stripe/connect/webhook")).status()).toBe(404);
   });
 }

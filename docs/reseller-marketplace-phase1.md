@@ -1,3 +1,5 @@
+> Marketplace is now a separate Next.js workspace. See [architecture and deployment](marketplace/architecture-and-deployment.md) for the current setup. The foundation milestones below are historical.
+
 > Current implementation: [Stripe Connect V2 and seller tiers](stripe-connect-marketplace.md). The milestones below document the earlier foundation; statements about absent checkout or provisional 10% fees are superseded by the sandbox integration and approved tier model. No marketplace migrations have been applied to production.
 
 # BirdShop marketplace — Phase 1 implementation

@@ -8,3 +8,6 @@ playwright-report/
 test-results/
 supabase/.temp/
 .superdesign/
+apps/*/.next/
+apps/*/test-results/
+apps/*/playwright-report/

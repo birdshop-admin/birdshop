@@ -20,12 +20,3 @@ export function getStripe() {
 
   return stripeClient;
 }
-
-/** Marketplace stays in sandbox until a separate, reviewed launch change. */
-export function getMarketplaceStripe() {
-  const key = process.env.STRIPE_SECRET_KEY?.trim();
-  if (!key) throw new Error("STRIPE_SECRET_KEY is not configured for the marketplace sandbox.");
-  if (!/^(sk|rk)_test_/.test(key))
-    throw new Error("BirdShop marketplace requires a Stripe sandbox/test secret key. Live marketplace payments are disabled.");
-  return getStripe();
-}

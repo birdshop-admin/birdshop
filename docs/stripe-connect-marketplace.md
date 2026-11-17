@@ -1,3 +1,5 @@
+> Current deployment architecture: [Independent marketplace app](marketplace/architecture-and-deployment.md). Marketplace source paths below now live under `apps/marketplace/`; its payment secret is `STRIPE_MARKETPLACE_WEBHOOK_SECRET`, its origin is `MARKETPLACE_SITE_URL`, and first-party payment code no longer imports marketplace modules.
+
 # BirdShop Connect V2 marketplace (sandbox only)
 
 This implementation extends the existing seller dashboard, listing moderation, marketplace and order workflow. Sellers create/edit digital products and game services in BirdShop, submit listings for approval, and manage fulfillment there. Stripe onboarding only collects identity and payout verification. Sellers never create Stripe Products or Prices. Checkout builds inline `price_data` from the approved database listing, not browser-submitted amounts.

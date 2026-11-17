@@ -41,29 +41,11 @@ jobs:
               "username": "BirdShop Updates",
               "allowed_mentions": {"parse": []},
               "embeds": [{
-                  "title": "BirdShop • Website Update",
-                  "description": "\n".join([
-                      "**BirdShop — Website Progress Update**",
-                      "",
-                      "Over the past several updates, we've been improving the look, usability, and shopping experience across BirdShop. Here's a recap of the improvements in the project and what's coming next.",
-                      "",
-                      "**Recently added to the website code**",
-                      "• A refreshed black, ivory, and burgundy design across the storefront, services, and customer pages.",
-                      "• Better product cards, clearer stock states, properly aligned Add to Cart buttons, and improved mobile layouts.",
-                      "• Updated Reviews page with a seasonal animated moonlit Santa scene, plus cleaner typography and navigation.",
-                      "• More consistent styling across the cart, service pages, and referral area while preserving the existing checkout.",
-                      "",
-                      "**Coming soon / in development**",
-                      "• A referral program with verified customers and one-time rewards for qualified first purchases.",
-                      "• A post-purchase option to credit a friend's referral code, with safeguards against duplicate claims.",
-                      "• A larger multi-game marketplace where approved sellers can manage eligible services, listings, and storefronts.",
-                      "• Additional payment options are being evaluated, but have not been enabled.",
-                      "",
-                      "Some features are still in testing or require activation; inclusion here does not mean they're live. Watch this channel for confirmed public releases.",
-                  ]),
+                  "title": "BIRDSHOP | WEBSITE UPDATE",
+                  "description": "**BIRDSHOP | WEBSITE UPDATE**\nNovember 2026\n\nWe've been working on major improvements to BirdShop, focusing on design, shopping, accessibility, and future marketplace expansion.\n\n━━━━━━━━━━━━━━━━━━━━\n**WEBSITE REDESIGN**\nUpdates added to the website code:\n• Refreshed black, ivory, and burgundy storefront theme.\n• Redesigned product and service layouts and navigation.\n• Improved mobile responsiveness and Add to Cart button alignment.\n• Updated Reviews page with animated seasonal visuals.\n\n━━━━━━━━━━━━━━━━━━━━\n**SHOPPING EXPERIENCE**\nImproved product information, stock displays, and shopping controls. Existing checkout, order management, and customer support remain part of BirdShop.\n\n━━━━━━━━━━━━━━━━━━━━\n**REFERRAL PROGRAM — IN DEVELOPMENT**\n• Personal referral codes and verified customer tracking.\n• Planned post-purchase referral verification.\n• $0.50 rewards for qualifying first purchases, subject to approval.\n• Referral dashboard and reward tracking.\nThese features are not yet fully available.\n\n━━━━━━━━━━━━━━━━━━━━\n**RESELLER MARKETPLACE — IN DEVELOPMENT**\n• Individual reseller storefronts and seller applications.\n• Game-specific product and service listings.\n• Owner-approved trusted seller verification.\n• Seller order management and commissions.\nMarketplace features will launch gradually after testing and approval.\n\n━━━━━━━━━━━━━━━━━━━━\n**WHAT'S NEXT?**\nOur next priorities are completing referrals, continuing marketplace development, and refining the website experience.\n\nThank you for supporting BirdShop.\n**Website:** https://birdshop.store",
                   "color": 0x921027,
                   "url": "https://birdshop.store",
-                  "footer": {"text": "BirdShop • Recent improvements • Availability may vary by rollout"}
+                  "footer": {"text": "BirdShop • Development progress • Availability may vary by rollout"}
               }]
           }
 

@@ -27,7 +27,8 @@
 .infoIndex {font:700 9px Arial,Helvetica,sans-serif;letter-spacing:.25em;color:#b11e2e;}
 .infoBlock strong {font:400 clamp(18px,1.65vw,25px)/1.2 Georgia,'Times New Roman',serif;}
 .infoAction {margin-top:auto;color:#bab5b5;font:11px Arial,Helvetica,sans-serif;}
-.infoAction span {margin-left:12px;}
+.diagonalArrow {width:12px;height:12px;flex:0 0 12px;transform:rotate(-45deg);}
+.infoAction .diagonalArrow {display:inline-block;margin-left:12px;vertical-align:middle;}
 /* Bells extracted from the exact approved Christmas concept.
    Transform their whole hanger so the ribbon and bells swing together. */
 .christmasBells {

@@ -16,6 +16,15 @@ for (const width of [320, 390, 768, 1024, 1440]) {
     await expect(page.getByRole("link", { name: /OUR SERVICES/i }).first()).toBeVisible();
     await expect(page.locator("img[src*='birdshop-approved-christmas-portrait']")).toBeVisible();
     await expect(page.locator("img[src*='birdshop-christmas-bells-reference']")).toBeVisible();
+    const hero = page.locator('section[aria-labelledby="home-hero-title"]');
+    await expect(hero.getByRole("link", { name: "SHOP NOW" }).locator("svg")).toBeVisible();
+    await expect(hero.getByRole("link", { name: "OUR SERVICES" }).locator("svg")).toBeVisible();
+    expect(await hero.textContent()).not.toContain("↗");
+    // Visibility alone also passes for a broken image box.
+    for (const name of ["birdshop-approved-christmas-portrait", "birdshop-christmas-bells-reference"]) {
+      const image = page.locator(`img[src*='${name}']`);
+      await expect.poll(() => image.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     if (width <= 1100) {
       const menu = page.getByRole("button", { name: "Open menu", exact: true });

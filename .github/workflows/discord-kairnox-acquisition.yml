@@ -32,7 +32,7 @@ jobs:
           if not webhook:
               raise SystemExit("DISCORD_PUBLIC_UPDATES_WEBHOOK_URL secret is missing")
           url = urlparse(webhook)
-          if url.scheme != "https" or url.hostname not in ("discord.com", "discordapp.com") or not re.fullmatch(r"/api/webhooks/\\d+/[^/]+/?", url.path):
+          if url.scheme != "https" or url.hostname not in ("discord.com", "discordapp.com") or not re.fullmatch(r"/api/webhooks/\d+/[^/]+/?", url.path):
               raise SystemExit("Invalid Discord webhook URL")
 
           payload = {
@@ -41,14 +41,14 @@ jobs:
               "embeds": [{
                   "title": "KAIRNOX — PROJECT FOR SALE",
                   "description": (
-                      "We are officially offering **Kairnox** for full acquisition.\\n\\n"
+                      "We are officially offering **Kairnox** for full acquisition.\n\n"
                       "The sale includes the complete platform, website, custom launcher, Luau protection tooling, "
-                      "automated publishing infrastructure, **8 GitHub repositories**, branding, domain, and Discord server.\\n\\n"
-                      "**Asking price:** $2,000 USD (negotiable)\\n\\n"
-                      "Full technical documentation and deployment instructions are included to support the transition.\\n\\n"
-                      "**Important:** Game modules are no longer maintained and may require updates.\\n\\n"
-                      "**Website:** https://kairnox.xyz\\n"
-                      "**Contact:** \`veyrkan\` on Discord\\n\\n"
+                      "automated publishing infrastructure, **8 GitHub repositories**, branding, domain, and Discord server.\n\n"
+                      "**Asking price:** $2,000 USD (negotiable)\n\n"
+                      "Full technical documentation and deployment instructions are included to support the transition.\n\n"
+                      "**Important:** Game modules are no longer maintained and may require updates.\n\n"
+                      "**Website:** https://kairnox.xyz\n"
+                      "**Contact:** `veyrkan` on Discord\n\n"
                       "Serious inquiries only. Full acquisition details and technical documentation are available upon request."
                   ),
                   "url": "https://kairnox.xyz",

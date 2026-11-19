@@ -1,0 +1,75 @@
+name: Post Kairnox acquisition announcement once
+
+on:
+  push:
+    branches:
+      - automation/kairnox-acquisition-announcement-20261118
+    paths:
+      - .github/workflows/discord-kairnox-acquisition.yml
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    name: Send announcement to existing BirdShop public updates webhook
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Post exactly one approved message
+        env:
+          DISCORD_PUBLIC_UPDATES_WEBHOOK_URL: ${{ secrets.DISCORD_PUBLIC_UPDATES_WEBHOOK_URL }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import urllib.error
+          import urllib.request
+          from urllib.parse import urlparse
+
+          webhook = os.getenv("DISCORD_PUBLIC_UPDATES_WEBHOOK_URL", "").strip()
+          if not webhook:
+              raise SystemExit("DISCORD_PUBLIC_UPDATES_WEBHOOK_URL secret is missing")
+          url = urlparse(webhook)
+          if url.scheme != "https" or url.hostname not in ("discord.com", "discordapp.com") or not re.fullmatch(r"/api/webhooks/\\d+/[^/]+/?", url.path):
+              raise SystemExit("Invalid Discord webhook URL")
+
+          payload = {
+              "username": "BirdShop Updates",
+              "allowed_mentions": {"parse": []},
+              "embeds": [{
+                  "title": "KAIRNOX — PROJECT FOR SALE",
+                  "description": (
+                      "We are officially offering **Kairnox** for full acquisition.\\n\\n"
+                      "The sale includes the complete platform, website, custom launcher, Luau protection tooling, "
+                      "automated publishing infrastructure, **8 GitHub repositories**, branding, domain, and Discord server.\\n\\n"
+                      "**Asking price:** $2,000 USD (negotiable)\\n\\n"
+                      "Full technical documentation and deployment instructions are included to support the transition.\\n\\n"
+                      "**Important:** Game modules are no longer maintained and may require updates.\\n\\n"
+                      "**Website:** https://kairnox.xyz\\n"
+                      "**Contact:** \`veyrkan\` on Discord\\n\\n"
+                      "Serious inquiries only. Full acquisition details and technical documentation are available upon request."
+                  ),
+                  "url": "https://kairnox.xyz",
+                  "color": 9572391,
+                  "footer": {"text": "Kairnox • Acquisition opportunity"}
+              }]
+          }
+
+          request = urllib.request.Request(
+              webhook,
+              method="POST",
+              data=json.dumps(payload).encode("utf-8"),
+              headers={"Content-Type": "application/json", "User-Agent": "BirdShop-Updates/1.0"}
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=15) as response:
+                  if response.status not in (200, 204):
+                      raise SystemExit(f"Unexpected HTTP response {response.status}")
+          except urllib.error.HTTPError as error:
+              raise SystemExit(f"Discord returned HTTP {error.code}")
+          except urllib.error.URLError:
+              raise SystemExit("Could not reach Discord")
+          print("Kairnox acquisition announcement posted to public updates webhook.")
+          PY

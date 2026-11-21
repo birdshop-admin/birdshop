@@ -360,7 +360,7 @@ export default function ReviewsPage() {
       <section id="reviews" className={styles.reviewSection}>
         <div className={styles.reviewHeading}>
           <div>
-            <span>Community reviews</span>
+            <span>Reviews &amp; vouches</span>
             <h2>Recent experiences</h2>
           </div>
 
@@ -428,7 +428,7 @@ export default function ReviewsPage() {
             <p>
               {loadError
                 ? FEED_ERROR
-                : "Only reviews approved by BirdShop moderation appear here. Contact details are never included in the public review feed."}
+                : "This Reviews & Vouches page uses one moderated feedback feed. Only approved submissions are shown, and contact details are never displayed publicly."}
             </p>
           </div>
         </div>

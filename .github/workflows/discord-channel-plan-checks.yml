@@ -1,0 +1,25 @@
+name: Discord channel preparation checks
+
+on:
+  pull_request:
+    paths:
+      - scripts/prepare_discord_sections.py
+      - .github/workflows/discord-channel-plan-checks.yml
+
+permissions:
+  contents: read
+
+jobs:
+  safe-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check and credential-free plan
+        run: |
+          python3 -m py_compile scripts/prepare_discord_sections.py
+          python3 scripts/prepare_discord_sections.py > plan.txt
+          grep -q 'DRY RUN ONLY' plan.txt
+          grep -q 'marketplace-start-here' plan.txt
+          grep -q '#referrals' plan.txt
+          cat plan.txt

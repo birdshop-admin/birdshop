@@ -1,0 +1,69 @@
+name: Bird's Ecosystem marketplace announcement
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 'Approved public announcement title'
+        required: true
+        type: string
+      message:
+        description: 'Approved public message (no private seller information)'
+        required: true
+        type: string
+      publish:
+        description: 'Post to Discord? false is a read-only preview'
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: birds-ecosystem-marketplace-announcement
+  cancel-in-progress: false
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      BOT_TOKEN: ${{ secrets.BIRDSHOP_DISCORD_BOT_TOKEN }}
+      GUILD_ID: "1496704311038709801"
+      CATEGORY_ID: "1574456093059448973"
+      ANNOUNCEMENT_TITLE: ${{ inputs.title }}
+      ANNOUNCEMENT_MESSAGE: ${{ inputs.message }}
+      PUBLISH: ${{ inputs.publish }}
+    steps:
+      - name: Validate target and preview or publish approved announcement
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,os,sys,urllib.request,urllib.error
+          token=os.getenv("BOT_TOKEN","")
+          if not token: sys.exit("Missing BIRDSHOP_DISCORD_BOT_TOKEN")
+          title=os.environ["ANNOUNCEMENT_TITLE"].strip()
+          message=os.environ["ANNOUNCEMENT_MESSAGE"].strip()
+          if not (1<=len(title)<=160 and 1<=len(message)<=1600):
+              sys.exit("Title must be 1-160 and message 1-1600 characters")
+          if "@everyone" in message.lower() or "@here" in message.lower():
+              sys.exit("Mass mentions are not allowed")
+          base="https://discord.com/api/v10"
+          headers={"Authorization":"Bot "+token,"Content-Type":"application/json","User-Agent":"BirdsEcosystem/1.0"}
+          def request(method,path,data=None):
+              body=None if data is None else json.dumps(data).encode()
+              req=urllib.request.Request(base+path,method=method,headers=headers,data=body)
+              try:
+                  with urllib.request.urlopen(req,timeout=20) as resp:
+                      return json.load(resp)
+              except urllib.error.HTTPError as e:
+                  sys.exit("Discord API "+method+" returned HTTP "+str(e.code))
+          channels=request("GET","/guilds/"+os.environ["GUILD_ID"]+"/channels")
+          target=[c for c in channels if c.get("name")=="marketplace-updates" and c.get("parent_id")==os.environ["CATEGORY_ID"] and c.get("type")==0]
+          if len(target)!=1: sys.exit("Cannot uniquely verify marketplace-updates channel in expected category")
+          print("Verified target channel ID:",target[0]["id"])
+          if os.environ["PUBLISH"].lower()!="true":
+              print("PREVIEW ONLY; no message posted. Title:",title,"Message length:",len(message))
+              sys.exit(0)
+          safe=lambda s:s.replace("@","＠")
+          payload={"allowed_mentions":{"parse":[]},"embeds":[{"title":safe(title),"description":safe(message),"color":4266038,"footer":{"text":"Bird’s Marketplace • Official announcement"}}]}
+          request("POST","/channels/"+target[0]["id"]+"/messages",payload)
+          print("Approved marketplace announcement posted.")
+          PY

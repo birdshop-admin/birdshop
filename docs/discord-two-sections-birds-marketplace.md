@@ -56,7 +56,7 @@ The additive idempotent script is at scripts/prepare_discord_sections.py. It nev
 
 1. Preview without credentials: python3 scripts/prepare_discord_sections.py. Or run the GitHub workflow in preview mode.
 2. Confirm actual Discord server ID. Copy the existing BirdShop category ID in Discord Developer Mode.
-3. Use a trusted Discord bot with Manage Channels and permission to configure channel overwrites. Save its token as the GitHub Actions secret BIRDSHOP_DISCORD_BOT_TOKEN. Never commit a bot token or webhook URL.
+3. Create a dedicated Discord app/bot (for example, BirdShop Community Manager) with Guild Install and the bot scope. Grant **View Channels**, **Manage Channels**, and **Manage Roles**: the existing preparation script creates category/text channels with read-only permission overwrites; Discord requires Manage Roles to set those overwrites. Do **not** grant Administrator, member-list privileged intents, or message-content intent for this one-time setup. Save the bot token as the GitHub Actions secret BIRDSHOP_DISCORD_BOT_TOKEN. Never commit or paste the token in a chat, PR, or webhook.
 4. After review and merge, open GitHub Actions → Prepare Discord storefront + marketplace sections → Run workflow. Set apply=true and enter the server ID and BirdShop category ID to request live additive changes.
 5. Inspect actual server permissions. The new marketplace channels should be viewable and read-only until the launch-stage role and support workflows are approved.
 6. The script skips #referrals if the correct existing BirdShop category cannot be unambiguously identified. A repeat run creates only still-missing channels.
@@ -72,3 +72,5 @@ The additive idempotent script is at scripts/prepare_discord_sections.py. It nev
 - [ ] Existing #vouches automation remains tied to approved reviews.
 - [ ] BirdShop site shows Reviews & Vouches in navigation and old /vouches links resolve to /reviews.
 - [ ] No production deployment or live payout change happened without a separate release decision.
+
+**Important:** The draft PR workflow is not available as a production GitHub Actions workflow until the changes are reviewed and merged to the default branch; merging may trigger a separate website deployment depending on repository hosting settings. This one-time REST API channel setup does not require a continuously hosted Discord bot, and its bot account may display as offline between runs.

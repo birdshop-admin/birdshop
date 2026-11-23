@@ -40,7 +40,12 @@ jobs:
           if not cat:
               sys.exit("FAILED: supplied category ID does not exist in this server")
           if cat.get("type")!=4:
-              sys.exit("FAILED: supplied category ID is not a category")
+              print("PROVIDED ID IS NOT A CATEGORY:",cat.get("name"),"type",cat.get("type"))
+              print("AVAILABLE CATEGORIES:")
+              for item in channels:
+                  if item.get("type")==4:
+                      print("CATEGORY:",item.get("id"),repr(item.get("name")))
+              sys.exit("FAILED: choose a category ID from the list above")
           print("Existing BirdShop category:",cat.get("name"),"ID:",cat.get("id"))
           print("Existing channels:",len(channels))
           print("READ-ONLY VERIFICATION PASSED; no Discord modifications")

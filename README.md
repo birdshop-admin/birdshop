@@ -71,3 +71,7 @@ The current admin controls remain useful for testing and recovery. Service work 
 ## Analytics model
 
 BirdShop's built-in traffic counters store a random browser identifier, current/last path, and timestamps. They do not intentionally store names, emails, or IP addresses. `/admin` shows approximate online visitors plus 7-day, 30-day, and all-time page-view/visitor counts.
+
+## Independent marketplace workspace
+
+The official store remains at the repository root. The sandbox marketplace lives in `apps/marketplace` and is prepared for `market.birdshop.store`, with separate navigation, auth cookies, payment handlers and Vercel configuration. Run `npm run build:marketplace`, `npm run check:marketplace`, `npm run test:marketplace`, and `npm run test:marketplace:browser`. See [architecture, setup and DNS](docs/marketplace/architecture-and-deployment.md), [test evidence](docs/marketplace/test-results.md), and the [future production checklist](docs/marketplace/production-checklist.md). Nothing is deployed by these commands.

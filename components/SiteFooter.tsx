@@ -68,7 +68,7 @@ export default function SiteFooter() {
             className="footer-nav"
             aria-label="Footer navigation"
           >
-            {siteConfig.navigation.map((item) => (
+            {[...siteConfig.navigation, { label: "Marketplace", href: "https://market.birdshop.store" }].map((item) => (
               <Link key={item.href} href={item.href}>
                 {item.label}
               </Link>

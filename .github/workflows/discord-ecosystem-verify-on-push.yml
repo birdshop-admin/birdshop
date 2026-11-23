@@ -46,7 +46,9 @@ jobs:
                   if item.get("type")==4:
                       print("CATEGORY:",item.get("id"),repr(item.get("name")))
               sys.exit("FAILED: choose a category ID from the list above")
-          print("Existing BirdShop category:",cat.get("name"),"ID:",cat.get("id"))\n          referral=next((c for c in channels if c.get("id")=="1571542791010648134"),None)\n          if referral: print("Existing referral channel:",referral.get("name"),"parent:",referral.get("parent_id"))
+          print("Existing BirdShop category:",cat.get("name"),"ID:",cat.get("id"))
+          referral=next((c for c in channels if c.get("id")=="1571542791010648134"),None)
+          if referral: print("Existing referral channel:",referral.get("name"),"parent:",referral.get("parent_id"))
           print("Existing channels:",len(channels))
           print("READ-ONLY VERIFICATION PASSED; no Discord modifications")
           PY

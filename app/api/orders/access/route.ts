@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     const db = createAdminClient();
     const { data: attempt, error } = await db
       .from("birdshop_checkout_attempts")
-      .select("order_id,kind")
+      .select("id,order_id,kind")
       .eq("access_hash", tokenHash(token))
       .maybeSingle();
     if (error) throw new Error("Order lookup failed.");
@@ -37,7 +37,21 @@ export async function GET(request: Request) {
       .eq("order_id", attempt.order_id);
     if (orderError || itemError) throw new Error("Order lookup failed.");
     if (!order.paid_at) throw new PublicError(UNAVAILABLE, 404);
-    return Response.json({ order, items }, { headers: privateHeaders });
+    const referralClaimEnabled = process.env.BIRDSHOP_POSTPURCHASE_REFERRALS_ENABLED === "true";
+    let referralAlreadyRecorded = false;
+    if (referralClaimEnabled) {
+      const { data: referral, error: referralError } = await db
+        .from("birdshop_referral_attributions")
+        .select("attempt_id")
+        .eq("attempt_id", attempt.id)
+        .maybeSingle();
+      if (referralError) throw new Error("Referral status lookup failed.");
+      referralAlreadyRecorded = Boolean(referral);
+    }
+    return Response.json(
+      { order, items, referralClaimEnabled, referralAlreadyRecorded },
+      { headers: privateHeaders },
+    );
   } catch (error) {
     return publicErrorResponse(
       error,

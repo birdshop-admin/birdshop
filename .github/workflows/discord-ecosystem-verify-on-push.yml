@@ -14,7 +14,7 @@ jobs:
     env:
       DISCORD_BOT_TOKEN: ${{ secrets.BIRDSHOP_DISCORD_BOT_TOKEN }}
       DISCORD_GUILD_ID: "1496704311038709801"
-      BIRDSHOP_CATEGORY_ID: "1571542791010648134"
+      BIRDSHOP_CATEGORY_ID: "1539217259170627584"
     steps:
       - uses: actions/checkout@v4
       - name: Validate bot credentials, server and category (GET only)
@@ -46,7 +46,7 @@ jobs:
                   if item.get("type")==4:
                       print("CATEGORY:",item.get("id"),repr(item.get("name")))
               sys.exit("FAILED: choose a category ID from the list above")
-          print("Existing BirdShop category:",cat.get("name"),"ID:",cat.get("id"))
+          print("Existing BirdShop category:",cat.get("name"),"ID:",cat.get("id"))\n          referral=next((c for c in channels if c.get("id")=="1571542791010648134"),None)\n          if referral: print("Existing referral channel:",referral.get("name"),"parent:",referral.get("parent_id"))
           print("Existing channels:",len(channels))
           print("READ-ONLY VERIFICATION PASSED; no Discord modifications")
           PY

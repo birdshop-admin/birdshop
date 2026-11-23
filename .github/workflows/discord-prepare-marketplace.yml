@@ -1,0 +1,41 @@
+name: Prepare Discord storefront + marketplace sections
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Actually create missing channels? Default is preview only."
+        required: true
+        type: boolean
+        default: false
+      guild_id:
+        description: "Discord server ID (Developer Mode > Copy Server ID)"
+        required: false
+        type: string
+      birdshop_category_id:
+        description: "Existing BirdShop category ID; optional if exactly one matches"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout approved setup script
+        uses: actions/checkout@v4
+      - name: Preview or create additive channels
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.BIRDSHOP_DISCORD_BOT_TOKEN }}
+          DISCORD_GUILD_ID: ${{ inputs.guild_id }}
+          BIRDSHOP_CATEGORY_ID: ${{ inputs.birdshop_category_id }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          if [ "$APPLY" = "true" ]; then
+            python3 scripts/prepare_discord_sections.py --apply
+          else
+            python3 scripts/prepare_discord_sections.py
+          fi

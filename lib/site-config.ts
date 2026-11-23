@@ -35,7 +35,7 @@ export const siteConfig = {
     { label: "Rewards", href: "/referrals" },
     { label: "How to Order", href: "/how-to-order" },
     { label: "My Service", href: "/service-chat" },
-    { label: "Reviews", href: "/reviews" },
+    { label: "Reviews & Vouches", href: "/reviews" },
     { label: "FAQs", href: "/faqs" },
     { label: "Contact", href: "/contact" },
   ],

@@ -36,7 +36,7 @@ export default function ReviewsHero({ reviews, loading, error, summary, onReveal
       <div className={styles.copy}>
         <p className={styles.eyebrow}>BIRDSHOP COMMUNITY</p>
         <h1 id="bs-reviews-title">Reviews</h1>
-        <p className={styles.description}>Real feedback from real customers.</p>
+        <p className={styles.description}>Approved customer reviews and community vouches, together in one place.</p>
         <div className={styles.actions}>
           <Link href="#reviews" className={styles.primary}>VIEW REVIEWS <ArrowIcon className={styles.diagonalArrow} /></Link>
           <Link href="/contact?topic=review">LEAVE A REVIEW <ArrowIcon className={styles.diagonalArrow} /></Link>

@@ -1,0 +1,49 @@
+name: Verify Bird's Ecosystem Discord bot (read-only)
+on:
+  push:
+    branches:
+      - automation/discord-ecosystem-verify-20261123
+    paths:
+      - .github/workflows/discord-ecosystem-verify-on-push.yml
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      DISCORD_BOT_TOKEN: ${{ secrets.BIRDSHOP_DISCORD_BOT_TOKEN }}
+      DISCORD_GUILD_ID: "1496704311038709801"
+      BIRDSHOP_CATEGORY_ID: "1571542791010648134"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate bot credentials, server and category (GET only)
+        run: |
+          python3 - <<'PY'
+          import json,os,urllib.request,urllib.error,sys
+          token=os.getenv("DISCORD_BOT_TOKEN","")
+          if not token:
+              sys.exit("FAILED: BIRDSHOP_DISCORD_BOT_TOKEN secret missing")
+          def get(path):
+              req=urllib.request.Request("https://discord.com/api/v10"+path,headers={"Authorization":"Bot "+token,"User-Agent":"BirdShop-Verification/1.0"})
+              try:
+                  with urllib.request.urlopen(req,timeout=15) as response:
+                      return json.load(response)
+              except urllib.error.HTTPError as e:
+                  sys.exit("FAILED: Discord GET returned HTTP "+str(e.code)+" for "+path)
+          me=get("/users/@me")
+          print("Bot authenticated:",me.get("username"),"ID:",me.get("id"))
+          guild=get("/guilds/"+os.environ["DISCORD_GUILD_ID"])
+          print("Server accessible:",guild.get("name"))
+          channels=get("/guilds/"+os.environ["DISCORD_GUILD_ID"]+"/channels")
+          cat=next((c for c in channels if c.get("id")==os.environ["BIRDSHOP_CATEGORY_ID"]),None)
+          if not cat:
+              sys.exit("FAILED: supplied category ID does not exist in this server")
+          if cat.get("type")!=4:
+              sys.exit("FAILED: supplied category ID is not a category")
+          print("Existing BirdShop category:",cat.get("name"),"ID:",cat.get("id"))
+          print("Existing channels:",len(channels))
+          print("READ-ONLY VERIFICATION PASSED; no Discord modifications")
+          PY
+      - name: Preview additive channel plan
+        run: python3 scripts/prepare_discord_sections.py
